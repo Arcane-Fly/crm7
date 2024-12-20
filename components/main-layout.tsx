@@ -1,13 +1,9 @@
-import { MainNav } from "@/components/dashboard/main-nav"
-import { UserNav } from "@/components/dashboard/user-nav"
-import { Search } from "@/components/dashboard/search"
-import { Sidebar, SidebarContent, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { cn } from "@/lib/utils"
+import { MainNav } from './dashboard/main-nav'
+import { UserNav } from './dashboard/user-nav'
+import { Search } from './dashboard/search'
+import { Sidebar, SidebarContent, SidebarProvider, SidebarTrigger } from './ui/sidebar'
+import { Button } from './ui/button'
 import { LayoutDashboard, Users, GraduationCap, Briefcase, DollarSign, FileText, AlertTriangle, Settings } from 'lucide-react'
-import Link from "next/link"
 
 interface MainLayoutProps {
   children: React.ReactNode
@@ -85,4 +81,3 @@ export function MainLayout({ children }: MainLayoutProps) {
     </SidebarProvider>
   )
 }
-

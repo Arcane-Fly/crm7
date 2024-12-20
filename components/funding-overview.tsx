@@ -1,8 +1,7 @@
 "use client"
 
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell } from "recharts"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
 
 const barData = [
   { program: "AAIP-2023", claimed: 250000, available: 500000 },
@@ -64,4 +63,3 @@ export function FundingOverview() {
     </Tabs>
   )
 }
-
