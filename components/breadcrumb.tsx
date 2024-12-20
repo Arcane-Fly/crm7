@@ -1,6 +1,6 @@
 import * as React from "react"
 import { ChevronRight } from 'lucide-react'
-import { cn } from "@/lib/utils"
+import { cn } from '../lib/utils'
 
 export interface BreadcrumbProps extends React.ComponentPropsWithoutRef<"nav"> {
   separator?: React.ReactNode
@@ -57,4 +57,3 @@ const BreadcrumbItem = React.forwardRef<HTMLLIElement, BreadcrumbItemProps>(
 BreadcrumbItem.displayName = "BreadcrumbItem"
 
 export { Breadcrumb, BreadcrumbItem }
-
