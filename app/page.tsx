@@ -1,71 +1,62 @@
-'use client';
+import { Metadata } from "next";
+import { OverviewCard } from "@/components/overview-card";
+import { RecentActivity } from "@/components/recent-activity";
+import { ActivityChart } from "@/components/activity-chart";
+import { Users, Briefcase, FileText, DollarSign } from "lucide-react";
 
-import { useState } from 'react';
-import { Users, Building2, AlertTriangle, DollarSign } from 'lucide-react';
-import { StatsCard } from '../components/ui/StatsCard';
-import { DashboardTabs } from '../components/ui/DashboardTabs';
-import { ProgressChart } from '../components/ui/ProgressChart';
-import { NotificationList } from '../components/ui/NotificationList';
+export const metadata: Metadata = {
+  title: "Dashboard - CRM7",
+  description: "Main dashboard for CRM7",
+};
 
-const tabs = ['Overview', 'Analytics', 'Reports', 'Notifications'];
-
-export default function Home() {
-  const [activeTab, setActiveTab] = useState('Overview');
-
+export default function DashboardPage() {
   return (
-    <main className="flex-1 overflow-y-auto bg-gray-50">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
-          <p className="mt-1 text-sm text-gray-600">
-            Overview of your Labour Hire CRM
-          </p>
-        </div>
-
-        <DashboardTabs
-          tabs={tabs}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-        />
-
-        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <StatsCard
-            title="Total Apprentices"
-            value="1,234"
-            change="+14 from last month"
-            icon={<Users className="h-5 w-5" />}
-          />
-          <StatsCard
-            title="Active Placements"
-            value="867"
-            change="+23 from last month"
-            icon={<Building2 className="h-5 w-5" />}
-          />
-          <StatsCard
-            title="Funding Claimed"
-            value="$1.2M"
-            change="$55k from last month"
-            icon={<DollarSign className="h-5 w-5" />}
-          />
-          <StatsCard
-            title="Compliance Alerts"
-            value="23"
-            change="+3 from last month"
-            icon={<AlertTriangle className="h-5 w-5" />}
-          />
-        </div>
-
-        <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-2">
-          <div className="rounded-lg border bg-white p-6">
-            <h3 className="mb-4 text-lg font-medium">Progress by Year</h3>
-            <ProgressChart />
-          </div>
-          <div className="rounded-lg border bg-white p-6">
-            <h3 className="mb-4 text-lg font-medium">Recent Notifications</h3>
-            <NotificationList />
-          </div>
-        </div>
+    <div className="flex-1 space-y-4 p-8 pt-6">
+      <div className="flex items-center justify-between space-y-2">
+        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
       </div>
-    </main>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <OverviewCard
+          title="Total Clients"
+          value="2,850"
+          icon={<Users className="h-4 w-4 text-muted-foreground" />}
+          trend={{
+            value: 12,
+            label: "from last month",
+            positive: true,
+          }}
+        />
+        <OverviewCard
+          title="Active Projects"
+          value="45"
+          icon={<Briefcase className="h-4 w-4 text-muted-foreground" />}
+          trend={{
+            value: 8,
+            label: "from last month",
+            positive: true,
+          }}
+        />
+        <OverviewCard
+          title="Pending Tasks"
+          value="24"
+          icon={<FileText className="h-4 w-4 text-muted-foreground" />}
+          description="Tasks requiring attention"
+        />
+        <OverviewCard
+          title="Revenue"
+          value="$54,250"
+          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
+          trend={{
+            value: 4,
+            label: "from last month",
+            positive: false,
+          }}
+        />
+      </div>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <ActivityChart />
+        <RecentActivity />
+      </div>
+    </div>
   );
 }
