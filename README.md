@@ -1,36 +1,127 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CRM7
+
+A modern, comprehensive CRM system built with Next.js, focusing on training, safety, payroll, and HR management.
+
+## Project Overview
+
+CRM7 is a unified platform that combines the best features from multiple CRM systems into a single, cohesive application. It provides a robust solution for managing client relationships, employee training, safety compliance, and HR operations.
+
+## Key Features
+
+- **Modern Dashboard**: Real-time analytics and activity monitoring
+- **Training & Development**: Course management and skill tracking
+- **Safety & Compliance**: Incident reporting and compliance monitoring
+- **Payroll & HR**: Award interpretation and employee management
+- **Client Management**: Project tracking and communication tools
+
+## Tech Stack
+
+- **Framework**: Next.js 14
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Components**: shadcn/ui
+- **State Management**: Zustand
+- **Database**: Supabase
+- **Testing**: Vitest, React Testing Library
+- **API**: REST with planned GraphQL support
+
+## Navigation Structure
+
+### Top-Level Sections
+- Dashboard
+- Training & Development
+- Safety & Compliance
+- Payroll & Benefits
+- HR Management
+- Client Management
+- Project Management
+- Reporting & Analytics
+
+Each section has its own contextual sidebar with relevant subsections. For details, see [UI/UX Guidelines](docs/UI_UX_GUIDELINES.md).
+
+## Documentation
+
+### Architecture & Design
+- [Architecture Overview](docs/ARCHITECTURE.md)
+- [UI/UX Guidelines](docs/UI_UX_GUIDELINES.md)
+- [Data Models](docs/DATA_MODELS.md)
+- [API Documentation](docs/API.md)
+
+### Project Status
+- [Implementation Status](docs/IMPLEMENTATION_STATUS.md)
+- [Development Roadmap](docs/ROADMAP.md)
 
 ## Getting Started
 
-First, run the development server:
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Arcane-Fly/crm7.git
+   cd crm7
+   ```
 
+2. **Install dependencies**
+   ```bash
+   pnpm install
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env.local
+   ```
+   Edit `.env.local` with your configuration
+
+4. **Start development server**
+   ```bash
+   pnpm dev
+   ```
+   The application will be available at http://localhost:4500
+
+## Development Guidelines
+
+### Code Style
+- Use TypeScript strict mode
+- Follow ESLint configuration
+- Use Prettier for formatting
+- Write tests for new features
+
+### Git Workflow
+1. Create feature branch from `master`
+2. Make changes and commit with conventional commits
+3. Submit PR for review
+4. Merge after approval
+
+### Testing
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Run unit tests
+pnpm test
+
+# Run tests in watch mode
+pnpm test:watch
+
+# Run tests with coverage
+pnpm test:coverage
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Deployment
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The application is configured for deployment on Vercel:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Connect your Vercel account to the GitHub repository
+2. Configure environment variables
+3. Deploy with `pnpm run build`
 
-## Learn More
+## Contributing
 
-To learn more about Next.js, take a look at the following resources:
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+This project is private and confidential. All rights reserved.
 
-## Deploy on Vercel
+## Support
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+For support, please contact the development team or create an issue in the repository.
