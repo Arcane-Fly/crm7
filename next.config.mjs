@@ -24,7 +24,7 @@ const nextConfig = {
       allowedOrigins: ['localhost:3000'],
     },
   },
-  webpack: (config, { isServer }) => {
+  webpack: (config) => {
     return config;
   },
 }

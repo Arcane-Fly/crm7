@@ -1,11 +1,13 @@
 "use client"
 
 import * as React from "react"
-import {
+import type {
   ColumnDef,
   ColumnFiltersState,
   SortingState,
   VisibilityState,
+} from "@tanstack/react-table"
+import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
@@ -36,6 +38,8 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+
+import styles from './funding-programs-data-table.module.css'
 
 const data: FundingProgram[] = [
   {
@@ -162,8 +166,8 @@ export const columns: ColumnDef<FundingProgram>[] = [
           <div>${claimedFunding.toLocaleString()}</div>
           <div className="ml-2 w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
             <div
-              className="h-full bg-primary"
-              style={{ width: `${percentage}%` }}
+              className={styles.progressBar}
+              data-percentage={percentage}
             />
           </div>
         </div>
@@ -244,7 +248,7 @@ export function FundingProgramsDataTable() {
         <CardDescription>Manage and view all funding programs</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center py-4">
+        <div className="py-4 flex items-center">
           <Input
             placeholder="Filter programs..."
             value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}

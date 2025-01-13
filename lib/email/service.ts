@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 import { NotificationTemplate } from '@/components/email/notification-template'
+import React from 'react'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -23,17 +24,20 @@ export async function sendNotificationEmail({
   actionText,
 }: NotificationEmailParams) {
   try {
+    // Create the React element before sending
+    const emailContent = React.createElement(NotificationTemplate, {
+      title,
+      message,
+      recipientName,
+      actionUrl,
+      actionText,
+    })
+
     const { data, error } = await resend.emails.send({
       from: 'CRM7R <notifications@crm7r.com>',
       to,
       subject,
-      react: NotificationTemplate({
-        title,
-        message,
-        recipientName,
-        actionUrl,
-        actionText,
-      }),
+      react: emailContent,
     })
 
     if (error) {

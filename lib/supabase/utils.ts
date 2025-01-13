@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from './server'
-import { Database } from '../types/database'
+import type { Database } from '../types/database'
 
 type Tables = Database['public']['Tables']
 
