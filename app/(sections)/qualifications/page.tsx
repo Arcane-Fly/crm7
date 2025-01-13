@@ -10,7 +10,7 @@ import { Breadcrumb, BreadcrumbItem } from '@/components/breadcrumb'
 import { DataEnrichment } from '@/components/admin/data-enrichment'
 import { useAdminAccess } from '@/lib/hooks/useAdminAccess'
 
-export default function ApprenticesPage() {
+export default function QualificationsPage() {
   const router = useRouter()
   const { isAdmin } = useAdminAccess()
   const [selectedIds, setSelectedIds] = useState<string[]>([])
@@ -21,27 +21,27 @@ export default function ApprenticesPage() {
       <div className="flex items-center justify-between">
         <Breadcrumb>
           <BreadcrumbItem href="/dashboard">Dashboard</BreadcrumbItem>
-          <BreadcrumbItem>Apprentices</BreadcrumbItem>
+          <BreadcrumbItem>Qualifications</BreadcrumbItem>
         </Breadcrumb>
         <div className="flex items-center space-x-2">
           {isAdmin && selectedIds.length === 1 && (
             <DataEnrichment
-              type="apprentice"
+              type="qualification"
               id={selectedIds[0]}
               onComplete={() => {
                 // Refresh data
               }}
             />
           )}
-          <Button onClick={() => router.push('/apprentices/new')}>
-            <Plus className="mr-2 h-4 w-4" /> Add Apprentice
+          <Button onClick={() => router.push('/qualifications/new')}>
+            <Plus className="mr-2 h-4 w-4" /> Add Qualification
           </Button>
         </div>
       </div>
       <DataTable
         columns={columns}
         data={data}
-        searchPlaceholder="Search apprentices..."
+        searchPlaceholder="Search qualifications..."
         onSelectedIdsChange={setSelectedIds}
       />
     </div>
