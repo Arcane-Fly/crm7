@@ -267,9 +267,86 @@ export class RatesService {
   }
 
   async calculateRate(params: CalculateRateParams): Promise<RateCalculation> {
-    const { data, error } = await this.supabase.rpc('calculate_rate', params)
+    // Get the template first to validate
+    const templates = await this.getRateTemplates({ id: params.template_id })
+    if (!templates.length) {
+      throw new Error('Rate template not found')
+    }
+    
+    const template = templates[0]
+    
+    // Validate the template is active and approved
+    if (!template.is_active) {
+      throw new Error('Rate template is not active')
+    }
+    if (!template.is_approved) {
+      throw new Error('Rate template is not approved')
+    }
+
+    // Calculate the rate using the database function
+    const { data, error } = await this.supabase.rpc('calculate_rate', {
+      p_template_id: params.template_id,
+      p_employee_id: params.employee_id,
+      p_base_rate: params.base_rate,
+      p_casual_loading: params.casual_loading,
+      p_allowances: params.allowances || [],
+      p_penalties: params.penalties || []
+    })
+
     if (error) throw error
-    return data[0]
+    
+    // Add additional validation and business logic
+    const calculation = data[0]
+    
+    // Ensure the final rate meets minimum requirements
+    if (calculation.final_rate < params.base_rate) {
+      throw new Error('Final rate cannot be less than base rate')
+    }
+
+    // Validate against template rules if they exist
+    if (template.rules) {
+      const validationResult = await this.validateCalculation(calculation, template.rules)
+      if (!validationResult.isValid) {
+        throw new Error(`Rate calculation failed validation: ${validationResult.errors.join(', ')}`)
+      }
+    }
+
+    return calculation
+  }
+
+  private async validateCalculation(
+    calculation: RateCalculation,
+    rules: Record<string, any>
+  ): Promise<{ isValid: boolean; errors: string[] }> {
+    const errors: string[] = []
+
+    // Example rule validations
+    if (rules.minimum_margin) {
+      const marginPercentage = calculation.margin_amount / calculation.total_cost
+      if (marginPercentage < rules.minimum_margin) {
+        errors.push(`Margin percentage (${(marginPercentage * 100).toFixed(2)}%) is below minimum required (${(rules.minimum_margin * 100).toFixed(2)}%)`)
+      }
+    }
+
+    if (rules.maximum_margin) {
+      const marginPercentage = calculation.margin_amount / calculation.total_cost
+      if (marginPercentage > rules.maximum_margin) {
+        errors.push(`Margin percentage (${(marginPercentage * 100).toFixed(2)}%) is above maximum allowed (${(rules.maximum_margin * 100).toFixed(2)}%)`)
+      }
+    }
+
+    if (rules.minimum_total_rate && calculation.final_rate < rules.minimum_total_rate) {
+      errors.push(`Final rate (${calculation.final_rate}) is below minimum required rate (${rules.minimum_total_rate})`)
+    }
+
+    if (rules.maximum_total_rate && calculation.final_rate > rules.maximum_total_rate) {
+      errors.push(`Final rate (${calculation.final_rate}) is above maximum allowed rate (${rules.maximum_total_rate})`)
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors
+    }
   }
 
   async saveRateCalculation(calculation: RateCalculation): Promise<void> {
