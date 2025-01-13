@@ -1,18 +1,22 @@
-import { createClient } from '@supabase/supabase-js'
-import { Database } from '../types/database'
+'use client'
+
+import { createBrowserClient } from '@supabase/ssr'
+import type { Database } from '../types/database'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
+export const createClientSupabaseClient = () => {
+  return createBrowserClient<Database>(supabaseUrl, supabaseAnonKey)
+}
 
-// Helper function for server-side operations
-export const getServiceSupabase = () => {
+// Helper function for server-side operations with service role
+export const createServiceSupabaseClient = () => {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-  return createClient<Database>(supabaseUrl, serviceRoleKey, {
+  return createBrowserClient<Database>(supabaseUrl, serviceRoleKey, {
     auth: {
       autoRefreshToken: false,
-      persistSession: false
-    }
+      persistSession: false,
+    },
   })
 }

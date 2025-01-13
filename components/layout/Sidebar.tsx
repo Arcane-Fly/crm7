@@ -28,7 +28,7 @@ import {
   AlertTriangle,
   BarChart,
   UserCog,
-  Tool,
+  Wrench,
   Mail,
   CheckCircle,
   Database,
@@ -61,11 +61,11 @@ const iconMap = {
   AlertTriangle,
   BarChart,
   UserCog,
-  Tool,
+  Tool: Wrench,
   Mail,
   CheckCircle,
   Database,
-  Palette
+  Palette,
 } as const
 
 type IconName = keyof typeof iconMap
@@ -92,8 +92,8 @@ const sidebarSections: Record<string, SidebarSection> = {
       { title: 'Calendar/Events', href: '/dashboard/calendar', icon: 'Calendar' },
       { title: 'Quick Actions', href: '/dashboard/actions', icon: 'Activity' },
       { title: 'Recent Activities', href: '/dashboard/activities', icon: 'Clock' },
-      { title: 'Team Announcements', href: '/dashboard/announcements', icon: 'MessageSquare' }
-    ]
+      { title: 'Team Announcements', href: '/dashboard/announcements', icon: 'MessageSquare' },
+    ],
   },
   '/candidates': {
     title: 'Candidates & Employees',
@@ -109,7 +109,7 @@ const sidebarSections: Record<string, SidebarSection> = {
       { title: 'Apprenticeship Tracking', href: '/candidates/apprenticeships', icon: 'BookOpen' },
       { title: 'Employee Positions', href: '/candidates/positions', icon: 'Briefcase' },
       { title: 'Performance Logs', href: '/candidates/performance', icon: 'Activity' }
-    ]
+    ],
   },
   '/clients': {
     title: 'Clients / Host Employers',
@@ -124,7 +124,7 @@ const sidebarSections: Record<string, SidebarSection> = {
       { title: 'Historical Data', href: '/clients/history', icon: 'Clock' },
       { title: 'Credit Terms', href: '/clients/credit', icon: 'Wallet' },
       { title: 'Region Management', href: '/clients/regions', icon: 'Building2' }
-    ]
+    ],
   },
   '/jobs': {
     title: 'Jobs & Placements',
@@ -139,7 +139,7 @@ const sidebarSections: Record<string, SidebarSection> = {
       { title: 'Completed Placements', href: '/jobs/completed', icon: 'CheckCircle' },
       { title: 'Multi-Job Actions', href: '/jobs/bulk-actions', icon: 'FileText' },
       { title: 'Roster/Shifts', href: '/jobs/roster', icon: 'Calendar' }
-    ]
+    ],
   },
   '/timesheets': {
     title: 'Timesheets & Payroll',
@@ -154,7 +154,7 @@ const sidebarSections: Record<string, SidebarSection> = {
       { title: 'Leave Management', href: '/timesheets/leave', icon: 'Calendar' },
       { title: 'Invoice Generation', href: '/timesheets/invoices', icon: 'FileText' },
       { title: 'Timesheet Audit', href: '/timesheets/audit', icon: 'Search' }
-    ]
+    ],
   },
   '/compliance': {
     title: 'Compliance & Training',
@@ -169,7 +169,7 @@ const sidebarSections: Record<string, SidebarSection> = {
       { title: 'WHS Reminders', href: '/compliance/reminders', icon: 'Bell' },
       { title: 'Safety Training', href: '/compliance/safety', icon: 'HardHat' },
       { title: 'WHS Policies', href: '/compliance/policies', icon: 'FileText' }
-    ]
+    ],
   },
   '/reporting': {
     title: 'Reporting & Analytics',
@@ -184,7 +184,7 @@ const sidebarSections: Record<string, SidebarSection> = {
       { title: 'Email Reports', href: '/reporting/email', icon: 'Mail' },
       { title: 'Historical Trends', href: '/reporting/trends', icon: 'Activity' },
       { title: 'Performance KPIs', href: '/reporting/performance', icon: 'Activity' }
-    ]
+    ],
   },
   '/settings': {
     title: 'Settings & Admin',
@@ -199,44 +199,50 @@ const sidebarSections: Record<string, SidebarSection> = {
       { title: 'Feature Toggles', href: '/settings/features', icon: 'Tool' },
       { title: 'Branding', href: '/settings/branding', icon: 'Palette' },
       { title: 'Data Management', href: '/settings/data', icon: 'Database' }
-    ]
+    ],
   }
 }
 
 function MenuItem({ href, icon, title }: MenuItem) {
   const pathname = usePathname()
   const isActive = pathname === href
+
   const Icon = iconMap[icon]
-  
+
   return (
     <Link
       href={href}
       className={cn(
-        'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
-        isActive
-          ? 'bg-blue-50 text-blue-600 font-medium'
-          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+        'flex items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground',
+        isActive ? 'bg-accent' : 'transparent'
       )}
     >
-      <Icon className="h-4 w-4" />
-      {title}
+      <Icon className='h-4 w-4' />
+      <span>{title}</span>
     </Link>
   )
 }
 
-export default function Sidebar() {
+export function Sidebar() {
   const pathname = usePathname()
-  const section = Object.keys(sidebarSections).find(key => pathname.startsWith(key)) || '/dashboard'
-  const currentSection = sidebarSections[section]
+  const section = Object.keys(sidebarSections).find((key) => pathname.startsWith(key))
+  const sidebarSection = section ? sidebarSections[section] : null
+
+  if (!sidebarSection) return null
 
   return (
-    <div className="fixed left-0 top-14 z-40 flex h-[calc(100vh-3.5rem)] w-64 flex-col border-r bg-white">
-      <div className="flex-1 overflow-y-auto py-4">
-        <nav className="space-y-1 px-3">
-          {currentSection.items.map((item) => (
-            <MenuItem key={item.href} {...item} />
-          ))}
-        </nav>
+    <div className='hidden border-r bg-background lg:block lg:w-64'>
+      <div className='space-y-4 py-4'>
+        <div className='px-3 py-2'>
+          <h2 className='mb-2 px-4 text-lg font-semibold tracking-tight'>
+            {sidebarSection.title}
+          </h2>
+          <div className='space-y-1'>
+            {sidebarSection.items.map((item) => (
+              <MenuItem key={item.href} {...item} />
+            ))}
+          </div>
+        </div>
       </div>
       <div className="border-t p-3">
         <button className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900">
