@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase"
 import { useToast } from "@/components/ui/use-toast"
 import { Button } from "@/components/ui/button"
-import { Sidebar, SidebarHeader, SidebarTrigger } from "./improved-sidebar"
+import { Sidebar } from "./improved-sidebar"
 
 const menuItems = [
   {
@@ -50,46 +50,38 @@ export function AppSidebar() {
     const { error } = await supabase.auth.signOut()
     if (error) {
       toast({
-        variant: "destructive",
         title: "Error signing out",
         description: error.message,
+        variant: "destructive",
       })
-    } else {
-      router.push("/auth")
+      return
     }
+
+    router.push("/auth")
   }
 
   return (
     <Sidebar>
-      <SidebarHeader>
-        <div className="flex items-center gap-2">
-          <h1 className="text-xl font-bold text-primary">WorkforceHub</h1>
-        </div>
-        <SidebarTrigger />
-      </SidebarHeader>
-      <div className="flex flex-col gap-2 p-4">
+      <nav className="flex flex-col space-y-1">
         {menuItems.map((item) => (
-          <Button
-            key={item.title}
-            variant="ghost"
-            className="w-full justify-start gap-2"
-            asChild
+          <Link
+            key={item.path}
+            href={item.path}
+            className="flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
           >
-            <Link href={item.path}>
-              <item.icon className="h-4 w-4" />
-              <span>{item.title}</span>
-            </Link>
-          </Button>
+            <item.icon className="mr-3 h-4 w-4" />
+            {item.title}
+          </Link>
         ))}
         <Button
           variant="ghost"
-          className="w-full justify-start gap-2 text-red-600 hover:text-red-700 hover:bg-red-100"
+          className="flex w-full items-center justify-start px-3 py-2"
           onClick={handleSignOut}
         >
-          <LogOut className="h-4 w-4" />
-          <span>Sign Out</span>
+          <LogOut className="mr-3 h-4 w-4" />
+          Sign Out
         </Button>
-      </div>
+      </nav>
     </Sidebar>
   )
 }

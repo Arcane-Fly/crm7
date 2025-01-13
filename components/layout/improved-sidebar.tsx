@@ -69,7 +69,7 @@ export function SidebarProvider({
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [toggleSidebar])
 
-  const value = React.useMemo(
+  const value: SidebarContext = React.useMemo(
     () => ({
       state: open ? 'expanded' : 'collapsed',
       open,

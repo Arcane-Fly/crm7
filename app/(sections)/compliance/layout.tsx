@@ -1,3 +1,5 @@
+'use client'
+
 import { SectionSidebar } from "@/components/navigation/section-sidebar";
 
 const sidebarItems = [
@@ -43,7 +45,7 @@ export default function ComplianceLayout({
   return (
     <div className="flex min-h-[calc(100vh-4rem)]">
       <aside className="hidden w-[200px] flex-col md:flex">
-        <SectionSidebar items={sidebarItems} />
+        <SectionSidebar section="compliance" />
       </aside>
       <main className="flex-1 p-6">{children}</main>
     </div>
