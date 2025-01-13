@@ -1,6 +1,6 @@
 'use client'
 
-import { Header } from '@/components/layout/header'
+import { Header } from '@/components/layout/Header'
 import { SidebarProvider } from '@/components/layout/improved-sidebar'
 import { AppSidebar } from '@/components/layout/app-sidebar'
 import { ThemeProvider } from '@/components/theme-provider'
@@ -12,7 +12,6 @@ export default function AuthenticatedLayout({
 }) {
   return (
     <ThemeProvider
-      attribute="class"
       defaultTheme="system"
       enableSystem
       disableTransitionOnChange

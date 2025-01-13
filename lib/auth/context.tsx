@@ -1,11 +1,10 @@
 'use client'
 
 import * as React from 'react'
-import type { ReactNode } from 'react'
 import { createContext, useContext, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '../supabase/client'
-import { Session, User } from '@supabase/supabase-js'
+import type { Session, User } from '@supabase/supabase-js'
 
 interface AuthContextType {
   user: User | null

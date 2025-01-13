@@ -1,6 +1,6 @@
 'use client'
 
-import { ColumnDef } from '@tanstack/react-table'
+import type { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { MoreHorizontal } from 'lucide-react'
 import {
@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import styles from './columns.module.css'
 
 export type TrainingPlan = {
   id: string
@@ -44,10 +45,14 @@ export const columns: ColumnDef<TrainingPlan>[] = [
     cell: ({ row }) => {
       const progress = row.getValue('progress') as number
       return (
-        <div className="w-full bg-gray-200 rounded-full h-2.5">
+        <div className={styles.progressBar}>
           <div
-            className="bg-blue-600 h-2.5 rounded-full"
-            style={{ width: `${progress}%` }}
+            className={styles.progressFill}
+            style={
+              {
+                '--progress-width': `${progress}%`,
+              } as React.CSSProperties & { '--progress-width': string }
+            }
           />
         </div>
       )
@@ -76,7 +81,7 @@ export const columns: ColumnDef<TrainingPlan>[] = [
   {
     id: 'actions',
     cell: ({ row }) => {
-      const plan = row.original
+      const _plan = row.original
 
       return (
         <DropdownMenu>

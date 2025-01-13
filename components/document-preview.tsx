@@ -1,11 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import Image from 'next/image'
+import type { OnDocumentLoadSuccess } from 'react-pdf'
 import { Document, Page, pdfjs } from 'react-pdf'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react'
+import styles from './document-preview.module.css'
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js'
 
@@ -43,6 +45,10 @@ export function DocumentPreview({
 
   const zoomOut = () => {
     setScale((prev) => Math.max(prev - 0.2, 0.5))
+  }
+
+  const onDocumentLoadSuccess: OnDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
+    setNumPages(numPages)
   }
 
   return (
@@ -85,7 +91,7 @@ export function DocumentPreview({
             {isPdf ? (
               <Document
                 file={fileUrl}
-                onLoadSuccess={({ numPages }) => setNumPages(numPages)}
+                onLoadSuccess={onDocumentLoadSuccess}
               >
                 <Page
                   pageNumber={pageNumber}
@@ -95,11 +101,13 @@ export function DocumentPreview({
                 />
               </Document>
             ) : isImage ? (
-              <img
+              <Image
                 src={fileUrl}
                 alt="Document preview"
-                style={{ transform: `scale(${scale})` }}
-                className="max-w-full h-auto"
+                className={`${styles.previewImage}`}
+                width={800}
+                height={600}
+                style={{ '--scale': scale } as React.CSSProperties}
               />
             ) : (
               <div className="p-4 text-center">

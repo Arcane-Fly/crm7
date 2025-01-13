@@ -1,6 +1,6 @@
 'use client'
 
-import { ColumnDef } from '@tanstack/react-table'
+import type { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { MoreHorizontal } from 'lucide-react'
 import {
@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import styles from './columns.module.css'
 
 export type ProgressReview = {
   id: string
@@ -52,10 +53,14 @@ export const columns: ColumnDef<ProgressReview>[] = [
       const percentage = (completed / total) * 100
       return (
         <div className="flex items-center gap-2">
-          <div className="w-full bg-gray-200 rounded-full h-2.5">
+          <div className={styles.progressBar}>
             <div
-              className="bg-blue-600 h-2.5 rounded-full"
-              style={{ width: `${percentage}%` }}
+              className={styles.progressFill}
+              style={
+                {
+                  '--progress-width': `${percentage}%`,
+                } as React.CSSProperties & { '--progress-width': string }
+              }
             />
           </div>
           <span className="text-sm text-gray-500">
@@ -96,7 +101,7 @@ export const columns: ColumnDef<ProgressReview>[] = [
   {
     id: 'actions',
     cell: ({ row }) => {
-      const review = row.original
+      const _review = row.original
 
       return (
         <DropdownMenu>
