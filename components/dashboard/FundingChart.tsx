@@ -28,6 +28,7 @@ ChartJS.register(
 
 export const options = {
   responsive: true,
+  maintainAspectRatio: false,
   plugins: {
     legend: {
       position: 'top' as const,
@@ -79,8 +80,10 @@ export const data = {
 
 export function FundingChart() {
   return (
-    <div className='w-full rounded-lg bg-white p-4 shadow-sm'>
-      <Line options={options} data={data} />
+    <div className="rounded-lg bg-white p-4 shadow-sm">
+      <div className="h-[400px] w-full">
+        <Line options={options} data={data} />
+      </div>
     </div>
   )
 }
