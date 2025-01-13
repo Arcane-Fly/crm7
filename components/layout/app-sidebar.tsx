@@ -1,6 +1,21 @@
 'use client'
 
-import { Clock, Users, Building2, LayoutDashboard, ClipboardCheck, MessageSquare, LogOut } from "lucide-react"
+import { 
+  Clock, 
+  Users, 
+  Building2, 
+  LayoutDashboard, 
+  ClipboardCheck, 
+  MessageSquare, 
+  LogOut,
+  GraduationCap,
+  Briefcase,
+  FileText,
+  BookOpen,
+  Award,
+  UserCheck,
+  Building
+} from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
@@ -15,29 +30,59 @@ const menuItems = [
     path: "/",
   },
   {
+    title: "Apprentices",
+    icon: GraduationCap,
+    path: "/apprentices",
+  },
+  {
+    title: "Host Employers",
+    icon: Building,
+    path: "/host-employers",
+  },
+  {
+    title: "Training Plans",
+    icon: BookOpen,
+    path: "/training-plans",
+  },
+  {
+    title: "Qualifications",
+    icon: Award,
+    path: "/qualifications",
+  },
+  {
+    title: "Placements",
+    icon: Briefcase,
+    path: "/placements",
+  },
+  {
+    title: "Progress Reviews",
+    icon: UserCheck,
+    path: "/progress-reviews",
+  },
+  {
+    title: "Compliance",
+    icon: ClipboardCheck,
+    path: "/compliance",
+  },
+  {
+    title: "Documents",
+    icon: FileText,
+    path: "/documents",
+  },
+  {
     title: "Timesheets",
     icon: Clock,
     path: "/timesheets",
   },
   {
-    title: "Employees",
+    title: "Staff",
     icon: Users,
-    path: "/employees",
+    path: "/staff",
   },
   {
-    title: "Clients",
-    icon: Building2,
-    path: "/clients",
-  },
-  {
-    title: "Approvals",
-    icon: ClipboardCheck,
-    path: "/approvals",
-  },
-  {
-    title: "Chat",
+    title: "Messages",
     icon: MessageSquare,
-    path: "/chat",
+    path: "/messages",
   },
 ]
 
@@ -62,26 +107,32 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <nav className="flex flex-col space-y-1">
-        {menuItems.map((item) => (
-          <Link
-            key={item.path}
-            href={item.path}
-            className="flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+      <div className="flex flex-col h-full">
+        <div className="flex-1">
+          <nav className="flex flex-col space-y-1 p-2">
+            {menuItems.map((item) => (
+              <Link
+                key={item.path}
+                href={item.path}
+                className="flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+              >
+                <item.icon className="mr-3 h-4 w-4" />
+                {item.title}
+              </Link>
+            ))}
+          </nav>
+        </div>
+        <div className="p-2 border-t">
+          <Button
+            variant="ghost"
+            className="flex w-full items-center justify-start px-3 py-2"
+            onClick={handleSignOut}
           >
-            <item.icon className="mr-3 h-4 w-4" />
-            {item.title}
-          </Link>
-        ))}
-        <Button
-          variant="ghost"
-          className="flex w-full items-center justify-start px-3 py-2"
-          onClick={handleSignOut}
-        >
-          <LogOut className="mr-3 h-4 w-4" />
-          Sign Out
-        </Button>
-      </nav>
+            <LogOut className="mr-3 h-4 w-4" />
+            Sign Out
+          </Button>
+        </div>
+      </div>
     </Sidebar>
   )
 }
