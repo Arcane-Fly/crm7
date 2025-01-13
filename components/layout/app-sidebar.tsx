@@ -3,7 +3,7 @@
 import { Clock, Users, Building2, LayoutDashboard, ClipboardCheck, MessageSquare, LogOut } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase"
+import { createClient } from "@/lib/supabase/client"
 import { useToast } from "@/components/ui/use-toast"
 import { Button } from "@/components/ui/button"
 import { Sidebar } from "./improved-sidebar"

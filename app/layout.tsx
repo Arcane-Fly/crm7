@@ -1,15 +1,13 @@
-import type { Metadata } from 'next'
+import '@/styles/globals.css'
 import { Inter } from 'next/font/google'
-import './globals.css'
-import { AuthProvider } from '@/lib/auth/context'
 import { ThemeProvider } from '@/components/theme-provider'
-import Layout from '@/components/layout/Layout'
+import { Toaster } from '@/components/ui/toaster'
 
 const inter = Inter({ subsets: ['latin'] })
 
-export const metadata: Metadata = {
-  title: 'GTO Manager',
-  description: 'Group Training Organisation Management System',
+export const metadata = {
+  title: 'CRM7R',
+  description: 'A modern CRM for Group Training Organisations',
 }
 
 export default function RootLayout({
@@ -18,19 +16,11 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang='en' suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <AuthProvider>
-            <Layout>
-              {children}
-            </Layout>
-          </AuthProvider>
+        <ThemeProvider>
+          {children}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>
