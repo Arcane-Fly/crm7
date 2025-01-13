@@ -11,6 +11,8 @@ import {
   Tooltip,
   Legend,
   Filler,
+  type Scale,
+  type CoreScaleOptions,
 } from 'chart.js'
 
 ChartJS.register(
@@ -37,17 +39,22 @@ export const options = {
   },
   scales: {
     y: {
+      type: 'linear' as const,
       beginAtZero: true,
       grid: {
         color: 'rgba(0, 0, 0, 0.1)',
       },
       ticks: {
-        callback: function(value: number) {
-          return `$${value.toLocaleString()}`
+        callback: function(
+          this: Scale<CoreScaleOptions>,
+          value: string | number
+        ) {
+          return `$${Number(value).toLocaleString()}`
         },
       },
     },
     x: {
+      type: 'category' as const,
       grid: {
         display: false,
       },
