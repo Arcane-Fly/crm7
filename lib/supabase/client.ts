@@ -6,28 +6,38 @@ import { type CookieOptions } from '@supabase/ssr'
 
 export type { CookieOptions }
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const cookieStore = {
+  get: (name: string) => {
+    return document.cookie
+      .split('; ')
+      .find((row) => row.startsWith(`${name}=`))
+      ?.split('=')[1]
+  },
+  set: (name: string, value: string, options: CookieOptions) => {
+    let cookie = `${name}=${value}`
+    if (options.path) cookie += `; path=${options.path}`
+    if (options.maxAge) cookie += `; max-age=${options.maxAge}`
+    if (options.domain) cookie += `; domain=${options.domain}`
+    if (options.secure) cookie += '; secure'
+    if (options.sameSite) cookie += `; samesite=${options.sameSite}`
+    document.cookie = cookie
+  },
+  remove: (name: string, options: CookieOptions) => {
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT${
+      options.path ? `; path=${options.path}` : ''
+    }`
+  },
+}
 
-export const createClientSupabaseClient = () =>
-  createBrowserClient(
-    supabaseUrl,
-    supabaseAnonKey,
+export const createClient = () =>
+  createBrowserClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       auth: {
         autoRefreshToken: false,
         persistSession: false,
       },
+      cookies: cookieStore,
     }
   )
-
-// Helper function for server-side operations with service role
-export const createServiceSupabaseClient = () => {
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-  return createBrowserClient<Database>(supabaseUrl, serviceRoleKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  })
-}

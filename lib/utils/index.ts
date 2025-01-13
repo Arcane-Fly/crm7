@@ -12,7 +12,7 @@ export function cn(...inputs: ClassValue[]) {
  * Safely maps over an array with proper type checking
  */
 export function safeMap<T, U>(
-  array: T[] | undefined | null,
+  array: T[] | null | undefined,
   callback: (item: T, index: number, array: T[]) => U
 ): U[] {
   if (!array) return [];

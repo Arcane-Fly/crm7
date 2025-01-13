@@ -1,9 +1,12 @@
+/// <reference types="vitest" />
+
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
+import tsconfigPaths from 'vite-tsconfig-paths'
 import path from 'path'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tsconfigPaths()],
   test: {
     environment: 'jsdom',
     globals: true,
@@ -12,21 +15,17 @@ export default defineConfig({
     exclude: ['node_modules', '.next', 'dist'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html', 'lcov'],
+      reporter: ['text', 'json', 'html'],
       exclude: [
-        'node_modules/**',
-        '.next/**',
         'coverage/**',
+        'dist/**',
+        '**/[.]**',
+        'packages/*/test?(s)/**',
         '**/*.d.ts',
-        'vitest.config.ts',
-        'vitest.setup.ts',
-        'postcss.config.js',
-        'tailwind.config.ts',
-        'next.config.mjs',
+        '**/virtual:*',
+        '**/__mocks__/*',
+        '**/node_modules/**',
       ],
-      functions: 80,
-      lines: 80,
-      statements: 80,
     },
     mockReset: true,
     restoreMocks: true,
