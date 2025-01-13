@@ -33,7 +33,6 @@ import {
   CheckCircle,
   Database,
   Palette,
-  LucideIcon
 } from 'lucide-react'
 
 const iconMap = {

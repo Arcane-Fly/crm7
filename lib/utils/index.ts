@@ -24,12 +24,12 @@ export function safeMap<T, R>(
 /**
  * Formats a date string into a readable format
  */
-export function formatDate(date: string | Date, formatString: string = 'PPP'): string {
+export function formatDate(date: string | Date): string {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   return dateObj.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   });
 }
 
@@ -41,13 +41,13 @@ export function handleApiError(error: unknown) {
     return {
       data: null,
       status: 500,
-      message: error.message
+      message: error.message,
     };
   }
-  
+
   return {
     data: null,
     status: 500,
-    message: 'An unexpected error occurred'
+    message: 'An unexpected error occurred',
   };
 }
