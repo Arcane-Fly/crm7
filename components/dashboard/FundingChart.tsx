@@ -10,9 +10,7 @@ import {
   Title,
   Tooltip,
   Legend,
-  type Scale,
-  type CoreScaleOptions,
-  type Tick,
+  Filler,
 } from 'chart.js'
 
 ChartJS.register(
@@ -22,70 +20,60 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  Filler
 )
 
-const options = {
+export const options = {
   responsive: true,
   plugins: {
     legend: {
-      display: false,
+      position: 'top' as const,
+    },
+    title: {
+      display: true,
+      text: 'Funding Overview',
     },
   },
   scales: {
-    x: {
-      type: 'category' as const,
+    y: {
+      beginAtZero: true,
       grid: {
-        display: true,
-        color: '#f3f4f6',
+        color: 'rgba(0, 0, 0, 0.1)',
+      },
+      ticks: {
+        callback: function(value: number) {
+          return `$${value.toLocaleString()}`
+        },
       },
     },
-    y: {
-      type: 'linear' as const,
+    x: {
       grid: {
-        display: true,
-        color: '#f3f4f6',
-      },
-      beginAtZero: true,
-      ticks: {
-        callback: function (
-          this: Scale<CoreScaleOptions>,
-          tickValue: string | number,
-          index: number,
-          ticks: Tick[]
-        ) {
-          return `$${Number(tickValue).toLocaleString()}`
-        },
+        display: false,
       },
     },
   },
 }
 
-const data = {
-  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+const labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July']
+
+export const data = {
+  labels,
   datasets: [
     {
-      data: [45000, 50000, 48000, 49000, 58000, 62000],
-      borderColor: '#3b82f6',
-      backgroundColor: '#3b82f6',
-      tension: 0.3,
-      pointRadius: 4,
-      pointBackgroundColor: '#fff',
-      pointBorderWidth: 2,
+      fill: true,
+      label: 'Funding Received',
+      data: [65, 59, 80, 81, 56, 55, 40],
+      borderColor: 'rgb(53, 162, 235)',
+      backgroundColor: 'rgba(53, 162, 235, 0.5)',
     },
   ],
 }
 
 export function FundingChart() {
   return (
-    <div className='rounded-lg border bg-white p-6'>
-      <div className='mb-4 flex items-center justify-between'>
-        <h3 className='text-lg font-medium'>Funding Overview</h3>
-        <button className='flex items-center gap-2 rounded-md border px-3 py-1 text-sm hover:bg-gray-50'>
-          Export
-        </button>
-      </div>
-      <Line options={options} data={data} height={300} />
+    <div className='w-full rounded-lg bg-white p-4 shadow-sm'>
+      <Line options={options} data={data} />
     </div>
   )
 }
