@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { Label } from "@/components/ui/label"
 import { useToast } from '@/components/ui/use-toast'
 import { useUser } from '@/lib/hooks/use-user'
 import { ratesService, RateTemplate } from '@/lib/services/rates'

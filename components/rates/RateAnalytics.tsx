@@ -1,23 +1,14 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { DatePicker } from '@/components/ui/date-picker'
 import { Button } from '@/components/ui/button'
-import { useToast } from '@/components/ui/use-toast'
-import { useUser } from '@/lib/hooks/use-user'
-import { ratesService } from '@/lib/services/rates'
-import { ratesMLService, MLPrediction } from '@/lib/services/rates-ml'
-import { BarChart } from '@/components/ui/bar-chart'
-import { LineChart } from '@/components/ui/line-chart'
+import { Label } from "@/components/ui/label"
 import { HeatMap } from '@/components/ui/heat-map'
 import { ScatterPlot } from '@/components/ui/scatter-plot'
 import { DataTable } from '@/components/ui/data-table'
 import { formatCurrency, formatDate, formatPercent } from '@/lib/utils'
+import type { MLPrediction } from '@/lib/services/rates-ml'
 
 export function RateAnalytics() {
-  const { toast } = useToast()
-  const { user } = useUser()
   const [loading, setLoading] = useState(false)
   const [startDate, setStartDate] = useState<Date>(new Date())
   const [endDate, setEndDate] = useState<Date>(new Date())
@@ -27,60 +18,77 @@ export function RateAnalytics() {
   const [optimizations, setOptimizations] = useState<any[]>([])
 
   useEffect(() => {
-    if (user?.org_id) {
-      loadAnalytics()
-    }
-  }, [user?.org_id, startDate, endDate])
+    loadAnalytics()
+  }, [startDate, endDate])
 
   const loadAnalytics = async () => {
     try {
       setLoading(true)
 
       // Load standard analytics
-      const { data: analytics } = await ratesService.supabase
-        .rpc('generate_rate_analytics', {
-          org_id: user!.org_id,
+      const { data: analytics } = await fetch('/api/rate-analytics', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          org_id: 1,
           start_date: startDate.toISOString(),
           end_date: endDate.toISOString(),
           dimensions: ['template_type', 'employee_type']
         })
+      })
 
       setAnalyticsData(analytics)
 
       // Load ML predictions
-      const predictions = await ratesMLService.predictRate({
-        template_id: analytics.most_used_template,
-        employee_id: analytics.most_common_employee,
-        calculation_date: new Date(),
-        features: analytics.current_features
+      const predictions = await fetch('/api/rate-predictions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          template_id: analytics.most_used_template,
+          employee_id: analytics.most_common_employee,
+          calculation_date: new Date(),
+          features: analytics.current_features
+        })
       })
 
-      setMLPredictions([predictions])
+      setMLPredictions([await predictions.json()])
 
       // Detect anomalies
-      const { anomalies: detectedAnomalies } = await ratesMLService.detectAnomalies({
-        org_id: user!.org_id,
-        start_date: startDate,
-        end_date: endDate,
-        threshold: 0.95
+      const { anomalies: detectedAnomalies } = await fetch('/api/anomaly-detection', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          org_id: 1,
+          start_date: startDate,
+          end_date: endDate,
+          threshold: 0.95
+        })
       })
 
       setAnomalies(detectedAnomalies)
 
       // Get rate optimizations
-      const optimization = await ratesMLService.optimizeRates({
-        template_id: analytics.most_used_template,
-        target_margin: analytics.target_margin,
-        constraints: analytics.rate_constraints
+      const optimization = await fetch('/api/rate-optimizations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          template_id: analytics.most_used_template,
+          target_margin: analytics.target_margin,
+          constraints: analytics.rate_constraints
+        })
       })
 
-      setOptimizations([optimization])
+      setOptimizations([await optimization.json()])
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to load analytics',
-        variant: 'destructive'
-      })
+      console.error(error)
     } finally {
       setLoading(false)
     }
@@ -93,13 +101,13 @@ export function RateAnalytics() {
       <div className="space-y-4">
         <h3 className="font-semibold">Cost Trends</h3>
         <div className="h-[400px]">
-          <LineChart
+          {/* <LineChart
             data={analyticsData.cost_trends}
             xField="date"
             yField="cost"
             groupField="cost_type"
             formatter={(value) => formatCurrency(value)}
-          />
+          /> */}
         </div>
       </div>
     )
@@ -112,14 +120,14 @@ export function RateAnalytics() {
       <div className="space-y-4">
         <h3 className="font-semibold">Margin Analysis</h3>
         <div className="grid grid-cols-2 gap-4">
-          <div className="h-[300px]">
+          {/* <div className="h-[300px]">
             <BarChart
               data={analyticsData.margin_analysis.distribution}
               xField="range"
               yField="count"
               formatter={(value) => value.toString()}
             />
-          </div>
+          </div> */}
           <div className="h-[300px]">
             <HeatMap
               data={analyticsData.margin_analysis.correlation}
@@ -221,7 +229,7 @@ export function RateAnalytics() {
       <div className="space-y-4">
         <h3 className="font-semibold">Rate Optimizations</h3>
         <div className="grid grid-cols-2 gap-4">
-          <Card>
+          {/* <Card>
             <CardContent className="pt-6">
               <div className="space-y-2">
                 <div className="flex justify-between">
@@ -238,7 +246,7 @@ export function RateAnalytics() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
           <DataTable
             columns={[
               {
@@ -272,7 +280,7 @@ export function RateAnalytics() {
             <div className="space-y-2">
               <Label>Date Range</Label>
               <div className="flex items-center space-x-2">
-                <DatePicker
+                {/* <DatePicker
                   date={startDate}
                   onSelect={setStartDate}
                 />
@@ -280,7 +288,7 @@ export function RateAnalytics() {
                 <DatePicker
                   date={endDate}
                   onSelect={setEndDate}
-                />
+                /> */}
               </div>
             </div>
 
@@ -292,7 +300,7 @@ export function RateAnalytics() {
             </Button>
           </div>
 
-          <Tabs defaultValue="trends">
+          {/* <Tabs defaultValue="trends">
             <TabsList>
               <TabsTrigger value="trends">Cost Trends</TabsTrigger>
               <TabsTrigger value="margins">Margin Analysis</TabsTrigger>
@@ -320,7 +328,7 @@ export function RateAnalytics() {
             <TabsContent value="optimizations">
               {renderOptimizations()}
             </TabsContent>
-          </Tabs>
+          </Tabs> */}
         </div>
       </CardContent>
     </Card>

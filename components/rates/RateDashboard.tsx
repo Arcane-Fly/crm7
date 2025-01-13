@@ -10,6 +10,8 @@ import { ratesService } from '@/lib/services/rates'
 import { BarChart } from '@/components/ui/bar-chart'
 import { LineChart } from '@/components/ui/line-chart'
 import { DataTable } from '@/components/ui/data-table'
+import { Label } from "@/components/ui/label"
+import { PieChart } from "@/components/ui/pie-chart"
 import { formatCurrency, formatDate } from '@/lib/utils'
 
 export function RateDashboard() {

@@ -12,20 +12,18 @@
     "jest-dom"
   ],
   "rules": {
-    "@typescript-eslint/no-unused-vars": "error",
+    "@typescript-eslint/no-unused-vars": ["error", {
+      "argsIgnorePattern": "^_",
+      "varsIgnorePattern": "^_"
+    }],
     "@typescript-eslint/no-explicit-any": "off",
-    "@typescript-eslint/consistent-type-imports": [
-      "warn",
-      {
-        "prefer": "type-imports",
-        "fixStyle": "inline-type-imports"
-      }
-    ],
+    "@typescript-eslint/consistent-type-imports": "warn",
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",
     "no-console": ["warn", { "allow": ["warn", "error"] }],
     "testing-library/no-debugging-utils": "warn",
-    "testing-library/prefer-screen-queries": "error"
+    "testing-library/prefer-screen-queries": "error",
+    "@next/next/no-img-element": "warn"
   },
   "settings": {
     "react": {
