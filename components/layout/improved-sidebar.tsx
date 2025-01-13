@@ -133,3 +133,5 @@ export const Sidebar = React.forwardRef<
     </div>
   )
 })
+
+Sidebar.displayName = 'Sidebar'
