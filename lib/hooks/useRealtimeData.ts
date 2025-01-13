@@ -1,87 +1,76 @@
+'use client'
+
 import { useEffect, useState } from 'react'
-import { RealtimeChannel } from '@supabase/supabase-js'
-import { supabase } from '../supabase/client'
-import { Database } from '../types/database'
+import { createClient } from '../supabase/client'
+import type { RealtimeChannel } from '@supabase/supabase-js'
 
-type Tables = Database['public']['Tables']
-type TableName = keyof Tables
-
-export function useRealtimeData<T extends TableName>(
-  tableName: T,
-  filter?: {
-    column: keyof Tables[T]['Row']
-    value: any
-  }
+export function useRealtimeData<T>(
+  table: string,
+  initialData: T[] = [],
+  filter?: { column: string; value: any }
 ) {
-  const [data, setData] = useState<Tables[T]['Row'][]>([])
-  const [loading, setLoading] = useState(true)
+  const [data, setData] = useState<T[]>(initialData)
   const [error, setError] = useState<Error | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    let channel: RealtimeChannel
+    const supabase = createClient()
+    let channel: RealtimeChannel | null = null
 
-    async function initializeData() {
+    async function fetchData() {
       try {
-        setLoading(true)
-        let query = supabase.from(tableName).select('*')
-        
+        let query = supabase.from(table).select('*')
         if (filter) {
-          query = query.eq(filter.column as string, filter.value)
+          query = query.eq(filter.column, filter.value)
         }
-
-        const { data: initialData, error: initialError } = await query
-
-        if (initialError) throw initialError
+        const { data: initialData, error } = await query
+        if (error) throw error
         setData(initialData || [])
-
-        // Set up real-time subscription
-        channel = supabase
-          .channel(`${tableName}_changes`)
-          .on(
-            'postgres_changes',
-            {
-              event: '*',
-              schema: 'public',
-              table: tableName,
-              ...(filter && {
-                filter: `${filter.column}=eq.${filter.value}`
-              })
-            },
-            (payload) => {
-              if (payload.eventType === 'INSERT') {
-                setData((current) => [...current, payload.new as Tables[T]['Row']])
-              } else if (payload.eventType === 'DELETE') {
-                setData((current) =>
-                  current.filter((item) => item.id !== payload.old.id)
-                )
-              } else if (payload.eventType === 'UPDATE') {
-                setData((current) =>
-                  current.map((item) =>
-                    item.id === payload.new.id
-                      ? (payload.new as Tables[T]['Row'])
-                      : item
-                  )
-                )
-              }
-            }
-          )
-          .subscribe()
-
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error('An error occurred'))
+      } catch (error) {
+        setError(error as Error)
       } finally {
-        setLoading(false)
+        setIsLoading(false)
       }
     }
 
-    initializeData()
+    function setupRealtimeSubscription() {
+      channel = supabase
+        .channel(String(table))
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table,
+          },
+          (payload: any) => {
+            if (payload.eventType === 'INSERT') {
+              setData((current) => [...current, payload.new])
+            } else if (payload.eventType === 'DELETE') {
+              setData((current) =>
+                current.filter((item: any) => item.id !== payload.old.id)
+              )
+            } else if (payload.eventType === 'UPDATE') {
+              setData((current) =>
+                current.map((item: any) =>
+                  item.id === payload.new.id ? payload.new : item
+                )
+              )
+            }
+          }
+        )
+        .subscribe()
+    }
+
+    fetchData()
+    setupRealtimeSubscription()
 
     return () => {
       if (channel) {
-        supabase.removeChannel(channel)
+        channel.unsubscribe()
       }
     }
-  }, [tableName, filter])
+  }, [table, filter])
 
-  return { data, loading, error }
+  return { data, error, isLoading }
 }

@@ -1,10 +1,11 @@
-import { supabase } from './client'
+import { createClient } from './server'
 import { Database } from '../types/database'
 
 type Tables = Database['public']['Tables']
 
 // Time entries
 export async function getTimeEntries(employeeId: string) {
+  const supabase = createClient()
   const { data, error } = await supabase
     .from('time_entries')
     .select('*')
@@ -16,6 +17,7 @@ export async function getTimeEntries(employeeId: string) {
 }
 
 export async function createTimeEntry(entry: Tables['time_entries']['Insert']) {
+  const supabase = createClient()
   const { data, error } = await supabase
     .from('time_entries')
     .insert(entry)
@@ -31,6 +33,7 @@ export async function uploadDocument(
   document: Tables['documents']['Insert'],
   file: File
 ) {
+  const supabase = createClient()
   // First upload the file to storage
   const { data: fileData, error: uploadError } = await supabase
     .storage
@@ -57,6 +60,7 @@ export async function uploadDocument(
 
 // Quotes
 export async function getQuotes(userId: string) {
+  const supabase = createClient()
   const { data, error } = await supabase
     .from('quotes')
     .select('*')
@@ -68,6 +72,7 @@ export async function getQuotes(userId: string) {
 }
 
 export async function createQuote(quote: Tables['quotes']['Insert']) {
+  const supabase = createClient()
   const { data, error } = await supabase
     .from('quotes')
     .insert(quote)
@@ -80,6 +85,7 @@ export async function createQuote(quote: Tables['quotes']['Insert']) {
 
 // Email templates
 export async function getEmailTemplate(name: string) {
+  const supabase = createClient()
   const { data, error } = await supabase
     .from('email_templates')
     .select('*')
@@ -92,6 +98,7 @@ export async function getEmailTemplate(name: string) {
 
 // Reports
 export async function scheduleReport(report: Tables['reports']['Insert']) {
+  const supabase = createClient()
   const { data, error } = await supabase
     .from('reports')
     .insert(report)
@@ -109,6 +116,7 @@ export async function logIntegration(
   message: string,
   metadata: any = {}
 ) {
+  const supabase = createClient()
   const { error } = await supabase
     .from('integration_logs')
     .insert({

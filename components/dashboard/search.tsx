@@ -1,10 +1,10 @@
 'use client'
 
 import * as React from 'react'
-import { Search } from 'lucide-react'
+import { Search as SearchIcon } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 
-export function Search() {
+export function SearchBar() {
   return (
     <div className='flex w-full items-center space-x-2'>
       <Input
@@ -16,7 +16,7 @@ export function Search() {
         type='submit'
         className='inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50'
       >
-        <Search className='h-4 w-4' />
+        <SearchIcon className='h-4 w-4' />
         <span className='sr-only'>Search</span>
       </button>
     </div>
