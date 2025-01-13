@@ -1,4 +1,4 @@
-import { ApiResponse } from '../types';
+import type { ApiResponse } from '../types';
 
 /**
  * Handles API errors consistently across the application

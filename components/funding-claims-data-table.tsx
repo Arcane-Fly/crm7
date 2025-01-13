@@ -1,11 +1,13 @@
 "use client"
 
 import * as React from "react"
-import {
+import type {
   ColumnDef,
   ColumnFiltersState,
   SortingState,
   VisibilityState,
+} from "@tanstack/react-table"
+import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
@@ -302,4 +304,3 @@ export function FundingClaimsDataTable() {
     </div>
   )
 }
-
