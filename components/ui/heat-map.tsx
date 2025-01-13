@@ -1,177 +1,124 @@
-import { useEffect, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import * as d3 from 'd3'
 
+interface DataPoint {
+  x: string | number
+  y: string | number
+  value: number
+}
+
 interface HeatMapProps {
-  data: Array<{
-    x: string | number
-    y: string | number
-    value: number
-  }>
+  data: DataPoint[]
   width?: number
   height?: number
   margin?: { top: number; right: number; bottom: number; left: number }
-  colorScale?: string[]
-  xField: string
-  yField: string
-  colorField: string
+  colors?: string[]
 }
 
-export function HeatMap({
+export const HeatMap: React.FC<HeatMapProps> = ({
   data,
   width = 600,
   height = 400,
   margin = { top: 40, right: 40, bottom: 60, left: 60 },
-  colorScale = ['#f7fbff', '#08519c'],
-  xField,
-  yField,
-  colorField
-}: HeatMapProps) {
+  colors = ['#f7fbff', '#deebf7', '#c6dbef', '#9ecae1', '#6baed6', '#4292c6', '#2171b5', '#08519c', '#08306b']
+}) => {
   const svgRef = useRef<SVGSVGElement>(null)
 
   useEffect(() => {
-    if (!data || !svgRef.current) return
+    if (!svgRef.current || !data.length) return
 
-    // Clear previous chart
-    d3.select(svgRef.current).selectAll('*').remove()
+    const svg = d3.select(svgRef.current)
+    svg.selectAll('*').remove()
 
-    // Create scales
-    const xValues = Array.from(new Set(data.map(d => d[xField])))
-    const yValues = Array.from(new Set(data.map(d => d[yField])))
+    const innerWidth = width - margin.left - margin.right
+    const innerHeight = height - margin.top - margin.bottom
+
+    const xValues = Array.from(new Set(data.map(d => d.x)))
+    const yValues = Array.from(new Set(data.map(d => d.y)))
 
     const xScale = d3.scaleBand()
-      .domain(xValues)
-      .range([margin.left, width - margin.right])
+      .domain(xValues.map(String))
+      .range([0, innerWidth])
       .padding(0.1)
 
     const yScale = d3.scaleBand()
-      .domain(yValues)
-      .range([height - margin.bottom, margin.top])
+      .domain(yValues.map(String))
+      .range([innerHeight, 0])
       .padding(0.1)
 
-    const colorScaleFunc = d3.scaleLinear<string>()
-      .domain([
-        d3.min(data, d => d[colorField]) || 0,
-        d3.max(data, d => d[colorField]) || 1
-      ])
-      .range(colorScale as [string, string])
+    const colorScale = d3.scaleQuantile<string>()
+      .domain([0, d3.max(data, d => d.value) || 0])
+      .range(colors)
 
-    const svg = d3.select(svgRef.current)
+    const g = svg.append('g')
+      .attr('transform', `translate(${margin.left},${margin.top})`)
 
-    // Add cells
-    svg.selectAll('rect')
+    // Create cells
+    g.selectAll('rect')
       .data(data)
       .enter()
       .append('rect')
-      .attr('x', d => xScale(d[xField]) || 0)
-      .attr('y', d => yScale(d[yField]) || 0)
+      .attr('x', d => xScale(String(d.x)) || 0)
+      .attr('y', d => yScale(String(d.y)) || 0)
       .attr('width', xScale.bandwidth())
       .attr('height', yScale.bandwidth())
-      .attr('fill', d => colorScaleFunc(d[colorField]))
-      .attr('stroke', '#fff')
-      .attr('stroke-width', 1)
-      .on('mouseover', function(event, d) {
-        d3.select(this)
-          .attr('stroke', '#000')
-          .attr('stroke-width', 2)
-
-        tooltip
-          .style('opacity', 1)
-          .html(`
-            ${xField}: ${d[xField]}<br/>
-            ${yField}: ${d[yField]}<br/>
-            ${colorField}: ${d[colorField].toFixed(2)}
-          `)
-          .style('left', (event.pageX + 10) + 'px')
-          .style('top', (event.pageY - 10) + 'px')
+      .attr('fill', d => colorScale(d.value))
+      .on('mouseover', function(event: MouseEvent, d: DataPoint) {
+        const tooltip = d3.select(this.parentNode as SVGElement)
+          .append('text')
+          .attr('class', 'tooltip')
+          .attr('x', xScale(String(d.x)) || 0)
+          .attr('y', yScale(String(d.y)) || 0)
+          .attr('dy', '-0.5em')
+          .text(`${d.x}, ${d.y}: ${d.value.toFixed(2)}`)
       })
       .on('mouseout', function() {
-        d3.select(this)
-          .attr('stroke', '#fff')
-          .attr('stroke-width', 1)
-
-        tooltip.style('opacity', 0)
+        d3.select(this.parentNode as SVGElement)
+          .selectAll('.tooltip')
+          .remove()
       })
 
-    // Add axes
-    const xAxis = d3.axisBottom(xScale)
-    const yAxis = d3.axisLeft(yScale)
-
-    svg.append('g')
-      .attr('transform', `translate(0,${height - margin.bottom})`)
-      .call(xAxis)
+    // Add x-axis
+    g.append('g')
+      .attr('transform', `translate(0,${innerHeight})`)
+      .call(d3.axisBottom(xScale))
       .selectAll('text')
       .attr('transform', 'rotate(-45)')
       .style('text-anchor', 'end')
 
-    svg.append('g')
-      .attr('transform', `translate(${margin.left},0)`)
-      .call(yAxis)
+    // Add y-axis
+    g.append('g')
+      .call(d3.axisLeft(yScale))
 
-    // Add color legend
+    // Add legend
     const legendWidth = 20
-    const legendHeight = height - margin.top - margin.bottom
-    const legendScale = d3.scaleLinear()
-      .domain([
-        d3.min(data, d => d[colorField]) || 0,
-        d3.max(data, d => d[colorField]) || 1
-      ])
-      .range([legendHeight, 0])
-
+    const legendHeight = 200
     const legend = svg.append('g')
       .attr('transform', `translate(${width - margin.right + 20},${margin.top})`)
 
-    const legendGradient = legend.append('defs')
-      .append('linearGradient')
-      .attr('id', 'legend-gradient')
-      .attr('gradientUnits', 'userSpaceOnUse')
-      .attr('x1', 0)
-      .attr('y1', legendHeight)
-      .attr('x2', 0)
-      .attr('y2', 0)
-
-    legendGradient.selectAll('stop')
-      .data(colorScale)
-      .enter()
-      .append('stop')
-      .attr('offset', (d, i) => i / (colorScale.length - 1))
-      .attr('stop-color', d => d)
-
-    legend.append('rect')
-      .attr('width', legendWidth)
-      .attr('height', legendHeight)
-      .style('fill', 'url(#legend-gradient)')
+    const legendScale = d3.scaleLinear()
+      .domain([0, d3.max(data, d => d.value) || 0])
+      .range([legendHeight, 0])
 
     const legendAxis = d3.axisRight(legendScale)
       .ticks(5)
-      .tickFormat(d => d.toFixed(2))
+
+    legend.selectAll('rect')
+      .data(d3.range(legendHeight))
+      .enter()
+      .append('rect')
+      .attr('x', 0)
+      .attr('y', (d, i) => i)
+      .attr('width', legendWidth)
+      .attr('height', 1)
+      .attr('fill', d => colorScale(legendScale.invert(d)))
 
     legend.append('g')
       .attr('transform', `translate(${legendWidth},0)`)
       .call(legendAxis)
-
-    // Add tooltip
-    const tooltip = d3.select('body')
-      .append('div')
-      .attr('class', 'tooltip')
-      .style('opacity', 0)
-      .style('position', 'absolute')
-      .style('background-color', 'white')
-      .style('padding', '8px')
-      .style('border', '1px solid #ccc')
-      .style('border-radius', '4px')
-      .style('pointer-events', 'none')
-
-    return () => {
-      tooltip.remove()
-    }
-  }, [data, width, height, margin, colorScale, xField, yField, colorField])
+  }, [data, width, height, margin, colors])
 
   return (
-    <svg
-      ref={svgRef}
-      width={width}
-      height={height}
-      className="overflow-visible"
-    />
+    <svg ref={svgRef} width={width} height={height} />
   )
 }
