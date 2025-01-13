@@ -7,8 +7,9 @@ CRM7R is a comprehensive Group Training Organisation (GTO) and labour hire CRM s
 
 ### 📐 Architecture
 - [System Architecture](./architecture/README.md)
-  - Technical Stack
+  - Technical Stack (Next.js 15, TypeScript, Supabase)
   - Core Systems
+  - Authentication Flow
   - Module Details
   - Data Flow
   - Development Guidelines
@@ -39,14 +40,15 @@ CRM7R is a comprehensive Group Training Organisation (GTO) and labour hire CRM s
   - Fair Work Integration
 
 ### 🔒 Security
-Security documentation and guidelines (Coming Soon)
-- Authentication
-- Authorization
+Security documentation and guidelines
+- Authentication with Supabase SSR
+- Protected Routes
+- Role-based Authorization
 - Data Protection
 - Compliance
 
 ### 🔌 Integrations
-Integration documentation (Coming Soon)
+Integration documentation
 - Government Systems
 - Training Systems
 - Financial Systems
@@ -63,12 +65,15 @@ Integration documentation (Coming Soon)
 - Reporting & Analytics
 
 ### Technical Features
-- Next.js 14 with App Router
+- Next.js 15 with App Router
 - TypeScript for type safety
-- Real-time capabilities
-- AI-assisted interfaces
+- Supabase SSR for authentication
+- Real-time capabilities (planned)
+- AI-assisted interfaces (planned)
 - Advanced data visualization
 - Mobile-responsive design
+- Collapsible sidebar with mobile support
+- Persistent user preferences
 
 ## Getting Started
 

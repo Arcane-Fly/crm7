@@ -12,19 +12,23 @@ A comprehensive Group Training Organisation (GTO) and labour hire CRM system tha
 ## Technical Stack
 
 ### Frontend
-- Next.js 14 with App Router
+- Next.js 15 with App Router
 - TypeScript for type safety
 - Tailwind CSS for styling
 - shadcn/ui for component library
-- Zustand for state management
-- React Query for data fetching
+- Zustand for state management (planned)
+- React Query for data fetching (planned)
 - Recharts for data visualization
 
-### Backend
+### Backend & Auth
 - Supabase for database and authentication
-- Vercel Blob for file storage
+  - @supabase/ssr for server-side auth
+  - Protected routes with middleware
+  - Persistent sessions
+  - Role-based access control
+- Vercel Blob for file storage (planned)
 - Redis for caching (planned)
-- WebSocket for real-time features
+- WebSocket for real-time features (planned)
 
 ### Infrastructure
 - Vercel for hosting
@@ -35,19 +39,47 @@ A comprehensive Group Training Organisation (GTO) and labour hire CRM system tha
 ## Core Systems
 
 ### Navigation Structure
-The application uses a dual-panel navigation system:
+The application uses a three-tier navigation system:
 
 1. Top Navigation Bar
-			- Provides access to major functional areas (Dashboard, Training, Safety, etc.)
-			- Focuses on broad business functions
-			- Maintains context across the application
+   - User profile and settings
+   - Global search
+   - Notifications
+   - Theme toggle
 
-2. Left Side Panel
-			- Shows contextual subcategories based on selected top navigation
-			- Provides detailed access to specific features
-			- Enables quick navigation within each functional area
+2. Main Sidebar
+   - Collapsible with keyboard shortcut (Ctrl/Cmd + B)
+   - Mobile responsive with slide-out menu
+   - Persistent state using cookies
+   - Main navigation items
+   - Sign out functionality
+
+3. Context Panel
+   - Shows contextual actions and details
+   - Filters and search options
+   - Quick actions
+   - Related information
 
 See [Navigation Structure](./NAVIGATION.md) for the complete navigation hierarchy.
+
+### Authentication Flow
+
+1. Server-Side Auth
+   - Protected routes with middleware
+   - Server-side session validation
+   - Automatic redirects
+   - Cookie-based session management
+
+2. Client-Side Auth
+   - AuthProvider context
+   - Real-time session updates
+   - Automatic token refresh
+   - Protected client routes
+
+3. Social Auth (Planned)
+   - Google authentication
+   - Microsoft authentication
+   - Single sign-on
 
 ### Integration Points
 
@@ -75,7 +107,7 @@ See [Navigation Structure](./NAVIGATION.md) for the complete navigation hierarch
 - Invoice Generation
 - Expense Management
 
-### AI Integration
+### AI Integration (Planned)
 - LLM for award interpretation
 - Predictive analytics for completion rates
 - Automated compliance checking
@@ -83,9 +115,9 @@ See [Navigation Structure](./NAVIGATION.md) for the complete navigation hierarch
 
 ### Security
 - Role-based access control
-- JWT authentication
-- OAuth2 integration
-- Multi-factor authentication
+- JWT authentication with SSR
+- OAuth2 integration (planned)
+- Multi-factor authentication (planned)
 - Audit logging
 
 ## Module Details
@@ -99,144 +131,28 @@ See [Navigation Structure](./NAVIGATION.md) for the complete navigation hierarch
 
 ### Host Employer Management
 - Company Profiles
-- Placement Tracking
 - Agreement Management
-- Compliance Requirements
-- Communication Logs
-
-### Training & Compliance
-- Course Management
-- Progress Tracking
-- Certification Management
-- Compliance Monitoring
+- Placement Management
 - Risk Assessment
+- Communication Tools
 
-### Payroll & Funding
+### Training Management
+- Course Catalog
+- Progress Tracking
+- Assessment Management
+- Certification
+- Compliance Monitoring
+
+### Payroll & Finance
 - Award Interpretation
-- Timesheet Processing
-- Funding Claims
+- Timesheet Management
 - Payment Processing
-- Expense Management
+- Funding Claims
+- Financial Reporting
 
-### Reporting
+### Reporting & Analytics
 - Standard Reports
 - Custom Report Builder
-- Analytics Dashboard
-- Export Capabilities
+- Data Visualization
+- Export Options
 - Scheduled Reports
-
-## Data Flow
-
-### 1. Data Collection
-- Web Forms
-- File Uploads
-- API Integrations
-- Automated Imports
-
-### 2. Processing
-- Validation
-- Enrichment
-- Classification
-- Analysis
-
-### 3. Storage
-- Structured Data (Supabase)
-- File Storage (Vercel Blob)
-- Caching (Redis planned)
-- Audit Logs
-
-### 4. Presentation
-- Web Interface
-- API Endpoints
-- Export Formats
-- Real-time Updates
-
-## Development Guidelines
-
-### Code Organization
-- Feature-based structure
-- Shared components
-- Type-safe interfaces
-- Modular architecture
-
-### Testing Strategy
-- Unit Tests (Vitest)
-- Integration Tests (Jest)
-- E2E Tests (Cypress planned)
-- Performance Testing
-
-### Deployment
-- CI/CD Pipeline
-- Environment Management
-- Version Control
-- Release Process
-
-### Monitoring
-- Error Tracking
-- Performance Metrics
-- Usage Analytics
-- Security Monitoring
-
-## Implementation Status
-
-### Core Features
-- Authentication & Authorization ✅
-- Data Management System ✅
-- Real-time Sync ⚠️
-- Document Management ⚠️
-
-### UI Components
-- Design System ✅
-- Shared Components ✅
-- Responsive Layouts ✅
-- Accessibility ✅
-
-### Modules
-- Apprentice Management ✅
-- Host Employer Management ⚠️
-- Training & Compliance ⚠️
-- Payroll & Funding ⚠️
-- Reporting & Analytics ✅
-
-## Future Roadmap
-
-### Phase 1 (Current)
-- Complete chat interface enhancements
-- Implement bulk operations
-- Enhance document management
-- Fix critical bugs
-- Complete core integrations
-
-### Phase 2 (Next Quarter)
-- Advanced reporting features
-- Enhanced compliance monitoring
-- Improved data visualization
-- Mobile responsiveness
-- Performance optimization
-
-### Phase 3 (Future)
-- Mobile Application
-- Offline Capabilities
-- Advanced Analytics
-- Machine Learning Integration
-- Extended API Access
-
-## Technical Debt
-
-### Code Quality
-- Unit test coverage < 80%
-- E2E tests needed
-- Performance optimization
-- Documentation updates
-
-### Infrastructure
-- CI/CD improvements
-- Monitoring setup
-- Error tracking
-- Load testing
-
-### Security
-- Security audit
-- GDPR compliance
-- Rate limiting
-- Session management

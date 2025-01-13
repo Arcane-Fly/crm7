@@ -2,7 +2,16 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['avatars.githubusercontent.com', 'images.unsplash.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+    ],
   },
   typescript: {
     ignoreBuildErrors: false,
@@ -11,20 +20,9 @@ const nextConfig = {
     ignoreDuringBuilds: false,
   },
   experimental: {
-    // Add any experimental features here
+    serverActions: true,
   },
-  // Set custom port
-  async rewrites() {
-    return [];
-  },
-  // Add browser sandbox configuration
   webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-      };
-    }
     return config;
   },
 }
