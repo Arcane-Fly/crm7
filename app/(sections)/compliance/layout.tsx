@@ -1,53 +1,29 @@
 'use client'
 
-import { SectionSidebar } from "@/components/navigation/section-sidebar";
-
-const sidebarItems = [
-  {
-    label: "Overview",
-    href: "",
-  },
-  {
-    label: "Audits",
-    href: "/audits",
-  },
-  {
-    label: "Certifications",
-    href: "/certifications",
-  },
-  {
-    label: "Policies",
-    href: "/policies",
-  },
-  {
-    label: "Risk Assessment",
-    href: "/risk-assessment",
-  },
-  {
-    label: "Reports",
-    href: "/reports",
-  },
-  {
-    label: "Training Records",
-    href: "/training-records",
-  },
-  {
-    label: "Incidents",
-    href: "/incidents",
-  },
-];
+import { Sidebar } from '@/components/ui/Sidebar'
 
 export default function ComplianceLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
-    <div className="flex min-h-[calc(100vh-4rem)]">
-      <aside className="hidden w-[200px] flex-col md:flex">
-        <SectionSidebar section="compliance" />
-      </aside>
-      <main className="flex-1 p-6">{children}</main>
+    <div className="flex min-h-screen">
+      <Sidebar>
+        <nav className="flex flex-1 flex-col">
+          <ul role="list" className="flex flex-1 flex-col gap-y-7">
+            <li>
+              <div className="text-xs font-semibold leading-6 text-gray-400">
+                Compliance
+              </div>
+              <ul role="list" className="-mx-2 mt-2 space-y-1">
+                {/* Add compliance nav items here */}
+              </ul>
+            </li>
+          </ul>
+        </nav>
+      </Sidebar>
+      <main className="flex-1">{children}</main>
     </div>
-  );
+  )
 }
