@@ -139,7 +139,7 @@ export const columns: ColumnDef<FundingProgram>[] = [
     cell: ({ row }) => {
       const status = row.getValue("status") as string
       return (
-        <Badge variant={status === "Active" ? "success" : status === "Inactive" ? "destructive" : "default"}>
+        <Badge variant={status === "Active" ? "secondary" : status === "Inactive" ? "destructive" : "default"}>
           {status}
         </Badge>
       )
@@ -352,4 +352,3 @@ export function FundingProgramsDataTable() {
     </Card>
   )
 }
-

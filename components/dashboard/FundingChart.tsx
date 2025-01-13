@@ -9,7 +9,10 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  type Scale,
+  type CoreScaleOptions,
+  type Tick,
 } from 'chart.js'
 
 ChartJS.register(
@@ -26,27 +29,36 @@ const options = {
   responsive: true,
   plugins: {
     legend: {
-      display: false
-    }
+      display: false,
+    },
   },
   scales: {
     x: {
+      type: 'category' as const,
       grid: {
         display: true,
-        color: '#f3f4f6'
-      }
+        color: '#f3f4f6',
+      },
     },
     y: {
+      type: 'linear' as const,
       grid: {
         display: true,
-        color: '#f3f4f6'
+        color: '#f3f4f6',
       },
       beginAtZero: true,
       ticks: {
-        callback: (value: number) => `$${value.toLocaleString()}`
-      }
-    }
-  }
+        callback: function (
+          this: Scale<CoreScaleOptions>,
+          tickValue: string | number,
+          index: number,
+          ticks: Tick[]
+        ) {
+          return `$${Number(tickValue).toLocaleString()}`
+        },
+      },
+    },
+  },
 }
 
 const data = {
@@ -59,17 +71,17 @@ const data = {
       tension: 0.3,
       pointRadius: 4,
       pointBackgroundColor: '#fff',
-      pointBorderWidth: 2
-    }
-  ]
+      pointBorderWidth: 2,
+    },
+  ],
 }
 
 export function FundingChart() {
   return (
-    <div className="rounded-lg border bg-white p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-lg font-medium">Funding Overview</h3>
-        <button className="flex items-center gap-2 rounded-md border px-3 py-1 text-sm hover:bg-gray-50">
+    <div className='rounded-lg border bg-white p-6'>
+      <div className='mb-4 flex items-center justify-between'>
+        <h3 className='text-lg font-medium'>Funding Overview</h3>
+        <button className='flex items-center gap-2 rounded-md border px-3 py-1 text-sm hover:bg-gray-50'>
           Export
         </button>
       </div>

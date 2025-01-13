@@ -11,14 +11,12 @@ export function cn(...inputs: ClassValue[]) {
 /**
  * Safely maps over an array with proper type checking
  */
-export function safeMap<T, R>(
-  items: T[] | null | undefined,
-  callback: (item: T, index: number) => R
-): R[] {
-  if (!items || !Array.isArray(items)) {
-    return [];
-  }
-  return items.map(callback);
+export function safeMap<T, U>(
+  array: T[] | undefined | null,
+  callback: (item: T, index: number, array: T[]) => U
+): U[] {
+  if (!array) return [];
+  return array.map(callback);
 }
 
 /**

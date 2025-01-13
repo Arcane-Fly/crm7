@@ -4,7 +4,7 @@ import * as React from 'react'
 import { Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 
-export function SearchBar() {
+export function Search() {
   return (
     <div className='flex w-full items-center space-x-2'>
       <Input
