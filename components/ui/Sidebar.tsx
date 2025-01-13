@@ -11,7 +11,7 @@ export function Sidebar({ className, children, ...props }: SidebarProps) {
   return (
     <div
       className={cn(
-        'fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r bg-background',
+        'hidden border-r bg-background lg:block lg:w-64 lg:flex-none',
         className
       )}
       {...props}

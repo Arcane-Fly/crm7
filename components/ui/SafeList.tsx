@@ -1,39 +1,27 @@
-import { ReactNode } from 'react';
-import { safeMap } from '@/lib/utils';
-import { LoadingSpinner } from './LoadingSpinner';
+'use client'
 
-interface SafeListProps<T> {
-  items: T[] | null | undefined;
-  renderItem: (item: T, index: number) => ReactNode;
-  fallback?: ReactNode;
-  isLoading?: boolean;
-  error?: Error | null;
+import { cn } from '@/lib/utils'
+
+interface SafeListProps<T> extends React.HTMLAttributes<HTMLUListElement> {
+  items: T[] | null | undefined
+  renderItem: (item: T) => React.ReactNode
 }
 
-export function SafeList<T>({ 
-  items, 
-  renderItem, 
-  fallback = null,
-  isLoading = false,
-  error = null
+export function SafeList<T>({
+  items,
+  renderItem,
+  className,
+  ...props
 }: SafeListProps<T>) {
-  if (isLoading) {
-    return <LoadingSpinner />;
+  if (!items || items.length === 0) {
+    return null
   }
 
-  if (error) {
-    return (
-      <div className="text-red-500">
-        Error: {error.message}
-      </div>
-    );
-  }
-  
-  const mappedItems = safeMap(items, renderItem);
-  
-  if (mappedItems.length === 0) {
-    return <>{fallback}</>;
-  }
-  
-  return <>{mappedItems}</>;
+  return (
+    <ul className={cn('space-y-2', className)} {...props}>
+      {items.map((item, index) => (
+        <li key={index}>{renderItem(item)}</li>
+      ))}
+    </ul>
+  )
 }
