@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import styles from './columns.module.css'
+import styles from './styles.module.css'
 
 export type TrainingPlan = {
   id: string
@@ -44,16 +44,10 @@ export const columns: ColumnDef<TrainingPlan>[] = [
     header: 'Progress',
     cell: ({ row }) => {
       const progress = row.getValue('progress') as number
+      const progressClass = `progress${Math.round(progress / 10) * 10}`
       return (
         <div className={styles.progressBar}>
-          <div
-            className={styles.progressFill}
-            style={
-              {
-                '--progress-width': `${progress}%`,
-              } as React.CSSProperties & { '--progress-width': string }
-            }
-          />
+          <div className={`${styles.progressFill} ${styles[progressClass]}`} />
         </div>
       )
     },

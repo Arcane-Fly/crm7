@@ -3,6 +3,7 @@
 ## Data Enrichment
 
 ### Overview
+
 The system includes advanced data enrichment capabilities using multiple AI models and data sources:
 
 - Together AI for deep analysis
@@ -14,12 +15,14 @@ The system includes advanced data enrichment capabilities using multiple AI mode
 ### Components
 
 #### Enrichment Dashboard
+
 - Real-time enrichment statistics
 - Activity monitoring
 - Scheduled tasks management
 - Error tracking and logging
 
 #### Data Sources
+
 1. Together AI
    - Deep semantic analysis
    - Industry insights
@@ -38,12 +41,14 @@ The system includes advanced data enrichment capabilities using multiple AI mode
 ## Award and Agreement Management
 
 ### Fairwork Integration
+
 - Real-time award rates lookup
 - Classification management
 - Penalty rates calculation
 - Allowances tracking
 
 ### Enterprise Agreements
+
 - Document upload and processing
 - AI-powered text extraction
 - Rate comparison tools
@@ -52,12 +57,14 @@ The system includes advanced data enrichment capabilities using multiple AI mode
 ## Quote Generation
 
 ### RatesCalc Integration
+
 - Dynamic rate calculation
 - Industry-specific markups
 - Cost component breakdown
 - Quote PDF generation
 
-### Components
+### Rate Components
+
 1. Base Rate Calculation
    - Award compliance
    - Classification matching
@@ -78,18 +85,21 @@ The system includes advanced data enrichment capabilities using multiple AI mode
 ## Forms and Onboarding
 
 ### Client Forms
+
 - Company details
 - Service requirements
 - Agreement acceptance
 - Document upload
 
 ### Employee Forms
+
 - Personal information
 - Qualification details
 - Bank details
 - Tax declarations
 
 ### Internal Staff Forms
+
 - Role-specific forms
 - Access requests
 - Training records
@@ -98,12 +108,14 @@ The system includes advanced data enrichment capabilities using multiple AI mode
 ## Automation and Scheduling
 
 ### Enrichment Scheduling
+
 - Automated data updates
 - Periodic compliance checks
 - Market rate updates
 - Report generation
 
 ### Document Processing
+
 - Automated text extraction
 - Classification
 - Data validation
@@ -112,12 +124,14 @@ The system includes advanced data enrichment capabilities using multiple AI mode
 ## Security and Compliance
 
 ### Access Control
+
 - Role-based permissions
 - Audit logging
 - Data encryption
 - Version control
 
 ### Compliance
+
 - Award rate validation
 - Agreement compliance
 - Document retention
@@ -126,12 +140,14 @@ The system includes advanced data enrichment capabilities using multiple AI mode
 ## Integration Points
 
 ### External APIs
+
 - Fairwork API
 - AI services
 - Document processing
 - Payment systems
 
 ### Internal Systems
+
 - User management
 - Document storage
 - Workflow engine

@@ -1,29 +1,34 @@
 # Rate Management System
 
 ## Overview
+
 The Rate Management System is a comprehensive solution for managing, calculating, and analyzing rates for different employee types. It provides features for rate templates, bulk calculations, forecasting, and analytics.
 
 ## Features
 
 ### 1. Rate Templates
+
 - Create and manage rate templates for different employee types
 - Configure margins, rates, and costs
 - Set effective dates and validation rules
 - Multi-step approval workflow
 
 ### 2. Rate Calculator
+
 - Calculate rates based on templates
 - Support for allowances and penalties
 - Real-time validation
 - Save and compare calculations
 
 ### 3. Bulk Rate Calculator
+
 - Calculate rates for multiple employees
 - Process calculations asynchronously
 - Track calculation status and results
 - Error handling and reporting
 
 ### 4. Rate Forecasting
+
 - Generate rate forecasts based on templates
 - Support for different forecast types:
   - Linear
@@ -33,6 +38,7 @@ The Rate Management System is a comprehensive solution for managing, calculating
 - Track forecast accuracy
 
 ### 5. Analytics & Reporting
+
 - Cost distribution analysis
 - Margin analysis
 - Trend analysis
@@ -42,7 +48,9 @@ The Rate Management System is a comprehensive solution for managing, calculating
 ## Technical Architecture
 
 ### Database Schema
+
 The system uses the following tables:
+
 - `rate_templates`: Store rate templates
 - `rate_calculations`: Store individual calculations
 - `rate_template_approvals`: Track approval workflow
@@ -55,6 +63,7 @@ The system uses the following tables:
 - `rate_reports`: Configure and schedule reports
 
 ### Components
+
 1. **RateCalculator**
    - Interactive rate calculation
    - Template selection
@@ -80,6 +89,7 @@ The system uses the following tables:
    - Interactive filters
 
 ### Services
+
 1. **RatesService**
    - Rate calculation logic
    - Template management
@@ -94,12 +104,14 @@ The system uses the following tables:
    - `generate_rate_analytics`: Analytics computation
 
 ## Security
+
 - Row Level Security (RLS) enabled on all tables
 - Organization-based access control
 - Role-based permissions
 - Audit logging
 
-## Validation Rules
+## Rate Validation Rules
+
 1. **Required Fields**
    - Template name
    - Template type
@@ -122,6 +134,7 @@ The system uses the following tables:
    - Dynamic validations
 
 ## Analytics
+
 1. **Cost Analysis**
    - Component breakdown
    - Cost trends
@@ -145,6 +158,7 @@ The system uses the following tables:
 ## API Reference
 
 ### Rate Templates
+
 ```typescript
 interface RateTemplate {
   id: string
@@ -170,6 +184,7 @@ interface RateTemplate {
 ```
 
 ### Rate Calculations
+
 ```typescript
 interface RateCalculation {
   id: string
@@ -195,6 +210,7 @@ interface RateCalculation {
 ```
 
 ### Validation Rules
+
 ```typescript
 interface ValidationRule {
   id: string
@@ -212,6 +228,7 @@ interface ValidationRule {
 ```
 
 ## Best Practices
+
 1. **Rate Template Management**
    - Use version control
    - Implement approval workflow
@@ -237,6 +254,7 @@ interface ValidationRule {
    - Encrypt sensitive data
 
 ## Troubleshooting
+
 1. **Calculation Issues**
    - Verify template configuration
    - Check validation rules
@@ -256,6 +274,7 @@ interface ValidationRule {
    - Implement data cleanup
 
 ## Future Enhancements
+
 1. **Machine Learning**
    - Rate prediction
    - Anomaly detection
