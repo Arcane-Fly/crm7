@@ -1,51 +1,63 @@
-import { ChangeEvent, FC } from 'react'
+import { useCallback, useState } from 'react'
+import { useDropzone } from 'react-dropzone'
 import { Button } from './button'
+import { cn } from '@/lib/utils'
 
-interface FileUploaderProps {
-  onFileSelect: (file: File) => void
+export interface FileUploaderProps {
   accept?: string
-  multiple?: boolean
   maxSize?: number
+  onFileSelect: (files: File[]) => void
+  multiple?: boolean
+  className?: string
 }
 
-export const FileUploader: FC<FileUploaderProps> = ({
+export function FileUploader({
+  accept,
+  maxSize = 10 * 1024 * 1024, // 10MB default
   onFileSelect,
-  accept = '*',
   multiple = false,
-  maxSize,
-}) => {
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (files && files.length > 0) {
-      const validFiles = Array.from(files).filter(file => {
-        if (maxSize && file.size > maxSize) {
-          console.warn(`File ${file.name} exceeds maximum size of ${maxSize} bytes`)
-          return false
-        }
-        return true
-      })
+  className
+}: FileUploaderProps) {
+  const [error, setError] = useState<string | null>(null)
 
-      if (multiple) {
-        validFiles.forEach(file => onFileSelect(file))
-      } else if (validFiles.length > 0) {
-        onFileSelect(validFiles[0])
-      }
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    setError(null)
+    if (maxSize && acceptedFiles.some(file => file.size > maxSize)) {
+      setError(`File size exceeds ${maxSize / (1024 * 1024)}MB limit`)
+      return
     }
-  }
+    onFileSelect(acceptedFiles)
+  }, [maxSize, onFileSelect])
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: accept ? { [accept]: [] } : undefined,
+    multiple,
+  })
 
   return (
-    <Button
-      variant="outline"
-      onClick={() => {
-        const input = document.createElement('input')
-        input.type = 'file'
-        input.accept = accept
-        input.multiple = multiple
-        input.onchange = (e) => handleFileChange(e as ChangeEvent<HTMLInputElement>)
-        input.click()
-      }}
-    >
-      Upload File
-    </Button>
+    <div className="space-y-2">
+      <div
+        {...getRootProps()}
+        className={cn(
+          'border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-primary transition-colors',
+          isDragActive && 'border-primary bg-primary/10',
+          className
+        )}
+      >
+        <input {...getInputProps()} />
+        <p className="text-sm text-gray-600">
+          {isDragActive
+            ? 'Drop the files here...'
+            : 'Drag and drop files here, or click to select files'}
+        </p>
+        <Button type="button" variant="outline" className="mt-2">
+          Select Files
+        </Button>
+      </div>
+      {error && (
+        <p className="text-sm text-red-500">{error}</p>
+      )}
+    </div>
   )
 }

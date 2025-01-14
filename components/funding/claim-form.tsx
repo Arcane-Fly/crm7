@@ -177,8 +177,8 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess }: Cla
         <FileUploader
           accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
           maxSize={5 * 1024 * 1024} // 5MB
-          onFilesSelected={setFiles}
-          multiple
+          onFileSelect={(files) => setFiles(files)}
+          multiple={true}
         />
       </div>
 

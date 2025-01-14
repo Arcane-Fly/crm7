@@ -17,6 +17,7 @@ export default function EnrichmentDashboard() {
   const { isAdmin } = useAdminAccess()
   const [logs, setLogs] = useState([])
   const [stats, setStats] = useState<any>({})
+  const [enrichedData, setEnrichedData] = useState<Array<any>>([])
   const [isLoading, setIsLoading] = useState(true)
   const supabase = createClient()
 

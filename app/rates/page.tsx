@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+import { useUser } from '@/lib/hooks/use-user'
 import { RateCalculator } from '@/components/rates/RateCalculator'
 import { RateTemplateBuilder } from '@/components/rates/RateTemplateBuilder'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -9,6 +10,12 @@ export const metadata: Metadata = {
 }
 
 export default function RatesPage() {
+  const { user } = useUser()
+
+  if (!user) {
+    return null
+  }
+
   return (
     <div className="container mx-auto py-10">
       <Tabs defaultValue="calculator" className="space-y-4">
@@ -17,7 +24,7 @@ export default function RatesPage() {
           <TabsTrigger value="templates">Rate Templates</TabsTrigger>
         </TabsList>
         <TabsContent value="calculator" className="space-y-4">
-          <RateCalculator />
+          <RateCalculator orgId={user.org_id} />
         </TabsContent>
         <TabsContent value="templates" className="space-y-4">
           <RateTemplateBuilder />

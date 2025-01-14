@@ -1,4 +1,5 @@
-import { FC, useEffect, useRef } from 'react'
+import type { FC } from 'react'
+import { useEffect, useRef } from 'react'
 import * as d3 from 'd3'
 
 export interface DataPoint {
@@ -51,17 +52,6 @@ export const ScatterPlot: FC<ScatterPlotProps> = ({
     svg.append('g').call(xAxis)
     svg.append('g').call(yAxis)
 
-    svg.append('g')
-      .selectAll('circle')
-      .data(data)
-      .join('circle')
-      .attr('cx', d => x(d.x))
-      .attr('cy', d => y(d.y))
-      .attr('r', 3)
-      .attr('fill', 'steelblue')
-      .attr('opacity', d => d.confidence ? d.confidence : 0.6)
-
-    // Add tooltips
     const tooltip = d3.select('body')
       .append('div')
       .attr('class', 'tooltip')
@@ -72,8 +62,17 @@ export const ScatterPlot: FC<ScatterPlotProps> = ({
       .style('padding', '10px')
       .style('border-radius', '4px')
 
-    svg.selectAll('circle')
-      .on('mouseover', function(event: MouseEvent, d: DataPoint) {
+    const points = svg.append('g')
+      .selectAll('circle')
+      .data(data)
+      .join('circle')
+      .attr('cx', d => x(d.x))
+      .attr('cy', d => y(d.y))
+      .attr('r', 3)
+      .attr('fill', 'steelblue')
+      .attr('opacity', d => d.confidence ? d.confidence : 0.6)
+
+    points.on('mouseover', function(event: MouseEvent, d: DataPoint) {
         d3.select(this)
           .transition()
           .duration(200)
@@ -98,6 +97,9 @@ export const ScatterPlot: FC<ScatterPlotProps> = ({
         tooltip.style('visibility', 'hidden')
       })
 
+    return () => {
+      tooltip.remove()
+    }
   }, [data, width, height, margin])
 
   return <svg ref={svgRef} width={width} height={height} />
