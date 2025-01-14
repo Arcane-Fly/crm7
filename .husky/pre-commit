@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# Run lint-staged
+pnpm lint-staged
+
+# Run type check only on staged files
+git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(ts|tsx)$' | xargs -r pnpm tsc --noEmit
