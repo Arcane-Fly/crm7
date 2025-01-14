@@ -1,120 +1,108 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
-import type { OnDocumentLoadSuccess } from 'react-pdf'
 import { Document, Page, pdfjs } from 'react-pdf'
+import { Loader2, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react'
 import styles from './document-preview.module.css'
 
-pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js'
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`
 
 interface DocumentPreviewProps {
-  fileUrl: string
-  fileType: string
+  file: File | string
+  onClose?: () => void
   isOpen: boolean
-  onClose: () => void
 }
 
-export function DocumentPreview({
-  fileUrl,
-  fileType,
-  isOpen,
-  onClose,
-}: DocumentPreviewProps) {
+export function DocumentPreview({ file, onClose, isOpen }: DocumentPreviewProps) {
   const [numPages, setNumPages] = useState<number>(0)
   const [pageNumber, setPageNumber] = useState(1)
   const [scale, setScale] = useState(1.0)
+  const [loading, setLoading] = useState(true)
 
-  const isPdf = fileType === 'application/pdf'
-  const isImage = fileType.startsWith('image/')
-
-  const nextPage = () => {
-    setPageNumber((prev) => Math.min(prev + 1, numPages))
+  function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
+    setNumPages(numPages)
+    setLoading(false)
   }
 
-  const previousPage = () => {
-    setPageNumber((prev) => Math.max(prev - 1, 1))
+  function changePage(offset: number) {
+    setPageNumber((prev) => prev + offset)
   }
 
-  const zoomIn = () => {
+  function previousPage() {
+    changePage(-1)
+  }
+
+  function nextPage() {
+    changePage(1)
+  }
+
+  function zoomIn() {
     setScale((prev) => Math.min(prev + 0.2, 2.0))
   }
 
-  const zoomOut = () => {
+  function zoomOut() {
     setScale((prev) => Math.max(prev - 0.2, 0.5))
   }
 
-  const onDocumentLoadSuccess: OnDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
-    setNumPages(numPages)
-  }
-
   return (
-    <Dialog open={isOpen} onOpenChange={() => onClose()}>
+    <Dialog open={isOpen} onOpenChange={() => onClose?.()}>
       <DialogContent className="max-w-4xl">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="flex items-center space-x-2">
-            {isPdf && (
-              <>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={previousPage}
-                  disabled={pageNumber <= 1}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <span>
-                  Page {pageNumber} of {numPages}
-                </span>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={nextPage}
-                  disabled={pageNumber >= numPages}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </>
-            )}
-            <Button variant="outline" size="icon" onClick={zoomIn}>
-              <ZoomIn className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="icon" onClick={zoomOut}>
-              <ZoomOut className="h-4 w-4" />
-            </Button>
-          </div>
-
-          <div className="overflow-auto max-h-[80vh]">
-            {isPdf ? (
-              <Document
-                file={fileUrl}
-                onLoadSuccess={onDocumentLoadSuccess}
-              >
-                <Page
-                  pageNumber={pageNumber}
-                  scale={scale}
-                  renderTextLayer={false}
-                  renderAnnotationLayer={false}
-                />
-              </Document>
-            ) : isImage ? (
-              <Image
-                src={fileUrl}
-                alt="Document preview"
-                className={`${styles.previewImage}`}
-                width={800}
-                height={600}
-                style={{ '--scale': scale } as React.CSSProperties}
-              />
-            ) : (
-              <div className="p-4 text-center">
-                Preview not available for this file type
+        <div className="flex flex-col items-center justify-center w-full h-full">
+          {loading && (
+            <div className="flex items-center justify-center w-full h-full">
+              <Loader2 className="w-8 h-8 animate-spin" />
+            </div>
+          )}
+          
+          <Document
+            file={file}
+            onLoadSuccess={onDocumentLoadSuccess}
+            loading={
+              <div className="flex items-center justify-center w-full h-full">
+                <Loader2 className="w-8 h-8 animate-spin" />
               </div>
-            )}
-          </div>
+            }
+          >
+            <Page
+              pageNumber={pageNumber}
+              scale={scale}
+              renderAnnotationLayer={false}
+              renderTextLayer={false}
+              className="max-w-full"
+            />
+          </Document>
+
+          {numPages > 0 && (
+            <div className="flex items-center justify-center gap-4 mt-4">
+              <Button
+                variant="outline"
+                onClick={previousPage}
+                disabled={pageNumber <= 1}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              
+              <div>
+                Page {pageNumber} of {numPages}
+              </div>
+              
+              <Button
+                variant="outline"
+                onClick={nextPage}
+                disabled={pageNumber >= numPages}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+              <Button variant="outline" onClick={zoomIn}>
+                <ZoomIn className="w-4 h-4" />
+              </Button>
+              <Button variant="outline" onClick={zoomOut}>
+                <ZoomOut className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

@@ -1,6 +1,6 @@
 import type { FC } from 'react'
-import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
+import Link from 'next/link'
 
 export interface BreadcrumbItem {
   label: string
@@ -9,30 +9,27 @@ export interface BreadcrumbItem {
 
 export interface BreadcrumbProps {
   items: BreadcrumbItem[]
-  className?: string
 }
 
-export const Breadcrumb = ({ items, className = '' }: BreadcrumbProps) => {
+export function Breadcrumb({ items }: BreadcrumbProps) {
   return (
-    <nav className={`flex ${className}`} aria-label="Breadcrumb">
-      <ol className="inline-flex items-center space-x-1 md:space-x-2">
+    <nav className="flex" aria-label="Breadcrumb">
+      <ol className="flex items-center space-x-2">
         {items.map((item, index) => (
-          <li key={item.href} className="inline-flex items-center">
+          <li key={item.href} className="flex items-center">
             {index > 0 && (
-              <ChevronRight className="mx-2 h-4 w-4 text-gray-400" />
+              <ChevronRight className="mx-2 h-4 w-4 text-muted-foreground" />
             )}
-            {index === items.length - 1 ? (
-              <span className="text-sm font-medium text-gray-500">
-                {item.label}
-              </span>
-            ) : (
-              <Link
-                href={item.href}
-                className="text-sm font-medium text-blue-600 hover:text-blue-800"
-              >
-                {item.label}
-              </Link>
-            )}
+            <Link
+              href={item.href}
+              className={`text-sm font-medium ${
+                index === items.length - 1
+                  ? 'text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {item.label}
+            </Link>
           </li>
         ))}
       </ol>

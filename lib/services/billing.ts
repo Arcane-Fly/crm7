@@ -37,15 +37,22 @@ export interface TimesheetEntry {
 
 export interface Invoice {
   id: string
-  host_employer_id: string
-  billing_period_start: Date
-  billing_period_end: Date
-  status: 'draft' | 'pending' | 'sent' | 'paid' | 'overdue' | 'cancelled'
-  due_date: Date
-  subtotal: number
-  tax_amount: number
-  total_amount: number
-  notes?: string
+  org_id: string
+  invoice_number: string
+  amount: number
+  status: 'draft' | 'pending' | 'paid' | 'overdue' | 'cancelled'
+  due_date: string
+  issued_date: string
+  paid_date?: string
+  metadata?: Record<string, any>
+}
+
+export interface BillingCycle {
+  id: string
+  org_id: string
+  start_date: string
+  end_date: string
+  status: 'pending' | 'processing' | 'completed' | 'failed'
   metadata?: Record<string, any>
 }
 
@@ -203,6 +210,165 @@ export class BillingService {
       .eq('id', invoiceId)
 
     if (error) throw error
+  }
+
+  async getBillingCycles(params: {
+    org_id: string
+    start_date?: Date
+    end_date?: Date
+    status?: string
+  }) {
+    const { org_id, start_date, end_date, status } = params
+    const query = this.supabase
+      .from('billing_cycles')
+      .select('*')
+      .eq('org_id', org_id)
+
+    if (start_date) {
+      query.gte('start_date', start_date.toISOString())
+    }
+
+    if (end_date) {
+      query.lte('end_date', end_date.toISOString())
+    }
+
+    if (status) {
+      query.eq('status', status)
+    }
+
+    const { data, error } = await query.order('start_date', { ascending: false })
+
+    if (error) {
+      throw error
+    }
+
+    return data as BillingCycle[]
+  }
+
+  async createBillingCycle(params: {
+    org_id: string
+    start_date: Date
+    end_date: Date
+    status: string
+    metadata?: Record<string, any>
+  }) {
+    const { data, error } = await this.supabase
+      .from('billing_cycles')
+      .insert({
+        ...params,
+        start_date: params.start_date.toISOString(),
+        end_date: params.end_date.toISOString(),
+      })
+      .select()
+      .single()
+
+    if (error) {
+      throw error
+    }
+
+    return data as BillingCycle
+  }
+
+  async updateBillingCycle(id: string, params: {
+    status?: string
+    metadata?: Record<string, any>
+  }) {
+    const { data, error } = await this.supabase
+      .from('billing_cycles')
+      .update({
+        ...params,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) {
+      throw error
+    }
+
+    return data as BillingCycle
+  }
+
+  async getInvoices(params: {
+    org_id: string
+    status?: string
+    start_date?: Date
+    end_date?: Date
+  }) {
+    const { org_id, status, start_date, end_date } = params
+    const query = this.supabase
+      .from('invoices')
+      .select('*')
+      .eq('org_id', org_id)
+
+    if (status) {
+      query.eq('status', status)
+    }
+
+    if (start_date) {
+      query.gte('issued_date', start_date.toISOString())
+    }
+
+    if (end_date) {
+      query.lte('issued_date', end_date.toISOString())
+    }
+
+    const { data, error } = await query.order('issued_date', { ascending: false })
+
+    if (error) {
+      throw error
+    }
+
+    return data as Invoice[]
+  }
+
+  async createInvoice(params: {
+    org_id: string
+    invoice_number: string
+    amount: number
+    due_date: Date
+    metadata?: Record<string, any>
+  }) {
+    const { data, error } = await this.supabase
+      .from('invoices')
+      .insert({
+        ...params,
+        status: 'draft',
+        issued_date: new Date().toISOString(),
+        due_date: params.due_date.toISOString(),
+      })
+      .select()
+      .single()
+
+    if (error) {
+      throw error
+    }
+
+    return data as Invoice
+  }
+
+  async updateInvoice(id: string, params: {
+    status?: string
+    paid_date?: Date
+    metadata?: Record<string, any>
+  }) {
+    const { data, error } = await this.supabase
+      .from('invoices')
+      .update({
+        ...params,
+        paid_date: params.paid_date?.toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) {
+      throw error
+    }
+
+    return data as Invoice
   }
 }
 

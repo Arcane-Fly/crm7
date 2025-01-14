@@ -102,6 +102,8 @@ export class RatesIntegrationService {
     integration_id?: string
     start_date?: Date
     end_date?: Date
+    status?: string
+    is_active?: boolean
   }): Promise<{
     id: string
     integration_id: string
@@ -114,14 +116,33 @@ export class RatesIntegrationService {
     error_log?: Record<string, any>[]
     metadata?: Record<string, any>
   }[]> {
-    const { data, error } = await this.supabase
+    const { org_id, integration_id, start_date, end_date, status, is_active } = params
+    const query = this.supabase
       .from('integration_sync_history')
       .select('*')
-      .eq('org_id', params.org_id)
-      .eq(params.integration_id ? 'integration_id' : true, params.integration_id || true)
-      .gte(params.start_date ? 'started_at' : true, params.start_date?.toISOString() || true)
-      .lte(params.end_date ? 'started_at' : true, params.end_date?.toISOString() || true)
-      .order('started_at', { ascending: false })
+      .eq('org_id', org_id)
+
+    if (integration_id) {
+      query.eq('integration_id', integration_id)
+    }
+
+    if (start_date) {
+      query.gte('started_at', start_date.toISOString())
+    }
+
+    if (end_date) {
+      query.lte('started_at', end_date.toISOString())
+    }
+
+    if (status) {
+      query.eq('status', status)
+    }
+
+    if (typeof is_active === 'boolean') {
+      query.eq('is_active', is_active ? 'true' : 'false')
+    }
+
+    const { data, error } = await query.order('started_at', { ascending: false })
 
     if (error) throw error
     return data
@@ -138,6 +159,72 @@ export class RatesIntegrationService {
       integration_id
     })
     if (error) throw error
+    return data
+  }
+
+  async createSync(params: {
+    org_id: string
+    integration_type: string
+    status: string
+    metadata?: Record<string, any>
+  }): Promise<{
+    id: string
+    integration_id: string
+    sync_type: 'import' | 'export'
+    status: 'success' | 'failed'
+    records_processed: number
+    records_failed: number
+    started_at: Date
+    completed_at: Date
+    error_log?: Record<string, any>[]
+    metadata?: Record<string, any>
+  }> {
+    const { data, error } = await this.supabase
+      .from('integration_sync_history')
+      .insert({
+        ...params,
+        is_active: true,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      throw error
+    }
+
+    return data
+  }
+
+  async updateSync(id: string, params: {
+    status?: string
+    is_active?: boolean
+    metadata?: Record<string, any>
+  }): Promise<{
+    id: string
+    integration_id: string
+    sync_type: 'import' | 'export'
+    status: 'success' | 'failed'
+    records_processed: number
+    records_failed: number
+    started_at: Date
+    completed_at: Date
+    error_log?: Record<string, any>[]
+    metadata?: Record<string, any>
+  }> {
+    const { data, error } = await this.supabase
+      .from('integration_sync_history')
+      .update({
+        ...params,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) {
+      throw error
+    }
+
     return data
   }
 }
