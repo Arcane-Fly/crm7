@@ -5,20 +5,30 @@ interface FileUploaderProps {
   onFileSelect: (file: File) => void
   accept?: string
   multiple?: boolean
+  maxSize?: number
 }
 
 export const FileUploader: FC<FileUploaderProps> = ({
   onFileSelect,
   accept = '*',
   multiple = false,
+  maxSize,
 }) => {
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (files && files.length > 0) {
+      const validFiles = Array.from(files).filter(file => {
+        if (maxSize && file.size > maxSize) {
+          console.warn(`File ${file.name} exceeds maximum size of ${maxSize} bytes`)
+          return false
+        }
+        return true
+      })
+
       if (multiple) {
-        Array.from(files).forEach(file => onFileSelect(file))
-      } else {
-        onFileSelect(files[0])
+        validFiles.forEach(file => onFileSelect(file))
+      } else if (validFiles.length > 0) {
+        onFileSelect(validFiles[0])
       }
     }
   }

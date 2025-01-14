@@ -1,5 +1,6 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { Database } from '@/types/supabase'
+import { AwardRate, RateTemplate, RateCalculation, ValidationRule, CalculateRateParams, GetRateTemplatesParams } from '@/types/rates'
 
 export interface AwardRate {
   id: string
@@ -96,16 +97,14 @@ export interface GetRateTemplatesParams {
 }
 
 export class RatesService {
-  private supabase = createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  private supabase: SupabaseClient<Database>
 
-  constructor() {
-    this.supabase = createClient<Database>(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+  constructor(supabaseUrl: string, supabaseKey: string) {
+    this.supabase = createClient<Database>(supabaseUrl, supabaseKey)
+  }
+
+  protected getSupabase() {
+    return this.supabase
   }
 
   async getAwardRates(params: {
@@ -418,4 +417,4 @@ export class RatesService {
   }
 }
 
-export const ratesService = new RatesService()
+export const ratesService = new RatesService(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)

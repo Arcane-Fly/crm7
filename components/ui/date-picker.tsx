@@ -15,7 +15,7 @@ import {
 
 export interface DatePickerProps {
   date?: Date
-  onSelect: (date: Date) => void
+  onSelect: (date: Date | undefined) => void
   className?: string
 }
 

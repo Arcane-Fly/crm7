@@ -1,11 +1,12 @@
-import React, { useEffect, useRef } from 'react'
+import { FC, useEffect, useRef } from 'react'
 import * as d3 from 'd3'
 
-interface DataPoint {
+export interface DataPoint {
   x: number
   y: number
-  size?: number
-  category?: string
+  actual?: number
+  predicted?: number
+  confidence?: number
 }
 
 interface ScatterPlotProps {
@@ -13,19 +14,13 @@ interface ScatterPlotProps {
   width?: number
   height?: number
   margin?: { top: number; right: number; bottom: number; left: number }
-  xLabel?: string
-  yLabel?: string
-  colors?: string[]
 }
 
-export const ScatterPlot: React.FC<ScatterPlotProps> = ({
+export const ScatterPlot: FC<ScatterPlotProps> = ({
   data,
   width = 600,
   height = 400,
-  margin = { top: 40, right: 40, bottom: 60, left: 60 },
-  xLabel = '',
-  yLabel = '',
-  colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']
+  margin = { top: 20, right: 20, bottom: 30, left: 40 }
 }) => {
   const svgRef = useRef<SVGSVGElement>(null)
 
@@ -35,112 +30,77 @@ export const ScatterPlot: React.FC<ScatterPlotProps> = ({
     const svg = d3.select(svgRef.current)
     svg.selectAll('*').remove()
 
-    const innerWidth = width - margin.left - margin.right
-    const innerHeight = height - margin.top - margin.bottom
-
-    // Create scales
-    const xScale = d3.scaleLinear()
-      .domain([d3.min(data, d => d.x) || 0, d3.max(data, d => d.x) || 0])
-      .range([0, innerWidth])
+    const x = d3.scaleLinear()
+      .domain([0, d3.max(data, d => d.x) || 0])
       .nice()
+      .range([margin.left, width - margin.right])
 
-    const yScale = d3.scaleLinear()
-      .domain([d3.min(data, d => d.y) || 0, d3.max(data, d => d.y) || 0])
-      .range([innerHeight, 0])
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(data, d => d.y) || 0])
       .nice()
+      .range([height - margin.bottom, margin.top])
 
-    const sizeScale = data[0].size !== undefined
-      ? d3.scaleLinear()
-        .domain([d3.min(data, d => d.size || 0) || 0, d3.max(data, d => d.size || 0) || 0])
-        .range([4, 20])
-      : undefined
+    const xAxis = (g: d3.Selection<SVGGElement, unknown, null, undefined>) => g
+      .attr('transform', `translate(0,${height - margin.bottom})`)
+      .call(d3.axisBottom(x))
 
-    const colorScale = data[0].category !== undefined
-      ? d3.scaleOrdinal()
-        .domain(Array.from(new Set(data.map(d => d.category || ''))))
-        .range(colors)
-      : undefined
+    const yAxis = (g: d3.Selection<SVGGElement, unknown, null, undefined>) => g
+      .attr('transform', `translate(${margin.left},0)`)
+      .call(d3.axisLeft(y))
 
-    const g = svg.append('g')
-      .attr('transform', `translate(${margin.left},${margin.top})`)
+    svg.append('g').call(xAxis)
+    svg.append('g').call(yAxis)
 
-    // Add points
-    g.selectAll('circle')
+    svg.append('g')
+      .selectAll('circle')
       .data(data)
-      .enter()
-      .append('circle')
-      .attr('cx', d => xScale(d.x))
-      .attr('cy', d => yScale(d.y))
-      .attr('r', d => sizeScale ? sizeScale(d.size || 0) : 5)
-      .attr('fill', d => colorScale ? colorScale(d.category || '') : colors[0])
-      .attr('opacity', 0.7)
+      .join('circle')
+      .attr('cx', d => x(d.x))
+      .attr('cy', d => y(d.y))
+      .attr('r', 3)
+      .attr('fill', 'steelblue')
+      .attr('opacity', d => d.confidence ? d.confidence : 0.6)
+
+    // Add tooltips
+    const tooltip = d3.select('body')
+      .append('div')
+      .attr('class', 'tooltip')
+      .style('position', 'absolute')
+      .style('visibility', 'hidden')
+      .style('background-color', 'white')
+      .style('border', '1px solid #ddd')
+      .style('padding', '10px')
+      .style('border-radius', '4px')
+
+    svg.selectAll('circle')
       .on('mouseover', function(event: MouseEvent, d: DataPoint) {
-        const tooltip = d3.select(this.parentNode as SVGElement)
-          .append('text')
-          .attr('class', 'tooltip')
-          .attr('x', xScale(d.x))
-          .attr('y', yScale(d.y))
-          .attr('dy', '-1em')
-          .text(`x: ${d.x}, y: ${d.y}${d.size ? `, size: ${d.size}` : ''}${d.category ? `, category: ${d.category}` : ''}`)
+        d3.select(this)
+          .transition()
+          .duration(200)
+          .attr('r', 6)
+
+        tooltip
+          .style('visibility', 'visible')
+          .html(`
+            Actual: ${d.actual || d.x}<br/>
+            Predicted: ${d.predicted || d.y}<br/>
+            ${d.confidence ? `Confidence: ${(d.confidence * 100).toFixed(1)}%` : ''}
+          `)
+          .style('left', (event.pageX + 10) + 'px')
+          .style('top', (event.pageY - 10) + 'px')
       })
       .on('mouseout', function() {
-        d3.select(this.parentNode as SVGElement)
-          .selectAll('.tooltip')
-          .remove()
+        d3.select(this)
+          .transition()
+          .duration(200)
+          .attr('r', 3)
+
+        tooltip.style('visibility', 'hidden')
       })
 
-    // Add axes
-    const xAxis = d3.axisBottom(xScale)
-    const yAxis = d3.axisLeft(yScale)
+  }, [data, width, height, margin])
 
-    g.append('g')
-      .attr('transform', `translate(0,${innerHeight})`)
-      .call(xAxis)
-      .append('text')
-      .attr('x', innerWidth / 2)
-      .attr('y', 40)
-      .attr('fill', 'currentColor')
-      .attr('text-anchor', 'middle')
-      .text(xLabel)
-
-    g.append('g')
-      .call(yAxis)
-      .append('text')
-      .attr('transform', 'rotate(-90)')
-      .attr('y', -40)
-      .attr('x', -innerHeight / 2)
-      .attr('fill', 'currentColor')
-      .attr('text-anchor', 'middle')
-      .text(yLabel)
-
-    // Add legend if categories exist
-    if (colorScale) {
-      const legend = svg.append('g')
-        .attr('transform', `translate(${width - margin.right + 10},${margin.top})`)
-
-      const categories = Array.from(new Set(data.map(d => d.category || '')))
-
-      legend.selectAll('circle')
-        .data(categories)
-        .enter()
-        .append('circle')
-        .attr('cx', 0)
-        .attr('cy', (d, i) => i * 25)
-        .attr('r', 5)
-        .attr('fill', d => colorScale(d))
-
-      legend.selectAll('text')
-        .data(categories)
-        .enter()
-        .append('text')
-        .attr('x', 15)
-        .attr('y', (d, i) => i * 25)
-        .attr('dy', '0.3em')
-        .text(d => d)
-    }
-  }, [data, width, height, margin, xLabel, yLabel, colors])
-
-  return (
-    <svg ref={svgRef} width={width} height={height} />
-  )
+  return <svg ref={svgRef} width={width} height={height} />
 }
+
+export default ScatterPlot
