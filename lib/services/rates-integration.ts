@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { Database } from '@/types/supabase'
-import { RateTemplate, RateCalculation } from './rates'
+import type { Database } from '@/types/supabase'
 
 export interface IntegrationConfig {
   id: string
@@ -56,7 +55,7 @@ export class RatesIntegrationService {
     errors: string[]
   }> {
     const { data, error } = await this.supabase.rpc('validate_integration', {
-      config: config
+      config: config,
     })
     if (error) throw error
     return data
@@ -104,23 +103,22 @@ export class RatesIntegrationService {
     end_date?: Date
     status?: string
     is_active?: boolean
-  }): Promise<{
-    id: string
-    integration_id: string
-    sync_type: 'import' | 'export'
-    status: 'success' | 'failed'
-    records_processed: number
-    records_failed: number
-    started_at: Date
-    completed_at: Date
-    error_log?: Record<string, any>[]
-    metadata?: Record<string, any>
-  }[]> {
+  }): Promise<
+    {
+      id: string
+      integration_id: string
+      sync_type: 'import' | 'export'
+      status: 'success' | 'failed'
+      records_processed: number
+      records_failed: number
+      started_at: Date
+      completed_at: Date
+      error_log?: Record<string, any>[]
+      metadata?: Record<string, any>
+    }[]
+  > {
     const { org_id, integration_id, start_date, end_date, status, is_active } = params
-    const query = this.supabase
-      .from('integration_sync_history')
-      .select('*')
-      .eq('org_id', org_id)
+    const query = this.supabase.from('integration_sync_history').select('*').eq('org_id', org_id)
 
     if (integration_id) {
       query.eq('integration_id', integration_id)
@@ -156,7 +154,7 @@ export class RatesIntegrationService {
     metadata?: Record<string, any>
   }> {
     const { data, error } = await this.supabase.rpc('get_integration_status', {
-      integration_id
+      integration_id,
     })
     if (error) throw error
     return data
@@ -195,11 +193,14 @@ export class RatesIntegrationService {
     return data
   }
 
-  async updateSync(id: string, params: {
-    status?: string
-    is_active?: boolean
-    metadata?: Record<string, any>
-  }): Promise<{
+  async updateSync(
+    id: string,
+    params: {
+      status?: string
+      is_active?: boolean
+      metadata?: Record<string, any>
+    }
+  ): Promise<{
     id: string
     integration_id: string
     sync_type: 'import' | 'export'

@@ -1,6 +1,6 @@
 'use client'
 
-import { ColumnDef } from '@tanstack/react-table'
+import type { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
 
@@ -39,11 +39,11 @@ export const enrichmentLogColumns: ColumnDef<EnrichmentLog>[] = [
     cell: ({ row }) => {
       const status = row.getValue('status') as string
       return (
-        <Badge variant={
-          status === 'SUCCESS' ? 'success' :
-          status === 'PENDING' ? 'default' :
-          'destructive'
-        }>
+        <Badge
+          variant={
+            status === 'SUCCESS' ? 'success' : status === 'PENDING' ? 'default' : 'destructive'
+          }
+        >
           {status}
         </Badge>
       )
@@ -58,9 +58,7 @@ export const enrichmentLogColumns: ColumnDef<EnrichmentLog>[] = [
     header: 'Error',
     cell: ({ row }) => {
       const error = row.getValue('error_message') as string
-      return error ? (
-        <span className="text-red-500 text-sm">{error}</span>
-      ) : null
+      return error ? <span className='text-sm text-red-500'>{error}</span> : null
     },
   },
 ]

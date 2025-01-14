@@ -1,14 +1,8 @@
-"use client"
+'use client'
 
 import React from 'react'
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-  ChartData,
-  ChartOptions
-} from 'chart.js'
+import type { ChartData, ChartOptions } from 'chart.js'
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import { Pie } from 'react-chartjs-2'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
@@ -33,7 +27,7 @@ export function PieChart({ data, options }: PieChartProps) {
   }
 
   return (
-    <div className="w-full h-full min-h-[300px] p-4">
+    <div className='h-full min-h-[300px] w-full p-4'>
       <Pie data={data} options={options || defaultOptions} />
     </div>
   )

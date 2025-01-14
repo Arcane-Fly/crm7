@@ -1,6 +1,6 @@
 'use client'
 
-import { ColumnDef } from '@tanstack/react-table'
+import type { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { ArrowUpDown, MoreHorizontal } from 'lucide-react'
 import {
@@ -29,11 +29,11 @@ export const columns: ColumnDef<Qualification>[] = [
     header: ({ column }) => {
       return (
         <Button
-          variant="ghost"
+          variant='ghost'
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Title
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDown className='ml-2 h-4 w-4' />
         </Button>
       )
     },
@@ -55,11 +55,7 @@ export const columns: ColumnDef<Qualification>[] = [
     header: 'Status',
     cell: ({ row }) => {
       const status = row.getValue('status') as string
-      return (
-        <Badge variant={status === 'active' ? 'default' : 'secondary'}>
-          {status}
-        </Badge>
-      )
+      return <Badge variant={status === 'active' ? 'default' : 'secondary'}>{status}</Badge>
     },
   },
   {
@@ -67,9 +63,7 @@ export const columns: ColumnDef<Qualification>[] = [
     header: 'Market Data',
     cell: ({ row }) => {
       const marketData = row.original.market_data
-      return marketData ? (
-        <Badge variant="outline">Enriched</Badge>
-      ) : null
+      return marketData ? <Badge variant='outline'>Enriched</Badge> : null
     },
   },
   {
@@ -80,16 +74,14 @@ export const columns: ColumnDef<Qualification>[] = [
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
+            <Button variant='ghost' className='h-8 w-8 p-0'>
+              <span className='sr-only'>Open menu</span>
+              <MoreHorizontal className='h-4 w-4' />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align='end'>
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(qualification.id)}
-            >
+            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(qualification.id)}>
               Copy ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />

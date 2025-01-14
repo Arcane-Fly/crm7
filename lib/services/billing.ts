@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { Database } from '@/types/supabase'
+import type { Database } from '@/types/supabase'
 import { addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns'
 
 export interface Timesheet {
@@ -103,7 +103,7 @@ export class BillingService {
       .from('timesheets')
       .update({
         status: 'submitted',
-        submitted_at: new Date().toISOString()
+        submitted_at: new Date().toISOString(),
       })
       .eq('id', timesheetId)
 
@@ -116,7 +116,7 @@ export class BillingService {
       .update({
         status: 'approved',
         approved_at: new Date().toISOString(),
-        approved_by: approverId
+        approved_by: approverId,
       })
       .eq('id', timesheetId)
 
@@ -140,7 +140,7 @@ export class BillingService {
       .rpc('generate_invoice', {
         p_host_employer_id: hostEmployerId,
         p_start_date: startDate.toISOString(),
-        p_end_date: endDate.toISOString()
+        p_end_date: endDate.toISOString(),
       })
       .single()
 
@@ -192,10 +192,12 @@ export class BillingService {
   async getInvoice(invoiceId: string): Promise<Invoice> {
     const { data, error } = await this.supabase
       .from('invoices')
-      .select(`
+      .select(
+        `
         *,
         line_items:invoice_line_items(*)
-      `)
+      `
+      )
       .eq('id', invoiceId)
       .single()
 
@@ -204,10 +206,7 @@ export class BillingService {
   }
 
   async updateInvoiceStatus(invoiceId: string, status: Invoice['status']): Promise<void> {
-    const { error } = await this.supabase
-      .from('invoices')
-      .update({ status })
-      .eq('id', invoiceId)
+    const { error } = await this.supabase.from('invoices').update({ status }).eq('id', invoiceId)
 
     if (error) throw error
   }
@@ -219,10 +218,7 @@ export class BillingService {
     status?: string
   }) {
     const { org_id, start_date, end_date, status } = params
-    const query = this.supabase
-      .from('billing_cycles')
-      .select('*')
-      .eq('org_id', org_id)
+    const query = this.supabase.from('billing_cycles').select('*').eq('org_id', org_id)
 
     if (start_date) {
       query.gte('start_date', start_date.toISOString())
@@ -269,10 +265,13 @@ export class BillingService {
     return data as BillingCycle
   }
 
-  async updateBillingCycle(id: string, params: {
-    status?: string
-    metadata?: Record<string, any>
-  }) {
+  async updateBillingCycle(
+    id: string,
+    params: {
+      status?: string
+      metadata?: Record<string, any>
+    }
+  ) {
     const { data, error } = await this.supabase
       .from('billing_cycles')
       .update({
@@ -297,10 +296,7 @@ export class BillingService {
     end_date?: Date
   }) {
     const { org_id, status, start_date, end_date } = params
-    const query = this.supabase
-      .from('invoices')
-      .select('*')
-      .eq('org_id', org_id)
+    const query = this.supabase.from('invoices').select('*').eq('org_id', org_id)
 
     if (status) {
       query.eq('status', status)
@@ -348,11 +344,14 @@ export class BillingService {
     return data as Invoice
   }
 
-  async updateInvoice(id: string, params: {
-    status?: string
-    paid_date?: Date
-    metadata?: Record<string, any>
-  }) {
+  async updateInvoice(
+    id: string,
+    params: {
+      status?: string
+      paid_date?: Date
+      metadata?: Record<string, any>
+    }
+  ) {
     const { data, error } = await this.supabase
       .from('invoices')
       .update({

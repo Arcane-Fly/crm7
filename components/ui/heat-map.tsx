@@ -1,124 +1,102 @@
-import React, { useEffect, useRef } from 'react'
-import * as d3 from 'd3'
-
-interface DataPoint {
-  x: string | number
-  y: string | number
-  value: number
-}
+import React from 'react'
 
 interface HeatMapProps {
-  data: DataPoint[]
+  data: { x: string; y: string; value: number }[]
   width?: number
   height?: number
-  margin?: { top: number; right: number; bottom: number; left: number }
-  colors?: string[]
+  colorRange?: string[]
 }
 
-export const HeatMap: React.FC<HeatMapProps> = ({
+export function HeatMap({
   data,
-  width = 600,
+  width = 800,
   height = 400,
-  margin = { top: 40, right: 40, bottom: 60, left: 60 },
-  colors = ['#f7fbff', '#deebf7', '#c6dbef', '#9ecae1', '#6baed6', '#4292c6', '#2171b5', '#08519c', '#08306b']
-}) => {
-  const svgRef = useRef<SVGSVGElement>(null)
+  colorRange = ['#f7fbff', '#08519c'],
+}: HeatMapProps) {
+  const xValues = [...new Set(data.map((d) => d.x))]
+  const yValues = [...new Set(data.map((d) => d.y))]
+  const cellWidth = width / xValues.length
+  const cellHeight = height / yValues.length
 
-  useEffect(() => {
-    if (!svgRef.current || !data.length) return
+  const minValue = Math.min(...data.map((d) => d.value))
+  const maxValue = Math.max(...data.map((d) => d.value))
 
-    const svg = d3.select(svgRef.current)
-    svg.selectAll('*').remove()
+  const getColor = (value: number) => {
+    const normalizedValue = (value - minValue) / (maxValue - minValue)
+    const [startColor, endColor] = colorRange
+    return interpolateColor(startColor, endColor, normalizedValue)
+  }
 
-    const innerWidth = width - margin.left - margin.right
-    const innerHeight = height - margin.top - margin.bottom
+  const interpolateColor = (start: string, end: string, ratio: number) => {
+    const startRGB = hexToRGB(start)
+    const endRGB = hexToRGB(end)
+    const result = startRGB.map((channel, i) => {
+      return Math.round(channel + (endRGB[i] - channel) * ratio)
+    })
+    return `rgb(${result.join(',')})`
+  }
 
-    const xValues = Array.from(new Set(data.map(d => d.x)))
-    const yValues = Array.from(new Set(data.map(d => d.y)))
-
-    const xScale = d3.scaleBand()
-      .domain(xValues.map(String))
-      .range([0, innerWidth])
-      .padding(0.1)
-
-    const yScale = d3.scaleBand()
-      .domain(yValues.map(String))
-      .range([innerHeight, 0])
-      .padding(0.1)
-
-    const colorScale = d3.scaleQuantile<string>()
-      .domain([0, d3.max(data, d => d.value) || 0])
-      .range(colors)
-
-    const g = svg.append('g')
-      .attr('transform', `translate(${margin.left},${margin.top})`)
-
-    // Create cells
-    g.selectAll('rect')
-      .data(data)
-      .enter()
-      .append('rect')
-      .attr('x', d => xScale(String(d.x)) || 0)
-      .attr('y', d => yScale(String(d.y)) || 0)
-      .attr('width', xScale.bandwidth())
-      .attr('height', yScale.bandwidth())
-      .attr('fill', d => colorScale(d.value))
-      .on('mouseover', function(event: MouseEvent, d: DataPoint) {
-        const tooltip = d3.select(this.parentNode as SVGElement)
-          .append('text')
-          .attr('class', 'tooltip')
-          .attr('x', xScale(String(d.x)) || 0)
-          .attr('y', yScale(String(d.y)) || 0)
-          .attr('dy', '-0.5em')
-          .text(`${d.x}, ${d.y}: ${d.value.toFixed(2)}`)
-      })
-      .on('mouseout', function() {
-        d3.select(this.parentNode as SVGElement)
-          .selectAll('.tooltip')
-          .remove()
-      })
-
-    // Add x-axis
-    g.append('g')
-      .attr('transform', `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(xScale))
-      .selectAll('text')
-      .attr('transform', 'rotate(-45)')
-      .style('text-anchor', 'end')
-
-    // Add y-axis
-    g.append('g')
-      .call(d3.axisLeft(yScale))
-
-    // Add legend
-    const legendWidth = 20
-    const legendHeight = 200
-    const legend = svg.append('g')
-      .attr('transform', `translate(${width - margin.right + 20},${margin.top})`)
-
-    const legendScale = d3.scaleLinear()
-      .domain([0, d3.max(data, d => d.value) || 0])
-      .range([legendHeight, 0])
-
-    const legendAxis = d3.axisRight(legendScale)
-      .ticks(5)
-
-    legend.selectAll('rect')
-      .data(d3.range(legendHeight))
-      .enter()
-      .append('rect')
-      .attr('x', 0)
-      .attr('y', (d, i) => i)
-      .attr('width', legendWidth)
-      .attr('height', 1)
-      .attr('fill', d => colorScale(legendScale.invert(d)))
-
-    legend.append('g')
-      .attr('transform', `translate(${legendWidth},0)`)
-      .call(legendAxis)
-  }, [data, width, height, margin, colors])
+  const hexToRGB = (hex: string): number[] => {
+    const r = parseInt(hex.slice(1, 3), 16)
+    const g = parseInt(hex.slice(3, 5), 16)
+    const b = parseInt(hex.slice(5, 7), 16)
+    return [r, g, b]
+  }
 
   return (
-    <svg ref={svgRef} width={width} height={height} />
+    <svg width={width} height={height}>
+      {data.map((d, i) => {
+        const x = xValues.indexOf(d.x) * cellWidth
+        const y = yValues.indexOf(d.y) * cellHeight
+        return (
+          <g key={i}>
+            <rect
+              x={x}
+              y={y}
+              width={cellWidth}
+              height={cellHeight}
+              fill={getColor(d.value)}
+              stroke='#fff'
+              strokeWidth={1}
+            />
+            <text
+              x={x + cellWidth / 2}
+              y={y + cellHeight / 2}
+              textAnchor='middle'
+              dominantBaseline='middle'
+              fill='#000'
+              fontSize={12}
+            >
+              {d.value}
+            </text>
+          </g>
+        )
+      })}
+      <g>
+        {xValues.map((value, i) => (
+          <text
+            key={`x-${i}`}
+            x={i * cellWidth + cellWidth / 2}
+            y={height + 20}
+            textAnchor='middle'
+            fontSize={12}
+          >
+            {value}
+          </text>
+        ))}
+        {yValues.map((value, i) => (
+          <text
+            key={`y-${i}`}
+            x={-10}
+            y={i * cellHeight + cellHeight / 2}
+            textAnchor='end'
+            dominantBaseline='middle'
+            fontSize={12}
+          >
+            {value}
+          </text>
+        ))}
+      </g>
+    </svg>
   )
 }

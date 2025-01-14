@@ -5,7 +5,6 @@ import { Document, Page, pdfjs } from 'react-pdf'
 import { Loader2, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
-import styles from './document-preview.module.css'
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`
 
@@ -48,20 +47,20 @@ export function DocumentPreview({ file, onClose, isOpen }: DocumentPreviewProps)
 
   return (
     <Dialog open={isOpen} onOpenChange={() => onClose?.()}>
-      <DialogContent className="max-w-4xl">
-        <div className="flex flex-col items-center justify-center w-full h-full">
+      <DialogContent className='max-w-4xl'>
+        <div className='flex h-full w-full flex-col items-center justify-center'>
           {loading && (
-            <div className="flex items-center justify-center w-full h-full">
-              <Loader2 className="w-8 h-8 animate-spin" />
+            <div className='flex h-full w-full items-center justify-center'>
+              <Loader2 className='h-8 w-8 animate-spin' />
             </div>
           )}
-          
+
           <Document
             file={file}
             onLoadSuccess={onDocumentLoadSuccess}
             loading={
-              <div className="flex items-center justify-center w-full h-full">
-                <Loader2 className="w-8 h-8 animate-spin" />
+              <div className='flex h-full w-full items-center justify-center'>
+                <Loader2 className='h-8 w-8 animate-spin' />
               </div>
             }
           >
@@ -70,36 +69,28 @@ export function DocumentPreview({ file, onClose, isOpen }: DocumentPreviewProps)
               scale={scale}
               renderAnnotationLayer={false}
               renderTextLayer={false}
-              className="max-w-full"
+              className='max-w-full'
             />
           </Document>
 
           {numPages > 0 && (
-            <div className="flex items-center justify-center gap-4 mt-4">
-              <Button
-                variant="outline"
-                onClick={previousPage}
-                disabled={pageNumber <= 1}
-              >
-                <ChevronLeft className="w-4 h-4" />
+            <div className='mt-4 flex items-center justify-center gap-4'>
+              <Button variant='outline' onClick={previousPage} disabled={pageNumber <= 1}>
+                <ChevronLeft className='h-4 w-4' />
               </Button>
-              
+
               <div>
                 Page {pageNumber} of {numPages}
               </div>
-              
-              <Button
-                variant="outline"
-                onClick={nextPage}
-                disabled={pageNumber >= numPages}
-              >
-                <ChevronRight className="w-4 h-4" />
+
+              <Button variant='outline' onClick={nextPage} disabled={pageNumber >= numPages}>
+                <ChevronRight className='h-4 w-4' />
               </Button>
-              <Button variant="outline" onClick={zoomIn}>
-                <ZoomIn className="w-4 h-4" />
+              <Button variant='outline' onClick={zoomIn}>
+                <ZoomIn className='h-4 w-4' />
               </Button>
-              <Button variant="outline" onClick={zoomOut}>
-                <ZoomOut className="w-4 h-4" />
+              <Button variant='outline' onClick={zoomOut}>
+                <ZoomOut className='h-4 w-4' />
               </Button>
             </div>
           )}

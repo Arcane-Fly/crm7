@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@supabase/supabase-js'
-import { Database } from '@/types/supabase'
+import type { Database } from '@/types/supabase'
 
 interface User {
   id: string
@@ -20,36 +20,42 @@ export function useUser() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
-  useEffect(() => {
-    const getUser = async () => {
-      try {
-        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
+  const fetchUser = useCallback(async () => {
+    try {
+      const {
+        data: { user: authUser },
+        error: authError,
+      } = await supabase.auth.getUser()
 
-        if (authError) throw authError
+      if (authError) throw authError
 
-        if (authUser) {
-          const { data: userData, error: userError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', authUser.id)
-            .single()
+      if (authUser) {
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', authUser.id)
+          .single()
 
-          if (userError) throw userError
+        if (userError) throw userError
 
-          setUser(userData)
-        }
-      } catch (err) {
-        setError(err as Error)
-      } finally {
-        setLoading(false)
+        setUser(userData)
       }
+    } catch (err) {
+      setError(err as Error)
+      setUser(null)
+    } finally {
+      setLoading(false)
     }
+  }, [supabase])
 
-    getUser()
+  useEffect(() => {
+    fetchUser()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
-        getUser()
+        fetchUser()
       } else {
         setUser(null)
       }
@@ -58,7 +64,7 @@ export function useUser() {
     return () => {
       subscription.unsubscribe()
     }
-  }, [])
+  }, [supabase, fetchUser])
 
   return { user, loading, error }
 }

@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/client'
-import type { Database } from '@/types/supabase'
 
 export interface FundingClaim {
   id: string
@@ -27,17 +26,9 @@ export interface FundingEvidence {
 class FundingService {
   private supabase = createClient()
 
-  async getClaims(params: {
-    org_id: string
-    status?: string
-    start_date?: Date
-    end_date?: Date
-  }) {
+  async getClaims(params: { org_id: string; status?: string; start_date?: Date; end_date?: Date }) {
     const { org_id, status, start_date, end_date } = params
-    const query = this.supabase
-      .from('funding_claims')
-      .select('*')
-      .eq('org_id', org_id)
+    const query = this.supabase.from('funding_claims').select('*').eq('org_id', org_id)
 
     if (status) {
       query.eq('status', status)
@@ -83,12 +74,15 @@ class FundingService {
     return data as FundingClaim
   }
 
-  async updateClaim(id: string, params: {
-    status?: string
-    approval_date?: Date
-    rejection_reason?: string
-    metadata?: Record<string, any>
-  }) {
+  async updateClaim(
+    id: string,
+    params: {
+      status?: string
+      approval_date?: Date
+      rejection_reason?: string
+      metadata?: Record<string, any>
+    }
+  ) {
     const { data, error } = await this.supabase
       .from('funding_claims')
       .update({
@@ -143,11 +137,14 @@ class FundingService {
     return data as FundingEvidence
   }
 
-  async verifyEvidence(id: string, params: {
-    status: 'verified' | 'rejected'
-    rejection_reason?: string
-    metadata?: Record<string, any>
-  }) {
+  async verifyEvidence(
+    id: string,
+    params: {
+      status: 'verified' | 'rejected'
+      rejection_reason?: string
+      metadata?: Record<string, any>
+    }
+  ) {
     const { data, error } = await this.supabase
       .from('funding_evidence')
       .update({

@@ -1,6 +1,6 @@
 'use client'
 
-import { ColumnDef } from '@tanstack/react-table'
+import type { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { ArrowUpDown, MoreHorizontal } from 'lucide-react'
 import {
@@ -30,11 +30,11 @@ export const columns: ColumnDef<Apprentice>[] = [
     header: ({ column }) => {
       return (
         <Button
-          variant="ghost"
+          variant='ghost'
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Name
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDown className='ml-2 h-4 w-4' />
         </Button>
       )
     },
@@ -60,11 +60,11 @@ export const columns: ColumnDef<Apprentice>[] = [
     cell: ({ row }) => {
       const status = row.getValue('status') as string
       return (
-        <Badge variant={
-          status === 'active' ? 'default' :
-          status === 'completed' ? 'success' :
-          'destructive'
-        }>
+        <Badge
+          variant={
+            status === 'active' ? 'default' : status === 'completed' ? 'success' : 'destructive'
+          }
+        >
           {status}
         </Badge>
       )
@@ -78,16 +78,14 @@ export const columns: ColumnDef<Apprentice>[] = [
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
+            <Button variant='ghost' className='h-8 w-8 p-0'>
+              <span className='sr-only'>Open menu</span>
+              <MoreHorizontal className='h-4 w-4' />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align='end'>
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(apprentice.id)}
-            >
+            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(apprentice.id)}>
               Copy ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />

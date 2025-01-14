@@ -1,14 +1,21 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { useToast } from '@/components/ui/use-toast'
 import { useUser } from '@/lib/hooks/use-user'
-import { ratesService, RateTemplate, AwardRate } from '@/lib/services/rates'
+import type { RateTemplate, AwardRate } from '@/lib/services/rates'
+import { ratesService } from '@/lib/services/rates'
 import { DatePicker } from '@/components/ui/date-picker'
 
 export interface RateTemplateBuilderProps {
@@ -24,40 +31,32 @@ export function RateTemplateBuilder({ templateId, onSave }: RateTemplateBuilderP
   const [template, setTemplate] = useState<Partial<RateTemplate>>({
     template_type: 'apprentice',
     is_active: true,
-    rules: {}
+    rules: {},
   })
   const [errors, setErrors] = useState<string[]>([])
 
-  useEffect(() => {
-    if (user?.org_id) {
-      loadAwards()
-      if (templateId) {
-        loadTemplate()
-      }
-    }
-  }, [user?.org_id, templateId])
-
-  const loadAwards = async () => {
+  const loadAwards = useCallback(async () => {
     try {
       const data = await ratesService.getAwardRates({
-        effective_date: new Date()
+        effective_date: new Date(),
       })
       setAwards(data)
     } catch (error) {
       toast({
         title: 'Error',
         description: 'Failed to load awards',
-        variant: 'destructive'
+        variant: 'destructive',
       })
     }
-  }
+  }, [toast])
 
-  const loadTemplate = async () => {
+  const loadTemplate = useCallback(async () => {
+    if (!templateId) return
     try {
       const data = await ratesService.getRateTemplates({
-        org_id: user!.org_id
+        org_id: user!.org_id,
       })
-      const found = data.find(t => t.id === templateId)
+      const found = data.find((t) => t.id === templateId)
       if (found) {
         setTemplate(found)
       }
@@ -65,10 +64,19 @@ export function RateTemplateBuilder({ templateId, onSave }: RateTemplateBuilderP
       toast({
         title: 'Error',
         description: 'Failed to load template',
-        variant: 'destructive'
+        variant: 'destructive',
       })
     }
-  }
+  }, [templateId, toast, user])
+
+  useEffect(() => {
+    const loadData = async () => {
+      if (user?.org_id) {
+        await Promise.all([loadAwards(), loadTemplate()])
+      }
+    }
+    loadData()
+  }, [loadAwards, loadTemplate, user])
 
   const handleSave = async () => {
     try {
@@ -82,8 +90,8 @@ export function RateTemplateBuilder({ templateId, onSave }: RateTemplateBuilderP
       }
 
       const fullTemplate: RateTemplate = {
-        ...template as RateTemplate,
-        org_id: user!.org_id
+        ...(template as RateTemplate),
+        org_id: user!.org_id,
       }
 
       const { data, error } = await ratesService.supabase
@@ -96,7 +104,7 @@ export function RateTemplateBuilder({ templateId, onSave }: RateTemplateBuilderP
 
       toast({
         title: 'Success',
-        description: 'Rate template saved successfully'
+        description: 'Rate template saved successfully',
       })
 
       onSave?.(data)
@@ -104,7 +112,7 @@ export function RateTemplateBuilder({ templateId, onSave }: RateTemplateBuilderP
       toast({
         title: 'Error',
         description: 'Failed to save template',
-        variant: 'destructive'
+        variant: 'destructive',
       })
     } finally {
       setLoading(false)
@@ -114,68 +122,76 @@ export function RateTemplateBuilder({ templateId, onSave }: RateTemplateBuilderP
   return (
     <Card>
       <CardHeader>
-        <CardTitle>
-          {templateId ? 'Edit Rate Template' : 'Create Rate Template'}
-        </CardTitle>
+        <CardTitle>{templateId ? 'Edit Rate Template' : 'Create Rate Template'}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className='space-y-4'>
           {errors.length > 0 && (
-            <div className="p-4 bg-destructive/10 rounded-md">
-              <h4 className="font-semibold text-destructive mb-2">Please fix the following errors:</h4>
-              <ul className="list-disc list-inside space-y-1">
+            <div className='rounded-md bg-destructive/10 p-4'>
+              <h4 className='mb-2 font-semibold text-destructive'>
+                Please fix the following errors:
+              </h4>
+              <ul className='list-inside list-disc space-y-1'>
                 {errors.map((error, index) => (
-                  <li key={index} className="text-destructive">{error}</li>
+                  <li key={index} className='text-destructive'>
+                    {error}
+                  </li>
                 ))}
               </ul>
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="templateName">Template Name</Label>
+          <div className='space-y-2'>
+            <Label htmlFor='templateName'>Template Name</Label>
             <Input
-              id="templateName"
+              id='templateName'
               value={template.template_name || ''}
-              onChange={(e) => setTemplate(prev => ({
-                ...prev,
-                template_name: e.target.value
-              }))}
+              onChange={(e) =>
+                setTemplate((prev) => ({
+                  ...prev,
+                  template_name: e.target.value,
+                }))
+              }
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="templateType">Template Type</Label>
+          <div className='space-y-2'>
+            <Label htmlFor='templateType'>Template Type</Label>
             <Select
               value={template.template_type}
-              onValueChange={(value) => setTemplate(prev => ({
-                ...prev,
-                template_type: value as RateTemplate['template_type']
-              }))}
+              onValueChange={(value) =>
+                setTemplate((prev) => ({
+                  ...prev,
+                  template_type: value as RateTemplate['template_type'],
+                }))
+              }
             >
-              <SelectTrigger id="templateType">
+              <SelectTrigger id='templateType'>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="apprentice">Apprentice</SelectItem>
-                <SelectItem value="trainee">Trainee</SelectItem>
-                <SelectItem value="casual">Casual</SelectItem>
-                <SelectItem value="permanent">Permanent</SelectItem>
-                <SelectItem value="contractor">Contractor</SelectItem>
+                <SelectItem value='apprentice'>Apprentice</SelectItem>
+                <SelectItem value='trainee'>Trainee</SelectItem>
+                <SelectItem value='casual'>Casual</SelectItem>
+                <SelectItem value='permanent'>Permanent</SelectItem>
+                <SelectItem value='contractor'>Contractor</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="award">Award</Label>
+          <div className='space-y-2'>
+            <Label htmlFor='award'>Award</Label>
             <Select
               value={template.award_id}
-              onValueChange={(value) => setTemplate(prev => ({
-                ...prev,
-                award_id: value
-              }))}
+              onValueChange={(value) =>
+                setTemplate((prev) => ({
+                  ...prev,
+                  award_id: value,
+                }))
+              }
             >
-              <SelectTrigger id="award">
-                <SelectValue placeholder="Select an award" />
+              <SelectTrigger id='award'>
+                <SelectValue placeholder='Select an award' />
               </SelectTrigger>
               <SelectContent>
                 {awards.map((award) => (
@@ -187,158 +203,174 @@ export function RateTemplateBuilder({ templateId, onSave }: RateTemplateBuilderP
             </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="baseMargin">Base Margin (%)</Label>
+          <div className='grid grid-cols-2 gap-4'>
+            <div className='space-y-2'>
+              <Label htmlFor='baseMargin'>Base Margin (%)</Label>
               <Input
-                id="baseMargin"
-                type="number"
-                min="0"
-                step="0.01"
+                id='baseMargin'
+                type='number'
+                min='0'
+                step='0.01'
                 value={template.base_margin || ''}
-                onChange={(e) => setTemplate(prev => ({
-                  ...prev,
-                  base_margin: Number(e.target.value)
-                }))}
+                onChange={(e) =>
+                  setTemplate((prev) => ({
+                    ...prev,
+                    base_margin: Number(e.target.value),
+                  }))
+                }
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="superRate">Super Rate (%)</Label>
+            <div className='space-y-2'>
+              <Label htmlFor='superRate'>Super Rate (%)</Label>
               <Input
-                id="superRate"
-                type="number"
-                min="0"
-                step="0.01"
+                id='superRate'
+                type='number'
+                min='0'
+                step='0.01'
                 value={template.super_rate || ''}
-                onChange={(e) => setTemplate(prev => ({
-                  ...prev,
-                  super_rate: Number(e.target.value)
-                }))}
+                onChange={(e) =>
+                  setTemplate((prev) => ({
+                    ...prev,
+                    super_rate: Number(e.target.value),
+                  }))
+                }
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="leaveLoading">Leave Loading (%)</Label>
+            <div className='space-y-2'>
+              <Label htmlFor='leaveLoading'>Leave Loading (%)</Label>
               <Input
-                id="leaveLoading"
-                type="number"
-                min="0"
-                step="0.01"
+                id='leaveLoading'
+                type='number'
+                min='0'
+                step='0.01'
                 value={template.leave_loading || ''}
-                onChange={(e) => setTemplate(prev => ({
-                  ...prev,
-                  leave_loading: Number(e.target.value)
-                }))}
+                onChange={(e) =>
+                  setTemplate((prev) => ({
+                    ...prev,
+                    leave_loading: Number(e.target.value),
+                  }))
+                }
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="workersCompRate">Workers Comp Rate (%)</Label>
+            <div className='space-y-2'>
+              <Label htmlFor='workersCompRate'>Workers Comp Rate (%)</Label>
               <Input
-                id="workersCompRate"
-                type="number"
-                min="0"
-                step="0.01"
+                id='workersCompRate'
+                type='number'
+                min='0'
+                step='0.01'
                 value={template.workers_comp_rate || ''}
-                onChange={(e) => setTemplate(prev => ({
-                  ...prev,
-                  workers_comp_rate: Number(e.target.value)
-                }))}
+                onChange={(e) =>
+                  setTemplate((prev) => ({
+                    ...prev,
+                    workers_comp_rate: Number(e.target.value),
+                  }))
+                }
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="payrollTaxRate">Payroll Tax Rate (%)</Label>
+            <div className='space-y-2'>
+              <Label htmlFor='payrollTaxRate'>Payroll Tax Rate (%)</Label>
               <Input
-                id="payrollTaxRate"
-                type="number"
-                min="0"
-                step="0.01"
+                id='payrollTaxRate'
+                type='number'
+                min='0'
+                step='0.01'
                 value={template.payroll_tax_rate || ''}
-                onChange={(e) => setTemplate(prev => ({
-                  ...prev,
-                  payroll_tax_rate: Number(e.target.value)
-                }))}
+                onChange={(e) =>
+                  setTemplate((prev) => ({
+                    ...prev,
+                    payroll_tax_rate: Number(e.target.value),
+                  }))
+                }
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="trainingCostRate">Training Cost Rate (%)</Label>
+            <div className='space-y-2'>
+              <Label htmlFor='trainingCostRate'>Training Cost Rate (%)</Label>
               <Input
-                id="trainingCostRate"
-                type="number"
-                min="0"
-                step="0.01"
+                id='trainingCostRate'
+                type='number'
+                min='0'
+                step='0.01'
                 value={template.training_cost_rate || ''}
-                onChange={(e) => setTemplate(prev => ({
-                  ...prev,
-                  training_cost_rate: Number(e.target.value)
-                }))}
+                onChange={(e) =>
+                  setTemplate((prev) => ({
+                    ...prev,
+                    training_cost_rate: Number(e.target.value),
+                  }))
+                }
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="otherCostsRate">Other Costs Rate (%)</Label>
+            <div className='space-y-2'>
+              <Label htmlFor='otherCostsRate'>Other Costs Rate (%)</Label>
               <Input
-                id="otherCostsRate"
-                type="number"
-                min="0"
-                step="0.01"
+                id='otherCostsRate'
+                type='number'
+                min='0'
+                step='0.01'
                 value={template.other_costs_rate || ''}
-                onChange={(e) => setTemplate(prev => ({
-                  ...prev,
-                  other_costs_rate: Number(e.target.value)
-                }))}
+                onChange={(e) =>
+                  setTemplate((prev) => ({
+                    ...prev,
+                    other_costs_rate: Number(e.target.value),
+                  }))
+                }
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="fundingOffset">Funding Offset</Label>
+            <div className='space-y-2'>
+              <Label htmlFor='fundingOffset'>Funding Offset</Label>
               <Input
-                id="fundingOffset"
-                type="number"
-                min="0"
-                step="0.01"
+                id='fundingOffset'
+                type='number'
+                min='0'
+                step='0.01'
                 value={template.funding_offset || ''}
-                onChange={(e) => setTemplate(prev => ({
-                  ...prev,
-                  funding_offset: Number(e.target.value)
-                }))}
+                onChange={(e) =>
+                  setTemplate((prev) => ({
+                    ...prev,
+                    funding_offset: Number(e.target.value),
+                  }))
+                }
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
+          <div className='grid grid-cols-2 gap-4'>
+            <div className='space-y-2'>
               <Label>Effective From</Label>
               <DatePicker
                 date={template.effective_from ? new Date(template.effective_from) : undefined}
-                onSelect={(date) => setTemplate(prev => ({
-                  ...prev,
-                  effective_from: date
-                }))}
+                onSelect={(date) =>
+                  setTemplate((prev) => ({
+                    ...prev,
+                    effective_from: date,
+                  }))
+                }
               />
             </div>
 
-            <div className="space-y-2">
+            <div className='space-y-2'>
               <Label>Effective To</Label>
               <DatePicker
                 date={template.effective_to ? new Date(template.effective_to) : undefined}
-                onSelect={(date) => setTemplate(prev => ({
-                  ...prev,
-                  effective_to: date
-                }))}
+                onSelect={(date) =>
+                  setTemplate((prev) => ({
+                    ...prev,
+                    effective_to: date,
+                  }))
+                }
               />
             </div>
           </div>
 
-          <div className="pt-4">
-            <Button
-              onClick={handleSave}
-              disabled={loading}
-              className="w-full"
-            >
+          <div className='pt-4'>
+            <Button onClick={handleSave} disabled={loading} className='w-full'>
               {loading ? 'Saving...' : 'Save Template'}
             </Button>
           </div>

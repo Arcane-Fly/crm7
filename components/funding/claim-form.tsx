@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { FundingService } from '@/lib/services/funding'
+import { fundingService } from '@/lib/services/funding'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -33,7 +33,6 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess }: Cla
   const [files, setFiles] = useState<File[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
-  const fundingService = new FundingService()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,7 +40,7 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess }: Cla
       toast({
         title: 'Error',
         description: 'Please fill in all required fields',
-        variant: 'destructive'
+        variant: 'destructive',
       })
       return
     }
@@ -56,23 +55,25 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess }: Cla
         hostEmployerId: hostEmployerId || undefined,
         amountClaimed: parseFloat(amountClaimed),
         referenceNumber,
-        notes
+        notes,
       })
 
       // Upload documents if any
       if (files.length > 0) {
-        await Promise.all(files.map(file =>
-          fundingService.uploadDocument({
-            fundingClaimId: claim.id,
-            documentType: 'supporting_document',
-            file
-          })
-        ))
+        await Promise.all(
+          files.map((file) =>
+            fundingService.uploadDocument({
+              fundingClaimId: claim.id,
+              documentType: 'supporting_document',
+              file,
+            })
+          )
+        )
       }
 
       toast({
         title: 'Success',
-        description: 'Funding claim created successfully'
+        description: 'Funding claim created successfully',
       })
 
       onSuccess?.()
@@ -81,7 +82,7 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess }: Cla
       toast({
         title: 'Error',
         description: 'Failed to create funding claim',
-        variant: 'destructive'
+        variant: 'destructive',
       })
     } finally {
       setIsLoading(false)
@@ -89,16 +90,16 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess }: Cla
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
+    <form onSubmit={handleSubmit} className='space-y-6'>
+      <div className='grid grid-cols-2 gap-4'>
+        <div className='space-y-2'>
           <Label>Funding Program</Label>
           <Select value={programId} onValueChange={setProgramId}>
             <SelectTrigger>
-              <SelectValue placeholder="Select a program" />
+              <SelectValue placeholder='Select a program' />
             </SelectTrigger>
             <SelectContent>
-              {programs.map(program => (
+              {programs.map((program) => (
                 <SelectItem key={program.id} value={program.id}>
                   {program.name}
                 </SelectItem>
@@ -107,14 +108,14 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess }: Cla
           </Select>
         </div>
 
-        <div className="space-y-2">
+        <div className='space-y-2'>
           <Label>Employee</Label>
           <Select value={employeeId} onValueChange={setEmployeeId}>
             <SelectTrigger>
-              <SelectValue placeholder="Select an employee" />
+              <SelectValue placeholder='Select an employee' />
             </SelectTrigger>
             <SelectContent>
-              {employees.map(employee => (
+              {employees.map((employee) => (
                 <SelectItem key={employee.id} value={employee.id}>
                   {employee.firstName} {employee.lastName}
                 </SelectItem>
@@ -124,15 +125,15 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess }: Cla
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
+      <div className='grid grid-cols-2 gap-4'>
+        <div className='space-y-2'>
           <Label>Host Employer</Label>
           <Select value={hostEmployerId} onValueChange={setHostEmployerId}>
             <SelectTrigger>
-              <SelectValue placeholder="Select a host employer" />
+              <SelectValue placeholder='Select a host employer' />
             </SelectTrigger>
             <SelectContent>
-              {hostEmployers.map(employer => (
+              {hostEmployers.map((employer) => (
                 <SelectItem key={employer.id} value={employer.id}>
                   {employer.name}
                 </SelectItem>
@@ -141,48 +142,48 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess }: Cla
           </Select>
         </div>
 
-        <div className="space-y-2">
+        <div className='space-y-2'>
           <Label>Amount Claimed</Label>
           <Input
-            type="number"
+            type='number'
             value={amountClaimed}
             onChange={(e) => setAmountClaimed(e.target.value)}
-            placeholder="Enter amount"
-            min="0"
-            step="0.01"
+            placeholder='Enter amount'
+            min='0'
+            step='0.01'
           />
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className='space-y-2'>
         <Label>Reference Number</Label>
         <Input
           value={referenceNumber}
           onChange={(e) => setReferenceNumber(e.target.value)}
-          placeholder="Optional reference number"
+          placeholder='Optional reference number'
         />
       </div>
 
-      <div className="space-y-2">
+      <div className='space-y-2'>
         <Label>Notes</Label>
         <Textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="Additional notes or comments"
+          placeholder='Additional notes or comments'
         />
       </div>
 
-      <div className="space-y-2">
+      <div className='space-y-2'>
         <Label>Supporting Documents</Label>
         <FileUploader
-          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+          accept='.pdf,.doc,.docx,.jpg,.jpeg,.png'
           maxSize={5 * 1024 * 1024} // 5MB
           onFileSelect={(files) => setFiles(files)}
           multiple={true}
         />
       </div>
 
-      <Button type="submit" disabled={isLoading}>
+      <Button type='submit' disabled={isLoading}>
         Submit Claim
       </Button>
     </form>
