@@ -130,7 +130,7 @@ export function useSupabaseMutation<T>({
       })
       onSuccess?.(data)
     },
-    onError: (error: Error, _variables, context) => {
+    onError: (error: Error, variables, context) => {
       // Rollback optimistic update
       if (context?.previousData) {
         invalidateQueries.forEach((queryKey, index) => {
