@@ -1,19 +1,18 @@
-import { Inter as FontSans } from 'next/font/google'
-import localFont from 'next/font/local'
+import { Inter as FontSans, JetBrains_Mono as FontMono } from 'next/font/google'
 import { cn } from '@/lib/utils'
 import { Providers } from '@/components/providers'
 import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary'
 import { initializeMonitoring } from '@/lib/monitoring'
 import { logger } from '@/lib/services/logger'
-import '@/styles/globals.css'
+import './globals.css'
 
 const fontSans = FontSans({
   subsets: ['latin'],
   variable: '--font-sans',
 })
 
-const fontMono = localFont({
-  src: '../assets/fonts/mono.ttf',
+const fontMono = FontMono({
+  subsets: ['latin'],
   variable: '--font-mono',
 })
 
