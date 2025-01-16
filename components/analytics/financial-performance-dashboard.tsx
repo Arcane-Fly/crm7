@@ -117,8 +117,8 @@ export function FinancialPerformanceDashboard() {
             <h3 className="text-lg font-semibold mb-2">Net Income</h3>
             <p 
               className={`text-3xl font-bold ${
-              stats.netIncome >= 0 ? 'text-green-600' : 'text-red-600'
-            }`}>
+                stats.netIncome >= 0 ? 'text-green-600' : 'text-red-600'
+              }`}
               role="status"
               aria-label="Net income"
             >
@@ -127,9 +127,13 @@ export function FinancialPerformanceDashboard() {
           </Card>
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-2">Cash Flow</h3>
-            <p className={`text-3xl font-bold ${
-              stats.cashFlow >= 0 ? 'text-green-600' : 'text-red-600'
-            }`}>
+            <p 
+              className={`text-3xl font-bold ${
+                stats.cashFlow >= 0 ? 'text-green-600' : 'text-red-600'
+              }`}
+              role="status"
+              aria-label="Cash flow"
+            >
               {formatCurrency(stats.cashFlow)}
             </p>
           </Card>

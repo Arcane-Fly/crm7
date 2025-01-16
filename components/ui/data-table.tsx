@@ -14,9 +14,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-})
-
-DataTable.displayName = 'DataTable' from '@tanstack/react-table'
+} from '@tanstack/react-table'
 import {
   Table,
   TableBody,
@@ -44,7 +42,7 @@ interface DataTableProps<TData, TValue> {
   enableColumnVisibility?: boolean
 }
 
-export const DataTable = React.memo(<TData, TValue>({
+export function DataTable<TData, TValue>({
   columns,
   data,
   filterColumn,
@@ -56,7 +54,7 @@ export const DataTable = React.memo(<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [sorting, setSorting] = React.useState<SortingState>([])
 
-  const table = React.useMemo(() => useReactTable({
+  const table = useReactTable({
     data,
     columns,
     state: {
@@ -76,15 +74,7 @@ export const DataTable = React.memo(<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
-  }), [
-    data,
-    columns,
-    sorting,
-    columnVisibility,
-    rowSelection,
-    columnFilters,
-    enableRowSelection,
-  ])
+  })
 
   return (
     <div className="space-y-4">

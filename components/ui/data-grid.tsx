@@ -1,11 +1,13 @@
 'use client'
 
 import * as React from 'react'
-import {
+import type {
   ColumnDef,
   ColumnFiltersState,
   SortingState,
   VisibilityState,
+} from '@tanstack/react-table'
+import {
   flexRender,
   getCoreRowModel,
   getFacetedRowModel,
@@ -60,42 +62,33 @@ export function DataGrid<TData, TValue>({
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [sorting, setSorting] = React.useState<SortingState>([])
 
-  const table = React.useMemo(
-    () =>
-      useReactTable({
-        data,
-        columns,
-        state: {
-          sorting,
-          columnVisibility,
-          rowSelection,
-          columnFilters,
-        },
-        enableRowSelection: enableSelection,
-        onRowSelectionChange: setRowSelection,
-        onSortingChange: setSorting,
-        onColumnFiltersChange: setColumnFilters,
-        onColumnVisibilityChange: setColumnVisibility,
-        getCoreRowModel: getCoreRowModel(),
-        getFilteredRowModel: enableFiltering ? getFilteredRowModel() : undefined,
-        getPaginationRowModel: enablePagination ? getPaginationRowModel() : undefined,
-        getSortedRowModel: enableSorting ? getSortedRowModel() : undefined,
-        getFacetedRowModel: getFacetedRowModel(),
-        getFacetedUniqueValues: getFacetedUniqueValues(),
-      }),
-    [
-      data,
-      columns,
+  const table = useReactTable({
+    data,
+    columns,
+    state: {
       sorting,
       columnVisibility,
       rowSelection,
       columnFilters,
-      enableSelection,
-      enableFiltering,
-      enablePagination,
-      enableSorting,
-    ]
-  )
+    },
+    enableRowSelection: enableSelection,
+    onRowSelectionChange: setRowSelection,
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: enableFiltering ? getFilteredRowModel() : undefined,
+    getPaginationRowModel: enablePagination ? getPaginationRowModel() : undefined,
+    getSortedRowModel: enableSorting ? getSortedRowModel() : undefined,
+    getFacetedRowModel: getFacetedRowModel(),
+    getFacetedUniqueValues: getFacetedUniqueValues(),
+  })
+
+  React.useEffect(() => {
+    if (pageSize) {
+      table.setPageSize(pageSize)
+    }
+  }, [pageSize, table])
 
   if (error) {
     return (
