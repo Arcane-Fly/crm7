@@ -1,3 +1,5 @@
+'use client'
+
 import type { Metadata } from 'next'
 import { useUser } from '@/lib/hooks/use-user'
 import { RateCalculator } from '@/components/rates/RateCalculator'
