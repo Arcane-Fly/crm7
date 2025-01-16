@@ -20,7 +20,7 @@ interface ComplianceRecord {
 export function ComplianceDashboard() {
   const [dateRange, setDateRange] = React.useState<DateRange>()
   
-  const { data: records, isLoading } = useSupabaseQuery<ComplianceRecord>({
+  const { data: records, _isLoading } = useSupabaseQuery<ComplianceRecord>({
     queryKey: ['compliance-records'],
     table: 'compliance_records',
   })

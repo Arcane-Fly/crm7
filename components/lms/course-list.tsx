@@ -5,7 +5,7 @@ import { useLMS } from '@/lib/hooks/use-lms'
 import { DataTable } from '@/components/ui/data-table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { formatDate } from '@/lib/utils'
+import { _formatDate } from '@/lib/utils'
 import { Eye, Edit, Archive } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
 import {

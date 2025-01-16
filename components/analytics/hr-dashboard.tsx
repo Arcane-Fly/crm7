@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { Card } from '@/components/ui/card'
-import { BarChart, LineChart, PieChart, chartColors } from '@/components/ui/charts'
+import { LineChart, PieChart, chartColors } from '@/components/ui/charts'
 import { DatePickerWithRange } from '@/components/ui/date-range-picker'
 import { useSupabaseQuery } from '@/lib/hooks/use-query-with-supabase'
 import type { DateRange } from 'react-day-picker'

@@ -33,7 +33,10 @@ describe('RateDashboard', () => {
 
   it('renders without crashing', () => {
     render(<RateDashboard orgId="test-org" />)
-    expect(screen.getByText(/Rate Analytics/i)).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText(/Rate Analytics/i)).toBeInTheDocument()
+      expect(screen.getByText('$100.00')).toBeInTheDocument()
+    })
   })
 
   it('loads forecasts and reports on mount', async () => {

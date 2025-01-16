@@ -20,9 +20,8 @@ export function MFAProvider({ children }: { children: React.ReactNode }) {
   const [isEnrolling, setIsEnrolling] = React.useState(false)
   const { user } = useAuth()
   const { toast } = useToast()
-  const supabase = createClient()
+  const supabase = React.useMemo(() => createClient(), [])
 
-  // Check if MFA is enabled for the user
   React.useEffect(() => {
     async function checkMFAStatus() {
       if (!user) return
@@ -42,7 +41,7 @@ export function MFAProvider({ children }: { children: React.ReactNode }) {
     }
 
     checkMFAStatus()
-  }, [user])
+  }, [user, supabase])
 
   const setupMFA = React.useCallback(async () => {
     if (!user) throw new Error('User not authenticated')
@@ -50,7 +49,6 @@ export function MFAProvider({ children }: { children: React.ReactNode }) {
     try {
       setIsEnrolling(true)
       
-      // Call Supabase function to generate TOTP secret
       const { data, error } = await supabase.rpc('generate_totp_secret', {
         user_id: user.id
       })
@@ -71,13 +69,13 @@ export function MFAProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsEnrolling(false)
     }
-  }, [user, toast])
+  }, [user, toast, supabase])
 
   const verifyMFA = React.useCallback(async (token: string) => {
     if (!user) throw new Error('User not authenticated')
     
     try {
-      const { data, error } = await supabase.rpc('verify_totp', {
+      const { error } = await supabase.rpc('verify_totp', {
         user_id: user.id,
         token
       })
@@ -94,7 +92,7 @@ export function MFAProvider({ children }: { children: React.ReactNode }) {
       })
       return false
     }
-  }, [user, toast])
+  }, [user, toast, supabase])
 
   const disableMFA = React.useCallback(async () => {
     if (!user) throw new Error('User not authenticated')
@@ -119,7 +117,7 @@ export function MFAProvider({ children }: { children: React.ReactNode }) {
       })
       throw error
     }
-  }, [user, toast])
+  }, [user, toast, supabase])
 
   return (
     <MFAContext.Provider

@@ -73,7 +73,7 @@ export function useSupabaseMutation<T>({
   const supabase = createClient()
 
   return useMutation({
-    mutationFn: async (variables: any) => {
+    mutationFn: async (_variables: any) => {
       try {
         let query = supabase.from(table)
 

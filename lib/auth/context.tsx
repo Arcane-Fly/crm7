@@ -1,7 +1,6 @@
 'use client'
 
 import * as React from 'react'
-import { createContext, useContext, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '../supabase/client'
 import type { Session, User } from '@supabase/supabase-js'
@@ -13,7 +12,7 @@ interface AuthContextType {
   requiresMFA: boolean
 }
 
-const AuthContext = createContext<AuthContextType>({
+const AuthContext = React.createContext<AuthContextType>({
   user: null,
   session: null,
   signOut: async () => {},
@@ -21,13 +20,13 @@ const AuthContext = createContext<AuthContextType>({
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
-  const [requiresMFA, setRequiresMFA] = useState(false)
+  const [user, setUser] = React.useState<User | null>(null)
+  const [session, setSession] = React.useState<Session | null>(null)
+  const [requiresMFA, setRequiresMFA] = React.useState(false)
   const router = useRouter()
-  const supabase = createClient()
+  const supabase = React.useMemo(() => createClient(), [])
 
-  useEffect(() => {
+  React.useEffect(() => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
@@ -37,7 +36,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!session) {
         router.push('/auth')
       } else {
-        // Check if user requires MFA
         const { data, error } = await supabase
           .from('user_mfa')
           .select('enabled, verified')
@@ -56,12 +54,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe()
     }
-  }, [router, supabase.auth])
+  }, [router, supabase])
 
-  const signOut = async () => {
+  const signOut = React.useCallback(async () => {
     await supabase.auth.signOut()
     router.push('/auth')
-  }
+  }, [router, supabase])
 
   return (
     <AuthContext.Provider value={{ user, session, signOut, requiresMFA }}>
@@ -71,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 export const useAuth = () => {
-  const context = useContext(AuthContext)
+  const context = React.useContext(AuthContext)
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider')
   }

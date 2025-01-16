@@ -11,7 +11,7 @@ import {
   FormProvider,
   useFormContext,
 } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { _zodResolver } from '@hookform/resolvers/zod'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 

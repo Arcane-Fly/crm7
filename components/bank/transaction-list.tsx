@@ -18,7 +18,7 @@ import type { DateRange } from 'react-day-picker'
 export function TransactionList() {
   const { transactions } = useBankIntegration()
   const [dateRange, setDateRange] = React.useState<DateRange | undefined>()
-  const [accountFilter, setAccountFilter] = React.useState<string>('')
+  const [accountFilter, _setAccountFilter] = React.useState<string>('')
   const [typeFilter, setTypeFilter] = React.useState<'credit' | 'debit' | ''>('')
 
   const columns = [

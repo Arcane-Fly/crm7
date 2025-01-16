@@ -64,7 +64,7 @@ export class Logger {
     }
   }
 
-  private logToExternalService(entry: LogEntry) {
+  private logToExternalService(_entry: LogEntry) {
     // TODO: Implement external logging service integration
     // This could be Sentry, LogRocket, or another service
     if (process.env.NEXT_PUBLIC_SENTRY_DSN) {

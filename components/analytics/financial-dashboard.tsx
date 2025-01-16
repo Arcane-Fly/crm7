@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { Card } from '@/components/ui/card'
-import { BarChart, LineChart, PieChart, chartColors } from '@/components/ui/charts'
+import { BarChart, LineChart, chartColors } from '@/components/ui/charts'
 import { DatePickerWithRange } from '@/components/ui/date-range-picker'
 import { useBankIntegration } from '@/lib/hooks/use-bank-integration'
 import { formatCurrency } from '@/lib/utils'

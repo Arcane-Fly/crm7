@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { useAuth } from '@/lib/auth/context'
-import { expenseService, type Expense } from '@/lib/services/expense'
+import { type Expense } from '@/lib/services/expense'
 import { DataTable } from '@/components/ui/data-table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -28,7 +28,7 @@ export function ExpenseList() {
     enabled: !!user,
   })
 
-  const { mutate: approveExpense, isLoading: isApproving } = useSupabaseMutation<Expense>({
+  const { mutate: approveExpense, isLoading: _isApproving } = useSupabaseMutation<Expense>({
     table: 'expenses',
     type: 'update',
     onSuccess: () => {
@@ -47,7 +47,7 @@ export function ExpenseList() {
     invalidateQueries: [['expenses', user?.org_id]],
   })
 
-  const { mutate: rejectExpense, isLoading: isRejecting } = useSupabaseMutation<Expense>({
+  const { mutate: rejectExpense, isLoading: _isRejecting } = useSupabaseMutation<Expense>({
     table: 'expenses',
     type: 'update',
     onSuccess: () => {
