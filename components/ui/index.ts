@@ -11,6 +11,16 @@ export { Dialog } from './dialog'
 export { Form } from './form'
 export { Input } from './input'
 export { Label } from './label'
+export {
+  Modal,
+  ModalTrigger,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalTitle,
+  ModalDescription,
+  ModalClose,
+} from './modal'
 export { Select } from './select'
 export { Sheet } from './sheet'
 export { Skeleton } from './skeleton'
