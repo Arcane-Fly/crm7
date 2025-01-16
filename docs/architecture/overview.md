@@ -176,3 +176,17 @@
 - Disaster recovery
 - Load balancing
 - Auto-scaling
+
+### Accessibility & UX
+- WCAG 2.1 AA compliance
+- Mobile-first design
+- Progressive enhancement
+- Performance budgets
+- User feedback loops
+
+### Developer Experience
+- Improved documentation
+- Development tooling
+- Code generation
+- Type safety
+- Debug tooling

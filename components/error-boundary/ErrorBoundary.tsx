@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertTriangle } from 'lucide-react'
+import { logger } from '@/lib/services/logger'
 
 interface ErrorBoundaryState {
   hasError: boolean
@@ -11,6 +12,7 @@ interface ErrorBoundaryState {
 interface ErrorBoundaryProps {
   children: React.ReactNode
   fallback?: React.ReactNode
+  onError?: (error: Error, errorInfo: React.ErrorInfo) => void
 }
 
 export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
@@ -25,7 +27,14 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Log error to monitoring service
-    console.error('Error caught by boundary:', error, errorInfo)
+    logger.error('Error caught by boundary:', error, {
+      componentStack: errorInfo.componentStack,
+    })
+
+    // Call onError prop if provided
+    if (this.props.onError) {
+      this.props.onError(error, errorInfo)
+    }
   }
 
   render() {

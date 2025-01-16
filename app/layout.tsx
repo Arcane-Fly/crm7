@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 import { Providers } from '@/components/providers'
 import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary'
 import { initializeMonitoring } from '@/lib/monitoring'
+import { logger } from '@/lib/services/logger'
 import '@/styles/globals.css'
 
 const fontSans = FontSans({
@@ -36,7 +37,13 @@ export default function RootLayout({
           fontMono.variable
         )}
       >
-        <ErrorBoundary>
+        <ErrorBoundary
+          onError={(error, errorInfo) => {
+            logger.error('Global error boundary:', error, {
+              componentStack: errorInfo.componentStack,
+            })
+          }}
+        >
           <Providers>{children}</Providers>
         </ErrorBoundary>
       </body>
