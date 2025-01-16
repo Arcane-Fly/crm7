@@ -1,13 +1,24 @@
-import './styles/globals.css'
-import { Inter } from 'next/font/google'
-import { ThemeProvider } from '@/components/theme-provider'
-import { Toaster } from '@/components/ui/toaster'
+import { Inter as FontSans } from 'next/font/google'
+import localFont from 'next/font/local'
+import { cn } from '@/lib/utils'
+import { Providers } from '@/components/providers'
+import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary'
+import { initializeMonitoring } from '@/lib/monitoring'
+import '@/styles/globals.css'
 
-const inter = Inter({ subsets: ['latin'] })
+const fontSans = FontSans({
+  subsets: ['latin'],
+  variable: '--font-sans',
+})
 
-export const metadata = {
-  title: 'CRM7R',
-  description: 'A modern CRM for Group Training Organisations',
+const fontMono = localFont({
+  src: '../assets/fonts/mono.ttf',
+  variable: '--font-mono',
+})
+
+// Initialize monitoring
+if (typeof window !== 'undefined') {
+  initializeMonitoring()
 }
 
 export default function RootLayout({
@@ -16,12 +27,18 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang='en' suppressHydrationWarning>
-      <body className={inter.className}>
-        <ThemeProvider>
-          {children}
-          <Toaster />
-        </ThemeProvider>
+    <html lang="en" suppressHydrationWarning>
+      <head />
+      <body
+        className={cn(
+          'min-h-screen bg-background font-sans antialiased',
+          fontSans.variable,
+          fontMono.variable
+        )}
+      >
+        <ErrorBoundary>
+          <Providers>{children}</Providers>
+        </ErrorBoundary>
       </body>
     </html>
   )

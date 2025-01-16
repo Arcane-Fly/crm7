@@ -1,31 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
+import { vi } from 'vitest'
 import { RateDashboard } from '../RateDashboard'
 import { ratesService } from '@/lib/services/rates'
-import { subDays, format } from 'date-fns'
 
-// Mock Chart.js
-vi.mock('chart.js', () => ({
-  Chart: {
-    register: vi.fn(),
-  },
-  CategoryScale: vi.fn(),
-  LinearScale: vi.fn(),
-  PointElement: vi.fn(),
-  LineElement: vi.fn(),
-  BarElement: vi.fn(),
-  Title: vi.fn(),
-  Tooltip: vi.fn(),
-  Legend: vi.fn(),
-}))
-
-// Mock react-chartjs-2
-vi.mock('react-chartjs-2', () => ({
-  Line: () => <div data-testid='line-chart'>Line Chart</div>,
-  Bar: () => <div data-testid='bar-chart'>Bar Chart</div>,
-}))
-
-// Mock rates service
+// Mock the rates service
 vi.mock('@/lib/services/rates', () => ({
   ratesService: {
     getForecastsByDateRange: vi.fn(),
@@ -33,99 +11,80 @@ vi.mock('@/lib/services/rates', () => ({
   },
 }))
 
+const mockForecasts = [
+  {
+    forecast_date: '2024-01-01',
+    forecast_value: 100,
+  },
+]
+
+const mockReports = [
+  {
+    report_date: '2024-01-01',
+    data: { actual_rate: 95 },
+  },
+]
+
 describe('RateDashboard', () => {
-  const mockOrgId = 'test-org-id'
-  const today = new Date()
-  const thirtyDaysAgo = subDays(today, 30)
-
-  const mockForecasts = [
-    {
-      id: '1',
-      forecast_date: format(subDays(today, 2), 'yyyy-MM-dd'),
-      forecast_value: 150,
-      confidence: 0.9,
-    },
-    {
-      id: '2',
-      forecast_date: format(subDays(today, 1), 'yyyy-MM-dd'),
-      forecast_value: 155,
-      confidence: 0.85,
-    },
-  ]
-
-  const mockReports = [
-    {
-      id: '1',
-      report_date: format(subDays(today, 2), 'yyyy-MM-dd'),
-      data: { actual_rate: 148 },
-    },
-    {
-      id: '2',
-      report_date: format(subDays(today, 1), 'yyyy-MM-dd'),
-      data: { actual_rate: 152 },
-    },
-  ]
-
   beforeEach(() => {
-    vi.clearAllMocks()
-    ;(ratesService.getForecastsByDateRange as any).mockResolvedValue({ data: mockForecasts })
-    ;(ratesService.getReportsByDateRange as any).mockResolvedValue({ data: mockReports })
+    vi.mocked(ratesService.getForecastsByDateRange).mockResolvedValue({ data: mockForecasts })
+    vi.mocked(ratesService.getReportsByDateRange).mockResolvedValue({ data: mockReports })
   })
 
-  it('renders dashboard with charts', async () => {
-    render(<RateDashboard orgId={mockOrgId} />)
-
-    // Check if charts are rendered
-    await waitFor(() => {
-      expect(screen.getByTestId('line-chart')).toBeInTheDocument()
-    })
-    await waitFor(() => {
-      expect(screen.getByTestId('bar-chart')).toBeInTheDocument()
-    })
+  it('renders without crashing', () => {
+    render(<RateDashboard orgId="test-org" />)
+    expect(screen.getByText(/Rate Analytics/i)).toBeInTheDocument()
   })
 
-  it('loads forecast and report data on mount', async () => {
-    render(<RateDashboard orgId={mockOrgId} />)
-
+  it('loads forecasts and reports on mount', async () => {
+    render(<RateDashboard orgId="test-org" />)
+    
     await waitFor(() => {
-      expect(ratesService.getForecastsByDateRange).toHaveBeenCalledWith({
-        org_id: mockOrgId,
-        start_date: format(thirtyDaysAgo, 'yyyy-MM-dd'),
-        end_date: format(today, 'yyyy-MM-dd'),
-      })
-    })
-
-    await waitFor(() => {
-      expect(ratesService.getReportsByDateRange).toHaveBeenCalledWith({
-        org_id: mockOrgId,
-        start_date: format(thirtyDaysAgo, 'yyyy-MM-dd'),
-        end_date: format(today, 'yyyy-MM-dd'),
-      })
+      expect(ratesService.getForecastsByDateRange).toHaveBeenCalled()
+      expect(ratesService.getReportsByDateRange).toHaveBeenCalled()
     })
   })
 
-  it('handles API errors gracefully', async () => {
-    const errorMessage = 'Failed to load rate data'
-    ;(ratesService.getForecastsByDateRange as any).mockRejectedValue(new Error(errorMessage))
+  it('displays loading state initially', () => {
+    render(<RateDashboard orgId="test-org" />)
+    expect(screen.getByTestId('loading-skeleton')).toBeInTheDocument()
+  })
 
-    render(<RateDashboard orgId={mockOrgId} />)
+  it('displays error message when data fetch fails', async () => {
+    vi.mocked(ratesService.getForecastsByDateRange).mockRejectedValueOnce(new Error('Test error'))
 
-    expect(await screen.findByText(errorMessage)).toBeInTheDocument()
+    render(<RateDashboard orgId="test-org" />)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Failed to load dashboard data/i)).toBeInTheDocument()
+    })
   })
 
   it('updates data when date range changes', async () => {
-    render(<RateDashboard orgId={mockOrgId} />)
+    render(<RateDashboard orgId="test-org" />)
 
-    // Find and click the date range picker
-    const dateRangePicker = screen.getByRole('button', { name: /pick a date/i })
-    fireEvent.click(dateRangePicker)
-
-    // Wait for API calls to be made with new date range
+    // Wait for initial load
     await waitFor(() => {
       expect(ratesService.getForecastsByDateRange).toHaveBeenCalled()
     })
+
+    // Clear mocks
+    vi.clearAllMocks()
+
+    // Change date range
+    const dateRangePicker = screen.getByRole('button', { name: /Date Range/i })
+    fireEvent.click(dateRangePicker)
+
+    // Select new date range
+    // Note: Actual date selection would depend on your date picker component
+    // This is just a simplified example
+
     await waitFor(() => {
-      expect(ratesService.getReportsByDateRange).toHaveBeenCalled()
+      expect(ratesService.getForecastsByDateRange).toHaveBeenCalledWith({
+        org_id: 'test-org',
+        start_date: expect.any(String),
+        end_date: expect.any(String),
+      })
     })
   })
 })

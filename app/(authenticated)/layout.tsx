@@ -1,9 +1,9 @@
 'use client'
 
-import { Header } from '@/components/layout/Header'
 import { SidebarProvider } from '@/components/layout/improved-sidebar'
 import { AppSidebar } from '@/components/layout/app-sidebar'
-import { ThemeProvider } from '@/components/theme-provider'
+import { Header } from '@/components/layout/Header'
+import { HEADER_HEIGHT } from '@/config/constants'
 
 export default function AuthenticatedLayout({
   children,
@@ -11,26 +11,21 @@ export default function AuthenticatedLayout({
   children: React.ReactNode
 }) {
   return (
-    <ThemeProvider
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
-      <SidebarProvider>
-        <div className='min-h-screen flex flex-col bg-gray-50'>
-          <Header />
-          <div className='flex-1 flex'>
-            <AppSidebar />
-            <main className='flex-1 flex flex-col'>
-              <div className='flex-1 p-4 md:p-6 overflow-y-auto space-y-6'>
-                <div className='container mx-auto max-w-7xl'>
-                  {children}
-                </div>
-              </div>
-            </main>
-          </div>
+    <SidebarProvider>
+      <div className="relative flex min-h-screen flex-col">
+        <Header />
+        <div 
+          className="flex flex-1"
+          style={{ height: `calc(100vh - ${HEADER_HEIGHT}px)` }}
+        >
+          <AppSidebar />
+          <main className="flex-1 overflow-y-auto">
+            <div className="container mx-auto py-6">
+              {children}
+            </div>
+          </main>
         </div>
-      </SidebarProvider>
-    </ThemeProvider>
+      </div>
+    </SidebarProvider>
   )
 }

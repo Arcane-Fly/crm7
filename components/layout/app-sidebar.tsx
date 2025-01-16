@@ -1,137 +1,110 @@
 'use client'
 
-import { 
-  Clock, 
-  Users, 
-  LayoutDashboard, 
-  ClipboardCheck, 
-  MessageSquare, 
-  LogOut,
-  GraduationCap,
-  Briefcase,
-  FileText,
-  BookOpen,
-  Award,
-  UserCheck,
-  Building
-} from "lucide-react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
-import { useToast } from "@/components/ui/use-toast"
-import { Button } from "@/components/ui/button"
-import { Sidebar } from "./improved-sidebar"
-
-const menuItems = [
-  {
-    title: "Dashboard",
-    icon: LayoutDashboard,
-    path: "/",
-  },
-  {
-    title: "Apprentices",
-    icon: GraduationCap,
-    path: "/apprentices",
-  },
-  {
-    title: "Host Employers",
-    icon: Building,
-    path: "/host-employers",
-  },
-  {
-    title: "Training Plans",
-    icon: BookOpen,
-    path: "/training-plans",
-  },
-  {
-    title: "Qualifications",
-    icon: Award,
-    path: "/qualifications",
-  },
-  {
-    title: "Placements",
-    icon: Briefcase,
-    path: "/placements",
-  },
-  {
-    title: "Progress Reviews",
-    icon: UserCheck,
-    path: "/progress-reviews",
-  },
-  {
-    title: "Compliance",
-    icon: ClipboardCheck,
-    path: "/compliance",
-  },
-  {
-    title: "Documents",
-    icon: FileText,
-    path: "/documents",
-  },
-  {
-    title: "Timesheets",
-    icon: Clock,
-    path: "/timesheets",
-  },
-  {
-    title: "Staff",
-    icon: Users,
-    path: "/staff",
-  },
-  {
-    title: "Messages",
-    icon: MessageSquare,
-    path: "/messages",
-  },
-]
+import * as React from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { cn } from '@/lib/utils'
+import { Sheet, SheetContent } from '@/components/ui/sheet'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { SidebarContext } from './improved-sidebar'
+import { SECTIONS } from '@/config/navigation'
+import type { Section } from '@/config/navigation'
+import { useLockBody } from '@/lib/hooks/use-lock-body'
+import { SIDEBAR_WIDTH, SIDEBAR_COLLAPSED_WIDTH, TRANSITIONS, Z_INDEXES } from '@/config/constants'
+import { SidebarSkeleton } from '@/components/ui/skeleton'
 
 export function AppSidebar() {
-  const router = useRouter()
-  const { toast } = useToast()
-  const supabase = createClient()
+  const { open, openMobile, setOpenMobile, isMobile } = React.useContext(SidebarContext)
+  const pathname = usePathname()
 
-  const handleSignOut = async () => {
-    const { error } = await supabase.auth.signOut()
-    if (error) {
-      toast({
-        title: "Error signing out",
-        description: error.message,
-        variant: "destructive",
-      })
-      return
+  // Get the top-level section from the pathname
+  const topLevel = pathname.split('/')[1] as Section || 'dashboard'
+  const items = SECTIONS[topLevel] || []
+
+  const [isLoading, setIsLoading] = React.useState(true)
+
+  // Lock body scroll when mobile sidebar is open
+  React.useEffect(() => {
+    if (openMobile) {
+      useLockBody()
     }
+  }, [openMobile])
 
-    router.push("/auth")
-  }
+  // Simulate loading state for smooth transitions between sections
+  React.useEffect(() => {
+    setIsLoading(true)
+    const timer = setTimeout(() => setIsLoading(false), 300)
+    return () => clearTimeout(timer)
+  }, [topLevel])
 
-  return (
-    <Sidebar>
-      <div className="flex flex-col h-full">
-        <div className="flex-1">
-          <nav className="flex flex-col space-y-1 p-2">
-            {menuItems.map((item) => (
+  const sidebarContent = (
+    <ScrollArea 
+      className="h-full py-6"
+      style={{ 
+        transition: `width ${TRANSITIONS.DEFAULT} ease-in-out`,
+        width: open ? SIDEBAR_WIDTH : SIDEBAR_COLLAPSED_WIDTH 
+      }}
+    >
+      {isLoading ? (
+        <SidebarSkeleton />
+      ) : (
+        <div className="space-y-1 px-3">
+          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
+            {topLevel.charAt(0).toUpperCase() + topLevel.slice(1)}
+          </h2>
+          {items.map((item) => {
+            const isActive = pathname === item.href
+            return (
               <Link
-                key={item.path}
-                href={item.path}
-                className="flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  'flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                  'hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  isActive ? 'bg-accent text-accent-foreground' : 'transparent'
+                )}
               >
-                <item.icon className="mr-3 h-4 w-4" />
                 {item.title}
               </Link>
-            ))}
-          </nav>
+            )
+          })}
         </div>
-        <div className="p-2 border-t">
-          <Button
-            variant="ghost"
-            className="flex w-full items-center justify-start px-3 py-2"
-            onClick={handleSignOut}
-          >
-            <LogOut className="mr-3 h-4 w-4" />
-            Sign Out
-          </Button>
-        </div>
-      </div>
-    </Sidebar>
+      )}
+    </ScrollArea>
+  )
+
+  // Mobile version
+  if (isMobile) {
+    return (
+      <Sheet 
+        open={openMobile} 
+        onOpenChange={setOpenMobile}
+      >
+        <SheetContent 
+          side="left" 
+          className="w-[300px] p-0"
+          style={{ zIndex: Z_INDEXES.SIDEBAR }}
+          onInteractOutside={() => setOpenMobile(false)}
+        >
+          {sidebarContent}
+        </SheetContent>
+      </Sheet>
+    )
+  }
+
+  // Desktop version
+  return (
+    <div
+      className={cn(
+        'hidden border-r bg-background lg:block',
+        'transition-[width] duration-300 ease-in-out'
+      )}
+      style={{ 
+        width: open ? SIDEBAR_WIDTH : SIDEBAR_COLLAPSED_WIDTH,
+        zIndex: Z_INDEXES.SIDEBAR 
+      }}
+    >
+      {sidebarContent}
+    </div>
   )
 }

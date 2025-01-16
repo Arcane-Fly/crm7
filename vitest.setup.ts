@@ -1,76 +1,53 @@
-import '@testing-library/jest-dom/vitest'
-import { expect, afterEach, vi } from 'vitest'
-import * as matchers from '@testing-library/jest-dom/matchers'
+import '@testing-library/jest-dom'
+import { vi } from 'vitest'
+import { createClient } from '@supabase/supabase-js'
 
-// Extend matchers
-expect.extend(matchers)
-
-// Mock Next.js router
-vi.mock('next/router', () => ({
-  useRouter: () => ({
-    push: vi.fn(),
-    replace: vi.fn(),
-    prefetch: vi.fn(),
-    back: vi.fn(),
-    pathname: '/',
-    query: {},
-    asPath: '/',
-    events: {
-      on: vi.fn(),
-      off: vi.fn(),
-      emit: vi.fn(),
+// Mock Supabase client
+vi.mock('@supabase/supabase-js', () => ({
+  createClient: vi.fn(() => ({
+    auth: {
+      getSession: vi.fn(),
+      onAuthStateChange: vi.fn(() => ({
+        data: { subscription: { unsubscribe: vi.fn() } },
+      })),
     },
-  }),
+    from: vi.fn(() => ({
+      select: vi.fn().mockReturnThis(),
+      insert: vi.fn().mockReturnThis(),
+      update: vi.fn().mockReturnThis(),
+      delete: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn(),
+    })),
+  })),
 }))
 
-// Mock Next.js navigation hooks
+// Mock next/navigation
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({
+  useRouter: vi.fn(() => ({
     push: vi.fn(),
     replace: vi.fn(),
-    prefetch: vi.fn(),
-    back: vi.fn(),
-    forward: vi.fn(),
     refresh: vi.fn(),
-  }),
-  usePathname: () => '/',
-  useSearchParams: () => new URLSearchParams(),
+  })),
+  usePathname: vi.fn(() => '/'),
+  useSearchParams: vi.fn(() => ({ get: vi.fn() })),
 }))
 
 // Mock ResizeObserver
-const ResizeObserverMock = vi.fn(() => ({
+global.ResizeObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
 }))
-
-vi.stubGlobal('ResizeObserver', ResizeObserverMock)
 
 // Mock IntersectionObserver
-const IntersectionObserverMock = vi.fn(() => ({
+global.IntersectionObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
 }))
 
-vi.stubGlobal('IntersectionObserver', IntersectionObserverMock)
-
-// Mock window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: vi.fn().mockImplementation((query) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
-})
-
-// Cleanup after each test
+// Clean up after each test
 afterEach(() => {
   vi.clearAllMocks()
 })

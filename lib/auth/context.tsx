@@ -10,29 +10,46 @@ interface AuthContextType {
   user: User | null
   session: Session | null
   signOut: () => Promise<void>
+  requiresMFA: boolean
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
   signOut: async () => {},
+  requiresMFA: false,
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
+  const [requiresMFA, setRequiresMFA] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
 
       if (!session) {
         router.push('/auth')
+      } else {
+        // Check if user requires MFA
+        const { data, error } = await supabase
+          .from('user_mfa')
+          .select('enabled, verified')
+          .eq('user_id', session.user.id)
+          .single()
+
+        if (!error && data) {
+          setRequiresMFA(data.enabled && !data.verified)
+          if (data.enabled && !data.verified) {
+            router.push('/auth/mfa')
+          }
+        }
       }
     })
 
@@ -47,7 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, signOut }}>
+    <AuthContext.Provider value={{ user, session, signOut, requiresMFA }}>
       {children}
     </AuthContext.Provider>
   )

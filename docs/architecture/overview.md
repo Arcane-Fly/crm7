@@ -1,133 +1,178 @@
 # System Architecture Overview
 
-## Core Systems Architecture
+## Core Components
 
-This document consolidates the architectural approaches from all project versions (crm3, crm4, crm5, crm7) into a unified architecture.
+### Authentication & Security
+- Multi-factor authentication (MFA) support
+- Role-based access control
+- Session management
+- Security monitoring and logging
 
-### Key Components
+### Data Management
+- React Query for efficient data fetching and caching
+- Optimistic updates
+- Real-time updates via Supabase
+- Type-safe database interactions
 
-1. Frontend Architecture
-   - Next.js 14 with App Router
-   - TypeScript for type safety
-   - Tailwind CSS with shadcn/ui
-   - Zustand for state management
-   - React Query for data fetching
+### Analytics & Reporting
+- Financial analytics dashboard
+- Training progress tracking
+- Compliance monitoring
+- Real-time metrics
+- Performance monitoring
 
-2. Backend Services
-   - Supabase for database and auth
-   - Vercel Blob for file storage
-   - Redis for caching (planned)
-   - WebSocket for real-time features
+### Integration Layer
+- LMS (Learning Management System)
+- Bank integration
+- Fair Work API
+- Government systems
 
-3. Integration Layer
-   - Fair Work API integration
-   - Government portal connectors
-   - RTO/TAFE system integration
-   - Financial system connectors
+### Performance & Monitoring
+- Web Vitals tracking
+- Error tracking with Sentry
+- Performance metrics
+- Transaction monitoring
 
-4. Core Features
-   - Apprentice management
-   - Training & compliance
-   - Payroll & funding
-   - Reporting & analytics
-   - Document management
+## Technical Stack
 
-### System Interactions
+### Frontend
+- Next.js 13+ with App Router
+- TypeScript
+- TailwindCSS
+- shadcn/ui components
+- React Query
+- Chart.js
 
-1. User Interface Layer
-   - Responsive web interface
-   - Progressive web app capabilities
-   - Real-time updates
-   - Offline support (planned)
+### Backend
+- Supabase
+- PostgreSQL
+- Edge Functions
+- Real-time subscriptions
 
-2. Business Logic Layer
-   - Award interpretation engine
-   - Funding eligibility calculator
-   - Compliance monitoring system
-   - Report generation engine
+### Testing
+- Vitest
+- React Testing Library
+- E2E with Playwright
+- CI/CD with GitHub Actions
 
-3. Data Layer
-   - Structured data (Supabase)
-   - File storage (Vercel Blob)
-   - Caching layer (Redis)
-   - Audit logging
+### Monitoring
+- Sentry for error tracking
+- Custom performance monitoring
+- Web Vitals tracking
+- Logger service
 
-4. Integration Layer
-   - API gateways
-   - WebSocket servers
-   - Message queues
-   - ETL pipelines
+## Security Features
 
-### Security Architecture
+### Authentication
+- Email/password authentication
+- Multi-factor authentication (MFA)
+- Session management
+- JWT tokens
 
-1. Authentication
-   - JWT-based auth
-   - Role-based access control
-   - Multi-factor authentication
-   - Session management
+### Authorization
+- Role-based access control (RBAC)
+- Row-level security (RLS)
+- API route protection
+- Middleware checks
 
-2. Data Security
-   - End-to-end encryption
-   - Data encryption at rest
-   - Secure file storage
-   - Audit logging
+### Data Protection
+- Data encryption at rest
+- Secure communication (HTTPS)
+- Input validation
+- XSS protection
+- CSRF protection
 
-3. Compliance
-   - GDPR compliance
-   - Data retention policies
-   - Privacy controls
-   - Security monitoring
+## Development Workflow
 
-### Deployment Architecture
+### CI/CD Pipeline
+1. Automated testing
+2. Type checking
+3. Linting
+4. Build verification
+5. Deployment to staging
+6. Production deployment
 
-1. Infrastructure
-   - Vercel deployment
-   - Supabase backend
-   - CDN integration
-   - Monitoring systems
+### Code Quality
+- ESLint configuration
+- Prettier formatting
+- TypeScript strict mode
+- Husky pre-commit hooks
+- Automated testing
 
-2. Scaling Strategy
-   - Horizontal scaling
-   - Load balancing
-   - Cache optimization
-   - Performance monitoring
+### Performance Optimization
+- React Query caching
+- Code splitting
+- Image optimization
+- Performance monitoring
+- Web Vitals tracking
 
-### Development Architecture
+## Deployment
 
-1. Development Environment
-   - TypeScript configuration
-   - ESLint setup
-   - Testing framework
-   - CI/CD pipeline
+### Environments
+- Development
+- Staging
+- Production
 
-2. Code Organization
-   - Feature-based structure
-   - Shared components
-   - Utility functions
-   - Type definitions
+### Infrastructure
+- Vercel deployment
+- Supabase database
+- Edge functions
+- CDN integration
 
-3. Testing Strategy
-   - Unit testing (Vitest)
-   - Integration testing
-   - E2E testing (planned)
-   - Performance testing
+### Monitoring
+- Error tracking
+- Performance metrics
+- Usage analytics
+- Health checks
 
-### Future Considerations
+## Best Practices
 
-1. Planned Enhancements
-   - Mobile application
-   - Advanced analytics
-   - Machine learning integration
-   - Extended API access
+### Code Organization
+- Feature-based structure
+- Shared components
+- Type-safe interfaces
+- Custom hooks
+- Utility functions
 
-2. Scalability Plans
-   - Multi-region deployment
-   - Enhanced caching
-   - Performance optimization
-   - Load distribution
+### State Management
+- React Query for server state
+- Context for global state
+- Local state when appropriate
+- Real-time updates
 
-3. Integration Roadmap
-   - Additional government systems
-   - More RTO integrations
-   - Financial system connections
-   - Third-party services
+### Testing Strategy
+- Unit tests
+- Integration tests
+- E2E tests
+- Performance testing
+- Accessibility testing
+
+### Security Measures
+- Regular security audits
+- Dependency updates
+- Security monitoring
+- Access control
+- Data encryption
+
+## Future Enhancements
+
+### Planned Features
+- Advanced analytics
+- Machine learning integration
+- Mobile application
+- Offline capabilities
+- Enhanced reporting
+
+### Technical Improvements
+- GraphQL integration
+- Microservices architecture
+- Enhanced caching
+- Real-time collaboration
+- Advanced search
+
+### Infrastructure
+- Multi-region deployment
+- Enhanced backup strategy
+- Disaster recovery
+- Load balancing
+- Auto-scaling
