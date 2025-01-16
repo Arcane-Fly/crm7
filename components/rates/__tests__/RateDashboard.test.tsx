@@ -21,8 +21,8 @@ vi.mock('chart.js', () => ({
 
 // Mock react-chartjs-2
 vi.mock('react-chartjs-2', () => ({
-  Line: () => <div data-testid="line-chart">Line Chart</div>,
-  Bar: () => <div data-testid="bar-chart">Bar Chart</div>,
+  Line: () => <div data-testid='line-chart'>Line Chart</div>,
+  Bar: () => <div data-testid='bar-chart'>Bar Chart</div>,
 }))
 
 // Mock rates service
@@ -37,7 +37,7 @@ describe('RateDashboard', () => {
   const mockOrgId = 'test-org-id'
   const today = new Date()
   const thirtyDaysAgo = subDays(today, 30)
-  
+
   const mockForecasts = [
     {
       id: '1',
@@ -78,6 +78,8 @@ describe('RateDashboard', () => {
     // Check if charts are rendered
     await waitFor(() => {
       expect(screen.getByTestId('line-chart')).toBeInTheDocument()
+    })
+    await waitFor(() => {
       expect(screen.getByTestId('bar-chart')).toBeInTheDocument()
     })
   })
@@ -91,7 +93,9 @@ describe('RateDashboard', () => {
         start_date: format(thirtyDaysAgo, 'yyyy-MM-dd'),
         end_date: format(today, 'yyyy-MM-dd'),
       })
+    })
 
+    await waitFor(() => {
       expect(ratesService.getReportsByDateRange).toHaveBeenCalledWith({
         org_id: mockOrgId,
         start_date: format(thirtyDaysAgo, 'yyyy-MM-dd'),
@@ -119,6 +123,8 @@ describe('RateDashboard', () => {
     // Wait for API calls to be made with new date range
     await waitFor(() => {
       expect(ratesService.getForecastsByDateRange).toHaveBeenCalled()
+    })
+    await waitFor(() => {
       expect(ratesService.getReportsByDateRange).toHaveBeenCalled()
     })
   })
