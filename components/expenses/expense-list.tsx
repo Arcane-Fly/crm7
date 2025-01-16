@@ -22,7 +22,7 @@ export function ExpenseList() {
   const { user } = useAuth()
   const { toast } = useToast()
   const [selectedExpense, setSelectedExpense] = React.useState<Expense | null>(null)
-  const { data: expenses, error, isLoading } = useSupabaseQuery<Expense>({
+  const { data: expenses, error } = useSupabaseQuery<Expense>({
     queryKey: ['expenses', user?.org_id || ''],
     table: 'expenses',
     filter: user ? [{ column: 'org_id', value: user.org_id }] : undefined,

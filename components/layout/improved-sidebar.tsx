@@ -17,7 +17,7 @@ interface SidebarContextValue {
   toggleCollapse: () => void
 }
 
-const SidebarContext = React.createContext<SidebarContextValue | undefined>(undefined)
+export const SidebarContext = React.createContext<SidebarContextValue | undefined>(undefined)
 
 export function useSidebar() {
   const context = React.useContext(SidebarContext)
