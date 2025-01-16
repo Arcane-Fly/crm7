@@ -113,6 +113,17 @@ weeklyCost = (hourlyRate × weeklyHours) +
              workersComp +
              (trainingCosts ÷ 52) +
              adminFee
+
+Dev note - employees must be paid for leave and entitlement accruals wage during time of training. clients are Billed weekly. clients may elect to be Billed for all wages due plus oncosts each week or as negotiated and employees must be paid according to their industrial instrument e.g. award or enterprise agreement. some clients may negotiate to have expected annualised leave and training attendance wages Billed within the oncosts of the time where the e ployee is actually working on site with the client. other times clients may negotiate on a 52 week annualised basis. 
+
+e.g. calculation: 
+full time employee
+
+https://langcorp-my.sharepoint.com/:x:/g/personal/braden_braden_com_au/EQIfLlfnwntNktKmtiHopfYB-8clWF8iAItBDI05GrXPLg?e=C3iS6Z
+
+
+
+One app for all your Word, Excel, PowerPoint and PDF needs. Get the Microsoft 365 app: https://aka.ms/GetM365
 ```
 
 ### Charge Rate
