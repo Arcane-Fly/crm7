@@ -30,7 +30,7 @@ export function useSidebar() {
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const [isCollapsed, setIsCollapsed] = React.useState(false)
-  const [isMobileOpen, setOpenMobile] = React.useState(false)
+  const [_isMobileOpen, setOpenMobile] = React.useState(false)
 
   const toggleCollapse = React.useCallback(() => {
     setIsCollapsed(prev => !prev)
