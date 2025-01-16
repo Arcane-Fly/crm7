@@ -1,268 +1,387 @@
-import { useState, useEffect, useCallback } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { DatePicker } from '@/components/ui/date-picker'
-import { Button } from '@/components/ui/button'
-import { useToast } from '@/components/ui/use-toast'
-import { useUser } from '@/lib/hooks/use-user'
+'use client'
+
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { Card } from '@/components/ui/card'
+import { DatePickerWithRange } from '@/components/ui/date-range-picker'
 import { ratesService } from '@/lib/services/rates'
-import { BarChart } from '@/components/ui/bar-chart'
-import { LineChart } from '@/components/ui/line-chart'
-import { DataTable } from '@/components/ui/data-table'
-import { Label } from '@/components/ui/label'
-import { PieChart } from '@/components/ui/pie-chart'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { logger } from '@/lib/services/logger'
+import { subDays, format, isValid } from 'date-fns'
+import { Line, Bar } from 'react-chartjs-2'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  type ChartOptions
+} from 'chart.js'
+import type { RateForecast, RateReport } from '@/types/rates'
+import { Alert } from '@/components/ui/alert'
+import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary'
+import { Skeleton } from '@/components/ui/skeleton'
 
-export function RateDashboard() {
-  const { toast } = useToast()
-  const { user } = useUser()
-  const [loading, setLoading] = useState(false)
-  const [startDate, setStartDate] = useState<Date>(new Date())
-  const [endDate, setEndDate] = useState<Date>(new Date())
-  const [analysisType, setAnalysisType] = useState('cost_distribution')
-  const [analyticsData, setAnalyticsData] = useState<any>(null)
-  const [forecastData, setForecastData] = useState<any>(null)
-  const [reportData, setReportData] = useState<any>(null)
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+)
 
-  const loadDashboardData = useCallback(async () => {
-    if (!user?.org_id) return
+/**
+ * Props for the RateDashboard component
+ * @interface RateDashboardProps
+ */
+interface RateDashboardProps {
+  /** Organization ID for rate analytics */
+  orgId: string;
+}
+
+import type { DateRange as DayPickerDateRange } from 'react-day-picker'
+
+/**
+ * Date range selection interface
+ * @interface DateRange
+ */
+type DateRange = DayPickerDateRange
+
+/**
+ * Chart data point structure
+ * @interface ChartDataPoint
+ */
+interface ChartDataPoint {
+  /** X-axis value (typically date) */
+  x: string;
+  /** Y-axis value (typically rate amount) */
+  y: number;
+}
+
+/**
+ * Chart dataset configuration
+ * @interface ChartDataset
+ */
+interface ChartDataset {
+  /** Dataset label */
+  label: string;
+  /** Array of data points */
+  data: ChartDataPoint[];
+  /** Line color for line charts */
+  borderColor?: string;
+  /** Fill color for bar charts */
+  backgroundColor?: string;
+  /** Line tension for smooth curves */
+  tension?: number;
+}
+
+/**
+ * Chart data structure
+ * @interface ChartData
+ */
+interface ChartData {
+  /** Array of datasets to display */
+  datasets: ChartDataset[];
+}
+
+/**
+ * Dashboard error type
+ * @interface DashboardError
+ * @extends {Error}
+ */
+interface DashboardError extends Error {
+  /** Error code for specific error types */
+  code?: string;
+  /** Additional error details */
+  details?: Record<string, unknown>;
+}
+
+/**
+ * RateDashboard Component
+ * 
+ * A dashboard component that displays rate analytics including forecasts and historical data.
+ * Provides interactive charts and date range selection for data visualization.
+ * 
+ * @component
+ * @param {RateDashboardProps} props - Component props
+ * @returns {JSX.Element} Rendered component
+ */
+export function RateDashboard({ orgId }: RateDashboardProps) {
+  // State management
+  const [forecasts, setForecasts] = useState<RateForecast[]>([])
+  const [reports, setReports] = useState<RateReport[]>([])
+  const [error, setError] = useState<DashboardError | null>(null)
+  const [loading, setLoading] = useState<boolean>(false)
+  const [dateRange, setDateRange] = useState<DateRange>({
+    from: subDays(new Date(), 30),
+    to: new Date(),
+  })
+
+  /**
+   * Validates date range input
+   * @param {DateRange} range - Date range to validate
+   * @returns {boolean} True if range is valid
+   */
+  const isValidDateRange = useCallback((range: DateRange): boolean => {
+    return Boolean(
+      range.from && 
+      range.to && 
+      isValid(range.from) && 
+      isValid(range.to) && 
+      range.from <= range.to
+    )
+  }, [])
+
+  /**
+   * Formats dates for API requests
+   * @param {Date} date - Date to format
+   * @returns {string} Formatted date string
+   */
+  const formatDate = useCallback((date: Date | undefined): string => {
+    return date ? format(date, 'yyyy-MM-dd') : ''
+  }, [])
+
+  /**
+   * Loads dashboard data from the API
+   */
+  const loadData = useCallback(async () => {
+    if (!isValidDateRange(dateRange)) {
+      const message = 'Invalid date range selected'
+      logger.warn(
+        message,
+        { 
+          from: dateRange.from,
+          to: dateRange.to,
+          orgId 
+        },
+        'RateDashboard'
+      )
+      setError({
+        name: 'ValidationError',
+        message: 'Please select a valid date range',
+        code: 'INVALID_DATE_RANGE'
+      })
+      return
+    }
 
     try {
       setLoading(true)
+      setError(null)
 
-      // Load analytics
-      const { data: analytics } = await ratesService.supabase.rpc('generate_rate_analytics', {
-        org_id: user!.org_id,
-        analysis_type: analysisType,
-        start_date: startDate.toISOString(),
-        end_date: endDate.toISOString(),
-      })
+      logger.info(
+        'Loading dashboard data',
+        {
+          orgId,
+          dateRange: {
+            from: formatDate(dateRange.from),
+            to: formatDate(dateRange.to)
+          }
+        },
+        'RateDashboard'
+      )
 
-      setAnalyticsData(analytics)
+      const [forecastsResponse, reportsResponse] = await Promise.all([
+        ratesService.getForecastsByDateRange({
+          org_id: orgId,
+          start_date: formatDate(dateRange.from),
+          end_date: formatDate(dateRange.to),
+        }),
+        ratesService.getReportsByDateRange({
+          org_id: orgId,
+          start_date: formatDate(dateRange.from),
+          end_date: formatDate(dateRange.to),
+        })
+      ])
 
-      // Load forecasts
-      const { data: forecasts } = await ratesService.supabase
-        .from('rate_forecasts')
-        .select(
-          `
-          *,
-          results:rate_forecast_results(*)
-        `
-        )
-        .eq('org_id', user!.org_id)
-        .gte('end_date', startDate.toISOString())
-        .order('created_at', { ascending: false })
-        .limit(5)
+      setForecasts(forecastsResponse?.data || [])
+      setReports(reportsResponse?.data || [])
 
-      setForecastData(forecasts)
-
-      // Load reports
-      const { data: reports } = await ratesService.supabase
-        .from('rate_reports')
-        .select('*')
-        .eq('org_id', user!.org_id)
-        .order('created_at', { ascending: false })
-        .limit(5)
-
-      setReportData(reports)
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to load dashboard data',
-        variant: 'destructive',
+    } catch (err) {
+      const error = err as DashboardError
+      logger.error(
+        'Failed to load dashboard data',
+        error,
+        {
+          orgId,
+          dateRange: {
+            from: formatDate(dateRange.from),
+            to: formatDate(dateRange.to)
+          }
+        },
+        'RateDashboard'
+      )
+      setError({
+        name: 'LoadDataError',
+        message: 'Failed to load dashboard data',
+        code: error.code,
+        details: error.details
       })
     } finally {
       setLoading(false)
     }
-  }, [user, startDate, endDate, analysisType, toast])
+  }, [orgId, dateRange, formatDate, isValidDateRange])
 
+  // Load data when component mounts or date range changes
   useEffect(() => {
-    if (user?.org_id) {
-      loadDashboardData()
+    loadData()
+  }, [loadData])
+
+  // Memoized chart data
+  const forecastData: ChartData = useMemo(() => ({
+    datasets: [
+      {
+        label: 'Rate Forecasts',
+        data: forecasts.map((forecast) => ({
+          x: formatDate(new Date(forecast.forecast_date)),
+          y: forecast.forecast_value,
+        })),
+        borderColor: 'rgb(75, 192, 192)',
+        tension: 0.1,
+      },
+    ],
+  }), [forecasts, formatDate])
+
+  const reportData: ChartData = useMemo(() => ({
+    datasets: [
+      {
+        label: 'Actual Rates',
+        data: reports
+          .filter((report): report is RateReport & { data: { actual_rate: number } } => 
+            typeof report.data.actual_rate === 'number' && !isNaN(report.data.actual_rate))
+          .map((report) => ({
+            x: formatDate(new Date(report.report_date)),
+            y: report.data.actual_rate,
+          })),
+        backgroundColor: 'rgb(53, 162, 235)',
+      },
+    ],
+  }), [reports, formatDate])
+
+  // Chart options
+  const chartOptions: ChartOptions<'line' | 'bar'> = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+      tooltip: {
+        mode: 'index',
+        intersect: false,
+      },
+    },
+    scales: {
+      x: {
+        type: 'time',
+        time: {
+          unit: 'day',
+          displayFormats: {
+            day: 'MMM d',
+          },
+        },
+        title: {
+          display: true,
+          text: 'Date',
+        },
+      },
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Rate ($)',
+        },
+      },
+    },
+  }
+
+  /**
+   * Handles date range changes
+   * @param {DateRange} range - New date range
+   */
+  const handleDateRangeChange = useCallback((range: DateRange) => {
+    if (isValidDateRange(range)) {
+      logger.info(
+        'Date range changed',
+        {
+          from: formatDate(range.from),
+          to: formatDate(range.to),
+          orgId
+        },
+        'RateDashboard'
+      )
+      setDateRange(range)
+      setError(null)
+    } else {
+      logger.warn(
+        'Invalid date range selected',
+        {
+          from: formatDate(range.from),
+          to: formatDate(range.to),
+          orgId
+        },
+        'RateDashboard'
+      )
+      setError({
+        name: 'ValidationError',
+        message: 'Please select a valid date range',
+        code: 'INVALID_DATE_RANGE'
+      })
     }
-  }, [loadDashboardData])
+  }, [isValidDateRange, formatDate, orgId])
 
-  const renderCostDistribution = () => {
-    if (!analyticsData?.metrics?.cost_breakdown) return null
-
-    const data = Object.entries(analyticsData.metrics.cost_breakdown).map(([key, value]) => ({
-      name: key,
-      value: Number(value),
-    }))
-
+  if (loading && !forecasts.length && !reports.length) {
     return (
-      <div className='space-y-4'>
-        <h3 className='font-semibold'>Cost Distribution</h3>
-        <div className='h-[300px]'>
-          <BarChart
-            data={data}
-            xField='name'
-            yField='value'
-            formatter={(value) => formatCurrency(value)}
-          />
-        </div>
-      </div>
-    )
-  }
-
-  const renderMarginAnalysis = () => {
-    if (!analyticsData?.metrics?.margin_distribution) return null
-
-    return (
-      <div className='space-y-4'>
-        <h3 className='font-semibold'>Margin Distribution</h3>
-        <div className='h-[300px]'>
-          <PieChart
-            data={Object.entries(analyticsData.metrics.margin_distribution).map(
-              ([range, count]) => ({
-                name: range,
-                value: Number(count),
-              })
-            )}
-          />
-        </div>
-        <div className='text-sm text-muted-foreground'>
-          Average Margin: {formatCurrency(analyticsData.metrics.average_margin)}
-        </div>
-      </div>
-    )
-  }
-
-  const renderForecasts = () => {
-    if (!forecastData?.length) return null
-
-    const data = forecastData.flatMap((forecast) =>
-      forecast.results.map((result) => ({
-        date: new Date(result.forecast_date),
-        rate: result.final_rate,
-        name: forecast.forecast_name,
-      }))
-    )
-
-    return (
-      <div className='space-y-4'>
-        <h3 className='font-semibold'>Rate Forecasts</h3>
-        <div className='h-[300px]'>
-          <LineChart
-            data={data}
-            xField='date'
-            yField='rate'
-            groupField='name'
-            formatter={(value) => formatCurrency(value)}
-          />
-        </div>
-      </div>
-    )
-  }
-
-  const renderReports = () => {
-    if (!reportData?.length) return null
-
-    return (
-      <div className='space-y-4'>
-        <h3 className='font-semibold'>Recent Reports</h3>
-        <DataTable
-          columns={[
-            {
-              header: 'Report Name',
-              accessorKey: 'report_name',
-            },
-            {
-              header: 'Type',
-              accessorKey: 'report_type',
-            },
-            {
-              header: 'Last Run',
-              accessorKey: 'last_run_at',
-              cell: ({ _row }) => formatDate(_row.original.last_run_at),
-            },
-            {
-              header: 'Next Run',
-              accessorKey: 'next_run_at',
-              cell: ({ _row }) => formatDate(_row.original.next_run_at),
-            },
-            {
-              header: 'Actions',
-              cell: ({ _row }) => (
-                <Button
-                  variant='ghost'
-                  onClick={() => {
-                    // Handle report action
-                  }}
-                >
-                  View
-                </Button>
-              ),
-            },
-          ]}
-          data={reportData}
-        />
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-[400px]" />
       </div>
     )
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Rate Analytics Dashboard</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className='space-y-6'>
-          <div className='flex items-end space-x-4'>
-            <div className='space-y-2'>
-              <Label>Analysis Type</Label>
-              <Select value={analysisType} onValueChange={setAnalysisType}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value='cost_distribution'>Cost Distribution</SelectItem>
-                  <SelectItem value='margin_analysis'>Margin Analysis</SelectItem>
-                  <SelectItem value='trend_analysis'>Trend Analysis</SelectItem>
-                  <SelectItem value='variance_analysis'>Variance Analysis</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className='space-y-2'>
-              <Label>Date Range</Label>
-              <div className='flex items-center space-x-2'>
-                <DatePicker date={startDate} onSelect={setStartDate} />
-                <span>to</span>
-                <DatePicker date={endDate} onSelect={setEndDate} />
-              </div>
-            </div>
-
-            <Button onClick={loadDashboardData} disabled={loading}>
-              {loading ? 'Loading...' : 'Update'}
-            </Button>
-          </div>
-
-          <Tabs defaultValue='analytics'>
-            <TabsList>
-              <TabsTrigger value='analytics'>Analytics</TabsTrigger>
-              <TabsTrigger value='forecasts'>Forecasts</TabsTrigger>
-              <TabsTrigger value='reports'>Reports</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value='analytics' className='space-y-6'>
-              {analysisType === 'cost_distribution' && renderCostDistribution()}
-              {analysisType === 'margin_analysis' && renderMarginAnalysis()}
-            </TabsContent>
-
-            <TabsContent value='forecasts'>{renderForecasts()}</TabsContent>
-
-            <TabsContent value='reports'>{renderReports()}</TabsContent>
-          </Tabs>
+    <ErrorBoundary>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold">Rate Analytics</h2>
+          <DatePickerWithRange
+            date={dateRange}
+            onDateChange={handleDateRangeChange}
+          />
         </div>
-      </CardContent>
-    </Card>
+
+        {error && (
+          <Alert variant="destructive">
+            <p className="text-sm font-medium">{error.message}</p>
+            {error.details && (
+              <p className="text-xs mt-1">
+                {JSON.stringify(error.details)}
+              </p>
+            )}
+          </Alert>
+        )}
+
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card className="p-4">
+            <h3 className="text-lg font-semibold mb-4">Rate Forecasts</h3>
+            <Line data={forecastData} options={chartOptions} />
+          </Card>
+
+          <Card className="p-4">
+            <h3 className="text-lg font-semibold mb-4">Actual Rates</h3>
+            <Bar data={reportData} options={chartOptions} />
+          </Card>
+        </div>
+
+        {(!forecasts.length || !reports.length) && !loading && (
+          <Alert>
+            <p className="text-sm">No data available for the selected date range</p>
+          </Alert>
+        )}
+      </div>
+    </ErrorBoundary>
   )
 }

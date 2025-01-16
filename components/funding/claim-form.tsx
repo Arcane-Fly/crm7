@@ -21,9 +21,10 @@ interface ClaimFormProps {
   employees: Array<{ id: string; firstName: string; lastName: string }>
   hostEmployers: Array<{ id: string; name: string }>
   onSuccess?: () => void
+  user: { org_id: string }
 }
 
-export function ClaimForm({ programs, employees, hostEmployers, onSuccess }: ClaimFormProps) {
+export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user }: ClaimFormProps) {
   const [programId, setProgramId] = useState('')
   const [employeeId, setEmployeeId] = useState('')
   const [hostEmployerId, setHostEmployerId] = useState('')
@@ -50,12 +51,15 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess }: Cla
 
       // Create the funding claim
       const claim = await fundingService.createClaim({
-        programId,
-        employeeId,
-        hostEmployerId: hostEmployerId || undefined,
-        amountClaimed: parseFloat(amountClaimed),
-        referenceNumber,
-        notes,
+        org_id: user.org_id,
+        claim_number: referenceNumber,
+        amount: parseFloat(amountClaimed),
+        metadata: {
+          program_id: programId,
+          employee_id: employeeId,
+          host_employer_id: hostEmployerId || undefined,
+          notes,
+        },
       })
 
       // Upload documents if any

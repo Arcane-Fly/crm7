@@ -5,29 +5,37 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ratesService } from '@/lib/services/rates'
 import { useToast } from '@/components/ui/use-toast'
+import type { RateTemplate } from '@/types/rates'
 
 interface RateApprovalProps {
-  _orgId: string
   templateId: string
 }
 
-export function RateApproval({ _orgId, templateId }: RateApprovalProps) {
+interface ApprovalHistoryItem {
+  id: string
+  template_id: string
+  status: 'approved' | 'rejected'
+  notes: string
+  created_at: string
+  updated_at: string
+}
+
+export function RateApproval({ templateId }: RateApprovalProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
-  const [template, setTemplate] = useState<any>(null)
-  const [approvalHistory, setApprovalHistory] = useState<any[]>([])
+  const [template, setTemplate] = useState<RateTemplate | null>(null)
+  const [approvalHistory, setApprovalHistory] = useState<ApprovalHistoryItem[]>([])
   const [notes, setNotes] = useState('')
   const { toast } = useToast()
 
   const loadTemplate = useCallback(async () => {
     try {
       setIsLoading(true)
-      const { data: templateData, error: templateError } =
-        await ratesService.getTemplate(templateId)
-      if (templateError) throw templateError
-      setTemplate(templateData)
+      const response = await ratesService.getTemplate(templateId)
+      setTemplate(response.data)
     } catch (err) {
-      setError(err as Error)
+      const error = err as Error
+      setError(error)
       toast({
         title: 'Error',
         description: 'Failed to load template',
@@ -41,12 +49,11 @@ export function RateApproval({ _orgId, templateId }: RateApprovalProps) {
   const loadApprovalHistory = useCallback(async () => {
     try {
       setIsLoading(true)
-      const { data: historyData, error: historyError } =
-        await ratesService.getApprovalHistory(templateId)
-      if (historyError) throw historyError
-      setApprovalHistory(historyData)
+      const response = await ratesService.getApprovalHistory(templateId)
+      setApprovalHistory(response.data)
     } catch (err) {
-      setError(err as Error)
+      const error = err as Error
+      setError(error)
       toast({
         title: 'Error',
         description: 'Failed to load approval history',
@@ -71,7 +78,8 @@ export function RateApproval({ _orgId, templateId }: RateApprovalProps) {
       })
       await loadApprovalHistory()
     } catch (err) {
-      setError(err as Error)
+      const error = err as Error
+      setError(error)
       toast({
         title: 'Error',
         description: 'Failed to approve template',
@@ -92,7 +100,8 @@ export function RateApproval({ _orgId, templateId }: RateApprovalProps) {
       })
       await loadApprovalHistory()
     } catch (err) {
-      setError(err as Error)
+      const error = err as Error
+      setError(error)
       toast({
         title: 'Error',
         description: 'Failed to reject template',

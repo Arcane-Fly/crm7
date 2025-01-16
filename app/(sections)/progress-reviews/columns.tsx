@@ -3,6 +3,7 @@
 import type { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { MoreHorizontal } from 'lucide-react'
+import { logger } from '@/lib/services/logger'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,7 +38,7 @@ export const columns: ColumnDef<ProgressReview>[] = [
     header: 'Type',
     cell: ({ row }) => {
       const type = row.getValue('reviewType') as string
-      return <div className="capitalize">{type}</div>
+      return <div className='capitalize'>{type}</div>
     },
   },
   {
@@ -53,11 +54,11 @@ export const columns: ColumnDef<ProgressReview>[] = [
       const percentage = (completed / total) * 100
       const progressClass = `progress${Math.round(percentage / 10) * 10}`
       return (
-        <div className="flex items-center gap-2">
+        <div className='flex items-center gap-2'>
           <div className={styles.progressBar}>
             <div className={`${styles.progressFill} ${styles[progressClass]}`} />
           </div>
-          <span className="text-sm text-gray-500">
+          <span className='text-sm text-gray-500'>
             {completed}/{total}
           </span>
         </div>
@@ -82,11 +83,15 @@ export const columns: ColumnDef<ProgressReview>[] = [
     cell: ({ row }) => {
       const status = row.getValue('status') as string
       return (
-        <div className={`capitalize ${
-          status === 'completed' ? 'text-green-600' : 
-          status === 'scheduled' ? 'text-blue-600' : 
-          'text-red-600'
-        }`}>
+        <div
+          className={`capitalize ${
+            status === 'completed'
+              ? 'text-green-600'
+              : status === 'scheduled'
+                ? 'text-blue-600'
+                : 'text-red-600'
+          }`}
+        >
           {status}
         </div>
       )
@@ -95,19 +100,50 @@ export const columns: ColumnDef<ProgressReview>[] = [
   {
     id: 'actions',
     cell: ({ row }) => {
-      const _review = row.original
+      const review = row.original
+      const isCompleted = review.status === 'completed'
+
+      const handleViewDetails = () => {
+        logger.info(
+          'Viewing progress review details',
+          { apprenticeName: review.apprenticeName, reviewType: review.reviewType },
+          'ProgressReviewColumns'
+        )
+      }
+
+      const handleCompleteReview = () => {
+        if (isCompleted) return
+        logger.info(
+          'Completing progress review',
+          { apprenticeName: review.apprenticeName, reviewType: review.reviewType },
+          'ProgressReviewColumns'
+        )
+      }
+
+      const handleReschedule = () => {
+        if (isCompleted) return
+        logger.info(
+          'Rescheduling progress review',
+          { apprenticeName: review.apprenticeName, reviewType: review.reviewType },
+          'ProgressReviewColumns'
+        )
+      }
 
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <MoreHorizontal className="h-4 w-4" />
+            <Button variant='ghost' className='h-8 w-8 p-0'>
+              <MoreHorizontal className='h-4 w-4' />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem>View Details</DropdownMenuItem>
-            <DropdownMenuItem>Complete Review</DropdownMenuItem>
-            <DropdownMenuItem>Reschedule</DropdownMenuItem>
+          <DropdownMenuContent align='end'>
+            <DropdownMenuItem onClick={handleViewDetails}>View Details</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleCompleteReview} disabled={isCompleted}>
+              Complete Review
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleReschedule} disabled={isCompleted}>
+              Reschedule
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )

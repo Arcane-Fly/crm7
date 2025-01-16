@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/client'
-import type { Database } from '@/types/supabase'
 import * as XLSX from 'xlsx'
 
 export interface Timesheet {
@@ -50,7 +49,7 @@ export interface Invoice {
 }
 
 class InvoiceService {
-  private supabase = createClient<Database>()
+  private supabase = createClient()
 
   async getTimesheets(params: {
     org_id: string
@@ -59,10 +58,7 @@ class InvoiceService {
     end_date?: Date
   }) {
     const { org_id, status, start_date, end_date } = params
-    const query = this.supabase
-      .from('timesheets')
-      .select('*')
-      .eq('org_id', org_id)
+    const query = this.supabase.from('timesheets').select('*').eq('org_id', org_id)
 
     if (status) {
       query.eq('status', status)
@@ -80,6 +76,9 @@ class InvoiceService {
 
     if (error) {
       throw error
+    }
+    if (!data) {
+      return []
     }
 
     return data as Timesheet[]
@@ -110,14 +109,20 @@ class InvoiceService {
     if (error) {
       throw error
     }
+    if (!data) {
+      throw new Error('Failed to create timesheet')
+    }
 
     return data as Timesheet
   }
 
-  async updateTimesheet(id: string, params: {
-    status?: string
-    metadata?: Record<string, any>
-  }) {
+  async updateTimesheet(
+    id: string,
+    params: {
+      status?: string
+      metadata?: Record<string, any>
+    }
+  ) {
     const { data, error } = await this.supabase
       .from('timesheets')
       .update({
@@ -130,6 +135,9 @@ class InvoiceService {
 
     if (error) {
       throw error
+    }
+    if (!data) {
+      throw new Error('Timesheet not found')
     }
 
     return data as Timesheet
@@ -159,15 +167,20 @@ class InvoiceService {
   async bulkCreateTimesheets(timesheets: TimesheetImport[]) {
     const { data, error } = await this.supabase
       .from('timesheets')
-      .insert(timesheets.map(timesheet => ({
-        ...timesheet,
-        total_amount: timesheet.hours_worked * timesheet.rate_per_hour,
-        status: 'pending',
-      })))
+      .insert(
+        timesheets.map((timesheet) => ({
+          ...timesheet,
+          total_amount: timesheet.hours_worked * timesheet.rate_per_hour,
+          status: 'pending',
+        }))
+      )
       .select()
 
     if (error) {
       throw error
+    }
+    if (!data) {
+      throw new Error('Failed to create timesheets')
     }
 
     return data as Timesheet[]
@@ -199,19 +212,21 @@ class InvoiceService {
     if (error) {
       throw error
     }
+    if (!data) {
+      throw new Error('Failed to create invoice')
+    }
 
     return data as Invoice
   }
 
   async getInvoice(id: string) {
-    const { data, error } = await this.supabase
-      .from('invoices')
-      .select('*')
-      .eq('id', id)
-      .single()
+    const { data, error } = await this.supabase.from('invoices').select('*').eq('id', id).single()
 
     if (error) {
       throw error
+    }
+    if (!data) {
+      throw new Error('Invoice not found')
     }
 
     return data as Invoice
@@ -224,10 +239,7 @@ class InvoiceService {
     end_date?: Date
   }) {
     const { org_id, status, start_date, end_date } = params
-    const query = this.supabase
-      .from('invoices')
-      .select('*')
-      .eq('org_id', org_id)
+    const query = this.supabase.from('invoices').select('*').eq('org_id', org_id)
 
     if (status) {
       query.eq('status', status)
@@ -246,14 +258,20 @@ class InvoiceService {
     if (error) {
       throw error
     }
+    if (!data) {
+      return []
+    }
 
     return data as Invoice[]
   }
 
-  async updateInvoice(id: string, params: {
-    status?: string
-    metadata?: Record<string, any>
-  }) {
+  async updateInvoice(
+    id: string,
+    params: {
+      status?: string
+      metadata?: Record<string, any>
+    }
+  ) {
     const { data, error } = await this.supabase
       .from('invoices')
       .update({
@@ -266,6 +284,9 @@ class InvoiceService {
 
     if (error) {
       throw error
+    }
+    if (!data) {
+      throw new Error('Invoice not found')
     }
 
     return data as Invoice

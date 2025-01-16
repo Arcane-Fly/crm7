@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import styles from './styles.module.css'
+import { logger } from '@/lib/services/logger'
 
 export type TrainingPlan = {
   id: string
@@ -58,11 +59,15 @@ export const columns: ColumnDef<TrainingPlan>[] = [
     cell: ({ row }) => {
       const status = row.getValue('status') as string
       return (
-        <div className={`capitalize ${
-          status === 'active' ? 'text-green-600' : 
-          status === 'completed' ? 'text-blue-600' : 
-          'text-yellow-600'
-        }`}>
+        <div
+          className={`capitalize ${
+            status === 'active'
+              ? 'text-green-600'
+              : status === 'completed'
+                ? 'text-blue-600'
+                : 'text-yellow-600'
+          }`}
+        >
           {status}
         </div>
       )
@@ -75,19 +80,51 @@ export const columns: ColumnDef<TrainingPlan>[] = [
   {
     id: 'actions',
     cell: ({ row }) => {
-      const _plan = row.original
+      const plan = row.original
+      const isCompleted = plan.status === 'completed'
+      const isDraft = plan.status === 'draft'
+
+      const handleViewDetails = () => {
+        logger.info(`Viewing training plan details`, {
+          apprenticeName: plan.apprenticeName,
+          qualification: plan.qualification,
+          planId: plan.id
+        }, 'TrainingPlan')
+      }
+
+      const handleEditPlan = () => {
+        if (isCompleted) return
+        logger.info(`Editing training plan`, {
+          apprenticeName: plan.apprenticeName,
+          planId: plan.id,
+          status: plan.status
+        }, 'TrainingPlan')
+      }
+
+      const handleScheduleReview = () => {
+        if (isCompleted || isDraft) return
+        logger.info(`Scheduling training plan review`, {
+          apprenticeName: plan.apprenticeName,
+          planId: plan.id,
+          nextReview: plan.nextReview
+        }, 'TrainingPlan')
+      }
 
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <MoreHorizontal className="h-4 w-4" />
+            <Button variant='ghost' className='h-8 w-8 p-0'>
+              <MoreHorizontal className='h-4 w-4' />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem>View Details</DropdownMenuItem>
-            <DropdownMenuItem>Edit Plan</DropdownMenuItem>
-            <DropdownMenuItem>Schedule Review</DropdownMenuItem>
+          <DropdownMenuContent align='end'>
+            <DropdownMenuItem onClick={handleViewDetails}>View Details</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleEditPlan} disabled={isCompleted}>
+              Edit Plan
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleScheduleReview} disabled={isCompleted || isDraft}>
+              Schedule Review
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )

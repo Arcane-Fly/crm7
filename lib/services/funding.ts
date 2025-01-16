@@ -162,6 +162,44 @@ class FundingService {
 
     return data as FundingEvidence
   }
+
+  async uploadDocument(params: { fundingClaimId: string; documentType: string; file: File }) {
+    const { fundingClaimId, documentType, file } = params
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${fundingClaimId}/${documentType}-${Date.now()}.${fileExt}`
+
+    // Upload file to storage
+    const { error: uploadError } = await this.supabase.storage
+      .from('funding-documents')
+      .upload(fileName, file)
+
+    if (uploadError) {
+      throw new Error(`Failed to upload document: ${uploadError.message}`)
+    }
+
+    // Get public URL
+    const {
+      data: { publicUrl },
+    } = this.supabase.storage.from('funding-documents').getPublicUrl(fileName)
+
+    // Create evidence record
+    const { data: evidence, error: evidenceError } = await this.supabase
+      .from('funding_evidence')
+      .insert({
+        claim_id: fundingClaimId,
+        document_type: documentType,
+        document_url: publicUrl,
+        status: 'pending',
+      })
+      .select()
+      .single()
+
+    if (evidenceError) {
+      throw new Error(`Failed to create evidence record: ${evidenceError.message}`)
+    }
+
+    return evidence
+  }
 }
 
 export const fundingService = new FundingService()

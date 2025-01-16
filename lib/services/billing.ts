@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/supabase'
 import { addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns'
+import { logger } from '@/lib/services/logger'
 
 export interface Timesheet {
   id: string
@@ -69,6 +70,20 @@ export interface BillingSettings {
   metadata?: Record<string, any>
 }
 
+export interface InvoiceStats {
+  // Add properties for invoice stats
+}
+
+export interface CreateInvoiceParams {
+  org_id: string
+  invoice_number: string
+  amount: number
+  issue_date: Date
+  due_date?: Date // Make due_date optional
+  payment_terms?: number // Add payment terms
+  metadata?: Record<string, any>
+}
+
 export class BillingService {
   private supabase = createClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -84,7 +99,8 @@ export class BillingService {
       .single()
 
     if (error) throw error
-    return data
+    if (!data) throw new Error('Failed to create timesheet')
+    return data as Timesheet
   }
 
   async addTimesheetEntry(entry: Omit<TimesheetEntry, 'id'>): Promise<TimesheetEntry> {
@@ -95,7 +111,8 @@ export class BillingService {
       .single()
 
     if (error) throw error
-    return data
+    if (!data) throw new Error('Failed to create timesheet entry')
+    return data as TimesheetEntry
   }
 
   async submitTimesheet(timesheetId: string): Promise<void> {
@@ -132,20 +149,26 @@ export class BillingService {
       .single()
 
     if (error) throw error
-    return data
+    if (!data) throw new Error('Billing settings not found')
+    return data as BillingSettings
   }
 
-  async generateInvoice(hostEmployerId: string, startDate: Date, endDate: Date): Promise<Invoice> {
+  async generateInvoice(
+    hostEmployerId: string,
+    startDate: string,
+    endDate: string
+  ): Promise<Invoice> {
     const { data, error } = await this.supabase
       .rpc('generate_invoice', {
         p_host_employer_id: hostEmployerId,
-        p_start_date: startDate.toISOString(),
-        p_end_date: endDate.toISOString(),
+        p_start_date: startDate,
+        p_end_date: endDate,
       })
       .single()
 
     if (error) throw error
-    return data
+    if (!data) throw new Error('Failed to generate invoice')
+    return data as Invoice
   }
 
   async processAutomaticBilling(): Promise<void> {
@@ -156,35 +179,38 @@ export class BillingService {
       .eq('auto_generate_invoices', true)
 
     if (error) throw error
+    if (!billingSettings || billingSettings.length === 0) {
+      logger.info('No organizations found with auto-billing enabled', { service: 'BillingService' })
+      return
+    }
 
-    const now = new Date()
+    for (const settings of billingSettings as BillingSettings[]) {
+      try {
+        // Initialize dates before using them
+        let startDate: string
+        let endDate: string
 
-    for (const settings of billingSettings) {
-      let startDate: Date
-      let endDate: Date
+        if (settings.billing_frequency === 'monthly') {
+          startDate = startOfMonth(new Date()).toISOString()
+          endDate = endOfMonth(new Date()).toISOString()
+        } else {
+          startDate = startOfWeek(new Date()).toISOString()
+          endDate = endOfWeek(new Date()).toISOString()
+        }
 
-      // Determine billing period based on frequency
-      switch (settings.billing_frequency) {
-        case 'weekly':
-          startDate = startOfWeek(now)
-          endDate = endOfWeek(now)
-          break
-        case 'fortnightly':
-          startDate = startOfWeek(now)
-          endDate = endOfWeek(addDays(now, 13))
-          break
-        case 'monthly':
-          startDate = startOfMonth(now)
-          endDate = endOfMonth(now)
-          break
-      }
+        await this.generateInvoice(settings.org_id, startDate, endDate)
 
-      // Generate invoice
-      await this.generateInvoice(settings.org_id, startDate, endDate)
-
-      // Send invoice if auto-send is enabled
-      if (settings.auto_send_invoices) {
-        // TODO: Implement invoice sending logic
+        // Send invoice if auto-send is enabled
+        if (settings.auto_send_invoices) {
+          // TODO: Implement invoice sending logic
+        }
+      } catch (err) {
+        logger.error(
+          `Failed to process billing for org ${settings.org_id}:`,
+          err instanceof Error ? err : new Error(String(err)),
+          { service: 'BillingService' }
+        )
+        // Continue processing other organizations even if one fails
       }
     }
   }
@@ -202,7 +228,8 @@ export class BillingService {
       .single()
 
     if (error) throw error
-    return data
+    if (!data) throw new Error('Invoice not found')
+    return data as Invoice
   }
 
   async updateInvoiceStatus(invoiceId: string, status: Invoice['status']): Promise<void> {
@@ -319,28 +346,40 @@ export class BillingService {
     return data as Invoice[]
   }
 
-  async createInvoice(params: {
-    org_id: string
-    invoice_number: string
-    amount: number
-    due_date: Date
-    metadata?: Record<string, any>
-  }) {
+  async getInvoiceStats(params: { org_id: string; start_date?: string; end_date?: string }) {
+    const { org_id, start_date, end_date } = params
+    const { data, error } = await this.supabase.rpc('get_invoice_stats', {
+      p_org_id: org_id,
+      p_start_date: start_date,
+      p_end_date: end_date,
+    })
+
+    if (error) throw error
+    return data as InvoiceStats
+  }
+
+  async createInvoice(invoice: CreateInvoiceParams): Promise<Invoice> {
+    // Calculate due date based on payment terms if not provided
+    let due_date = invoice.due_date
+    if (!due_date && invoice.payment_terms) {
+      due_date = addDays(invoice.issue_date, invoice.payment_terms)
+    } else if (!due_date) {
+      // Default to 30 days if no due date or payment terms provided
+      due_date = addDays(invoice.issue_date, 30)
+    }
+
     const { data, error } = await this.supabase
       .from('invoices')
       .insert({
-        ...params,
-        status: 'draft',
-        issued_date: new Date().toISOString(),
-        due_date: params.due_date.toISOString(),
+        ...invoice,
+        issue_date: invoice.issue_date.toISOString(),
+        due_date: due_date.toISOString(),
       })
       .select()
       .single()
 
-    if (error) {
-      throw error
-    }
-
+    if (error) throw error
+    if (!data) throw new Error('Failed to create invoice')
     return data as Invoice
   }
 

@@ -1,12 +1,16 @@
+'use client'
+
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/supabase'
 
-interface User {
+export interface User {
   id: string
   org_id: string
   email: string
   role: string
+  avatar_url?: string
+  full_name?: string
   metadata?: Record<string, any>
 }
 
@@ -48,6 +52,15 @@ export function useUser() {
     }
   }, [supabase])
 
+  const signOut = useCallback(async () => {
+    try {
+      await supabase.auth.signOut()
+      setUser(null)
+    } catch (error) {
+      setError(error as Error)
+    }
+  }, [supabase])
+
   useEffect(() => {
     fetchUser()
 
@@ -66,5 +79,5 @@ export function useUser() {
     }
   }, [supabase, fetchUser])
 
-  return { user, loading, error }
+  return { user, loading, error, signOut }
 }

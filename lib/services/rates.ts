@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/client'
-import type { Database } from '@/types/supabase'
 
 export interface RateTemplate {
   id: string
@@ -51,94 +50,129 @@ export interface GetRateTemplatesParams {
   status?: string
 }
 
+export interface AwardRate {
+  id: string
+  award_name: string
+  rate_type: string
+  base_rate: number
+  effective_from: string
+  effective_to?: string
+  metadata?: Record<string, any>
+}
+
 export class RatesService {
-  private supabase = createClient<Database>()
+  protected supabase = createClient()
 
   async getTemplates(params: GetRateTemplatesParams) {
-    const { org_id, is_active, status } = params
-    const query = this.supabase
+    const { data, error } = await this.supabase
       .from('rate_templates')
       .select('*')
-      .eq('org_id', org_id)
+      .eq('org_id', params.org_id)
+      .order('created_at', { ascending: false })
 
-    if (is_active !== undefined) {
-      query.eq('is_active', is_active)
-    }
-
-    if (status) {
-      query.eq('status', status)
-    }
-
-    const { data, error } = await query
-
-    if (error) {
-      throw error
-    }
-
-    return data as RateTemplate[]
+    if (error) throw error
+    if (!data) return { data: [] }
+    return { data }
   }
 
-  async calculateRate(template: RateTemplate): Promise<RateCalculation> {
-    if (!template.base_margin) {
-      throw new Error('Base margin is required')
-    }
-
-    if (!template.super_rate) {
-      throw new Error('Super rate is required')
-    }
-
-    const baseRate = template.base_rate
-    const baseMargin = template.base_margin
-    const superRate = template.super_rate
-
-    // Calculate components
-    const superAmount = baseRate * (superRate / 100)
-    const marginAmount = baseRate * (baseMargin / 100)
-
-    // Calculate final rate
-    const finalRate = baseRate + superAmount + marginAmount
-
-    return {
-      template_id: template.id,
-      base_rate: baseRate,
-      super_amount: superAmount,
-      margin_amount: marginAmount,
-      total_cost: finalRate,
-      final_rate: finalRate,
-    }
+  async getRateTemplates(params: GetRateTemplatesParams) {
+    return this.getTemplates(params)
   }
 
-  async validateTemplate(template: Partial<RateTemplate>, rules: ValidationRule[]) {
-    if (!rules?.length) {
-      return true
-    }
+  async getTemplate(id: string) {
+    const { data, error } = await this.supabase
+      .from('rate_templates')
+      .select('*')
+      .eq('id', id)
+      .single()
 
-    for (const rule of rules) {
-      const value = template[rule.field]
-      if (value === undefined) {
-        return false
-      }
+    if (error) throw error
+    if (!data) throw new Error('Rate template not found')
+    return { data }
+  }
 
-      switch (rule.type) {
-        case 'required':
-          if (!value) {
-            return false
-          }
-          break
-        case 'min':
-          if (typeof value === 'number' && value < (rule.value || 0)) {
-            return false
-          }
-          break
-        case 'max':
-          if (typeof value === 'number' && value > (rule.value || 0)) {
-            return false
-          }
-          break
-      }
-    }
+  async getAwardRates(params: { org_id: string }) {
+    const { data, error } = await this.supabase
+      .from('award_rates')
+      .select('*')
+      .eq('org_id', params.org_id)
+      .order('effective_from', { ascending: false })
 
-    return true
+    if (error) throw error
+    if (!data) return { data: [] }
+    return { data }
+  }
+
+  async getAnalytics(org_id: string) {
+    const { data, error } = await this.supabase.rpc('generate_rate_analytics', { org_id })
+
+    if (error) throw error
+    if (!data) return { data: {} }
+    return { data }
+  }
+
+  async generateQuote(template_id: string) {
+    const { data, error } = await this.supabase.rpc('generate_rate_quote', { template_id })
+
+    if (error) throw error
+    if (!data) throw new Error('Failed to generate quote')
+    return { data }
+  }
+
+  async calculateRate(template: RateTemplate) {
+    const { data, error } = await this.supabase.rpc('calculate_rate', { template: template })
+
+    if (error) throw error
+    if (!data) throw new Error('Failed to calculate rate')
+    return { data }
+  }
+
+  async validateTemplate(template: Partial<RateTemplate>) {
+    const { data, error } = await this.supabase.rpc('validate_rate_template', { template })
+
+    if (error) throw error
+    if (!data) throw new Error('Failed to validate template')
+    return { data }
+  }
+
+  async validateRateTemplate(template: Partial<RateTemplate>) {
+    return this.validateTemplate(template)
+  }
+
+  async approveTemplate(id: string, { notes }: { notes?: string }) {
+    const { data, error } = await this.supabase
+      .from('rate_templates')
+      .update({ status: 'approved', approval_notes: notes })
+      .eq('id', id)
+      .single()
+
+    if (error) throw error
+    if (!data) throw new Error('Failed to approve template')
+    return { data }
+  }
+
+  async rejectTemplate(id: string, { notes }: { notes?: string }) {
+    const { data, error } = await this.supabase
+      .from('rate_templates')
+      .update({ status: 'rejected', rejection_notes: notes })
+      .eq('id', id)
+      .single()
+
+    if (error) throw error
+    if (!data) throw new Error('Failed to reject template')
+    return { data }
+  }
+
+  async getApprovalHistory(template_id: string) {
+    const { data, error } = await this.supabase
+      .from('rate_template_approvals')
+      .select('*')
+      .eq('template_id', template_id)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+    if (!data) return { data: [] }
+    return { data }
   }
 
   async saveTemplate(template: Partial<RateTemplate>) {
@@ -148,22 +182,92 @@ export class RatesService {
       .select()
       .single()
 
-    if (error) {
-      throw error
-    }
-
+    if (error) throw error
+    if (!data) throw new Error('Failed to save template')
     return data as RateTemplate
   }
 
   async deleteTemplate(id: string) {
-    const { error } = await this.supabase
-      .from('rate_templates')
-      .delete()
-      .eq('id', id)
+    const { error } = await this.supabase.from('rate_templates').delete().eq('id', id)
+
+    if (error) throw error
+  }
+
+  async getEmployees(org_id: string) {
+    const { data, error } = await this.supabase.from('employees').select('*').eq('org_id', org_id)
 
     if (error) {
-      throw error
+      throw new Error(`Failed to fetch employees: ${error.message}`)
     }
+    if (!data) return { data: [] }
+    return { data }
+  }
+
+  async getBulkCalculations(org_id: string) {
+    const { data, error } = await this.supabase
+      .from('bulk_rate_calculations')
+      .select('*')
+      .eq('org_id', org_id)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      throw new Error(`Failed to fetch bulk calculations: ${error.message}`)
+    }
+    if (!data) return { data: [] }
+    return { data }
+  }
+
+  async createBulkCalculation(params: {
+    org_id: string
+    template_id: string
+    employee_ids: string[]
+    metadata?: Record<string, any>
+  }) {
+    const { org_id, template_id, employee_ids, metadata } = params
+
+    const { data, error } = await this.supabase
+      .from('bulk_rate_calculations')
+      .insert({
+        org_id,
+        template_id,
+        employee_ids,
+        status: 'pending',
+        metadata,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      throw new Error(`Failed to create bulk calculation: ${error.message}`)
+    }
+
+    return { data }
+  }
+
+  async getForecastsByDateRange(params: { org_id: string; start_date: string; end_date: string }) {
+    const { data, error } = await this.supabase
+      .from('rate_forecasts')
+      .select('*')
+      .eq('org_id', params.org_id)
+      .gte('forecast_date', params.start_date)
+      .lte('forecast_date', params.end_date)
+
+    if (error) throw error
+    if (!data) return { data: [] }
+    return { data }
+  }
+
+  async getReportsByDateRange(params: { org_id: string; start_date: string; end_date: string }) {
+    const { data, error } = await this.supabase
+      .from('rate_reports')
+      .select('*')
+      .eq('org_id', params.org_id)
+      .gte('report_date', params.start_date)
+      .lte('report_date', params.end_date)
+
+    if (error) throw error
+    if (!data) return { data: [] }
+    return { data }
   }
 }
 

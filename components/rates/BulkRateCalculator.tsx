@@ -27,16 +27,16 @@ export function BulkRateCalculator() {
   const [loading, setLoading] = useState(false)
   const [templates, setTemplates] = useState<RateTemplate[]>([])
   const [employees, setEmployees] = useState<any[]>([])
-  const [selectedTemplates, setSelectedTemplates] = useState<string[]>([])
+  const [selectedTemplate, setSelectedTemplate] = useState<RateTemplate | null>(null)
   const [selectedEmployees, setSelectedEmployees] = useState<string[]>([])
-  const [calculationDate, setCalculationDate] = useState<Date>(new Date())
+  const [calculationDate, setCalculationDate] = useState<Date | undefined>(new Date())
   const [baseRate, setBaseRate] = useState<number>(0)
   const [casualLoading, setCasualLoading] = useState<number>(0)
   const [bulkCalculations, setBulkCalculations] = useState<any[]>([])
 
   const loadTemplates = useCallback(async () => {
     try {
-      const data = await ratesService.getRateTemplates({
+      const { data = [] } = await ratesService.getTemplates({
         org_id: user!.org_id,
         is_active: true,
       })
@@ -52,12 +52,7 @@ export function BulkRateCalculator() {
 
   const loadEmployees = useCallback(async () => {
     try {
-      const { data } = await ratesService.supabase
-        .from('employees')
-        .select('*')
-        .eq('org_id', user!.org_id)
-        .eq('is_active', true)
-
+      const { data } = await ratesService.getEmployees(user!.org_id)
       setEmployees(data || [])
     } catch (error) {
       toast({
@@ -70,13 +65,7 @@ export function BulkRateCalculator() {
 
   const loadBulkCalculations = useCallback(async () => {
     try {
-      const { data } = await ratesService.supabase
-        .from('bulk_rate_calculations')
-        .select('*')
-        .eq('org_id', user!.org_id)
-        .order('created_at', { ascending: false })
-        .limit(10)
-
+      const { data } = await ratesService.getBulkCalculations(user!.org_id)
       setBulkCalculations(data || [])
     } catch (error) {
       toast({
@@ -102,7 +91,7 @@ export function BulkRateCalculator() {
   }, [loadTemplates, loadEmployees, loadBulkCalculations, user])
 
   const handleCalculate = async () => {
-    if (selectedTemplates.length === 0 || selectedEmployees.length === 0) {
+    if (!selectedTemplate || selectedEmployees.length === 0) {
       toast({
         title: 'Error',
         description: 'Please select at least one template and employee',
@@ -114,36 +103,17 @@ export function BulkRateCalculator() {
     try {
       setLoading(true)
 
-      const { data, error } = await ratesService.supabase
-        .from('bulk_rate_calculations')
-        .insert({
-          org_id: user!.org_id,
-          name: `Bulk Calculation ${formatDate(calculationDate)}`,
-          template_ids: selectedTemplates,
-          employee_ids: selectedEmployees,
-          calculation_date: calculationDate.toISOString(),
-          parameters: {
-            base_rate: baseRate,
-            casual_loading: casualLoading,
-          },
-          created_by: user!.id,
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-
-      // Start processing
-      await ratesService.supabase.rpc('process_bulk_calculations', {
-        bulk_calc_id: data.id,
+      const { data } = await ratesService.createBulkCalculation({
+        org_id: user!.org_id,
+        template_id: selectedTemplate!.id,
+        employee_ids: selectedEmployees,
       })
 
+      setBulkCalculations((prev) => [data, ...prev])
       toast({
         title: 'Success',
         description: 'Bulk calculation started',
       })
-
-      loadBulkCalculations()
     } catch (error) {
       toast({
         title: 'Error',
@@ -210,8 +180,11 @@ export function BulkRateCalculator() {
             <div className='space-y-2'>
               <Label>Templates</Label>
               <Select
-                value={selectedTemplates[0]}
-                onValueChange={(value) => setSelectedTemplates([value])}
+                value={selectedTemplate?.id}
+                onValueChange={(value) => {
+                  const template = templates.find((t) => t.id === value)
+                  setSelectedTemplate(template || null)
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder='Select templates' />

@@ -8,7 +8,7 @@ import { Sheet, SheetContent } from '@/components/ui/sheet'
 
 const SIDEBAR_KEYBOARD_SHORTCUT = 'b'
 
-type SidebarContext = {
+export type SidebarContext = {
   state: 'expanded' | 'collapsed'
   open: boolean
   setOpen: (open: boolean) => void
@@ -18,7 +18,7 @@ type SidebarContext = {
   toggleSidebar: () => void
 }
 
-const SidebarContext = React.createContext<SidebarContext | null>(null)
+export const SidebarContext = React.createContext<SidebarContext | null>(null)
 
 function useSidebar() {
   const context = React.useContext(SidebarContext)
@@ -85,53 +85,52 @@ export function SidebarProvider({
   return <SidebarContext.Provider value={value}>{children}</SidebarContext.Provider>
 }
 
-export const Sidebar = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => {
-  const { open, isMobile, openMobile, setOpenMobile, toggleSidebar } = useSidebar()
+export const Sidebar = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => {
+    const { open, isMobile, openMobile, setOpenMobile, toggleSidebar } = useSidebar()
 
-  if (isMobile) {
+    if (isMobile) {
+      return (
+        <Sheet open={openMobile} onOpenChange={setOpenMobile}>
+          <Button
+            variant='ghost'
+            size='icon'
+            className='fixed left-4 top-4 z-40 lg:hidden'
+            onClick={() => setOpenMobile(true)}
+          >
+            <PanelLeft className='h-4 w-4' />
+            <span className='sr-only'>Toggle Sidebar</span>
+          </Button>
+          <SheetContent side='left' className='w-[300px] p-0'>
+            <nav ref={ref} className={cn('h-full', className)} {...props} />
+          </SheetContent>
+        </Sheet>
+      )
+    }
+
     return (
-      <Sheet open={openMobile} onOpenChange={setOpenMobile}>
+      <div className='relative'>
         <Button
           variant='ghost'
           size='icon'
-          className='fixed left-4 top-4 z-40 lg:hidden'
-          onClick={() => setOpenMobile(true)}
+          className='absolute -right-10 top-4'
+          onClick={toggleSidebar}
         >
-          <PanelLeft className='h-4 w-4' />
+          <PanelLeft className={cn('h-4 w-4 transition-all', !open && 'rotate-180')} />
           <span className='sr-only'>Toggle Sidebar</span>
         </Button>
-        <SheetContent side='left' className='w-[300px] p-0'>
-          <nav ref={ref} className={cn('h-full', className)} {...props} />
-        </SheetContent>
-      </Sheet>
+        <nav
+          ref={ref}
+          className={cn(
+            'h-full w-60 space-y-4 py-4 transition-all duration-300',
+            !open && 'w-10',
+            className
+          )}
+          {...props}
+        />
+      </div>
     )
   }
-
-  return (
-    <div className='relative'>
-      <Button
-        variant='ghost'
-        size='icon'
-        className='absolute -right-10 top-4'
-        onClick={toggleSidebar}
-      >
-        <PanelLeft className={cn('h-4 w-4 transition-all', !open && 'rotate-180')} />
-        <span className='sr-only'>Toggle Sidebar</span>
-      </Button>
-      <nav
-        ref={ref}
-        className={cn(
-          'h-full w-60 space-y-4 py-4 transition-all duration-300',
-          !open && 'w-10',
-          className
-        )}
-        {...props}
-      />
-    </div>
-  )
-})
+)
 
 Sidebar.displayName = 'Sidebar'

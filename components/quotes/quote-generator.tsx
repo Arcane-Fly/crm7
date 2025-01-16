@@ -17,8 +17,8 @@ export function QuoteGenerator({ orgId }: QuoteGeneratorProps) {
   const loadTemplates = useCallback(async () => {
     try {
       setIsLoading(true)
-      const data = await ratesService.getTemplates(orgId)
-      setTemplates(data)
+      const { data } = await ratesService.getTemplates({ org_id: orgId })
+      setTemplates(data || [])
     } catch (err) {
       setError(err as Error)
       toast({

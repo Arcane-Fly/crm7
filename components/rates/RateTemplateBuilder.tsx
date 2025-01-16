@@ -14,9 +14,9 @@ import {
 } from '@/components/ui/select'
 import { useToast } from '@/components/ui/use-toast'
 import { useUser } from '@/lib/hooks/use-user'
-import type { RateTemplate, AwardRate } from '@/lib/services/rates'
-import { ratesService } from '@/lib/services/rates'
+import { ratesService, type RateTemplate } from '@/lib/services/rates'
 import { DatePicker } from '@/components/ui/date-picker'
+import { format } from 'date-fns'
 
 export interface RateTemplateBuilderProps {
   templateId?: string
@@ -27,38 +27,22 @@ export function RateTemplateBuilder({ templateId, onSave }: RateTemplateBuilderP
   const { toast } = useToast()
   const { user } = useUser()
   const [loading, setLoading] = useState(false)
-  const [awards, setAwards] = useState<AwardRate[]>([])
   const [template, setTemplate] = useState<Partial<RateTemplate>>({
-    template_type: 'apprentice',
+    template_type: 'apprentice' as const,
     is_active: true,
     rules: {},
+    leave_loading: 0,
+    training_cost_rate: 0,
+    base_rate: 0,
   })
   const [errors, setErrors] = useState<string[]>([])
 
-  const loadAwards = useCallback(async () => {
-    try {
-      const data = await ratesService.getAwardRates({
-        effective_date: new Date(),
-      })
-      setAwards(data)
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to load awards',
-        variant: 'destructive',
-      })
-    }
-  }, [toast])
-
   const loadTemplate = useCallback(async () => {
-    if (!templateId) return
+    if (!templateId || !user?.org_id) return
     try {
-      const data = await ratesService.getRateTemplates({
-        org_id: user!.org_id,
-      })
-      const found = data.find((t) => t.id === templateId)
-      if (found) {
-        setTemplate(found)
+      const response = await ratesService.getTemplate(templateId)
+      if (response.data) {
+        setTemplate(response.data)
       }
     } catch (error) {
       toast({
@@ -70,45 +54,64 @@ export function RateTemplateBuilder({ templateId, onSave }: RateTemplateBuilderP
   }, [templateId, toast, user])
 
   useEffect(() => {
-    const loadData = async () => {
-      if (user?.org_id) {
-        await Promise.all([loadAwards(), loadTemplate()])
-      }
+    if (user?.org_id) {
+      loadTemplate()
     }
-    loadData()
-  }, [loadAwards, loadTemplate, user])
+  }, [loadTemplate, user])
 
   const handleSave = async () => {
+    if (!user?.org_id || !template.template_name) {
+      setErrors(['Required fields are missing'])
+      return
+    }
+
     try {
       setLoading(true)
       setErrors([])
 
       const validation = await ratesService.validateRateTemplate(template)
-      if (!validation.isValid) {
-        setErrors(validation.errors)
+      if (!validation.data.valid) {
+        setErrors(validation.data.errors || ['Validation failed'])
         return
       }
 
-      const fullTemplate: RateTemplate = {
-        ...(template as RateTemplate),
-        org_id: user!.org_id,
+      // Generate a UUID for new templates
+      const id = templateId || crypto.randomUUID()
+
+      // Ensure required fields are present
+      if (!template.template_name) {
+        throw new Error('Template name is required')
       }
 
-      const { data, error } = await ratesService.supabase
-        .from('rate_templates')
-        .upsert(fullTemplate)
-        .select()
-        .single()
+      const fullTemplate: RateTemplate = {
+        ...template,
+        id,
+        template_name: template.template_name,
+        template_type: template.template_type || 'apprentice',
+        org_id: user.org_id,
+        effective_from: format(new Date(), 'yyyy-MM-dd'),
+        version_number: template.version_number || 1,
+        rules: template.rules || {},
+        is_active: template.is_active || false,
+        is_approved: template.is_approved || false,
+        base_rate: template.base_rate || 0,
+        base_margin: template.base_margin || 0,
+        super_rate: template.super_rate || 0,
+        workers_comp_rate: template.workers_comp_rate || 0,
+        payroll_tax_rate: template.payroll_tax_rate || 0,
+        leave_loading: template.leave_loading || 0,
+        training_cost_rate: template.training_cost_rate || 0,
+      }
 
-      if (error) throw error
-
+      const savedTemplate = await ratesService.saveTemplate(fullTemplate)
       toast({
         title: 'Success',
-        description: 'Rate template saved successfully',
+        description: 'Template saved successfully',
       })
-
-      onSave?.(data)
+      onSave?.(savedTemplate)
     } catch (error) {
+      const err = error as Error
+      setErrors([err.message])
       toast({
         title: 'Error',
         description: 'Failed to save template',
@@ -118,6 +121,30 @@ export function RateTemplateBuilder({ templateId, onSave }: RateTemplateBuilderP
       setLoading(false)
     }
   }
+
+  const handleEffectiveFromChange = useCallback(
+    (newDate: Date | ((prevDate: Date | undefined) => Date | undefined) | undefined) => {
+      if (newDate instanceof Date) {
+        setTemplate((prev) => ({
+          ...prev,
+          effective_from: format(newDate, 'yyyy-MM-dd'),
+        }))
+      }
+    },
+    []
+  )
+
+  const handleEffectiveToChange = useCallback(
+    (newDate: Date | ((prevDate: Date | undefined) => Date | undefined) | undefined) => {
+      if (newDate instanceof Date) {
+        setTemplate((prev) => ({
+          ...prev,
+          effective_to: format(newDate, 'yyyy-MM-dd'),
+        }))
+      }
+    },
+    []
+  )
 
   return (
     <Card>
@@ -175,30 +202,6 @@ export function RateTemplateBuilder({ templateId, onSave }: RateTemplateBuilderP
                 <SelectItem value='casual'>Casual</SelectItem>
                 <SelectItem value='permanent'>Permanent</SelectItem>
                 <SelectItem value='contractor'>Contractor</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className='space-y-2'>
-            <Label htmlFor='award'>Award</Label>
-            <Select
-              value={template.award_id}
-              onValueChange={(value) =>
-                setTemplate((prev) => ({
-                  ...prev,
-                  award_id: value,
-                }))
-              }
-            >
-              <SelectTrigger id='award'>
-                <SelectValue placeholder='Select an award' />
-              </SelectTrigger>
-              <SelectContent>
-                {awards.map((award) => (
-                  <SelectItem key={award.id} value={award.id}>
-                    {award.award_name}
-                  </SelectItem>
-                ))}
               </SelectContent>
             </Select>
           </div>
@@ -346,12 +349,7 @@ export function RateTemplateBuilder({ templateId, onSave }: RateTemplateBuilderP
               <Label>Effective From</Label>
               <DatePicker
                 date={template.effective_from ? new Date(template.effective_from) : undefined}
-                onSelect={(date) =>
-                  setTemplate((prev) => ({
-                    ...prev,
-                    effective_from: date,
-                  }))
-                }
+                onSelect={handleEffectiveFromChange}
               />
             </div>
 
@@ -359,12 +357,7 @@ export function RateTemplateBuilder({ templateId, onSave }: RateTemplateBuilderP
               <Label>Effective To</Label>
               <DatePicker
                 date={template.effective_to ? new Date(template.effective_to) : undefined}
-                onSelect={(date) =>
-                  setTemplate((prev) => ({
-                    ...prev,
-                    effective_to: date,
-                  }))
-                }
+                onSelect={handleEffectiveToChange}
               />
             </div>
           </div>

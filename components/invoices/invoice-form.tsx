@@ -16,16 +16,25 @@ interface InvoiceFormProps {
   onSuccess?: () => void
 }
 
+interface InvoiceLineItem {
+  description: string
+  quantity: number
+  unit_price: number
+  tax_rate: number
+  total: number
+}
+
 export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps) {
   const [dueDate, setDueDate] = useState<Date>()
   const [reference, setReference] = useState('')
   const [notes, setNotes] = useState('')
-  const [lineItems, setLineItems] = useState([
+  const [lineItems, setLineItems] = useState<InvoiceLineItem[]>([
     {
       description: '',
       quantity: 1,
-      unitPrice: 0,
-      taxRate: 10,
+      unit_price: 0,
+      tax_rate: 10,
+      total: 0,
     },
   ])
   const [isLoading, setIsLoading] = useState(false)
@@ -37,8 +46,9 @@ export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps) {
       {
         description: '',
         quantity: 1,
-        unitPrice: 0,
-        taxRate: 10,
+        unit_price: 0,
+        tax_rate: 10,
+        total: 0,
       },
     ])
   }
@@ -70,12 +80,12 @@ export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps) {
     try {
       setIsLoading(true)
       await invoiceService.createInvoice({
-        orgId: '', // TODO: Get from context
-        hostEmployerId,
-        dueDate,
-        referenceNumber: reference,
-        notes,
-        lineItems,
+        org_id: '', // TODO: Get from context
+        host_employer_id: hostEmployerId,
+        invoice_number: reference,
+        due_date: dueDate,
+        issue_date: new Date(),
+        line_items: lineItems,
       })
 
       toast({
@@ -166,8 +176,8 @@ export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps) {
               <Label>Unit Price</Label>
               <Input
                 type='number'
-                value={item.unitPrice}
-                onChange={(e) => updateLineItem(index, 'unitPrice', parseFloat(e.target.value))}
+                value={item.unit_price}
+                onChange={(e) => updateLineItem(index, 'unit_price', parseFloat(e.target.value))}
                 min='0'
                 step='0.01'
               />
@@ -176,8 +186,8 @@ export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps) {
               <Label>Tax Rate %</Label>
               <Input
                 type='number'
-                value={item.taxRate}
-                onChange={(e) => updateLineItem(index, 'taxRate', parseFloat(e.target.value))}
+                value={item.tax_rate}
+                onChange={(e) => updateLineItem(index, 'tax_rate', parseFloat(e.target.value))}
                 min='0'
                 step='0.1'
               />
