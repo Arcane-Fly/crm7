@@ -4,6 +4,7 @@ import * as React from 'react'
 import { useAuth } from '@/lib/auth/context'
 import { type Expense } from '@/lib/services/expense'
 import { DataTable } from '@/components/ui/data-table'
+import { useSupabaseQuery, useSupabaseMutation } from '@/lib/hooks/use-query-with-supabase'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatDate } from '@/lib/utils'
@@ -22,13 +23,13 @@ export function ExpenseList() {
   const { toast } = useToast()
   const [selectedExpense, setSelectedExpense] = React.useState<Expense | null>(null)
   const { data: expenses, error, isLoading } = useSupabaseQuery<Expense>({
-    queryKey: ['expenses', user?.org_id],
+    queryKey: ['expenses', user?.org_id || ''],
     table: 'expenses',
     filter: user ? [{ column: 'org_id', value: user.org_id }] : undefined,
     enabled: !!user,
   })
 
-  const { mutate: approveExpense, isLoading: _isApproving } = useSupabaseMutation<Expense>({
+  const { mutate: approveExpense, isPending: _isApproving } = useSupabaseMutation<Expense>({
     table: 'expenses',
     type: 'update',
     onSuccess: () => {
@@ -44,10 +45,10 @@ export function ExpenseList() {
         variant: 'destructive',
       })
     },
-    invalidateQueries: [['expenses', user?.org_id]],
+    invalidateQueries: [['expenses', user?.org_id || '']],
   })
 
-  const { mutate: rejectExpense, isLoading: _isRejecting } = useSupabaseMutation<Expense>({
+  const { mutate: rejectExpense, isPending: _isRejecting } = useSupabaseMutation<Expense>({
     table: 'expenses',
     type: 'update',
     onSuccess: () => {
@@ -63,7 +64,7 @@ export function ExpenseList() {
         variant: 'destructive',
       })
     },
-    invalidateQueries: [['expenses', user?.org_id]],
+    invalidateQueries: [['expenses', user?.org_id || '']],
   })
 
   React.useEffect(() => {
@@ -105,7 +106,7 @@ export function ExpenseList() {
     {
       accessorKey: 'submitted_at',
       header: 'Date',
-      cell: ({ row }) => formatDate(row.original.submitted_at),
+      cell: ({ row }: { row: { original: Expense } }) => formatDate(row.original.submitted_at),
     },
     {
       accessorKey: 'description',
@@ -114,19 +115,19 @@ export function ExpenseList() {
     {
       accessorKey: 'amount',
       header: 'Amount',
-      cell: ({ row }) => `$${row.original.amount.toFixed(2)}`,
+      cell: ({ row }: { row: { original: Expense } }) => `$${row.original.amount.toFixed(2)}`,
     },
     {
       accessorKey: 'category',
       header: 'Category',
-      cell: ({ row }) => (
+      cell: ({ row }: { row: { original: Expense } }) => (
         <span className="capitalize">{row.original.category}</span>
       ),
     },
     {
       accessorKey: 'status',
       header: 'Status',
-      cell: ({ row }) => (
+      cell: ({ row }: { row: { original: Expense } }) => (
         <Badge
           variant={
             row.original.status === 'approved'
@@ -142,7 +143,7 @@ export function ExpenseList() {
     },
     {
       id: 'actions',
-      cell: ({ row }) => (
+      cell: ({ row }: { row: { original: Expense } }) => (
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
