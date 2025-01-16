@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 import { MAIN_NAV_ITEMS, SECTIONS, type Section } from '@/config/navigation'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Tooltip } from '@/components/ui/tooltip'
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { useLockBody } from '@/lib/hooks/use-lock-body'
 import { KEYBOARD_SHORTCUTS } from '@/config/constants'
 
@@ -112,11 +112,8 @@ export function Sidebar() {
               {MAIN_NAV_ITEMS.map((item) => {
                 const isActive = pathname.startsWith(`/${item.slug}`)
                 return (
-                  <Tooltip
-                    key={item.slug}
-                    content={isCollapsed ? item.label : null}
-                    side="right"
-                  >
+                  <Tooltip key={item.slug}>
+                    <TooltipTrigger asChild>
                     <Link
                       href={item.href}
                       className={cn(
@@ -139,6 +136,12 @@ export function Sidebar() {
                         )}
                       </AnimatePresence>
                     </Link>
+                    </TooltipTrigger>
+                    {isCollapsed && (
+                      <TooltipContent side="right">
+                        {item.label}
+                      </TooltipContent>
+                    )}
                   </Tooltip>
                 )
               })}
