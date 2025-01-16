@@ -15,6 +15,7 @@ import { KEYBOARD_SHORTCUTS } from '@/config/constants'
 interface SidebarContextValue {
   isCollapsed: boolean
   toggleCollapse: () => void
+  setOpenMobile: (open: boolean) => void
 }
 
 export const SidebarContext = React.createContext<SidebarContextValue | undefined>(undefined)
@@ -29,6 +30,7 @@ export function useSidebar() {
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const [isCollapsed, setIsCollapsed] = React.useState(false)
+  const [isMobileOpen, setOpenMobile] = React.useState(false)
 
   const toggleCollapse = React.useCallback(() => {
     setIsCollapsed(prev => !prev)
@@ -47,7 +49,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   }, [toggleCollapse])
 
   return (
-    <SidebarContext.Provider value={{ isCollapsed, toggleCollapse }}>
+    <SidebarContext.Provider value={{ isCollapsed, toggleCollapse, setOpenMobile }}>
       {children}
     </SidebarContext.Provider>
   )
