@@ -17,6 +17,7 @@ export { Skeleton } from './skeleton'
 export { Tabs } from './tabs'
 export { Textarea } from './textarea'
 export { Toast } from './toast'
+export { Tooltip } from './tooltip'
 
 // Data Display
 export { DataGrid } from './data-grid'
