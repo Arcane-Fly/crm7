@@ -21,6 +21,7 @@ export {
   ModalDescription,
   ModalClose,
 } from './modal'
+export { Popover, PopoverTrigger, PopoverContent } from './popover'
 export { Select } from './select'
 export { Sheet } from './sheet'
 export { Skeleton } from './skeleton'
