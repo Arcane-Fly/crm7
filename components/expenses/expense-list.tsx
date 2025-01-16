@@ -179,8 +179,7 @@ export function ExpenseList() {
     <div className="space-y-4">
       <DataTable
         columns={columns}
-        data={expenses}
-        loading={isLoading}
+        data={expenses || []}
       />
       <Dialog
         open={!!selectedExpense}
