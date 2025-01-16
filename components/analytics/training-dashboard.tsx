@@ -8,7 +8,9 @@ import { useLMS } from '@/lib/hooks/use-lms'
 import type { DateRange } from 'react-day-picker'
 
 export function TrainingDashboard() {
-  const { courses, enrollments } = useLMS()
+  const lms = useLMS()
+  const { data: courses } = lms.useCourses()
+  const { data: enrollments } = lms.useEnrollments()
   const [dateRange, setDateRange] = React.useState<DateRange>()
 
   const stats = React.useMemo(() => {
@@ -20,15 +22,15 @@ export function TrainingDashboard() {
       completionRate: 0,
     }
 
-    const filtered = enrollments.data.filter(enrollment => {
+    const filtered = enrollments.data.filter((enrollment: any) => {
       if (!dateRange?.from || !dateRange?.to) return true
       const date = new Date(enrollment.start_date)
       return date >= dateRange.from && date <= dateRange.to
     })
 
-    const completed = filtered.filter(e => e.status === 'completed').length
-    const inProgress = filtered.filter(e => e.status === 'in_progress').length
-    const notStarted = filtered.filter(e => e.status === 'enrolled').length
+    const completed = filtered.filter((e: any) => e.status === 'completed').length
+    const inProgress = filtered.filter((e: any) => e.status === 'in_progress').length
+    const notStarted = filtered.filter((e: any) => e.status === 'enrolled').length
     const total = filtered.length
 
     return {
@@ -47,9 +49,9 @@ export function TrainingDashboard() {
       completionRates: [],
     }
 
-    const stats = courses.data.map(course => {
-      const courseEnrollments = enrollments.data.filter(e => e.course_id === course.id)
-      const completed = courseEnrollments.filter(e => e.status === 'completed').length
+    const stats = courses.data.map((course: any) => {
+      const courseEnrollments = enrollments.data.filter((e: any) => e.course_id === course.id)
+      const completed = courseEnrollments.filter((e: any) => e.status === 'completed').length
       const total = courseEnrollments.length
 
       return {
@@ -60,9 +62,9 @@ export function TrainingDashboard() {
     })
 
     return {
-      labels: stats.map(s => s.name),
-      enrollmentCounts: stats.map(s => s.enrollments),
-      completionRates: stats.map(s => s.completionRate),
+      labels: stats.map((s: any) => s.name),
+      enrollmentCounts: stats.map((s: any) => s.enrollments),
+      completionRates: stats.map((s: any) => s.completionRate),
     }
   }, [courses.data, enrollments.data])
 

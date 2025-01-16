@@ -41,7 +41,8 @@ export default function ApprenticesPage() {
       <DataTable
         columns={columns}
         data={data}
-        searchPlaceholder="Search apprentices..."
+        filterColumn="name"
+        enableRowSelection={true}
         onSelectedIdsChange={setSelectedIds}
       />
     </div>

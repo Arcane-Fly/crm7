@@ -1,5 +1,3 @@
-import { useSupabaseQuery } from './use-query-with-supabase'
-
 export function useLMS() {
   const useAssessments = () => {
     return useSupabaseQuery({
@@ -8,7 +6,23 @@ export function useLMS() {
     })
   }
 
+  const useCourses = () => {
+    return useSupabaseQuery({
+      queryKey: ['courses'],
+      table: 'courses',
+    })
+  }
+
+  const useEnrollments = () => {
+    return useSupabaseQuery({
+      queryKey: ['enrollments'],
+      table: 'enrollments',
+    })
+  }
+
   return {
     useAssessments,
+    useCourses,
+    useEnrollments,
   }
 }

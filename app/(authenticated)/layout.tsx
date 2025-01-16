@@ -18,7 +18,7 @@ export default function AuthenticatedLayout({
           className="flex flex-1"
           style={{ height: `calc(100vh - ${HEADER_HEIGHT}px)` }}
         >
-          <AppSidebar />
+          <AppSidebar isOpen={true} />
           <main className="flex-1 overflow-y-auto">
             <div className="container mx-auto py-6">
               {children}

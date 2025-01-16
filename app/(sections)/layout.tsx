@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { Breadcrumb } from '@/components/ui/breadcrumb'
+import { Breadcrumb, BreadcrumbItem } from '@/components/ui/breadcrumb'
 import { MAIN_NAV_ITEMS, SECTIONS } from '@/config/navigation'
 import { useMounted } from '@/lib/hooks/use-mounted'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -75,11 +75,13 @@ export default function SectionsLayout({
     <div className="flex min-h-screen flex-col">
       <div className="flex-1">
         <div className="container mx-auto px-4 py-4">
-          <Breadcrumb 
-            segments={segments} 
-            className="mb-4" 
-            aria-label="Page navigation"
-          />
+          <Breadcrumb className="mb-4">
+            {segments.map((segment, _index) => (
+              <BreadcrumbItem key={segment.href} href={segment.href}>
+                {segment.title}
+              </BreadcrumbItem>
+            ))}
+          </Breadcrumb>
           <Suspense fallback={<LoadingSkeleton />}>
             {children}
           </Suspense>

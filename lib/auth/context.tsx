@@ -3,7 +3,8 @@
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '../supabase/client'
-import type { Session, User } from '@supabase/supabase-js'
+import type { Session } from '@supabase/supabase-js'
+import type { User } from '@/lib/types'
 
 interface AuthContextType {
   user: User | null

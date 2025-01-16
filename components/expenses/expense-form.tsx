@@ -76,6 +76,7 @@ export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
         category: values.category,
         receipt_url,
         notes: values.notes,
+        status: 'pending',
       })
 
       toast({

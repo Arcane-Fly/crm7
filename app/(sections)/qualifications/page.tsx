@@ -41,7 +41,8 @@ export default function QualificationsPage() {
       <DataTable
         columns={columns}
         data={data}
-        searchPlaceholder="Search qualifications..."
+        filterColumn="name"
+        enableRowSelection={true}
         onSelectedIdsChange={setSelectedIds}
       />
     </div>

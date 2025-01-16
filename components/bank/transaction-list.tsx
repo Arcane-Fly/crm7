@@ -25,7 +25,7 @@ export function TransactionList() {
     {
       accessorKey: 'transaction_date',
       header: 'Date',
-      cell: ({ row }) => formatDate(row.original.transaction_date),
+      cell: ({ row }: { row: any }) => formatDate(row.original.transaction_date),
     },
     {
       accessorKey: 'description',
@@ -34,7 +34,7 @@ export function TransactionList() {
     {
       accessorKey: 'amount',
       header: 'Amount',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         const amount = row.original.amount
         const type = row.original.type
         return (
@@ -47,7 +47,7 @@ export function TransactionList() {
     {
       accessorKey: 'type',
       header: 'Type',
-      cell: ({ row }) => (
+      cell: ({ row }: { row: any }) => (
         <Badge
           variant={row.original.type === 'credit' ? 'success' : 'default'}
         >
@@ -58,7 +58,7 @@ export function TransactionList() {
     {
       accessorKey: 'status',
       header: 'Status',
-      cell: ({ row }) => (
+      cell: ({ row }: { row: any }) => (
         <Badge
           variant={
             row.original.status === 'completed'
@@ -116,7 +116,7 @@ export function TransactionList() {
       <DataTable
         columns={columns}
         data={filteredData}
-        loading={transactions.isLoading}
+
       />
     </div>
   )

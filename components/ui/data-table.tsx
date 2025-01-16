@@ -35,6 +35,7 @@ interface DataTableProps<TData, TValue> {
   filterColumn?: string
   enableRowSelection?: boolean
   enableColumnVisibility?: boolean
+  onSelectedIdsChange?: (ids: string[]) => void
 }
 
 export function DataTable<TData, TValue>({

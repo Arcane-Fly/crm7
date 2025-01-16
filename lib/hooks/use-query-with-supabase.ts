@@ -73,19 +73,19 @@ export function useSupabaseMutation<T>({
   const supabase = createClient()
 
   return useMutation({
-    mutationFn: async (_variables: any) => {
+    mutationFn: async (variables: any) => {
       try {
         let query = supabase.from(table)
 
         switch (type) {
           case 'insert':
-            query = query.insert(_variables)
+            query = query.insert(variables)
             break
           case 'update':
-            query = query.update(_variables.data).eq('id', _variables.id)
+            query = query.update(variables.data).eq('id', variables.id)
             break
           case 'delete':
-            query = query.delete().eq('id', _variables)
+            query = query.delete().eq('id', variables)
             break
         }
 
@@ -98,7 +98,7 @@ export function useSupabaseMutation<T>({
         throw error
       }
     },
-    onMutate: async (variables) => {
+    onMutate: async (_variables) => {
       if (optimisticUpdate) {
         // Cancel outgoing refetches
         await Promise.all(
@@ -130,7 +130,7 @@ export function useSupabaseMutation<T>({
       })
       onSuccess?.(data)
     },
-    onError: (error: Error, variables, context) => {
+    onError: (error: Error, _variables, context) => {
       // Rollback optimistic update
       if (context?.previousData) {
         invalidateQueries.forEach((queryKey, index) => {

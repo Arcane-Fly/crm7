@@ -1,46 +1,57 @@
+'use client'
+
 import * as React from 'react'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-interface BreadcrumbProps extends React.HTMLAttributes<HTMLElement> {
-  segments: {
-    title: string
-    href: string
-  }[]
+export interface BreadcrumbProps extends React.HTMLAttributes<HTMLElement> {
+  children: React.ReactNode
 }
 
-export function Breadcrumb({ segments, className, ...props }: BreadcrumbProps) {
+export interface BreadcrumbItemProps extends React.HTMLAttributes<HTMLElement> {
+  href?: string
+  children: React.ReactNode
+}
+
+export function Breadcrumb({ className, children, ...props }: BreadcrumbProps) {
   return (
     <nav
-      aria-label="Breadcrumb"
-      className={cn('flex items-center space-x-1 text-sm text-muted-foreground', className)}
+      aria-label="breadcrumb"
+      className={cn('flex items-center space-x-2', className)}
       {...props}
     >
-      {segments.map((segment, index) => {
-        const isLast = index === segments.length - 1
-
-        return (
-          <React.Fragment key={segment.href}>
-            <Link
-              href={segment.href}
-              className={cn(
-                'hover:text-foreground',
-                isLast ? 'text-foreground font-medium' : 'text-muted-foreground'
-              )}
-              aria-current={isLast ? 'page' : undefined}
-            >
-              {segment.title}
-            </Link>
-            {!isLast && (
-              <ChevronRight 
-                className="h-4 w-4 text-muted-foreground" 
-                aria-hidden="true"
-              />
-            )}
-          </React.Fragment>
-        )
-      })}
+      {React.Children.map(children, (child, index) => (
+        <>
+          {child}
+          {index < React.Children.count(children) - 1 && (
+            <ChevronRight className="h-4 w-4" />
+          )}
+        </>
+      ))}
     </nav>
+  )
+}
+
+export function BreadcrumbItem({ href, children, className, ...props }: BreadcrumbItemProps) {
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className={cn('text-sm text-muted-foreground hover:text-foreground', className)}
+        {...props}
+      >
+        {children}
+      </Link>
+    )
+  }
+
+  return (
+    <span
+      className={cn('text-sm font-medium text-foreground', className)}
+      {...props}
+    >
+      {children}
+    </span>
   )
 }
