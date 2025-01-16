@@ -88,7 +88,7 @@ export function CourseList() {
     },
   ]
 
-  const handleEdit = async (course: Course) => {
+  const handleEdit = async (_course: Course) => {
     // TODO: Implement edit functionality
     toast({
       title: 'Not implemented',
@@ -96,10 +96,10 @@ export function CourseList() {
     })
   }
 
-  const handleArchive = async (course: Course) => {
+  const handleArchive = async (_course: Course) => {
     try {
       await actions.updateCourse({
-        id: course.id,
+        id: _course.id,
         data: {
           status: 'archived',
         },

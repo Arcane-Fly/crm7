@@ -35,8 +35,8 @@ describe('RateDashboard', () => {
     render(<RateDashboard orgId="test-org" />)
     await waitFor(() => {
       expect(screen.getByText(/Rate Analytics/i)).toBeInTheDocument()
-      expect(screen.getByText('$100.00')).toBeInTheDocument()
     })
+    expect(screen.getByText('$100.00')).toBeInTheDocument()
   })
 
   it('loads forecasts and reports on mount', async () => {
@@ -44,8 +44,8 @@ describe('RateDashboard', () => {
     
     await waitFor(() => {
       expect(ratesService.getForecastsByDateRange).toHaveBeenCalled()
-      expect(ratesService.getReportsByDateRange).toHaveBeenCalled()
     })
+    expect(ratesService.getReportsByDateRange).toHaveBeenCalled()
   })
 
   it('displays loading state initially', () => {

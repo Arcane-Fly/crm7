@@ -48,19 +48,31 @@ export class Logger {
 
   private logToConsole(entry: LogEntry) {
     const formattedMessage = this.formatMessage(entry)
-    switch (entry.level) {
-      case 'debug':
-        console.debug(formattedMessage)
-        break
-      case 'info':
-        console.info(formattedMessage)
-        break
-      case 'warn':
-        console.warn(formattedMessage)
-        break
-      case 'error':
-        console.error(formattedMessage, entry.error)
-        break
+    // Only log errors and warnings in production
+    if (process.env.NODE_ENV === 'production') {
+      switch (entry.level) {
+        case 'warn':
+          console.warn(formattedMessage)
+          break
+        case 'error':
+          console.error(formattedMessage, entry.error)
+          break
+      }
+    } else {
+      switch (entry.level) {
+        case 'debug':
+          console.debug(formattedMessage)
+          break
+        case 'info':
+          console.info(formattedMessage)
+          break
+        case 'warn':
+          console.warn(formattedMessage)
+          break
+        case 'error':
+          console.error(formattedMessage, entry.error)
+          break
+      }
     }
   }
 

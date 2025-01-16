@@ -79,13 +79,13 @@ export function useSupabaseMutation<T>({
 
         switch (type) {
           case 'insert':
-            query = query.insert(variables)
+            query = query.insert(_variables)
             break
           case 'update':
-            query = query.update(variables.data).eq('id', variables.id)
+            query = query.update(_variables.data).eq('id', _variables.id)
             break
           case 'delete':
-            query = query.delete().eq('id', variables)
+            query = query.delete().eq('id', _variables)
             break
         }
 
