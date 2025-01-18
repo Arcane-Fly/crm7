@@ -1,10 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
+import { Menu } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
-const sections = {
+export const sections = {
   dashboard: [
     { title: 'Overview', href: '/dashboard' },
     { title: 'Quick Actions', href: '/dashboard/actions' },
@@ -49,7 +52,7 @@ const sections = {
     { title: 'Employees', href: '/hr/employees' },
     { title: 'Candidates', href: '/hr/candidates' },
     { title: 'Job Postings', href: '/hr/jobs' },
-    { title: 'Applications', href: '/hr/applications' },
+    { title: 'Interviews', href: '/hr/interviews' },
     { title: 'Onboarding', href: '/hr/onboarding' },
     { title: 'Performance', href: '/hr/performance' },
     { title: 'Leave Management', href: '/hr/leave' },
@@ -97,32 +100,44 @@ const sections = {
   ],
 } as const
 
-export interface SectionSidebarProps {
+interface SectionSidebarProps {
   className?: string
   section?: keyof typeof sections
 }
 
 export function SectionSidebar({ className, section = 'dashboard' }: SectionSidebarProps) {
   const pathname = usePathname()
-  const items = sections[section]
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   return (
-    <nav className={cn('flex flex-col space-y-1 p-4', className)}>
-      {items.map((item) => {
-        const isActive = pathname === item.href
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              'flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground',
-              isActive ? 'bg-accent text-accent-foreground' : 'transparent'
-            )}
-          >
-            {item.title}
-          </Link>
-        )
-      })}
-    </nav>
+    <div className={cn('relative', className)}>
+      <Button
+        variant='outline'
+        className='absolute right-4 top-4 lg:hidden'
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+      >
+        <Menu className='h-4 w-4' />
+      </Button>
+      <nav className={cn('space-y-1', isMobileMenuOpen ? 'block' : 'hidden lg:block')}>
+        {sections[section].map((item) => {
+          const isActive = pathname === item.href
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                'flex items-center rounded-md px-3 py-2 text-sm font-medium',
+                isActive
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+              )}
+              aria-current={isActive ? 'page' : undefined}
+            >
+              {item.title}
+            </Link>
+          )
+        })}
+      </nav>
+    </div>
   )
 }

@@ -21,16 +21,16 @@ export function RateComparison({ templateId, baseRate }: RateComparisonProps) {
       try {
         setLoading(true)
         setError(null)
-        
+
         // First get the template
         const { data: template } = await ratesService.getTemplate(templateId)
-        
+
         // Then calculate using the template with updated base rate
         const response = await ratesService.calculateRate({
           ...template,
           base_rate: baseRate,
         })
-        
+
         setCalculation(response.data)
       } catch (err) {
         const error = err as Error

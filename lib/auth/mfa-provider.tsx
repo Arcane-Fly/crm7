@@ -45,19 +45,19 @@ export function MFAProvider({ children }: { children: React.ReactNode }) {
 
   const setupMFA = React.useCallback(async () => {
     if (!user) throw new Error('User not authenticated')
-    
+
     try {
       setIsEnrolling(true)
-      
+
       const { data, error } = await supabase.rpc('generate_totp_secret', {
-        user_id: user.id
+        user_id: user.id,
       })
-      
+
       if (error) throw error
-      
+
       return {
         qrCode: data.qr_code,
-        secret: data.secret
+        secret: data.secret,
       }
     } catch (error) {
       toast({
@@ -71,39 +71,42 @@ export function MFAProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user, toast, supabase])
 
-  const verifyMFA = React.useCallback(async (token: string) => {
-    if (!user) throw new Error('User not authenticated')
-    
-    try {
-      const { error } = await supabase.rpc('verify_totp', {
-        user_id: user.id,
-        token
-      })
-      
-      if (error) throw error
-      
-      setIsEnabled(true)
-      return true
-    } catch (error) {
-      toast({
-        title: 'Invalid code',
-        description: 'The verification code you entered is invalid.',
-        variant: 'destructive',
-      })
-      return false
-    }
-  }, [user, toast, supabase])
+  const verifyMFA = React.useCallback(
+    async (token: string) => {
+      if (!user) throw new Error('User not authenticated')
+
+      try {
+        const { error } = await supabase.rpc('verify_totp', {
+          user_id: user.id,
+          token,
+        })
+
+        if (error) throw error
+
+        setIsEnabled(true)
+        return true
+      } catch (error) {
+        toast({
+          title: 'Invalid code',
+          description: 'The verification code you entered is invalid.',
+          variant: 'destructive',
+        })
+        return false
+      }
+    },
+    [user, toast, supabase]
+  )
 
   const disableMFA = React.useCallback(async () => {
     if (!user) throw new Error('User not authenticated')
-    
+
     try {
       const { error } = await supabase.rpc('disable_mfa', {
-        user_id: user.id
+        user_id: user.id,
       })
-      
+
       if (error) throw error
-      
+
       setIsEnabled(false)
       toast({
         title: 'MFA disabled',

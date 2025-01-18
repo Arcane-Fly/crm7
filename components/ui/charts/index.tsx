@@ -81,10 +81,7 @@ function ChartContainer({
 }) {
   return (
     <div className={containerClassName}>
-      <div 
-        className={className}
-        style={{ height: height }}
-      >
+      <div className={className} style={{ height: height }}>
         {children}
       </div>
     </div>

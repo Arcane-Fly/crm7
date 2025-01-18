@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 
 export const MAIN_NAV_ITEMS = [
-  { 
+  {
     label: 'Dashboard',
     slug: 'dashboard',
     href: '/dashboard',
@@ -175,4 +175,3 @@ export const SECTIONS = {
 } as const
 
 export type Section = keyof typeof SECTIONS
-

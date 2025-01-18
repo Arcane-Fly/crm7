@@ -3,9 +3,7 @@
 import * as React from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
-import { useLMS } from '@/lib/hooks/use-lms'
-import { Button } from '@/components/ui/button'
+import { z } from 'zod'
 import {
   Form,
   FormControl,
@@ -14,107 +12,175 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
-import { Loader2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { useAuth } from '@/lib/auth/context'
+import { useLMS } from '@/lib/hooks/use-lms'
+import { useToast } from '@/components/ui/use-toast'
+import { Card } from '@/components/ui/card'
 
 const enrollmentSchema = z.object({
-  course_id: z.string().min(1, 'Course is required'),
-  start_date: z.string().min(1, 'Start date is required'),
+  student_id: z.string().min(1, 'Student ID is required'),
+  course_id: z.string().min(1, 'Course ID is required'),
+  status: z.enum(['active', 'completed', 'withdrawn']),
+  progress: z.number().min(0).max(100),
+  grade: z.number().min(0).max(100).optional(),
 })
 
 type EnrollmentFormValues = z.infer<typeof enrollmentSchema>
 
 interface EnrollmentFormProps {
-  enrollment?: Enrollment
+  enrollmentId?: string
+  defaultValues?: EnrollmentFormValues
   onSuccess?: () => void
 }
 
-export function EnrollmentForm({ enrollment, onSuccess }: EnrollmentFormProps) {
-  const { courses, actions } = useLMS()
+export function EnrollmentForm({ enrollmentId, defaultValues, onSuccess }: EnrollmentFormProps) {
+  const { user } = useAuth()
+  const { createEnrollment, updateEnrollment, isCreatingEnrollment, isUpdatingEnrollment } = useLMS()
+  const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = React.useState(false)
 
   const form = useForm<EnrollmentFormValues>({
     resolver: zodResolver(enrollmentSchema),
-    defaultValues: enrollment || {
+    defaultValues: defaultValues || {
+      student_id: '',
       course_id: '',
-      start_date: new Date().toISOString().split('T')[0],
+      status: 'active',
+      progress: 0,
+      grade: undefined,
     },
   })
 
   const onSubmit = async (values: EnrollmentFormValues) => {
+    if (!user) return
+
     try {
       setIsSubmitting(true)
-      if (enrollment?.id) {
-        await actions.updateEnrollment({
-          id: enrollment.id,
+      if (enrollmentId) {
+        await updateEnrollment({
+          match: { id: enrollmentId },
           data: values,
         })
+        toast({
+          title: 'Enrollment updated',
+          description: 'The enrollment has been updated successfully.',
+        })
       } else {
-        await actions.enrollInCourse(values)
+        await createEnrollment({
+          data: {
+            ...values,
+            org_id: user.org_id,
+          },
+        })
+        toast({
+          title: 'Enrollment created',
+          description: 'The enrollment has been created successfully.',
+        })
       }
       onSuccess?.()
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to save enrollment. Please try again.',
+        variant: 'destructive',
+      })
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="course_id"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Course</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-              >
+    <Card className="p-6">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="student_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Student ID</FormLabel>
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select course" />
-                  </SelectTrigger>
+                  <Input {...field} />
                 </FormControl>
-                <SelectContent>
-                  {courses.data?.map((course) => (
-                    <SelectItem key={course.id} value={course.id}>
-                      {course.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="start_date"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Start Date</FormLabel>
-              <FormControl>
-                <Input type="date" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {enrollment?.id ? 'Update Enrollment' : 'Create Enrollment'}
-        </Button>
-      </form>
-    </Form>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="course_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Course ID</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Status</FormLabel>
+                <FormControl>
+                  <select
+                    {...field}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  >
+                    <option value="active">Active</option>
+                    <option value="completed">Completed</option>
+                    <option value="withdrawn">Withdrawn</option>
+                  </select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="progress"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Progress (%)</FormLabel>
+                <FormControl>
+                  <Input type="number" {...field} onChange={e => field.onChange(Number(e.target.value))} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="grade"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Grade (%)</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    {...field} 
+                    onChange={e => field.onChange(e.target.value ? Number(e.target.value) : undefined)} 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button type="submit" disabled={isSubmitting || isCreatingEnrollment || isUpdatingEnrollment}>
+            {isSubmitting || isCreatingEnrollment || isUpdatingEnrollment
+              ? enrollmentId
+                ? 'Updating...'
+                : 'Creating...'
+              : enrollmentId
+              ? 'Update Enrollment'
+              : 'Create Enrollment'}
+          </Button>
+        </form>
+      </Form>
+    </Card>
   )
 }

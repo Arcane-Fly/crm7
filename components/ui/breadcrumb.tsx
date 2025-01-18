@@ -17,16 +17,14 @@ export interface BreadcrumbItemProps extends React.HTMLAttributes<HTMLElement> {
 export function Breadcrumb({ className, children, ...props }: BreadcrumbProps) {
   return (
     <nav
-      aria-label="breadcrumb"
+      aria-label='breadcrumb'
       className={cn('flex items-center space-x-2', className)}
       {...props}
     >
       {React.Children.map(children, (child, index) => (
         <>
           {child}
-          {index < React.Children.count(children) - 1 && (
-            <ChevronRight className="h-4 w-4" />
-          )}
+          {index < React.Children.count(children) - 1 && <ChevronRight className='h-4 w-4' />}
         </>
       ))}
     </nav>
@@ -47,10 +45,7 @@ export function BreadcrumbItem({ href, children, className, ...props }: Breadcru
   }
 
   return (
-    <span
-      className={cn('text-sm font-medium text-foreground', className)}
-      {...props}
-    >
+    <span className={cn('text-sm font-medium text-foreground', className)} {...props}>
       {children}
     </span>
   )

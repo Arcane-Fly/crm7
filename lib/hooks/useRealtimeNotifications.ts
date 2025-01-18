@@ -76,15 +76,10 @@ export function useRealtimeNotifications() {
     if (!user) return
 
     const supabase = createClient()
-    const { error } = await supabase
-      .from('notifications')
-      .update({ read: true })
-      .eq('id', id)
+    const { error } = await supabase.from('notifications').update({ read: true }).eq('id', id)
 
     if (!error) {
-      setNotifications((current) =>
-        current.map((n) => (n.id === id ? { ...n, read: true } : n))
-      )
+      setNotifications((current) => current.map((n) => (n.id === id ? { ...n, read: true } : n)))
       setUnreadCount((count) => count - 1)
     }
   }
@@ -100,9 +95,7 @@ export function useRealtimeNotifications() {
       .eq('read', false)
 
     if (!error) {
-      setNotifications((current) =>
-        current.map((n) => ({ ...n, read: true }))
-      )
+      setNotifications((current) => current.map((n) => ({ ...n, read: true })))
       setUnreadCount(0)
     }
   }

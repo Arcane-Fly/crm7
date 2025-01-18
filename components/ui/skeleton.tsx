@@ -8,11 +8,11 @@ export function Skeleton({ className, ...props }: SkeletonProps) {
 
 export function SidebarSkeleton() {
   return (
-    <div className="space-y-4 py-4">
-      <Skeleton className="h-4 w-32 mx-4" />
-      <div className="space-y-2 px-3">
+    <div className='space-y-4 py-4'>
+      <Skeleton className='mx-4 h-4 w-32' />
+      <div className='space-y-2 px-3'>
         {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={i} className="h-8 w-full" />
+          <Skeleton key={i} className='h-8 w-full' />
         ))}
       </div>
     </div>
@@ -33,14 +33,14 @@ export function CardSkeleton() {
 
 export function RateCalculatorSkeleton() {
   return (
-    <div className="space-y-4">
-      <Skeleton className="h-8 w-[200px]" />
-      <div className="space-y-2">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-[120px]" />
+    <div className='space-y-4'>
+      <Skeleton className='h-8 w-[200px]' />
+      <div className='space-y-2'>
+        <Skeleton className='h-10 w-full' />
+        <Skeleton className='h-10 w-full' />
+        <Skeleton className='h-10 w-[120px]' />
       </div>
-      <Skeleton className="h-[200px] w-full" />
+      <Skeleton className='h-[200px] w-full' />
     </div>
   )
 }

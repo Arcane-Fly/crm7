@@ -37,12 +37,12 @@ describe('RateCalculator', () => {
   })
 
   it('renders without crashing', () => {
-    render(<RateCalculator orgId="test-org" />)
+    render(<RateCalculator orgId='test-org' />)
     expect(screen.getByText(/Rate Template/i)).toBeInTheDocument()
   })
 
   it('loads templates on mount', async () => {
-    render(<RateCalculator orgId="test-org" />)
+    render(<RateCalculator orgId='test-org' />)
     await waitFor(() => {
       expect(ratesService.getTemplates).toHaveBeenCalledWith({
         org_id: 'test-org',
@@ -53,7 +53,7 @@ describe('RateCalculator', () => {
   })
 
   it('calculates rates when form is submitted', async () => {
-    render(<RateCalculator orgId="test-org" />)
+    render(<RateCalculator orgId='test-org' />)
 
     // Wait for templates to load
     await waitFor(() => {
@@ -86,7 +86,7 @@ describe('RateCalculator', () => {
   it('shows error message when calculation fails', async () => {
     vi.mocked(ratesService.calculateRate).mockRejectedValueOnce(new Error('Test error'))
 
-    render(<RateCalculator orgId="test-org" />)
+    render(<RateCalculator orgId='test-org' />)
 
     // Wait for templates to load
     await waitFor(() => {
@@ -113,7 +113,7 @@ describe('RateCalculator', () => {
   })
 
   it('disables calculate button when form is invalid', () => {
-    render(<RateCalculator orgId="test-org" />)
+    render(<RateCalculator orgId='test-org' />)
     const calculateButton = screen.getByRole('button', { name: /Calculate Rate/i })
     expect(calculateButton).toBeDisabled()
   })

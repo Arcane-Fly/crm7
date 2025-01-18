@@ -8,40 +8,33 @@ import {
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 } from 'chart.js'
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-)
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 const options = {
   responsive: true,
   plugins: {
     legend: {
-      display: false
-    }
+      display: false,
+    },
   },
   scales: {
     x: {
       grid: {
         display: true,
-        color: '#f3f4f6'
-      }
+        color: '#f3f4f6',
+      },
     },
     y: {
       grid: {
         display: true,
-        color: '#f3f4f6'
+        color: '#f3f4f6',
       },
-      beginAtZero: true
-    }
-  }
+      beginAtZero: true,
+    },
+  },
 }
 
 const data = {
@@ -50,14 +43,14 @@ const data = {
     {
       data: [12, 14, 17, 13, 20, 24],
       backgroundColor: '#3b82f6',
-      borderRadius: 4
-    }
-  ]
+      borderRadius: 4,
+    },
+  ],
 }
 
 export function PlacementsChart() {
   return (
-    <div className="rounded-lg border bg-white p-6">
+    <div className='rounded-lg border bg-white p-6'>
       <Bar options={options} data={data} height={300} />
     </div>
   )

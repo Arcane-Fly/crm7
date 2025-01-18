@@ -50,16 +50,13 @@ export function MFASetup() {
 
   if (isEnabled) {
     return (
-      <Card className="p-6">
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Multi-Factor Authentication</h2>
-          <p className="text-sm text-muted-foreground">
+      <Card className='p-6'>
+        <div className='space-y-4'>
+          <h2 className='text-lg font-semibold'>Multi-Factor Authentication</h2>
+          <p className='text-sm text-muted-foreground'>
             MFA is currently enabled for your account.
           </p>
-          <Button
-            variant="destructive"
-            onClick={disableMFA}
-          >
+          <Button variant='destructive' onClick={disableMFA}>
             Disable MFA
           </Button>
         </div>
@@ -68,71 +65,60 @@ export function MFASetup() {
   }
 
   return (
-    <Card className="p-6">
-      <div className="space-y-6">
+    <Card className='p-6'>
+      <div className='space-y-6'>
         <div>
-          <h2 className="text-lg font-semibold">Set up Multi-Factor Authentication</h2>
-          <p className="text-sm text-muted-foreground">
+          <h2 className='text-lg font-semibold'>Set up Multi-Factor Authentication</h2>
+          <p className='text-sm text-muted-foreground'>
             Enhance your account security by enabling MFA.
           </p>
         </div>
 
         {error && (
-          <Alert variant="destructive">
+          <Alert variant='destructive'>
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
         {!qrCode ? (
-          <Button
-            onClick={handleSetup}
-            disabled={isEnrolling}
-          >
-            {isEnrolling && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button onClick={handleSetup} disabled={isEnrolling}>
+            {isEnrolling && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
             Set up MFA
           </Button>
         ) : (
-          <div className="space-y-6">
-            <div className="space-y-2">
+          <div className='space-y-6'>
+            <div className='space-y-2'>
               <Label>Scan QR Code</Label>
-              <div className="relative h-64 w-64">
-                <Image
-                  src={qrCode}
-                  alt="QR Code"
-                  fill
-                  className="object-contain"
-                />
+              <div className='relative h-64 w-64'>
+                <Image src={qrCode} alt='QR Code' fill className='object-contain' />
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className='text-sm text-muted-foreground'>
                 Scan this QR code with your authenticator app.
               </p>
             </div>
 
-            <div className="space-y-2">
+            <div className='space-y-2'>
               <Label>Manual Entry Code</Label>
-              <p className="font-mono text-sm">{secret}</p>
-              <p className="text-sm text-muted-foreground">
+              <p className='font-mono text-sm'>{secret}</p>
+              <p className='text-sm text-muted-foreground'>
                 If you can't scan the QR code, enter this code manually in your authenticator app.
               </p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="token">Verification Code</Label>
+            <div className='space-y-2'>
+              <Label htmlFor='token'>Verification Code</Label>
               <Input
-                id="token"
+                id='token'
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
-                placeholder="Enter 6-digit code"
+                placeholder='Enter 6-digit code'
                 maxLength={6}
               />
             </div>
 
-            <Button
-              onClick={handleVerify}
-              disabled={isVerifying || !token}
-            >
-              {isVerifying && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button onClick={handleVerify} disabled={isVerifying || !token}>
+              {isVerifying && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
               Verify and Enable
             </Button>
           </div>

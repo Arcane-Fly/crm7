@@ -32,7 +32,7 @@ describe('RateDashboard', () => {
   })
 
   it('renders without crashing', () => {
-    render(<RateDashboard orgId="test-org" />)
+    render(<RateDashboard orgId='test-org' />)
     await waitFor(() => {
       expect(screen.getByText(/Rate Analytics/i)).toBeInTheDocument()
     })
@@ -40,8 +40,8 @@ describe('RateDashboard', () => {
   })
 
   it('loads forecasts and reports on mount', async () => {
-    render(<RateDashboard orgId="test-org" />)
-    
+    render(<RateDashboard orgId='test-org' />)
+
     await waitFor(() => {
       expect(ratesService.getForecastsByDateRange).toHaveBeenCalled()
     })
@@ -49,14 +49,14 @@ describe('RateDashboard', () => {
   })
 
   it('displays loading state initially', () => {
-    render(<RateDashboard orgId="test-org" />)
+    render(<RateDashboard orgId='test-org' />)
     expect(screen.getByTestId('loading-skeleton')).toBeInTheDocument()
   })
 
   it('displays error message when data fetch fails', async () => {
     vi.mocked(ratesService.getForecastsByDateRange).mockRejectedValueOnce(new Error('Test error'))
 
-    render(<RateDashboard orgId="test-org" />)
+    render(<RateDashboard orgId='test-org' />)
 
     await waitFor(() => {
       expect(screen.getByText(/Failed to load dashboard data/i)).toBeInTheDocument()
@@ -64,7 +64,7 @@ describe('RateDashboard', () => {
   })
 
   it('updates data when date range changes', async () => {
-    render(<RateDashboard orgId="test-org" />)
+    render(<RateDashboard orgId='test-org' />)
 
     // Wait for initial load
     await waitFor(() => {

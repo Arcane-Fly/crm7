@@ -1,177 +1,151 @@
-'use client'
-
-import * as React from 'react'
-import { Card } from '@/components/ui/card'
-import { BarChart, LineChart, chartColors } from '@/components/ui/charts'
+import { useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
+import { format } from 'date-fns'
 import { DatePickerWithRange } from '@/components/ui/date-range-picker'
 import { Badge } from '@/components/ui/badge'
-import { useSupabaseQuery } from '@/lib/hooks/use-query-with-supabase'
+import { useQueryWithSupabase } from '@/lib/hooks/use-query-with-supabase'
 import type { DateRange } from 'react-day-picker'
 
 interface ComplianceRecord {
   id: string
+  date: string
   type: string
-  status: 'compliant' | 'non_compliant' | 'pending'
-  due_date: string
-  completed_date?: string
-  risk_level: 'low' | 'medium' | 'high'
+  status: 'compliant' | 'non-compliant'
+  details: string
 }
 
 export function ComplianceDashboard() {
-  const [dateRange, setDateRange] = React.useState<DateRange>()
-  
-  const { data: records } = useSupabaseQuery<ComplianceRecord>({
-    queryKey: ['compliance-records'],
-    table: 'compliance_records',
+  const [date, setDate] = useState<DateRange | undefined>({
+    from: new Date(new Date().setMonth(new Date().getMonth() - 1)),
+    to: new Date(),
   })
 
-  const stats = React.useMemo(() => {
-    if (!records) return {
-      total: 0,
-      compliant: 0,
-      nonCompliant: 0,
-      pending: 0,
-      complianceRate: 0,
-      highRisk: 0,
-    }
+  const queryKey = ['compliance']
+  if (date?.from) queryKey.push(date.from.toISOString())
+  if (date?.to) queryKey.push(date.to.toISOString())
 
-    const filtered = records.filter(record => {
-      if (!dateRange?.from || !dateRange?.to) return true
-      const date = new Date(record.due_date)
-      return date >= dateRange.from && date <= dateRange.to
-    })
+  const { data: complianceRecords = [] } = useQueryWithSupabase<ComplianceRecord>({
+    queryKey,
+    table: 'compliance_records',
+    filter: date
+      ? [
+          { column: 'date', value: date.from?.toISOString() },
+          { column: 'date', value: date.to?.toISOString() },
+        ]
+      : undefined,
+  })
 
-    const compliant = filtered.filter(r => r.status === 'compliant').length
-    const nonCompliant = filtered.filter(r => r.status === 'non_compliant').length
-    const pending = filtered.filter(r => r.status === 'pending').length
-    const highRisk = filtered.filter(r => r.risk_level === 'high').length
-    const total = filtered.length
+  const complianceRate = complianceRecords.length
+    ? (complianceRecords.filter((r) => r.status === 'compliant').length /
+        complianceRecords.length) *
+      100
+    : 0
 
-    return {
-      total,
-      compliant,
-      nonCompliant,
-      pending,
-      complianceRate: total ? (compliant / total) * 100 : 0,
-      highRisk,
-    }
-  }, [records, dateRange])
-
-  const complianceTrend = React.useMemo(() => {
-    if (!records) return { labels: [], rates: [] }
-
-    const monthlyStats = records.reduce((acc, record) => {
-      const month = record.due_date.slice(0, 7) // YYYY-MM
-      if (!acc[month]) {
-        acc[month] = { total: 0, compliant: 0 }
-      }
-      acc[month].total++
-      if (record.status === 'compliant') {
-        acc[month].compliant++
+  const chartData = complianceRecords.reduce(
+    (acc, record) => {
+      const date = format(new Date(record.date), 'MM/dd')
+      const existing = acc.find((d) => d.date === date)
+      if (existing) {
+        existing.total += 1
+        if (record.status === 'compliant') existing.compliant += 1
+      } else {
+        acc.push({
+          date,
+          total: 1,
+          compliant: record.status === 'compliant' ? 1 : 0,
+        })
       }
       return acc
-    }, {} as Record<string, { total: number; compliant: number }>)
-
-    const sorted = Object.entries(monthlyStats)
-      .sort(([a], [b]) => a.localeCompare(b))
-
-    return {
-      labels: sorted.map(([month]) => month),
-      rates: sorted.map(([, stats]) => 
-        (stats.compliant / stats.total) * 100
-      ),
-    }
-  }, [records])
+    },
+    [] as { date: string; total: number; compliant: number }[]
+  )
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Compliance Analytics</h2>
-        <DatePickerWithRange
-          date={dateRange}
-          onDateChange={setDateRange}
-        />
+    <div className='space-y-4'>
+      <div className='flex items-center justify-between'>
+        <h2 className='text-3xl font-bold tracking-tight'>Compliance Dashboard</h2>
+        <DatePickerWithRange date={date} onDateChange={setDate} />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-2">Compliance Rate</h3>
-          <p className="text-3xl font-bold text-blue-600">
-            {stats.complianceRate.toFixed(1)}%
-          </p>
-          <div className="mt-2 flex gap-2">
-            <Badge variant="success">{stats.compliant} Compliant</Badge>
-            <Badge variant="destructive">{stats.nonCompliant} Non-Compliant</Badge>
+      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
+        <Card>
+          <CardHeader>
+            <CardTitle>Overall Compliance Rate</CardTitle>
+            <CardDescription>Percentage of compliant records</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className='text-2xl font-bold'>{complianceRate.toFixed(1)}%</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Total Records</CardTitle>
+            <CardDescription>Number of compliance records</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className='text-2xl font-bold'>{complianceRecords.length}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Non-Compliant Records</CardTitle>
+            <CardDescription>Records requiring attention</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className='text-2xl font-bold'>
+              {complianceRecords.filter((r) => r.status === 'non-compliant').length}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Compliance Trend</CardTitle>
+          <CardDescription>Historical view of compliance rates</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <LineChart width={800} height={400} data={chartData}>
+            <CartesianGrid strokeDasharray='3 3' />
+            <XAxis dataKey='date' />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Line type='monotone' dataKey='compliant' stroke='#10b981' name='Compliant Records' />
+            <Line type='monotone' dataKey='total' stroke='#6366f1' name='Total Records' />
+          </LineChart>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Records</CardTitle>
+          <CardDescription>Latest compliance records</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className='space-y-4'>
+            {complianceRecords.slice(0, 5).map((record) => (
+              <div
+                key={record.id}
+                className='flex items-center justify-between rounded-lg border p-4'
+              >
+                <div>
+                  <div className='font-medium'>{record.type}</div>
+                  <div className='text-sm text-muted-foreground'>
+                    {format(new Date(record.date), 'PPP')}
+                  </div>
+                </div>
+                <Badge variant={record.status === 'compliant' ? 'default' : 'destructive'}>
+                  {record.status}
+                </Badge>
+              </div>
+            ))}
           </div>
-        </Card>
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-2">Pending Reviews</h3>
-          <p className="text-3xl font-bold text-amber-600">{stats.pending}</p>
-        </Card>
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-2">High Risk Items</h3>
-          <p className="text-3xl font-bold text-red-600">{stats.highRisk}</p>
-        </Card>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Compliance Trend</h3>
-          <LineChart
-            height={300}
-            data={{
-              labels: complianceTrend.labels,
-              datasets: [
-                {
-                  label: 'Compliance Rate',
-                  data: complianceTrend.rates,
-                  borderColor: chartColors.primary,
-                  tension: 0.4,
-                },
-              ],
-            }}
-            options={{
-              scales: {
-                y: {
-                  min: 0,
-                  max: 100,
-                  ticks: {
-                    callback: (value: number) => `${value}%`,
-                  },
-                },
-              },
-            }}
-          />
-        </Card>
-
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Risk Distribution</h3>
-          <BarChart
-            height={300}
-            data={{
-              labels: ['Low', 'Medium', 'High'],
-              datasets: [
-                {
-                  label: 'Risk Level',
-                  data: records?.reduce(
-                    (acc, record) => {
-                      const idx = ['low', 'medium', 'high'].indexOf(record.risk_level)
-                      acc[idx]++
-                      return acc
-                    },
-                    [0, 0, 0]
-                  ) || [0, 0, 0],
-                  backgroundColor: [
-                    chartColors.success,
-                    chartColors.warning,
-                    chartColors.error,
-                  ],
-                },
-              ],
-            }}
-          />
-        </Card>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

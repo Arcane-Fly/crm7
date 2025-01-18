@@ -3,10 +3,7 @@ import { sendNotificationEmail } from '@/lib/email/service'
 
 export async function POST(request: NextRequest) {
   if (!process.env.RESEND_API_KEY) {
-    return Response.json(
-      { error: 'Resend API key not configured' },
-      { status: 500 }
-    )
+    return Response.json({ error: 'Resend API key not configured' }, { status: 500 })
   }
 
   try {
@@ -26,9 +23,6 @@ export async function POST(request: NextRequest) {
     return Response.json(data)
   } catch (error) {
     console.error('API error:', error)
-    return Response.json(
-      { error: 'Failed to send email' },
-      { status: 500 }
-    )
+    return Response.json({ error: 'Failed to send email' }, { status: 500 })
   }
 }

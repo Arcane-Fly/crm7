@@ -22,7 +22,10 @@ export class DataEnrichmentService {
       const html = await response.text()
 
       // Extract text content (basic implementation)
-      const text = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+      const text = html
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
 
       // Use Together AI to analyze
       const enrichedData = await this.together.chat.completions.create({
@@ -30,15 +33,16 @@ export class DataEnrichmentService {
         messages: [
           {
             role: 'system',
-            content: 'Extract key information from the following text. Focus on company details, qualifications, training programs, and industry-specific information.'
+            content:
+              'Extract key information from the following text. Focus on company details, qualifications, training programs, and industry-specific information.',
           },
           {
             role: 'user',
-            content: text
-          }
+            content: text,
+          },
         ],
         temperature: options.temperature || 0.3,
-        max_tokens: options.maxTokens || 1000
+        max_tokens: options.maxTokens || 1000,
       })
 
       return enrichedData
@@ -53,25 +57,26 @@ export class DataEnrichmentService {
       const response = await fetch('https://api.perplexity.ai/chat/completions', {
         method: 'POST',
         headers: {
-          'Accept': 'application/json',
+          Accept: 'application/json',
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY}`
+          Authorization: `Bearer ${process.env.PERPLEXITY_API_KEY}`,
         },
         body: JSON.stringify({
           model: 'pplx-7b-online',
           messages: [
             {
               role: 'system',
-              content: 'You are an expert in vocational education and training. Extract and analyze relevant information.'
+              content:
+                'You are an expert in vocational education and training. Extract and analyze relevant information.',
             },
             {
               role: 'user',
-              content: query
-            }
+              content: query,
+            },
           ],
           max_tokens: 1024,
-          temperature: 0.1
-        })
+          temperature: 0.1,
+        }),
       })
 
       return await response.json()
@@ -103,8 +108,8 @@ export class DataEnrichmentService {
         .update({
           enriched_data: {
             industry_insights: industryInsights.choices[0].message.content,
-            last_updated: new Date().toISOString()
-          }
+            last_updated: new Date().toISOString(),
+          },
         })
         .eq('id', apprenticeId)
 
@@ -139,8 +144,8 @@ export class DataEnrichmentService {
         .update({
           market_data: {
             insights: marketData.choices[0].message.content,
-            last_updated: new Date().toISOString()
-          }
+            last_updated: new Date().toISOString(),
+          },
         })
         .eq('id', qualificationId)
 

@@ -3,35 +3,45 @@
 ## Top Navigation (Main Areas)
 
 ### 1. Dashboard
+
 Primary overview and quick access to key metrics
 
 ### 2. Training & Development
+
 Training program management and development tracking
 
 ### 3. Safety & WHS
+
 Workplace health and safety management
 
 ### 4. Payroll & Finance
+
 Financial operations and payroll management
 
 ### 5. Human Resources
+
 HR operations and employee management
 
 ### 6. Client Management
+
 Client relationship and account management
 
 ### 7. Marketing & Sales
+
 Marketing campaigns and sales operations
 
 ### 8. Compliance & Quality
+
 Compliance monitoring and quality assurance
 
 ### 9. Reports & Analytics
+
 Comprehensive reporting and data analysis
 
 ## Left Navigation (Subcategories)
 
 ### Dashboard Subcategories
+
 - Overview
 - Quick Actions
 - Recent Activities
@@ -42,6 +52,7 @@ Comprehensive reporting and data analysis
 - Calendar View
 
 ### Training & Development Subcategories
+
 - Apprentices
 - Trainees
 - Course Catalog
@@ -58,6 +69,7 @@ Comprehensive reporting and data analysis
 - Workshop Schedule
 
 ### Safety & WHS Subcategories
+
 - Incident Reports
 - Hazard Register
 - Safety Audits
@@ -74,6 +86,7 @@ Comprehensive reporting and data analysis
 - Return to Work
 
 ### Payroll & Finance Subcategories
+
 - Payroll Processing
 - Timesheets
 - Award Rates
@@ -91,6 +104,7 @@ Comprehensive reporting and data analysis
 - Cost Centers
 
 ### Human Resources Subcategories
+
 - Employees
 - Candidates
 - Job Postings
@@ -109,6 +123,7 @@ Comprehensive reporting and data analysis
 - Succession Planning
 
 ### Client Management Subcategories
+
 - Client Directory
 - Host Employers
 - Client Contacts
@@ -126,6 +141,7 @@ Comprehensive reporting and data analysis
 - Client Analytics
 
 ### Marketing & Sales Subcategories
+
 - Campaigns
 - Lead Management
 - Sales Pipeline
@@ -142,6 +158,7 @@ Comprehensive reporting and data analysis
 - Brand Assets
 
 ### Compliance & Quality Subcategories
+
 - Compliance Dashboard
 - Audit Management
 - Document Control
@@ -158,6 +175,7 @@ Comprehensive reporting and data analysis
 - Regulatory Updates
 
 ### Reports & Analytics Subcategories
+
 - Standard Reports
 - Custom Reports
 - Analytics Dashboard
@@ -175,6 +193,7 @@ Comprehensive reporting and data analysis
 - Trend Analysis
 
 ## Quick Access Features
+
 - Global Search
 - Recent Items
 - Favorites
@@ -185,6 +204,7 @@ Comprehensive reporting and data analysis
 - System Status
 
 ## User Interface Elements
+
 - Breadcrumb Navigation
 - Action Buttons
 - Filter Options

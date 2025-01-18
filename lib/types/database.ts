@@ -1,10 +1,4 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export type QualificationLevel =
   | 'Certificate_I'
@@ -14,11 +8,7 @@ export type QualificationLevel =
   | 'Diploma'
   | 'Advanced_Diploma'
 
-export type EmploymentStatus =
-  | 'Full_Time'
-  | 'Part_Time'
-  | 'School_Based'
-  | 'Casual'
+export type EmploymentStatus = 'Full_Time' | 'Part_Time' | 'School_Based' | 'Casual'
 
 export type ApprenticeshipStatus =
   | 'Pre_Commencement'

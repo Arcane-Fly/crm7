@@ -16,18 +16,21 @@ export function FileUploader({
   maxSize = 10 * 1024 * 1024, // 10MB default
   onFileSelect,
   multiple = false,
-  className
+  className,
 }: FileUploaderProps) {
   const [error, setError] = useState<string | null>(null)
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    setError(null)
-    if (maxSize && acceptedFiles.some(file => file.size > maxSize)) {
-      setError(`File size exceeds ${maxSize / (1024 * 1024)}MB limit`)
-      return
-    }
-    onFileSelect(acceptedFiles)
-  }, [maxSize, onFileSelect])
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      setError(null)
+      if (maxSize && acceptedFiles.some((file) => file.size > maxSize)) {
+        setError(`File size exceeds ${maxSize / (1024 * 1024)}MB limit`)
+        return
+      }
+      onFileSelect(acceptedFiles)
+    },
+    [maxSize, onFileSelect]
+  )
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -36,28 +39,26 @@ export function FileUploader({
   })
 
   return (
-    <div className="space-y-2">
+    <div className='space-y-2'>
       <div
         {...getRootProps()}
         className={cn(
-          'border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-primary transition-colors',
+          'cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors hover:border-primary',
           isDragActive && 'border-primary bg-primary/10',
           className
         )}
       >
         <input {...getInputProps()} />
-        <p className="text-sm text-gray-600">
+        <p className='text-sm text-gray-600'>
           {isDragActive
             ? 'Drop the files here...'
             : 'Drag and drop files here, or click to select files'}
         </p>
-        <Button type="button" variant="outline" className="mt-2">
+        <Button type='button' variant='outline' className='mt-2'>
           Select Files
         </Button>
       </div>
-      {error && (
-        <p className="text-sm text-red-500">{error}</p>
-      )}
+      {error && <p className='text-sm text-red-500'>{error}</p>}
     </div>
   )
 }

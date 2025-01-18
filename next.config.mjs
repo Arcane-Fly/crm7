@@ -25,8 +25,8 @@ const nextConfig = {
     },
   },
   webpack: (config) => {
-    return config;
+    return config
   },
 }
 
-export default nextConfig;
+export default nextConfig

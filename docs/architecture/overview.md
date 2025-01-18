@@ -3,18 +3,21 @@
 ## Core Components
 
 ### Authentication & Security
+
 - Multi-factor authentication (MFA) support
 - Role-based access control
 - Session management
 - Security monitoring and logging
 
 ### Data Management
+
 - React Query for efficient data fetching and caching
 - Optimistic updates
 - Real-time updates via Supabase
 - Type-safe database interactions
 
 ### Analytics & Reporting
+
 - Financial analytics dashboard
 - Training progress tracking
 - Compliance monitoring
@@ -22,12 +25,14 @@
 - Performance monitoring
 
 ### Integration Layer
+
 - LMS (Learning Management System)
 - Bank integration
 - Fair Work API
 - Government systems
 
 ### Performance & Monitoring
+
 - Web Vitals tracking
 - Error tracking with Sentry
 - Performance metrics
@@ -36,6 +41,7 @@
 ## Technical Stack
 
 ### Frontend
+
 - Next.js 13+ with App Router
 - TypeScript
 - TailwindCSS
@@ -44,18 +50,21 @@
 - Chart.js
 
 ### Backend
+
 - Supabase
 - PostgreSQL
 - Edge Functions
 - Real-time subscriptions
 
 ### Testing
+
 - Vitest
 - React Testing Library
 - E2E with Playwright
 - CI/CD with GitHub Actions
 
 ### Monitoring
+
 - Sentry for error tracking
 - Custom performance monitoring
 - Web Vitals tracking
@@ -64,18 +73,21 @@
 ## Security Features
 
 ### Authentication
+
 - Email/password authentication
 - Multi-factor authentication (MFA)
 - Session management
 - JWT tokens
 
 ### Authorization
+
 - Role-based access control (RBAC)
 - Row-level security (RLS)
 - API route protection
 - Middleware checks
 
 ### Data Protection
+
 - Data encryption at rest
 - Secure communication (HTTPS)
 - Input validation
@@ -85,6 +97,7 @@
 ## Development Workflow
 
 ### CI/CD Pipeline
+
 1. Automated testing
 2. Type checking
 3. Linting
@@ -93,6 +106,7 @@
 6. Production deployment
 
 ### Code Quality
+
 - ESLint configuration
 - Prettier formatting
 - TypeScript strict mode
@@ -100,6 +114,7 @@
 - Automated testing
 
 ### Performance Optimization
+
 - React Query caching
 - Code splitting
 - Image optimization
@@ -109,17 +124,20 @@
 ## Deployment
 
 ### Environments
+
 - Development
 - Staging
 - Production
 
 ### Infrastructure
+
 - Vercel deployment
 - Supabase database
 - Edge functions
 - CDN integration
 
 ### Monitoring
+
 - Error tracking
 - Performance metrics
 - Usage analytics
@@ -128,6 +146,7 @@
 ## Best Practices
 
 ### Code Organization
+
 - Feature-based structure
 - Shared components
 - Type-safe interfaces
@@ -135,12 +154,14 @@
 - Utility functions
 
 ### State Management
+
 - React Query for server state
 - Context for global state
 - Local state when appropriate
 - Real-time updates
 
 ### Testing Strategy
+
 - Unit tests
 - Integration tests
 - E2E tests
@@ -148,6 +169,7 @@
 - Accessibility testing
 
 ### Security Measures
+
 - Regular security audits
 - Dependency updates
 - Security monitoring
@@ -157,6 +179,7 @@
 ## Future Enhancements
 
 ### Planned Features
+
 - Advanced analytics
 - Machine learning integration
 - Mobile application
@@ -164,6 +187,7 @@
 - Enhanced reporting
 
 ### Technical Improvements
+
 - GraphQL integration
 - Microservices architecture
 - Enhanced caching
@@ -171,6 +195,7 @@
 - Advanced search
 
 ### Infrastructure
+
 - Multi-region deployment
 - Enhanced backup strategy
 - Disaster recovery
@@ -178,6 +203,7 @@
 - Auto-scaling
 
 ### Accessibility & UX
+
 - WCAG 2.1 AA compliance
 - Mobile-first design
 - Progressive enhancement
@@ -185,6 +211,7 @@
 - User feedback loops
 
 ### Developer Experience
+
 - Improved documentation
 - Development tooling
 - Code generation

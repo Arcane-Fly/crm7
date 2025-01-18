@@ -46,8 +46,7 @@ export function FormInputField({
   )
 }
 
-interface FormTextAreaFieldProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+interface FormTextAreaFieldProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   name: string
   label: string
   description?: string

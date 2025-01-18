@@ -37,7 +37,11 @@ class Logger {
     return `[${entry.timestamp}] ${entry.level.toUpperCase()}: ${entry.message}${contextStr}`
   }
 
-  private createLogEntry(level: LogLevel, message: string, context?: Record<string, unknown>): LogEntry {
+  private createLogEntry(
+    level: LogLevel,
+    message: string,
+    context?: Record<string, unknown>
+  ): LogEntry {
     return {
       level,
       message,

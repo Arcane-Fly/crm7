@@ -16,16 +16,16 @@ export const NotificationTemplate: React.FC<Readonly<NotificationTemplateProps>>
   actionText,
   recipientName,
 }) => (
-  <div className="email-container">
-    <h1 className="email-heading">{title}</h1>
-    <p className="email-text">Dear {recipientName},</p>
-    <p className="email-text">{message}</p>
+  <div className='email-container'>
+    <h1 className='email-heading'>{title}</h1>
+    <p className='email-text'>Dear {recipientName},</p>
+    <p className='email-text'>{message}</p>
     {actionUrl && actionText && (
-      <a href={actionUrl} className="email-button">
+      <a href={actionUrl} className='email-button'>
         {actionText}
       </a>
     )}
-    <p className="email-footer">
+    <p className='email-footer'>
       Best regards,
       <br />
       The CRM7R Team

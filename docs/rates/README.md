@@ -65,18 +65,21 @@ The system uses the following tables:
 ### Components
 
 1. **RateCalculator**
+
    - Interactive rate calculation
    - Template selection
    - Real-time validation
    - Result breakdown
 
 2. **RateTemplateBuilder**
+
    - Template creation and editing
    - Validation rules configuration
    - Approval workflow integration
    - Version control
 
 3. **BulkRateCalculator**
+
    - Bulk calculation interface
    - Progress tracking
    - Result visualization
@@ -91,6 +94,7 @@ The system uses the following tables:
 ### Services
 
 1. **RatesService**
+
    - Rate calculation logic
    - Template management
    - Validation rules
@@ -113,17 +117,20 @@ The system uses the following tables:
 ## Rate Validation Rules
 
 1. **Required Fields**
+
    - Template name
    - Template type
    - Base rate
    - Effective dates
 
 2. **Range Validations**
+
    - Positive rates and margins
    - Valid date ranges
    - Percentage limits
 
 3. **Dependency Validations**
+
    - Template type specific rules
    - Cross-field validations
    - Business logic rules
@@ -136,16 +143,19 @@ The system uses the following tables:
 ## Analytics
 
 1. **Cost Analysis**
+
    - Component breakdown
    - Cost trends
    - Variance analysis
 
 2. **Margin Analysis**
+
    - Margin distribution
    - Trend analysis
    - Target vs actual
 
 3. **Forecasting**
+
    - Rate projections
    - Cost forecasting
    - Scenario analysis
@@ -230,18 +240,21 @@ interface ValidationRule {
 ## Best Practices
 
 1. **Rate Template Management**
+
    - Use version control
    - Implement approval workflow
    - Document changes
    - Validate thoroughly
 
 2. **Calculations**
+
    - Cache common calculations
    - Use bulk processing for large sets
    - Implement error handling
    - Track calculation history
 
 3. **Analytics**
+
    - Schedule regular updates
    - Monitor trends
    - Alert on anomalies
@@ -256,12 +269,14 @@ interface ValidationRule {
 ## Troubleshooting
 
 1. **Calculation Issues**
+
    - Verify template configuration
    - Check validation rules
    - Review calculation logs
    - Test with sample data
 
 2. **Performance Issues**
+
    - Use bulk operations
    - Implement caching
    - Optimize queries
@@ -276,12 +291,14 @@ interface ValidationRule {
 ## Future Enhancements
 
 1. **Machine Learning**
+
    - Rate prediction
    - Anomaly detection
    - Pattern recognition
    - Optimization suggestions
 
 2. **Integration**
+
    - Payroll systems
    - HR systems
    - Accounting systems

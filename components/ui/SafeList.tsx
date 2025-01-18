@@ -7,12 +7,7 @@ interface SafeListProps<T> extends React.HTMLAttributes<HTMLUListElement> {
   renderItem: (item: T) => React.ReactNode
 }
 
-export function SafeList<T>({
-  items,
-  renderItem,
-  className,
-  ...props
-}: SafeListProps<T>) {
+export function SafeList<T>({ items, renderItem, className, ...props }: SafeListProps<T>) {
   if (!items || items.length === 0) {
     return null
   }

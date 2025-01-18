@@ -5,6 +5,7 @@
 CRM7 uses a dual-navigation system with top-level sections and contextual sidebars.
 
 ### Top-Level Navigation
+
 ```
 app/
 ├── (dashboard)/       # Main dashboard
@@ -18,12 +19,14 @@ app/
 ```
 
 Each top-level section represents a complete business domain. When adding new sections:
+
 1. Create a new directory in `app/`
 2. Add a `layout.tsx` for section-specific layouts
 3. Include error boundaries and loading states
 4. Update the main navigation component
 
 ### Sidebar Navigation
+
 Each top-level section has its own contextual sidebar. Implement sidebars using:
 
 ```typescript
@@ -56,6 +59,7 @@ const TrainingSidebar = () => {
 ### Getting Started
 
 1. Clone and Setup
+
 ```bash
 git clone https://github.com/Arcane-Fly/crm7.git
 cd crm7
@@ -64,6 +68,7 @@ pnpm dev
 ```
 
 2. Branch Naming
+
 ```
 feature/[feature-name]
 bugfix/[bug-name]
@@ -73,6 +78,7 @@ hotfix/[hotfix-name]
 ### Component Structure
 
 1. Page Components
+
 ```typescript
 // app/[section]/page.tsx
 import { Metadata } from 'next';
@@ -93,6 +99,7 @@ export default function Page() {
 ```
 
 2. Layout Components
+
 ```typescript
 // app/[section]/layout.tsx
 import { SectionSidebar } from '@/components/navigation';
@@ -110,6 +117,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 ### Testing
 
 1. Run Tests
+
 ```bash
 pnpm test            # Run all tests
 pnpm test:watch     # Watch mode
@@ -117,6 +125,7 @@ pnpm test:coverage  # Coverage report
 ```
 
 2. Test Structure
+
 ```typescript
 import { render, screen } from '@testing-library/react';
 import { Component } from './Component';
@@ -139,36 +148,43 @@ describe('Component', () => {
 
 ```markdown
 ## Description
+
 Brief description of changes
 
 ## Type of Change
+
 - [ ] Bug fix
 - [ ] New feature
 - [ ] Breaking change
 - [ ] Documentation update
 
 ## Testing
+
 Description of testing performed
 
 ## Screenshots
+
 If applicable, add screenshots
 ```
 
 ## Style Guide
 
 ### TypeScript
+
 - Use strict mode
 - Prefer interfaces over types
 - Document complex types
 - Use proper type imports
 
 ### Components
+
 - Use functional components
 - Implement proper error boundaries
 - Include loading states
 - Follow accessibility guidelines
 
 ### CSS/Tailwind
+
 - Use utility classes
 - Follow color scheme
 - Maintain responsive design
@@ -177,6 +193,7 @@ If applicable, add screenshots
 ## Documentation
 
 Update relevant documentation:
+
 - README.md for project-wide changes
 - API.md for endpoint changes
 - DATA_MODELS.md for data structure changes

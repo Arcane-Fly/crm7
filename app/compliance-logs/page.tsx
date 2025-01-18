@@ -24,9 +24,7 @@ export default function ComplianceLogsPage() {
               <div className='rounded-md bg-red-50 p-4'>
                 <div className='flex items-center gap-2'>
                   <AlertTriangle className='h-5 w-5 text-red-500' />
-                  <h3 className='font-medium text-red-700'>
-                    Missing Safety Certification
-                  </h3>
+                  <h3 className='font-medium text-red-700'>Missing Safety Certification</h3>
                 </div>
                 <p className='mt-1 text-sm text-red-600'>
                   Employee: John Smith
@@ -38,17 +36,13 @@ export default function ComplianceLogsPage() {
                 <p className='mt-2 text-sm text-red-500'>
                   Certificate expired on December 31, 2023
                 </p>
-                <p className='mt-1 text-xs text-red-400'>
-                  Detected on: January 10, 2024 09:15 AM
-                </p>
+                <p className='mt-1 text-xs text-red-400'>Detected on: January 10, 2024 09:15 AM</p>
               </div>
 
               <div className='rounded-md bg-yellow-50 p-4'>
                 <div className='flex items-center gap-2'>
                   <AlertTriangle className='h-5 w-5 text-yellow-500' />
-                  <h3 className='font-medium text-yellow-700'>
-                    Upcoming Certification Expiry
-                  </h3>
+                  <h3 className='font-medium text-yellow-700'>Upcoming Certification Expiry</h3>
                 </div>
                 <p className='mt-1 text-sm text-yellow-600'>
                   Employee: Sarah Johnson
@@ -77,9 +71,7 @@ export default function ComplianceLogsPage() {
               <div className='rounded-md bg-green-50 p-4'>
                 <div className='flex items-center gap-2'>
                   <CheckCircle2 className='h-5 w-5 text-green-500' />
-                  <h3 className='font-medium text-green-700'>
-                    Payroll Compliance Check
-                  </h3>
+                  <h3 className='font-medium text-green-700'>Payroll Compliance Check</h3>
                 </div>
                 <p className='mt-1 text-sm text-green-600'>
                   Employee: Michael Brown
@@ -91,9 +83,7 @@ export default function ComplianceLogsPage() {
                 <p className='mt-2 text-sm text-green-500'>
                   Public holiday rates correctly applied for New Year&apos;s Day
                 </p>
-                <p className='mt-1 text-xs text-green-400'>
-                  Checked on: January 11, 2024 10:45 AM
-                </p>
+                <p className='mt-1 text-xs text-green-400'>Checked on: January 11, 2024 10:45 AM</p>
               </div>
             </div>
           </div>

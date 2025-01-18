@@ -91,34 +91,31 @@ export function DataGrid<TData, TValue>({
   }, [pageSize, table])
 
   if (error) {
-    return (
-      <div className="p-4 text-red-500">
-        Error: {error.message}
-      </div>
-    )
+    return <div className='p-4 text-red-500'>Error: {error.message}</div>
   }
 
   return (
     <ErrorBoundary>
       <div className={cn('space-y-4', className)}>
         {enableFiltering && (
-          <div className="flex items-center gap-4">
-            {table.getAllColumns()
+          <div className='flex items-center gap-4'>
+            {table
+              .getAllColumns()
               .filter((column) => column.getCanFilter())
               .map((column) => (
-                <div key={column.id} className="flex-1">
+                <div key={column.id} className='flex-1'>
                   <Input
                     placeholder={`Filter ${column.id}`}
                     value={(column.getFilterValue() as string) ?? ''}
                     onChange={(e) => column.setFilterValue(e.target.value)}
-                    className="max-w-sm"
+                    className='max-w-sm'
                   />
                 </div>
               ))}
           </div>
         )}
 
-        <div className="rounded-md border">
+        <div className='rounded-md border'>
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
@@ -127,10 +124,7 @@ export function DataGrid<TData, TValue>({
                     <TableHead key={header.id}>
                       {header.isPlaceholder
                         ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                        : flexRender(header.column.columnDef.header, header.getContext())}
                     </TableHead>
                   ))}
                 </TableRow>
@@ -139,10 +133,7 @@ export function DataGrid<TData, TValue>({
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
+                  <TableCell colSpan={columns.length} className='h-24 text-center'>
                     Loading...
                   </TableCell>
                 </TableRow>
@@ -163,10 +154,7 @@ export function DataGrid<TData, TValue>({
                 ))
               ) : (
                 <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
+                  <TableCell colSpan={columns.length} className='h-24 text-center'>
                     No results.
                   </TableCell>
                 </TableRow>
@@ -176,20 +164,20 @@ export function DataGrid<TData, TValue>({
         </div>
 
         {enablePagination && (
-          <div className="flex items-center justify-between px-2">
-            <div className="flex-1 text-sm text-muted-foreground">
+          <div className='flex items-center justify-between px-2'>
+            <div className='flex-1 text-sm text-muted-foreground'>
               {table.getFilteredSelectedRowModel().rows.length} of{' '}
               {table.getFilteredRowModel().rows.length} row(s) selected.
             </div>
-            <div className="flex items-center space-x-6 lg:space-x-8">
-              <div className="flex items-center space-x-2">
-                <p className="text-sm font-medium">Rows per page</p>
+            <div className='flex items-center space-x-6 lg:space-x-8'>
+              <div className='flex items-center space-x-2'>
+                <p className='text-sm font-medium'>Rows per page</p>
                 <select
                   value={table.getState().pagination.pageSize}
                   onChange={(e) => {
                     table.setPageSize(Number(e.target.value))
                   }}
-                  className="h-8 w-[70px] rounded-md border border-input bg-transparent"
+                  className='h-8 w-[70px] rounded-md border border-input bg-transparent'
                 >
                   {[10, 20, 30, 40, 50].map((pageSize) => (
                     <option key={pageSize} value={pageSize}>
@@ -198,22 +186,21 @@ export function DataGrid<TData, TValue>({
                   ))}
                 </select>
               </div>
-              <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-                Page {table.getState().pagination.pageIndex + 1} of{' '}
-                {table.getPageCount()}
+              <div className='flex w-[100px] items-center justify-center text-sm font-medium'>
+                Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
               </div>
-              <div className="flex items-center space-x-2">
+              <div className='flex items-center space-x-2'>
                 <Button
-                  variant="outline"
-                  className="h-8 w-8 p-0"
+                  variant='outline'
+                  className='h-8 w-8 p-0'
                   onClick={() => table.previousPage()}
                   disabled={!table.getCanPreviousPage()}
                 >
                   {'<'}
                 </Button>
                 <Button
-                  variant="outline"
-                  className="h-8 w-8 p-0"
+                  variant='outline'
+                  className='h-8 w-8 p-0'
                   onClick={() => table.nextPage()}
                   disabled={!table.getCanNextPage()}
                 >

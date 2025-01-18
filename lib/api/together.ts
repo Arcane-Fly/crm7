@@ -18,16 +18,16 @@ export class Together {
         const response = await fetch(`${this.baseUrl}/chat/completions`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${this.apiKey}`,
-            'Content-Type': 'application/json'
+            Authorization: `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             model: params.model,
             messages: params.messages,
             temperature: params.temperature ?? 0.7,
             max_tokens: params.max_tokens,
-            stream: params.stream ?? false
-          })
+            stream: params.stream ?? false,
+          }),
         })
 
         if (!response.ok) {
@@ -35,7 +35,7 @@ export class Together {
         }
 
         return await response.json()
-      }
-    }
+      },
+    },
   }
 }

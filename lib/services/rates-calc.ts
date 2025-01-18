@@ -31,7 +31,7 @@ export class RatesCalculator {
 
     return {
       ...calculation,
-      total: chargeRate
+      total: chargeRate,
     }
   }
 
@@ -40,7 +40,7 @@ export class RatesCalculator {
     let allowances = 0
     let penalties = 0
 
-    components.forEach(component => {
+    components.forEach((component) => {
       const amount = baseRate * component.rate
 
       switch (component.type) {
@@ -67,8 +67,8 @@ export class RatesCalculator {
         loadings,
         allowances,
         penalties,
-        total
-      }
+        total,
+      },
     }
   }
 
@@ -90,7 +90,7 @@ export class RatesCalculator {
         baseRate: calculation.baseRate,
         totalRate: calculation.total,
         weeklyRate: calculation.total * 38, // Standard week
-        annualRate: calculation.total * 38 * 52 // Annual salary
+        annualRate: calculation.total * 38 * 52, // Annual salary
       },
       breakdown: {
         wages: calculation.breakdown.wages,
@@ -100,12 +100,12 @@ export class RatesCalculator {
         superannuation: calculation.breakdown.total * this.SUPER_RATE,
         workersComp: calculation.breakdown.total * this.WORKERS_COMP_RATE,
         payrollTax: calculation.breakdown.total * this.PAYROLL_TAX_RATE,
-        markup: calculation.total - calculation.breakdown.total
+        markup: calculation.total - calculation.breakdown.total,
       },
-      components: calculation.components.map(component => ({
+      components: calculation.components.map((component) => ({
         ...component,
-        amount: calculation.baseRate * component.rate
-      }))
+        amount: calculation.baseRate * component.rate,
+      })),
     }
   }
 }

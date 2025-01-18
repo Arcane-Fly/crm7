@@ -16,19 +16,14 @@ export default function DocumentsPage() {
     <div className='space-y-6'>
       <div className='flex items-center justify-between'>
         <Breadcrumb>
-          <BreadcrumbItem href="/dashboard">Dashboard</BreadcrumbItem>
+          <BreadcrumbItem href='/dashboard'>Dashboard</BreadcrumbItem>
           <BreadcrumbItem>Documents</BreadcrumbItem>
         </Breadcrumb>
         <Button onClick={() => router.push('/documents/upload')}>
           <Upload className='mr-2 h-4 w-4' /> Upload Document
         </Button>
       </div>
-      <DataTable 
-        columns={columns} 
-        data={data} 
-        filterColumn="name"
-        enableColumnVisibility={true}
-      />
+      <DataTable columns={columns} data={data} filterColumn='name' enableColumnVisibility={true} />
     </div>
   )
 }

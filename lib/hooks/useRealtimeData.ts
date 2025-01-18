@@ -47,14 +47,10 @@ export function useRealtimeData<T>(
             if (payload.eventType === 'INSERT') {
               setData((current) => [...current, payload.new])
             } else if (payload.eventType === 'DELETE') {
-              setData((current) =>
-                current.filter((item: any) => item.id !== payload.old.id)
-              )
+              setData((current) => current.filter((item: any) => item.id !== payload.old.id))
             } else if (payload.eventType === 'UPDATE') {
               setData((current) =>
-                current.map((item: any) =>
-                  item.id === payload.new.id ? payload.new : item
-                )
+                current.map((item: any) => (item.id === payload.new.id ? payload.new : item))
               )
             }
           }

@@ -32,11 +32,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session)
-      setUser(session?.user ?? null)
 
       if (!session) {
+        setUser(null)
         router.push('/auth')
       } else {
+        // Get user's organization ID
+        const { data: orgData, error: orgError } = await supabase
+          .from('organizations')
+          .select('id')
+          .eq('owner_id', session.user.id)
+          .single()
+
+        if (orgError) {
+          console.error('Error fetching organization:', orgError)
+          return
+        }
+
+        // Transform Supabase user to our custom User type
+        setUser({
+          id: session.user.id,
+          email: session.user.email,
+          org_id: orgData.id,
+        })
+
+        // Check MFA status
         const { data, error } = await supabase
           .from('user_mfa')
           .select('enabled, verified')
@@ -55,21 +75,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe()
     }
-  }, [router, supabase])
+  }, [supabase, router])
 
   const signOut = React.useCallback(async () => {
-    await supabase.auth.signOut()
-    router.push('/auth')
-  }, [router, supabase])
+    const { error } = await supabase.auth.signOut()
+    if (error) {
+      console.error('Error signing out:', error)
+    }
+  }, [supabase])
 
-  return (
-    <AuthContext.Provider value={{ user, session, signOut, requiresMFA }}>
-      {children}
-    </AuthContext.Provider>
+  const value = React.useMemo(
+    () => ({
+      user,
+      session,
+      signOut,
+      requiresMFA,
+    }),
+    [user, session, signOut, requiresMFA]
   )
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
-export const useAuth = () => {
+export function useAuth() {
   const context = React.useContext(AuthContext)
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider')

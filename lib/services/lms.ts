@@ -3,38 +3,59 @@ import { logger } from '@/lib/services/logger'
 
 export interface Course {
   id: string
+  org_id: string
   title: string
   description: string
-  duration: number
-  level: 'beginner' | 'intermediate' | 'advanced'
-  category: string
-  provider: string
-  status: 'active' | 'inactive' | 'archived'
-  metadata?: Record<string, any>
+  instructor: string
+  start_date: string
+  end_date: string
+  status: 'active' | 'inactive'
+  created_at: string
+  updated_at: string
 }
 
 export interface Enrollment {
   id: string
-  user_id: string
+  org_id: string
   course_id: string
-  status: 'enrolled' | 'in_progress' | 'completed' | 'failed'
+  student_id: string
+  status: 'active' | 'completed' | 'withdrawn'
   progress: number
-  start_date: string
-  completion_date?: string
   grade?: number
-  certificate_url?: string
-  metadata?: Record<string, any>
+  created_at: string
+  updated_at: string
 }
 
 export interface Assessment {
   id: string
+  org_id: string
   course_id: string
   title: string
-  type: 'quiz' | 'exam' | 'assignment'
-  due_date?: string
-  passing_grade: number
-  metadata?: Record<string, any>
+  description: string
+  due_date: string
+  total_points: number
+  weight: number
+  status: 'draft' | 'published' | 'archived'
+  created_at: string
+  updated_at: string
 }
+
+export interface Unit {
+  id: string
+  org_id: string
+  course_id: string
+  title: string
+  description: string
+  order: number
+  status: 'draft' | 'published' | 'archived'
+  created_at: string
+  updated_at: string
+}
+
+export type CourseUpdate = Partial<Course>
+export type EnrollmentUpdate = Partial<Enrollment>
+export type AssessmentUpdate = Partial<Assessment>
+export type UnitUpdate = Partial<Unit>
 
 export class LMSService {
   private supabase = createClient()
@@ -70,11 +91,7 @@ export class LMSService {
 
   async getCourseById(id: string) {
     try {
-      const { data, error } = await this.supabase
-        .from('courses')
-        .select('*')
-        .eq('id', id)
-        .single()
+      const { data, error } = await this.supabase.from('courses').select('*').eq('id', id).single()
 
       if (error) throw error
       return { data: data as Course }

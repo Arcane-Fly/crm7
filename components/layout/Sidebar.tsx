@@ -107,7 +107,7 @@ const sidebarSections: Record<string, SidebarSection> = {
       { title: 'Pay Rate / Classification', href: '/candidates/pay-rates', icon: 'Wallet' },
       { title: 'Apprenticeship Tracking', href: '/candidates/apprenticeships', icon: 'BookOpen' },
       { title: 'Employee Positions', href: '/candidates/positions', icon: 'Briefcase' },
-      { title: 'Performance Logs', href: '/candidates/performance', icon: 'Activity' }
+      { title: 'Performance Logs', href: '/candidates/performance', icon: 'Activity' },
     ],
   },
   '/clients': {
@@ -122,7 +122,7 @@ const sidebarSections: Record<string, SidebarSection> = {
       { title: 'Communication Log', href: '/clients/communication', icon: 'MessageSquare' },
       { title: 'Historical Data', href: '/clients/history', icon: 'Clock' },
       { title: 'Credit Terms', href: '/clients/credit', icon: 'Wallet' },
-      { title: 'Region Management', href: '/clients/regions', icon: 'Building2' }
+      { title: 'Region Management', href: '/clients/regions', icon: 'Building2' },
     ],
   },
   '/jobs': {
@@ -137,7 +137,7 @@ const sidebarSections: Record<string, SidebarSection> = {
       { title: 'Job Applications', href: '/jobs/applications', icon: 'FileText' },
       { title: 'Completed Placements', href: '/jobs/completed', icon: 'CheckCircle' },
       { title: 'Multi-Job Actions', href: '/jobs/bulk-actions', icon: 'FileText' },
-      { title: 'Roster/Shifts', href: '/jobs/roster', icon: 'Calendar' }
+      { title: 'Roster/Shifts', href: '/jobs/roster', icon: 'Calendar' },
     ],
   },
   '/timesheets': {
@@ -152,7 +152,7 @@ const sidebarSections: Record<string, SidebarSection> = {
       { title: 'Payment Records', href: '/timesheets/payments', icon: 'FileText' },
       { title: 'Leave Management', href: '/timesheets/leave', icon: 'Calendar' },
       { title: 'Invoice Generation', href: '/timesheets/invoices', icon: 'FileText' },
-      { title: 'Timesheet Audit', href: '/timesheets/audit', icon: 'Search' }
+      { title: 'Timesheet Audit', href: '/timesheets/audit', icon: 'Search' },
     ],
   },
   '/compliance': {
@@ -167,7 +167,7 @@ const sidebarSections: Record<string, SidebarSection> = {
       { title: 'Assessment Results', href: '/compliance/assessments', icon: 'FileCheck' },
       { title: 'WHS Reminders', href: '/compliance/reminders', icon: 'Bell' },
       { title: 'Safety Training', href: '/compliance/safety', icon: 'HardHat' },
-      { title: 'WHS Policies', href: '/compliance/policies', icon: 'FileText' }
+      { title: 'WHS Policies', href: '/compliance/policies', icon: 'FileText' },
     ],
   },
   '/reporting': {
@@ -182,7 +182,7 @@ const sidebarSections: Record<string, SidebarSection> = {
       { title: 'Visualization', href: '/reporting/visualization', icon: 'BarChart2' },
       { title: 'Email Reports', href: '/reporting/email', icon: 'Mail' },
       { title: 'Historical Trends', href: '/reporting/trends', icon: 'Activity' },
-      { title: 'Performance KPIs', href: '/reporting/performance', icon: 'Activity' }
+      { title: 'Performance KPIs', href: '/reporting/performance', icon: 'Activity' },
     ],
   },
   '/settings': {
@@ -197,9 +197,9 @@ const sidebarSections: Record<string, SidebarSection> = {
       { title: 'Notifications', href: '/settings/notifications', icon: 'Bell' },
       { title: 'Feature Toggles', href: '/settings/features', icon: 'Tool' },
       { title: 'Branding', href: '/settings/branding', icon: 'Palette' },
-      { title: 'Data Management', href: '/settings/data', icon: 'Database' }
+      { title: 'Data Management', href: '/settings/data', icon: 'Database' },
     ],
-  }
+  },
 }
 
 function MenuItem({ href, icon, title }: MenuItem) {
@@ -233,9 +233,7 @@ export function Sidebar() {
     <div className='hidden border-r bg-background lg:block lg:w-64'>
       <div className='space-y-4 py-4'>
         <div className='px-3 py-2'>
-          <h2 className='mb-2 px-4 text-lg font-semibold tracking-tight'>
-            {sidebarSection.title}
-          </h2>
+          <h2 className='mb-2 px-4 text-lg font-semibold tracking-tight'>{sidebarSection.title}</h2>
           <div className='space-y-1'>
             {sidebarSection.items.map((item) => (
               <MenuItem key={item.href} {...item} />
@@ -243,9 +241,9 @@ export function Sidebar() {
           </div>
         </div>
       </div>
-      <div className="border-t p-3">
-        <button className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900">
-          <LogOut className="h-4 w-4" />
+      <div className='border-t p-3'>
+        <button className='flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900'>
+          <LogOut className='h-4 w-4' />
           Sign Out
         </button>
       </div>

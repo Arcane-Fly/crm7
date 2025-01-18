@@ -28,6 +28,7 @@ CRM7 is a unified platform that combines the best features from multiple CRM sys
 ## Navigation Structure
 
 ### Top-Level Sections
+
 - Dashboard
 - Training & Development
 - Safety & Compliance
@@ -42,32 +43,38 @@ Each section has its own contextual sidebar with relevant subsections. For detai
 ## Documentation
 
 ### Architecture & Design
+
 - [Architecture Overview](docs/ARCHITECTURE.md)
 - [UI/UX Guidelines](docs/UI_UX_GUIDELINES.md)
 - [Data Models](docs/DATA_MODELS.md)
 - [API Documentation](docs/API.md)
 
 ### Project Status
+
 - [Implementation Status](docs/IMPLEMENTATION_STATUS.md)
 - [Development Roadmap](docs/ROADMAP.md)
 
 ## Getting Started
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/Arcane-Fly/crm7.git
    cd crm7
    ```
 
 2. **Install dependencies**
+
    ```bash
    pnpm install
    ```
 
 3. **Set up environment variables**
+
    ```bash
    cp .env.example .env.local
    ```
+
    Edit `.env.local` with your configuration
 
 4. **Start development server**
@@ -79,18 +86,21 @@ Each section has its own contextual sidebar with relevant subsections. For detai
 ## Development Guidelines
 
 ### Code Style
+
 - Use TypeScript strict mode
 - Follow ESLint configuration
 - Use Prettier for formatting
 - Write tests for new features
 
 ### Git Workflow
+
 1. Create feature branch from `master`
 2. Make changes and commit with conventional commits
 3. Submit PR for review
 4. Merge after approval
 
 ### Testing
+
 ```bash
 # Run unit tests
 pnpm test

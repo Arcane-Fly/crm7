@@ -28,7 +28,7 @@ export function useAdminAccess() {
         .eq('user_id', user.id)
         .single()
 
-      setIsAdmin(isAdminUser || (roles?.role === 'admin'))
+      setIsAdmin(isAdminUser || roles?.role === 'admin')
       setIsLoading(false)
     }
 

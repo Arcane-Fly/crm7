@@ -24,11 +24,13 @@ The system includes advanced data enrichment capabilities using multiple AI mode
 #### Data Sources
 
 1. Together AI
+
    - Deep semantic analysis
    - Industry insights
    - Market trends
 
 2. Perplexity API
+
    - Real-time data enrichment
    - Question answering
    - Data verification
@@ -66,11 +68,13 @@ The system includes advanced data enrichment capabilities using multiple AI mode
 ### Rate Components
 
 1. Base Rate Calculation
+
    - Award compliance
    - Classification matching
    - Penalty rates
 
 2. Cost Components
+
    - Workers compensation
    - Payroll tax
    - Superannuation

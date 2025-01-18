@@ -18,25 +18,14 @@ export interface Expense {
   metadata?: Record<string, any>
 }
 
-export type ExpenseCategory =
-  | 'travel'
-  | 'meals'
-  | 'supplies'
-  | 'training'
-  | 'equipment'
-  | 'other'
+export type ExpenseCategory = 'travel' | 'meals' | 'supplies' | 'training' | 'equipment' | 'other'
 
-export type ExpenseStatus = 
-  | 'draft'
-  | 'submitted'
-  | 'approved'
-  | 'rejected'
-  | 'reimbursed'
+export type ExpenseStatus = 'draft' | 'submitted' | 'approved' | 'rejected' | 'reimbursed'
 
 export class ExpenseService {
   private supabase = createClient<Database>()
 
-  async getExpenses(params: { 
+  async getExpenses(params: {
     org_id: string
     user_id?: string
     status?: ExpenseStatus
@@ -77,7 +66,7 @@ export class ExpenseService {
       .insert({
         ...expense,
         submitted_at: new Date().toISOString(),
-        status: 'draft'
+        status: 'draft',
       })
       .select()
       .single()
@@ -101,7 +90,7 @@ export class ExpenseService {
   async submitExpense(id: string) {
     return this.updateExpense(id, {
       status: 'submitted',
-      submitted_at: new Date().toISOString()
+      submitted_at: new Date().toISOString(),
     })
   }
 
@@ -110,7 +99,7 @@ export class ExpenseService {
       status: 'approved',
       approved_at: new Date().toISOString(),
       approver_id,
-      notes
+      notes,
     })
   }
 
@@ -119,13 +108,12 @@ export class ExpenseService {
       status: 'rejected',
       rejected_at: new Date().toISOString(),
       approver_id,
-      notes
+      notes,
     })
   }
 
   async uploadReceipt(file: File) {
-    const { data, error } = await this.supabase
-      .storage
+    const { data, error } = await this.supabase.storage
       .from('receipts')
       .upload(`${Date.now()}-${file.name}`, file)
 
@@ -134,17 +122,13 @@ export class ExpenseService {
   }
 
   async deleteExpense(id: string) {
-    const { error } = await this.supabase
-      .from('expenses')
-      .delete()
-      .eq('id', id)
+    const { error } = await this.supabase.from('expenses').delete().eq('id', id)
 
     if (error) throw error
   }
 
   async getExpenseStats(org_id: string) {
-    const { data, error } = await this.supabase
-      .rpc('get_expense_stats', { org_id })
+    const { data, error } = await this.supabase.rpc('get_expense_stats', { org_id })
 
     if (error) throw error
     return { data }

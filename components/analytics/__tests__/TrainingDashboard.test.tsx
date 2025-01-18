@@ -124,7 +124,7 @@ describe('TrainingDashboard', () => {
 
   it('filters data by date range', async () => {
     render(<TrainingDashboard />)
-    
+
     // Open date picker
     const dateRangePicker = screen.getByRole('button', { name: /Date Range/i })
     fireEvent.click(dateRangePicker)

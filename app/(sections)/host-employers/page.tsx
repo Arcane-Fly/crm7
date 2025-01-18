@@ -16,19 +16,14 @@ export default function HostEmployersPage() {
     <div className='space-y-6'>
       <div className='flex items-center justify-between'>
         <Breadcrumb>
-          <BreadcrumbItem href="/dashboard">Dashboard</BreadcrumbItem>
+          <BreadcrumbItem href='/dashboard'>Dashboard</BreadcrumbItem>
           <BreadcrumbItem>Host Employers</BreadcrumbItem>
         </Breadcrumb>
         <Button onClick={() => router.push('/host-employers/new')}>
           <Plus className='mr-2 h-4 w-4' /> Add Host Employer
         </Button>
       </div>
-      <DataTable 
-        columns={columns} 
-        data={data} 
-        filterColumn="name"
-        enableColumnVisibility={true}
-      />
+      <DataTable columns={columns} data={data} filterColumn='name' enableColumnVisibility={true} />
     </div>
   )
 }

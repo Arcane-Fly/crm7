@@ -33,7 +33,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const [_isMobileOpen, setOpenMobile] = React.useState(false)
 
   const toggleCollapse = React.useCallback(() => {
-    setIsCollapsed(prev => !prev)
+    setIsCollapsed((prev) => !prev)
   }, [])
 
   React.useEffect(() => {
@@ -64,9 +64,9 @@ export function Sidebar() {
   useLockBody(isMobileOpen)
 
   const currentSection = React.useMemo(() => {
-    return MAIN_NAV_ITEMS.find(item => 
-      pathname.startsWith(`/${item.slug}`)
-    )?.slug as Section | undefined
+    return MAIN_NAV_ITEMS.find((item) => pathname.startsWith(`/${item.slug}`))?.slug as
+      | Section
+      | undefined
   }, [pathname])
 
   const sectionItems = currentSection ? SECTIONS[currentSection] : []
@@ -81,8 +81,8 @@ export function Sidebar() {
           'hidden lg:block'
         )}
       >
-        <div className="flex h-full flex-col">
-          <div className="flex h-[var(--header-height)] items-center justify-between px-4">
+        <div className='flex h-full flex-col'>
+          <div className='flex h-[var(--header-height)] items-center justify-between px-4'>
             <AnimatePresence initial={false}>
               {!isCollapsed && (
                 <motion.div
@@ -91,67 +91,63 @@ export function Sidebar() {
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <Link href="/" className="flex items-center space-x-2">
-                    <span className="font-bold">CRM System</span>
+                  <Link href='/' className='flex items-center space-x-2'>
+                    <span className='font-bold'>CRM System</span>
                   </Link>
                 </motion.div>
               )}
             </AnimatePresence>
             <Button
-              variant="ghost"
-              size="icon"
+              variant='ghost'
+              size='icon'
               onClick={toggleCollapse}
-              className="h-9 w-9"
+              className='h-9 w-9'
               aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
               {isCollapsed ? '→' : '←'}
             </Button>
           </div>
-          <ScrollArea className="flex-1 py-2">
-            <nav className="grid gap-1 px-2">
+          <ScrollArea className='flex-1 py-2'>
+            <nav className='grid gap-1 px-2'>
               {MAIN_NAV_ITEMS.map((item) => {
                 const isActive = pathname.startsWith(`/${item.slug}`)
                 return (
                   <Tooltip key={item.slug}>
                     <TooltipTrigger asChild>
-                    <Link
-                      href={item.href}
-                      className={cn(
-                        'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                        'hover:bg-accent hover:text-accent-foreground',
-                        isActive ? 'bg-accent text-accent-foreground' : 'transparent'
-                      )}
-                    >
-                      <item.icon className="h-4 w-4" />
-                      <AnimatePresence initial={false}>
-                        {!isCollapsed && (
-                          <motion.span
-                            initial={{ opacity: 0, width: 0 }}
-                            animate={{ opacity: 1, width: 'auto' }}
-                            exit={{ opacity: 0, width: 0 }}
-                            transition={{ duration: 0.2 }}
-                          >
-                            {item.label}
-                          </motion.span>
+                      <Link
+                        href={item.href}
+                        className={cn(
+                          'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                          'hover:bg-accent hover:text-accent-foreground',
+                          isActive ? 'bg-accent text-accent-foreground' : 'transparent'
                         )}
-                      </AnimatePresence>
-                    </Link>
+                      >
+                        <item.icon className='h-4 w-4' />
+                        <AnimatePresence initial={false}>
+                          {!isCollapsed && (
+                            <motion.span
+                              initial={{ opacity: 0, width: 0 }}
+                              animate={{ opacity: 1, width: 'auto' }}
+                              exit={{ opacity: 0, width: 0 }}
+                              transition={{ duration: 0.2 }}
+                            >
+                              {item.label}
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
+                      </Link>
                     </TooltipTrigger>
-                    {isCollapsed && (
-                      <TooltipContent side="right">
-                        {item.label}
-                      </TooltipContent>
-                    )}
+                    {isCollapsed && <TooltipContent side='right'>{item.label}</TooltipContent>}
                   </Tooltip>
                 )
               })}
             </nav>
             {currentSection && !isCollapsed && (
-              <div className="mt-4">
-                <div className="px-4 py-2">
-                  <h4 className="text-sm font-semibold">{currentSection.toUpperCase()}</h4>
+              <div className='mt-4'>
+                <div className='px-4 py-2'>
+                  <h4 className='text-sm font-semibold'>{currentSection.toUpperCase()}</h4>
                 </div>
-                <nav className="grid gap-1 px-2">
+                <nav className='grid gap-1 px-2'>
                   {sectionItems.map((item) => {
                     const isActive = pathname === item.href
                     return (
@@ -184,7 +180,7 @@ export function Sidebar() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+              className='fixed inset-0 z-40 bg-black/50 lg:hidden'
               onClick={() => setIsMobileOpen(false)}
             />
             <motion.aside
@@ -192,7 +188,7 @@ export function Sidebar() {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ duration: 0.2 }}
-              className="fixed left-0 top-0 z-50 h-screen w-[var(--sidebar-width)] border-r bg-background lg:hidden"
+              className='fixed left-0 top-0 z-50 h-screen w-[var(--sidebar-width)] border-r bg-background lg:hidden'
             >
               {/* Mobile sidebar content - similar to desktop but always expanded */}
             </motion.aside>
@@ -202,9 +198,9 @@ export function Sidebar() {
 
       {/* Mobile toggle button */}
       <Button
-        variant="ghost"
-        size="icon"
-        className="fixed left-4 top-4 z-50 lg:hidden"
+        variant='ghost'
+        size='icon'
+        className='fixed left-4 top-4 z-50 lg:hidden'
         onClick={() => setIsMobileOpen(true)}
       >
         ☰

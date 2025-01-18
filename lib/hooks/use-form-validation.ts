@@ -43,22 +43,18 @@ export function useFormValidation<T extends z.ZodType>(
         })
       } catch (err) {
         // Log error
-        logger.error(
-          'Form submission failed',
-          err as Error,
-          {
-            formId: schema._def.description || 'unknown',
-            values,
-          }
-        )
+        logger.error('Form submission failed', err as Error, {
+          formId: schema._def.description || 'unknown',
+          values,
+        })
 
         const message = err instanceof Error ? err.message : 'An error occurred'
         setError(message)
-        
+
         if (options.onError) {
           options.onError(err as Error)
         }
-        
+
         throw err
       } finally {
         setIsSubmitting(false)

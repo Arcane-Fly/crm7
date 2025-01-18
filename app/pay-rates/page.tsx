@@ -65,17 +65,13 @@ export default function PayRatesPage() {
               <div className='rounded-md bg-gray-50 p-4'>
                 <h3 className='font-medium'>Tool Allowance</h3>
                 <p className='mt-1 text-sm text-gray-600'>$0.58 per hour</p>
-                <p className='mt-1 text-sm text-gray-500'>
-                  Applies to: Manufacturing Award
-                </p>
+                <p className='mt-1 text-sm text-gray-500'>Applies to: Manufacturing Award</p>
               </div>
 
               <div className='rounded-md bg-gray-50 p-4'>
                 <h3 className='font-medium'>First Aid Allowance</h3>
                 <p className='mt-1 text-sm text-gray-600'>$15.00 per week</p>
-                <p className='mt-1 text-sm text-gray-500'>
-                  Applies to: All Awards
-                </p>
+                <p className='mt-1 text-sm text-gray-500'>Applies to: All Awards</p>
               </div>
 
               <div className='rounded-md bg-gray-50 p-4'>

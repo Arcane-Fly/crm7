@@ -1,187 +1,214 @@
-'use client'
-
-import * as React from 'react'
-import { Card } from '@/components/ui/card'
-import { BarChart, LineChart, chartColors } from '@/components/ui/charts'
+import { useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
+import { format } from 'date-fns'
 import { DatePickerWithRange } from '@/components/ui/date-range-picker'
-import { useBankIntegration } from '@/lib/hooks/use-bank-integration'
-import { formatCurrency } from '@/lib/utils'
+import { Badge } from '@/components/ui/badge'
+import { useQueryWithSupabase } from '@/lib/hooks/use-query-with-supabase'
 import type { DateRange } from 'react-day-picker'
-import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary'
+
+interface Performance {
+  id: string
+  date: string
+  revenue: number
+  expenses: number
+  profit: number
+  margin: number
+}
 
 export function FinancialPerformanceDashboard() {
-  const { transactions } = useBankIntegration()
-  const [dateRange, setDateRange] = React.useState<DateRange>()
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: new Date(new Date().setMonth(new Date().getMonth() - 1)),
+    to: new Date(),
+  })
 
-  const stats = React.useMemo(() => {
-    if (!transactions.data) return {
-      totalRevenue: 0,
-      totalExpenses: 0,
-      netIncome: 0,
-      cashFlow: 0,
-    }
+  const queryKey = ['performance']
+  if (dateRange?.from) queryKey.push(dateRange.from.toISOString())
+  if (dateRange?.to) queryKey.push(dateRange.to.toISOString())
 
-    const filtered = transactions.data.filter(transaction => {
-      if (!dateRange?.from || !dateRange?.to) return true
-      const date = new Date(transaction.transaction_date)
-      return date >= dateRange.from && date <= dateRange.to
-    })
+  const { data: performance = [] } = useQueryWithSupabase<Performance>({
+    queryKey,
+    table: 'financial_performance',
+    filter: dateRange
+      ? [
+          { column: 'date', value: dateRange.from?.toISOString() },
+          { column: 'date', value: dateRange.to?.toISOString() },
+        ]
+      : undefined,
+  })
 
-    const revenue = filtered
-      .filter(t => t.type === 'credit')
-      .reduce((sum, t) => sum + t.amount, 0)
+  const filteredPerformance = performance.filter((record: Performance) => {
+    if (!dateRange?.from || !dateRange?.to) return true
+    const date = new Date(record.date)
+    return date >= dateRange.from && date <= dateRange.to
+  })
 
-    const expenses = filtered
-      .filter(t => t.type === 'debit')
-      .reduce((sum, t) => sum + t.amount, 0)
+  const totalRevenue = filteredPerformance.reduce((sum, record) => sum + record.revenue, 0)
+  const totalExpenses = filteredPerformance.reduce((sum, record) => sum + record.expenses, 0)
+  const totalProfit = filteredPerformance.reduce((sum, record) => sum + record.profit, 0)
+  const averageMargin =
+    filteredPerformance.reduce((sum, record) => sum + record.margin, 0) /
+      filteredPerformance.length || 0
 
-    return {
-      totalRevenue: revenue,
-      totalExpenses: expenses,
-      netIncome: revenue - expenses,
-      cashFlow: revenue - expenses,
-    }
-  }, [transactions.data, dateRange])
-
-  const monthlyTrends = React.useMemo(() => {
-    if (!transactions.data) return {
-      labels: [],
-      revenue: [],
-      expenses: [],
-      netIncome: [],
-    }
-
-    const monthlyData = transactions.data.reduce((acc, transaction) => {
-      const month = transaction.transaction_date.slice(0, 7) // YYYY-MM
-      if (!acc[month]) {
-        acc[month] = { revenue: 0, expenses: 0 }
-      }
-
-      if (transaction.type === 'credit') {
-        acc[month].revenue += transaction.amount
+  const chartData = filteredPerformance.reduce(
+    (acc, record) => {
+      const date = format(new Date(record.date), 'MM/dd')
+      const existing = acc.find((d) => d.date === date)
+      if (existing) {
+        existing.revenue += record.revenue
+        existing.expenses += record.expenses
+        existing.profit += record.profit
+        existing.margin = (existing.profit / existing.revenue) * 100
       } else {
-        acc[month].expenses += transaction.amount
+        acc.push({
+          date,
+          revenue: record.revenue,
+          expenses: record.expenses,
+          profit: record.profit,
+          margin: record.margin,
+        })
       }
-
       return acc
-    }, {} as Record<string, { revenue: number; expenses: number }>)
-
-    const sorted = Object.entries(monthlyData)
-      .sort(([a], [b]) => a.localeCompare(b))
-
-    return {
-      labels: sorted.map(([month]) => month),
-      revenue: sorted.map(([, data]) => data.revenue),
-      expenses: sorted.map(([, data]) => data.expenses),
-      netIncome: sorted.map(([, data]) => data.revenue - data.expenses),
-    }
-  }, [transactions.data])
+    },
+    [] as { date: string; revenue: number; expenses: number; profit: number; margin: number }[]
+  )
 
   return (
-    <ErrorBoundary>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold" id="financial-dashboard-title">Financial Performance</h2>
-          <DatePickerWithRange
-            date={dateRange}
-            onDateChange={setDateRange}
-          />
-        </div>
-
-        <div 
-          className="grid gap-6 md:grid-cols-4"
-          role="region" 
-          aria-labelledby="financial-dashboard-title"
-        >
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-2">Total Revenue</h3>
-            <p 
-              className="text-3xl font-bold text-green-600"
-              role="status"
-              aria-label="Total revenue"
-            >
-              {formatCurrency(stats.totalRevenue)}
-            </p>
-          </Card>
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-2">Total Expenses</h3>
-            <p 
-              className="text-3xl font-bold text-red-600"
-              role="status"
-              aria-label="Total expenses"
-            >
-              {formatCurrency(stats.totalExpenses)}
-            </p>
-          </Card>
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-2">Net Income</h3>
-            <p 
-              className={`text-3xl font-bold ${
-                stats.netIncome >= 0 ? 'text-green-600' : 'text-red-600'
-              }`}
-              role="status"
-              aria-label="Net income"
-            >
-              {formatCurrency(stats.netIncome)}
-            </p>
-          </Card>
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-2">Cash Flow</h3>
-            <p 
-              className={`text-3xl font-bold ${
-                stats.cashFlow >= 0 ? 'text-green-600' : 'text-red-600'
-              }`}
-              role="status"
-              aria-label="Cash flow"
-            >
-              {formatCurrency(stats.cashFlow)}
-            </p>
-          </Card>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Monthly Revenue vs Expenses</h3>
-            <BarChart
-              height={300}
-              data={{
-                labels: monthlyTrends.labels,
-                datasets: [
-                  {
-                    label: 'Revenue',
-                    data: monthlyTrends.revenue,
-                    backgroundColor: chartColors.success,
-                  },
-                  {
-                    label: 'Expenses',
-                    data: monthlyTrends.expenses,
-                    backgroundColor: chartColors.error,
-                  },
-                ],
-              }}
-            />
-          </Card>
-
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Net Income Trend</h3>
-            <LineChart
-              height={300}
-              data={{
-                labels: monthlyTrends.labels,
-                datasets: [
-                  {
-                    label: 'Net Income',
-                    data: monthlyTrends.netIncome,
-                    borderColor: chartColors.primary,
-                    tension: 0.4,
-                    fill: true,
-                  },
-                ],
-              }}
-            />
-          </Card>
-        </div>
+    <div className='space-y-4'>
+      <div className='flex items-center justify-between'>
+        <h2 className='text-3xl font-bold tracking-tight'>Financial Performance</h2>
+        <DatePickerWithRange date={dateRange} onDateChange={setDateRange} />
       </div>
-    </ErrorBoundary>
+
+      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
+        <Card>
+          <CardHeader>
+            <CardTitle>Total Revenue</CardTitle>
+            <CardDescription>Total earnings for period</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className='text-2xl font-bold text-blue-600'>${totalRevenue.toLocaleString()}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Total Expenses</CardTitle>
+            <CardDescription>Total costs for period</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className='text-2xl font-bold text-red-600'>${totalExpenses.toLocaleString()}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Total Profit</CardTitle>
+            <CardDescription>Net earnings for period</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div
+              className={`text-2xl font-bold ${
+                totalProfit >= 0 ? 'text-green-600' : 'text-red-600'
+              }`}
+            >
+              ${totalProfit.toLocaleString()}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Average Margin</CardTitle>
+            <CardDescription>Profit margin percentage</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div
+              className={`text-2xl font-bold ${
+                averageMargin >= 0 ? 'text-green-600' : 'text-red-600'
+              }`}
+            >
+              {averageMargin.toFixed(1)}%
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Performance Trends</CardTitle>
+          <CardDescription>Financial metrics over time</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <LineChart width={800} height={400} data={chartData}>
+            <CartesianGrid strokeDasharray='3 3' />
+            <XAxis dataKey='date' />
+            <YAxis yAxisId='left' />
+            <YAxis yAxisId='right' orientation='right' />
+            <Tooltip />
+            <Legend />
+            <Line
+              yAxisId='left'
+              type='monotone'
+              dataKey='revenue'
+              stroke='#3b82f6'
+              name='Revenue'
+            />
+            <Line
+              yAxisId='left'
+              type='monotone'
+              dataKey='expenses'
+              stroke='#ef4444'
+              name='Expenses'
+            />
+            <Line yAxisId='left' type='monotone' dataKey='profit' stroke='#10b981' name='Profit' />
+            <Line
+              yAxisId='right'
+              type='monotone'
+              dataKey='margin'
+              stroke='#8b5cf6'
+              name='Margin %'
+            />
+          </LineChart>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Performance</CardTitle>
+          <CardDescription>Latest financial metrics</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className='space-y-4'>
+            {filteredPerformance.slice(0, 5).map((record) => (
+              <div
+                key={record.id}
+                className='flex items-center justify-between rounded-lg border p-4'
+              >
+                <div>
+                  <div className='font-medium'>{format(new Date(record.date), 'PPP')}</div>
+                  <div className='text-sm text-muted-foreground'>
+                    Revenue: ${record.revenue.toLocaleString()} | Expenses: $
+                    {record.expenses.toLocaleString()}
+                  </div>
+                </div>
+                <div className='flex items-center gap-4'>
+                  <div
+                    className={`font-medium ${
+                      record.profit >= 0 ? 'text-green-600' : 'text-red-600'
+                    }`}
+                  >
+                    ${record.profit.toLocaleString()}
+                  </div>
+                  <Badge variant={record.margin >= 0 ? 'default' : 'destructive'}>
+                    {record.margin.toFixed(1)}%
+                  </Badge>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   )
 }

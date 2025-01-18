@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { vi } from 'vitest'
 import { FinancialPerformanceDashboard } from '../financial-performance-dashboard'
 import { useBankIntegration } from '@/lib/hooks/use-bank-integration'
@@ -9,6 +9,9 @@ vi.mock('@/lib/hooks/use-bank-integration')
 const mockTransactions = [
   {
     id: '1',
+    org_id: 'org1',
+    account_id: 'acc1',
+    reference: 'ref1',
     type: 'credit',
     amount: 1000,
     description: 'Payment received',
@@ -17,6 +20,9 @@ const mockTransactions = [
   },
   {
     id: '2',
+    org_id: 'org1',
+    account_id: 'acc1',
+    reference: 'ref2',
     type: 'debit',
     amount: 500,
     description: 'Payment sent',
@@ -31,17 +37,68 @@ describe('FinancialPerformanceDashboard', () => {
       transactions: {
         data: mockTransactions,
         isLoading: false,
+        isError: false,
         error: null,
+        isSuccess: true,
+        isFetching: false,
+        isPending: false,
+        isLoadingError: false,
+        isRefetchError: false,
+        isRefetching: false,
+        refetch: vi.fn(),
+        remove: vi.fn(),
+        fetchStatus: 'idle',
+        status: 'success',
+        dataUpdatedAt: Date.now(),
+        errorUpdatedAt: 0,
+        failureCount: 0,
+        failureReason: null,
+        errorUpdateCount: 0,
       },
       accounts: {
         data: [],
         isLoading: false,
+        isError: false,
         error: null,
+        isSuccess: true,
+        isFetching: false,
+        isPending: false,
+        isLoadingError: false,
+        isRefetchError: false,
+        isRefetching: false,
+        refetch: vi.fn(),
+        remove: vi.fn(),
+        fetchStatus: 'idle',
+        status: 'success',
+        dataUpdatedAt: Date.now(),
+        errorUpdatedAt: 0,
+        failureCount: 0,
+        failureReason: null,
+        errorUpdateCount: 0,
       },
-      actions: {
-        addBankAccount: vi.fn(),
-        createPayment: vi.fn(),
-        approvePayment: vi.fn(),
+      createBankAccount: {
+        mutate: vi.fn(),
+        isPending: false,
+        isError: false,
+        error: null,
+        reset: vi.fn(),
+        status: 'idle',
+        variables: undefined,
+        failureCount: 0,
+        failureReason: null,
+        mutateAsync: vi.fn(),
+      },
+      createPayment: {
+        mutate: vi.fn(),
+        isPending: false,
+        isError: false,
+        error: null,
+        reset: vi.fn(),
+        status: 'idle',
+        variables: undefined,
+        failureCount: 0,
+        failureReason: null,
+        mutateAsync: vi.fn(),
       },
     })
   })
@@ -63,17 +120,68 @@ describe('FinancialPerformanceDashboard', () => {
       transactions: {
         data: null,
         isLoading: true,
+        isError: false,
         error: null,
+        isSuccess: false,
+        isFetching: false,
+        isPending: false,
+        isLoadingError: false,
+        isRefetchError: false,
+        isRefetching: false,
+        refetch: vi.fn(),
+        remove: vi.fn(),
+        fetchStatus: 'idle',
+        status: 'pending',
+        dataUpdatedAt: 0,
+        errorUpdatedAt: 0,
+        failureCount: 0,
+        failureReason: null,
+        errorUpdateCount: 0,
       },
       accounts: {
         data: [],
         isLoading: true,
+        isError: false,
         error: null,
+        isSuccess: false,
+        isFetching: false,
+        isPending: false,
+        isLoadingError: false,
+        isRefetchError: false,
+        isRefetching: false,
+        refetch: vi.fn(),
+        remove: vi.fn(),
+        fetchStatus: 'idle',
+        status: 'pending',
+        dataUpdatedAt: 0,
+        errorUpdatedAt: 0,
+        failureCount: 0,
+        failureReason: null,
+        errorUpdateCount: 0,
       },
-      actions: {
-        addBankAccount: vi.fn(),
-        createPayment: vi.fn(),
-        approvePayment: vi.fn(),
+      createBankAccount: {
+        mutate: vi.fn(),
+        isPending: false,
+        isError: false,
+        error: null,
+        reset: vi.fn(),
+        status: 'idle',
+        variables: undefined,
+        failureCount: 0,
+        failureReason: null,
+        mutateAsync: vi.fn(),
+      },
+      createPayment: {
+        mutate: vi.fn(),
+        isPending: false,
+        isError: false,
+        error: null,
+        reset: vi.fn(),
+        status: 'idle',
+        variables: undefined,
+        failureCount: 0,
+        failureReason: null,
+        mutateAsync: vi.fn(),
       },
     })
 
@@ -86,17 +194,68 @@ describe('FinancialPerformanceDashboard', () => {
       transactions: {
         data: null,
         isLoading: false,
+        isError: true,
         error: new Error('Failed to load transactions'),
+        isSuccess: false,
+        isFetching: false,
+        isPending: false,
+        isLoadingError: false,
+        isRefetchError: false,
+        isRefetching: false,
+        refetch: vi.fn(),
+        remove: vi.fn(),
+        fetchStatus: 'idle',
+        status: 'error',
+        dataUpdatedAt: 0,
+        errorUpdatedAt: Date.now(),
+        failureCount: 1,
+        failureReason: 'Failed to load transactions',
+        errorUpdateCount: 1,
       },
       accounts: {
         data: [],
         isLoading: false,
+        isError: false,
         error: null,
+        isSuccess: false,
+        isFetching: false,
+        isPending: false,
+        isLoadingError: false,
+        isRefetchError: false,
+        isRefetching: false,
+        refetch: vi.fn(),
+        remove: vi.fn(),
+        fetchStatus: 'idle',
+        status: 'error',
+        dataUpdatedAt: 0,
+        errorUpdatedAt: 0,
+        failureCount: 0,
+        failureReason: null,
+        errorUpdateCount: 0,
       },
-      actions: {
-        addBankAccount: vi.fn(),
-        createPayment: vi.fn(),
-        approvePayment: vi.fn(),
+      createBankAccount: {
+        mutate: vi.fn(),
+        isPending: false,
+        isError: false,
+        error: null,
+        reset: vi.fn(),
+        status: 'idle',
+        variables: undefined,
+        failureCount: 0,
+        failureReason: null,
+        mutateAsync: vi.fn(),
+      },
+      createPayment: {
+        mutate: vi.fn(),
+        isPending: false,
+        isError: false,
+        error: null,
+        reset: vi.fn(),
+        status: 'idle',
+        variables: undefined,
+        failureCount: 0,
+        failureReason: null,
+        mutateAsync: vi.fn(),
       },
     })
 
@@ -106,7 +265,7 @@ describe('FinancialPerformanceDashboard', () => {
 
   it('filters transactions by date range', async () => {
     render(<FinancialPerformanceDashboard />)
-    
+
     // Open date picker
     const dateRangePicker = screen.getByRole('button', { name: /Date Range/i })
     fireEvent.click(dateRangePicker)
@@ -122,15 +281,15 @@ describe('FinancialPerformanceDashboard', () => {
 
   it('meets accessibility requirements', () => {
     render(<FinancialPerformanceDashboard />)
-    
+
     // Check for ARIA labels
     expect(screen.getByLabelText('Total revenue')).toBeInTheDocument()
     expect(screen.getByLabelText('Total expenses')).toBeInTheDocument()
     expect(screen.getByLabelText('Net income')).toBeInTheDocument()
-    
+
     // Check for heading structure
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Financial Performance')
-    
+
     // Check for region role
     expect(screen.getByRole('region')).toBeInTheDocument()
   })

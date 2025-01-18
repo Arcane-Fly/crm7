@@ -44,21 +44,19 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       }
 
       return (
-        <div className="flex min-h-[400px] items-center justify-center p-6">
-          <Alert variant="destructive" className="max-w-xl">
-            <AlertTriangle className="h-4 w-4" />
+        <div className='flex min-h-[400px] items-center justify-center p-6'>
+          <Alert variant='destructive' className='max-w-xl'>
+            <AlertTriangle className='h-4 w-4' />
             <AlertTitle>Something went wrong</AlertTitle>
-            <AlertDescription className="mt-2">
-              <p className="mb-4">
+            <AlertDescription className='mt-2'>
+              <p className='mb-4'>
                 An error occurred while rendering this component.
                 {this.state.error && (
-                  <span className="block mt-2 text-sm opacity-80">
-                    {this.state.error.message}
-                  </span>
+                  <span className='mt-2 block text-sm opacity-80'>{this.state.error.message}</span>
                 )}
               </p>
               <Button
-                variant="outline"
+                variant='outline'
                 onClick={() => {
                   this.setState({ hasError: false, error: null })
                   window.location.reload()

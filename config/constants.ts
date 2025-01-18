@@ -23,4 +23,3 @@ export const KEYBOARD_SHORTCUTS = {
   TOGGLE_THEME: 't',
   FOCUS_SEARCH: '/',
 } as const
-

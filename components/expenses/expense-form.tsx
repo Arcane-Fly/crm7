@@ -98,22 +98,22 @@ export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
   }
 
   return (
-    <Card className="p-6">
+    <Card className='p-6'>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
           <FormField
             control={form.control}
-            name="amount"
+            name='amount'
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Amount</FormLabel>
                 <FormControl>
                   <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
+                    type='number'
+                    step='0.01'
+                    placeholder='0.00'
                     {...field}
-                    onChange={e => field.onChange(parseFloat(e.target.value))}
+                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
                   />
                 </FormControl>
                 <FormMessage />
@@ -123,7 +123,7 @@ export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
 
           <FormField
             control={form.control}
-            name="description"
+            name='description'
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Description</FormLabel>
@@ -137,26 +137,23 @@ export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
 
           <FormField
             control={form.control}
-            name="category"
+            name='category'
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Category</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a category" />
+                      <SelectValue placeholder='Select a category' />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="travel">Travel</SelectItem>
-                    <SelectItem value="meals">Meals</SelectItem>
-                    <SelectItem value="supplies">Supplies</SelectItem>
-                    <SelectItem value="training">Training</SelectItem>
-                    <SelectItem value="equipment">Equipment</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
+                    <SelectItem value='travel'>Travel</SelectItem>
+                    <SelectItem value='meals'>Meals</SelectItem>
+                    <SelectItem value='supplies'>Supplies</SelectItem>
+                    <SelectItem value='training'>Training</SelectItem>
+                    <SelectItem value='equipment'>Equipment</SelectItem>
+                    <SelectItem value='other'>Other</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -166,16 +163,16 @@ export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
 
           <FormField
             control={form.control}
-            name="receipt"
+            name='receipt'
             render={({ field: { value, onChange, ...field } }) => (
               <FormItem>
                 <FormLabel>Receipt</FormLabel>
                 <FormControl>
-                  <div className="flex items-center gap-4">
+                  <div className='flex items-center gap-4'>
                     <Input
-                      type="file"
-                      accept="image/*,.pdf"
-                      onChange={e => {
+                      type='file'
+                      accept='image/*,.pdf'
+                      onChange={(e) => {
                         const file = e.target.files?.[0]
                         if (file) onChange(file)
                       }}
@@ -183,12 +180,12 @@ export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
                     />
                     {value && (
                       <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
+                        type='button'
+                        variant='outline'
+                        size='icon'
                         onClick={() => onChange(undefined)}
                       >
-                        <Upload className="h-4 w-4" />
+                        <Upload className='h-4 w-4' />
                       </Button>
                     )}
                   </div>
@@ -200,7 +197,7 @@ export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
 
           <FormField
             control={form.control}
-            name="notes"
+            name='notes'
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Notes</FormLabel>
@@ -212,8 +209,8 @@ export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
             )}
           />
 
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button type='submit' disabled={isSubmitting}>
+            {isSubmitting && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
             Submit Expense
           </Button>
         </form>

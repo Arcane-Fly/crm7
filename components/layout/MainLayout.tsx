@@ -11,26 +11,26 @@ interface MainLayoutProps {
 
 export function MainLayout({ children, className }: MainLayoutProps) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className='min-h-screen bg-background'>
       <ErrorBoundary>
         <Sidebar />
-        <div 
+        <div
           className={cn(
             'flex flex-col transition-all duration-300 ease-in-out',
             'lg:ml-[var(--sidebar-width)]',
             className
           )}
-          style={{ 
-            '--header-height': `${HEADER_HEIGHT}px`,
-            '--sidebar-width': `${SIDEBAR_WIDTH}px`,
-            '--sidebar-collapsed-width': `${SIDEBAR_COLLAPSED_WIDTH}px`
-          } as React.CSSProperties}
+          style={
+            {
+              '--header-height': `${HEADER_HEIGHT}px`,
+              '--sidebar-width': `${SIDEBAR_WIDTH}px`,
+              '--sidebar-collapsed-width': `${SIDEBAR_COLLAPSED_WIDTH}px`,
+            } as React.CSSProperties
+          }
         >
           <Header />
-          <main className="container mx-auto p-6 pt-[calc(var(--header-height)+1.5rem)]">
-            <ErrorBoundary>
-              {children}
-            </ErrorBoundary>
+          <main className='container mx-auto p-6 pt-[calc(var(--header-height)+1.5rem)]'>
+            <ErrorBoundary>{children}</ErrorBoundary>
           </main>
         </div>
       </ErrorBoundary>

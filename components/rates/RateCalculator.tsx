@@ -1,10 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import type { 
-  RateCalculation,
-  RateTemplateStatus 
-} from '@/types/rates'
+import type { RateCalculation, RateTemplateStatus } from '@/types/rates'
 import type { RateTemplate } from '@/lib/services/rates'
 import { ratesService } from '@/lib/services/rates'
 import { logger } from '@/lib/services/logger'
@@ -23,9 +20,9 @@ import { RateCalculatorSkeleton } from '@/components/ui/skeleton'
  */
 interface RateCalculatorError extends Error {
   /** Error code for specific error cases */
-  code?: string;
+  code?: string
   /** Additional error details */
-  details?: Record<string, unknown>;
+  details?: Record<string, unknown>
 }
 
 /**
@@ -34,15 +31,15 @@ interface RateCalculatorError extends Error {
  */
 interface RateCalculatorProps {
   /** Organization ID for rate calculations */
-  orgId: string;
+  orgId: string
 }
 
 /**
  * RateCalculator Component
- * 
+ *
  * A component that allows users to calculate rates based on templates and base rates.
  * It provides real-time rate calculations and displays the results in a structured format.
- * 
+ *
  * @component
  * @param {RateCalculatorProps} props - Component props
  * @returns {JSX.Element} Rendered component
@@ -64,31 +61,27 @@ export function RateCalculator({ orgId }: RateCalculatorProps) {
       setLoading(true)
       setError(null)
       logger.info('Fetching rate templates', { orgId }, 'RateCalculator')
-      
-      const response = await ratesService.getTemplates({ 
+
+      const response = await ratesService.getTemplates({
         org_id: orgId,
         is_active: true,
-        status: 'active' as RateTemplateStatus
+        status: 'active' as RateTemplateStatus,
       })
       setTemplates(response.data)
-      
-      logger.info('Templates fetched successfully', 
+
+      logger.info(
+        'Templates fetched successfully',
         { count: response.data.length },
         'RateCalculator'
       )
     } catch (err) {
       const error = err as RateCalculatorError
-      logger.error(
-        'Failed to fetch rate templates',
-        error,
-        { orgId },
-        'RateCalculator'
-      )
+      logger.error('Failed to fetch rate templates', error, { orgId }, 'RateCalculator')
       setError({
         name: 'TemplateError',
         message: 'Failed to fetch rate templates',
         code: error.code,
-        details: error.details
+        details: error.details,
       })
     } finally {
       setLoading(false)
@@ -103,17 +96,17 @@ export function RateCalculator({ orgId }: RateCalculatorProps) {
       const message = 'Invalid calculation parameters'
       logger.warn(
         message,
-        { 
+        {
           templateId: selectedTemplate?.id,
           baseRate,
-          orgId 
+          orgId,
         },
         'RateCalculator'
       )
       setError({
         name: 'ValidationError',
         message: 'Please select a template and enter a valid base rate',
-        code: 'INVALID_INPUT'
+        code: 'INVALID_INPUT',
       })
       return
     }
@@ -121,13 +114,13 @@ export function RateCalculator({ orgId }: RateCalculatorProps) {
     try {
       setLoading(true)
       setError(null)
-      
+
       logger.info(
         'Calculating rate',
-        { 
+        {
           templateId: selectedTemplate.id,
           baseRate,
-          orgId 
+          orgId,
         },
         'RateCalculator'
       )
@@ -141,7 +134,7 @@ export function RateCalculator({ orgId }: RateCalculatorProps) {
       const templateForCalc = {
         ...selectedTemplate,
         base_rate: baseRate,
-        id: selectedTemplate.id
+        id: selectedTemplate.id,
       } as const // Use const assertion to ensure id is treated as required
 
       const result = await ratesService.calculateRate(templateForCalc)
@@ -149,9 +142,9 @@ export function RateCalculator({ orgId }: RateCalculatorProps) {
 
       logger.info(
         'Rate calculated successfully',
-        { 
+        {
           templateId: selectedTemplate.id,
-          finalRate: result.data.final_rate 
+          finalRate: result.data.final_rate,
         },
         'RateCalculator'
       )
@@ -160,10 +153,10 @@ export function RateCalculator({ orgId }: RateCalculatorProps) {
       logger.error(
         'Failed to calculate rate',
         error,
-        { 
+        {
           templateId: selectedTemplate.id,
           baseRate,
-          orgId 
+          orgId,
         },
         'RateCalculator'
       )
@@ -171,7 +164,7 @@ export function RateCalculator({ orgId }: RateCalculatorProps) {
         name: 'CalculationError',
         message: 'Failed to calculate rate',
         code: error.code,
-        details: error.details
+        details: error.details,
       })
     } finally {
       setLoading(false)
@@ -189,32 +182,28 @@ export function RateCalculator({ orgId }: RateCalculatorProps) {
 
   return (
     <ErrorBoundary>
-      <Card className="p-6">
-        <div className="space-y-4">
+      <Card className='p-6'>
+        <div className='space-y-4'>
           {error && (
-            <Alert variant="destructive">
-              <p className="text-sm font-medium">{error.message}</p>
-              {error.details && (
-                <p className="text-xs mt-1">
-                  {JSON.stringify(error.details)}
-                </p>
-              )}
+            <Alert variant='destructive'>
+              <p className='text-sm font-medium'>{error.message}</p>
+              {error.details && <p className='mt-1 text-xs'>{JSON.stringify(error.details)}</p>}
             </Alert>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="template">Rate Template</Label>
+          <div className='space-y-2'>
+            <Label htmlFor='template'>Rate Template</Label>
             <select
-              id="template"
-              className="w-full p-2 border rounded"
+              id='template'
+              className='w-full rounded border p-2'
               value={selectedTemplate?.id || ''}
-              aria-label="Select rate template"
+              aria-label='Select rate template'
               onChange={(e) => {
-                const template = templates.find(t => t.id === e.target.value)
+                const template = templates.find((t) => t.id === e.target.value)
                 setSelectedTemplate(template || null)
               }}
             >
-              <option value="">Select a template</option>
+              <option value=''>Select a template</option>
               {templates.map((template) => (
                 <option key={template.id} value={template.id}>
                   {template.template_name} ({template.template_type})
@@ -223,16 +212,16 @@ export function RateCalculator({ orgId }: RateCalculatorProps) {
             </select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="baseRate">Base Rate</Label>
+          <div className='space-y-2'>
+            <Label htmlFor='baseRate'>Base Rate</Label>
             <Input
-              id="baseRate"
-              type="number"
-              min="0"
-              step="0.01"
+              id='baseRate'
+              type='number'
+              min='0'
+              step='0.01'
               value={baseRate}
               onChange={(e) => setBaseRate(Number(e.target.value))}
-              placeholder="Enter base rate"
+              placeholder='Enter base rate'
             />
           </div>
 
@@ -244,9 +233,9 @@ export function RateCalculator({ orgId }: RateCalculatorProps) {
           </Button>
 
           {calculation && (
-            <div className="mt-4 space-y-2">
-              <h3 className="font-semibold">Calculation Results</h3>
-              <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className='mt-4 space-y-2'>
+              <h3 className='font-semibold'>Calculation Results</h3>
+              <div className='grid grid-cols-2 gap-2 text-sm'>
                 <div>Base Rate:</div>
                 <div>${calculation.base_rate.toFixed(2)}</div>
                 <div>Super Amount:</div>
@@ -259,8 +248,8 @@ export function RateCalculator({ orgId }: RateCalculatorProps) {
                 <div>${calculation.insurance_costs.toFixed(2)}</div>
                 <div>Total Cost:</div>
                 <div>${calculation.total_cost.toFixed(2)}</div>
-                <div className="font-semibold">Final Rate:</div>
-                <div className="font-semibold">${calculation.final_rate.toFixed(2)}</div>
+                <div className='font-semibold'>Final Rate:</div>
+                <div className='font-semibold'>${calculation.final_rate.toFixed(2)}</div>
               </div>
             </div>
           )}

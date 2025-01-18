@@ -1,12 +1,12 @@
 /**
  * Represents the status of a rate template
  */
-export type RateTemplateStatus = 'draft' | 'active' | 'archived';
+export type RateTemplateStatus = 'draft' | 'active' | 'archived'
 
 /**
  * Represents the type of rate template
  */
-export type RateTemplateType = 'apprentice' | 'trainee' | 'casual' | 'permanent' | 'contract';
+export type RateTemplateType = 'apprentice' | 'trainee' | 'casual' | 'permanent' | 'contract'
 
 /**
  * Represents a rate calculation result
@@ -14,43 +14,43 @@ export type RateTemplateType = 'apprentice' | 'trainee' | 'casual' | 'permanent'
  */
 export interface RateCalculation {
   /** Unique identifier for the calculation */
-  id: string;
+  id: string
   /** Organization identifier */
-  org_id: string;
+  org_id: string
   /** Template identifier used for calculation */
-  template_id: string;
+  template_id: string
   /** Date when calculation was performed */
-  calculation_date: string;
+  calculation_date: string
   /** Base rate amount */
-  base_rate: number;
+  base_rate: number
   /** Optional casual loading percentage */
-  casual_loading?: number;
+  casual_loading?: number
   /** Optional leave loading amount */
-  leave_loading_amount?: number;
+  leave_loading_amount?: number
   /** Optional training cost amount */
-  training_cost_amount?: number;
+  training_cost_amount?: number
   /** Optional other costs amount */
-  other_costs_amount?: number;
+  other_costs_amount?: number
   /** Optional funding offset amount */
-  funding_offset_amount?: number;
+  funding_offset_amount?: number
   /** Margin amount */
-  margin_amount: number;
+  margin_amount: number
   /** Superannuation amount */
-  super_amount: number;
+  super_amount: number
   /** Leave loading amount */
-  leave_loading: number;
+  leave_loading: number
   /** Training costs */
-  training_costs: number;
+  training_costs: number
   /** Insurance costs */
-  insurance_costs: number;
+  insurance_costs: number
   /** Total cost */
-  total_cost: number;
+  total_cost: number
   /** Final calculated rate */
-  final_rate: number;
+  final_rate: number
   /** Creation timestamp */
-  created_at: string;
+  created_at: string
   /** Last update timestamp */
-  updated_at: string;
+  updated_at: string
 }
 
 /**
@@ -59,59 +59,59 @@ export interface RateCalculation {
  */
 export interface RateTemplate {
   /** Unique identifier for the template */
-  id?: string;
+  id?: string
   /** Organization identifier */
-  org_id: string;
+  org_id: string
   /** Template name */
-  name: string;
+  name: string
   /** Template type name */
-  template_name: string;
+  template_name: string
   /** Optional description */
-  description?: string;
+  description?: string
   /** Template type */
-  template_type: RateTemplateType;
+  template_type: RateTemplateType
   /** Optional base margin percentage */
-  base_margin?: number;
+  base_margin?: number
   /** Base rate amount */
-  base_rate: number;
+  base_rate: number
   /** Workers compensation rate */
-  workers_comp_rate: number;
+  workers_comp_rate: number
   /** Payroll tax rate */
-  payroll_tax_rate: number;
+  payroll_tax_rate: number
   /** Optional superannuation rate */
-  super_rate?: number;
+  super_rate?: number
   /** Leave loading rate */
-  leave_loading_rate: number;
+  leave_loading_rate: number
   /** Training levy rate */
-  training_levy_rate: number;
+  training_levy_rate: number
   /** Insurance rate */
-  insurance_rate: number;
+  insurance_rate: number
   /** Optional award identifier */
-  award_id?: string;
+  award_id?: string
   /** Active status */
-  is_active: boolean;
+  is_active: boolean
   /** Approval status */
-  is_approved: boolean;
+  is_approved: boolean
   /** Effective from date */
-  effective_from: string;
+  effective_from: string
   /** Optional effective to date */
-  effective_to?: string;
+  effective_to?: string
   /** Version number */
-  version_number: number;
+  version_number: number
   /** Optional status */
-  status?: RateTemplateStatus;
+  status?: RateTemplateStatus
   /** Optional metadata */
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, unknown>
   /** Optional validation rules */
-  rules?: ValidationRule[];
+  rules?: ValidationRule[]
   /** Creation timestamp */
-  created_at?: string;
+  created_at?: string
   /** Last update timestamp */
-  updated_at?: string;
+  updated_at?: string
   /** Template identifier */
-  template_id?: string;
+  template_id?: string
   /** Effective date */
-  effective_date?: Date;
+  effective_date?: Date
 }
 
 /**
@@ -120,15 +120,15 @@ export interface RateTemplate {
  */
 export interface ValidationRule {
   /** Unique identifier for the rule */
-  id: string;
+  id: string
   /** Name of the rule */
-  name: string;
+  name: string
   /** Condition expression */
-  condition: string;
+  condition: string
   /** Action to take when condition is met */
-  action: string;
+  action: string
   /** Additional parameters for the rule */
-  parameters: Record<string, unknown>;
+  parameters: Record<string, unknown>
 }
 
 /**
@@ -137,17 +137,17 @@ export interface ValidationRule {
  */
 export interface GetRateTemplatesParams {
   /** Organization identifier */
-  org_id: string;
+  org_id: string
   /** Optional template identifier */
-  id?: string;
+  id?: string
   /** Optional template type filter */
-  template_type?: RateTemplateType;
+  template_type?: RateTemplateType
   /** Optional active status filter */
-  is_active?: boolean;
+  is_active?: boolean
   /** Optional effective date filter */
-  effective_date?: string;
+  effective_date?: string
   /** Optional status filter */
-  status?: RateTemplateStatus;
+  status?: RateTemplateStatus
 }
 
 /**
@@ -156,19 +156,19 @@ export interface GetRateTemplatesParams {
  */
 export interface AwardRate {
   /** Unique identifier for the award rate */
-  id: string;
+  id: string
   /** Award identifier */
-  award_id: string;
+  award_id: string
   /** Award name */
-  name: string;
+  name: string
   /** Base rate amount */
-  base_rate: number;
+  base_rate: number
   /** Casual loading percentage */
-  casual_loading: number;
+  casual_loading: number
   /** Creation timestamp */
-  created_at: string;
+  created_at: string
   /** Last update timestamp */
-  updated_at: string;
+  updated_at: string
 }
 
 /**
@@ -177,11 +177,11 @@ export interface AwardRate {
  */
 export interface CalculateRateParams {
   /** Template identifier to use for calculation */
-  template_id: string;
+  template_id: string
   /** Base rate amount */
-  base_rate: number;
+  base_rate: number
   /** Optional validation rules to apply */
-  rules?: ValidationRule[];
+  rules?: ValidationRule[]
 }
 
 /**
@@ -190,35 +190,35 @@ export interface CalculateRateParams {
  */
 export interface RateAnalyticsData {
   /** Total number of templates */
-  total_templates: number;
+  total_templates: number
   /** Number of active templates */
-  active_templates: number;
+  active_templates: number
   /** Number of templates pending approval */
-  pending_approvals: number;
+  pending_approvals: number
   /** Average margin across all rates */
-  average_margin: number;
+  average_margin: number
   /** Average rate across all calculations */
-  average_rate: number;
+  average_rate: number
   /** Minimum rate found */
-  min_rate: number;
+  min_rate: number
   /** Maximum rate found */
-  max_rate: number;
+  max_rate: number
   /** Trend indicator */
-  trend: number;
+  trend: number
   /** Distribution of template types */
   template_types: Array<{
     /** Template type */
-    type: string;
+    type: string
     /** Count of templates of this type */
-    count: number;
-  }>;
+    count: number
+  }>
   /** Monthly calculation statistics */
   monthly_calculations: Array<{
     /** Month identifier */
-    month: string;
+    month: string
     /** Number of calculations in the month */
-    count: number;
-  }>;
+    count: number
+  }>
 }
 
 /**
@@ -227,21 +227,21 @@ export interface RateAnalyticsData {
  */
 export interface RateForecast {
   /** Unique identifier for the forecast */
-  id: string;
+  id: string
   /** Organization identifier */
-  org_id: string;
+  org_id: string
   /** Forecast date */
-  forecast_date: string;
+  forecast_date: string
   /** Forecast value */
-  forecast_value: number;
+  forecast_value: number
   /** Confidence level */
-  confidence: number;
+  confidence: number
   /** Optional metadata */
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, unknown>
   /** Creation timestamp */
-  created_at: string;
+  created_at: string
   /** Last update timestamp */
-  updated_at: string;
+  updated_at: string
 }
 
 /**
@@ -250,17 +250,17 @@ export interface RateForecast {
  */
 export interface RateReport {
   /** Unique identifier for the report */
-  id: string;
+  id: string
   /** Organization identifier */
-  org_id: string;
+  org_id: string
   /** Report date */
-  report_date: string;
+  report_date: string
   /** Report type */
-  report_type: string;
+  report_type: string
   /** Report data */
-  data: Record<string, unknown>;
+  data: Record<string, unknown>
   /** Creation timestamp */
-  created_at: string;
+  created_at: string
   /** Last update timestamp */
-  updated_at: string;
+  updated_at: string
 }

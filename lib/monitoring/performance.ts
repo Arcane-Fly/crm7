@@ -46,7 +46,7 @@ export function trackWebVitals() {
 
 export function trackPageLoad(pageName: string) {
   const transaction = startTransaction(`page_load_${pageName}`, 'page-load')
-  
+
   if (transaction) {
     window.addEventListener('load', () => {
       transaction.finish()

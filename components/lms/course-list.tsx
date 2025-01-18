@@ -1,108 +1,37 @@
 'use client'
 
-import * as React from 'react'
 import { useLMS } from '@/lib/hooks/use-lms'
-import { DataTable } from '@/components/ui/data-table'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { _formatDate } from '@/lib/utils'
-import { Eye, Edit, Archive } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
+import { Button } from '@/components/ui/button'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary'
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Badge } from '@/components/ui/badge'
+import { Loader2, MoreVertical } from 'lucide-react'
+import { format } from 'date-fns'
+import { useRouter } from 'next/navigation'
 
 export function CourseList() {
-  const { courses, actions } = useLMS()
+  const router = useRouter()
+  const { courses, updateCourse, isUpdatingCourse } = useLMS()
   const { toast } = useToast()
-  const [selectedCourse, setSelectedCourse] = React.useState<Course | null>(null)
 
-  const columns = [
-    {
-      accessorKey: 'title',
-      header: 'Course Title',
-    },
-    {
-      accessorKey: 'level',
-      header: 'Level',
-      cell: ({ row }) => (
-        <Badge variant="secondary" className="capitalize">
-          {row.original.level}
-        </Badge>
-      ),
-    },
-    {
-      accessorKey: 'duration',
-      header: 'Duration (hours)',
-    },
-    {
-      accessorKey: 'status',
-      header: 'Status',
-      cell: ({ row }) => (
-        <Badge
-          variant={
-            row.original.status === 'active'
-              ? 'success'
-              : row.original.status === 'archived'
-              ? 'secondary'
-              : 'default'
-          }
-        >
-          {row.original.status}
-        </Badge>
-      ),
-    },
-    {
-      id: 'actions',
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setSelectedCourse(row.original)}
-          >
-            <Eye className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => handleEdit(row.original)}
-          >
-            <Edit className="h-4 w-4" />
-          </Button>
-          {row.original.status === 'active' && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => handleArchive(row.original)}
-            >
-              <Archive className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-      ),
-    },
-  ]
-
-  const handleEdit = async (_course: Course) => {
-    // TODO: Implement edit functionality
-    toast({
-      title: 'Not implemented',
-      description: 'Course editing will be available soon.',
-    })
-  }
-
-  const handleArchive = async (_course: Course) => {
+  const onArchive = async (courseId: string) => {
     try {
-      await actions.updateCourse({
-        id: _course.id,
-        data: {
-          status: 'archived',
-        },
+      await updateCourse({
+        match: { id: courseId },
+        data: { status: 'inactive' },
       })
       toast({
         title: 'Course archived',
@@ -111,42 +40,83 @@ export function CourseList() {
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to archive course',
+        description: 'Failed to archive course. Please try again.',
         variant: 'destructive',
       })
     }
   }
 
-  return (
-    <ErrorBoundary>
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">Courses</h2>
-          <Button onClick={() => setSelectedCourse({} as Course)}>
-            Add Course
-          </Button>
-        </div>
-
-        <DataTable
-          columns={columns}
-          data={courses.data || []}
-          loading={courses.isLoading}
-        />
-
-        <Dialog
-          open={!!selectedCourse}
-          onOpenChange={(open) => !open && setSelectedCourse(null)}
-        >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                {selectedCourse?.id ? 'Edit Course' : 'Add Course'}
-              </DialogTitle>
-            </DialogHeader>
-            {/* TODO: Add CourseForm component */}
-          </DialogContent>
-        </Dialog>
+  if (courses.isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
-    </ErrorBoundary>
+    )
+  }
+
+  if (courses.isError) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8">
+        <p className="text-sm text-muted-foreground">Failed to load courses</p>
+        <Button variant="outline" onClick={() => courses.refetch()} className="mt-4">
+          Retry
+        </Button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {courses.data?.map((course) => (
+        <Card key={course.id}>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <CardTitle>{course.title}</CardTitle>
+                <CardDescription>Instructor: {course.instructor}</CardDescription>
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" disabled={isUpdatingCourse}>
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => router.push(`/courses/${course.id}`)}>
+                    View Details
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push(`/courses/${course.id}/edit`)}>
+                    Edit Course
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onArchive(course.id)}>
+                    Archive Course
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">{course.description}</p>
+              <div className="flex items-center gap-2">
+                <Badge variant={course.status === 'active' ? 'default' : 'secondary'}>
+                  {course.status}
+                </Badge>
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter>
+            <div className="flex w-full items-center justify-between text-sm text-muted-foreground">
+              <div>
+                Start: {format(new Date(course.start_date), 'MMM d, yyyy')}
+              </div>
+              <div>
+                End: {format(new Date(course.end_date), 'MMM d, yyyy')}
+              </div>
+            </div>
+          </CardFooter>
+        </Card>
+      ))}
+    </div>
   )
 }

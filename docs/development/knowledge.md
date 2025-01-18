@@ -66,6 +66,7 @@ pnpm audit
 ```
 
 ### Build Configuration
+
 - Use `packageManager` field in package.json when using pnpm
 - Specify exact pnpm version to avoid engine compatibility issues
 - Remove loading prop from DataTable component as it's not supported
