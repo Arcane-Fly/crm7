@@ -37,14 +37,19 @@ export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname
 
   // Public routes that don't require authentication
-  const publicRoutes = ['/login', '/signup', '/forgot-password']
-  const isPublicRoute = publicRoutes.includes(path)
+  const publicRoutes = ['/login', '/signup', '/forgot-password', '/api/auth/callback']
+  const isPublicRoute = publicRoutes.some(route => path.startsWith(route))
+
+  // Skip auth check for Auth0 API routes
+  if (path.startsWith('/api/auth')) {
+    return response
+  }
 
   if (!session && !isPublicRoute) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  if (session && isPublicRoute) {
+  if (session && isPublicRoute && !path.startsWith('/api')) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
@@ -53,6 +58,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.).*)',
+    '/((?!api/auth|_next/static|_next/image|favicon.ico|.*\\.).*)',
   ],
 }
