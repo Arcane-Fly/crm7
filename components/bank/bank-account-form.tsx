@@ -48,11 +48,9 @@ export function BankAccountForm({ onSuccess }: BankAccountFormProps) {
     if (!user) return
 
     createBankAccount({
-      data: {
-        ...values,
-        org_id: user.org_id,
-        status: 'active',
-      },
+      ...values,
+      org_id: user.org_id,
+      status: 'active',
     })
 
     onSuccess?.()
@@ -60,10 +58,10 @@ export function BankAccountForm({ onSuccess }: BankAccountFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
         <FormField
           control={form.control}
-          name="account_name"
+          name='account_name'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Account Name</FormLabel>
@@ -76,12 +74,12 @@ export function BankAccountForm({ onSuccess }: BankAccountFormProps) {
         />
         <FormField
           control={form.control}
-          name="account_number"
+          name='account_number'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Account Number</FormLabel>
               <FormControl>
-                <Input {...field} type="password" />
+                <Input {...field} type='password' />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -89,7 +87,7 @@ export function BankAccountForm({ onSuccess }: BankAccountFormProps) {
         />
         <FormField
           control={form.control}
-          name="routing_number"
+          name='routing_number'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Routing Number</FormLabel>
@@ -102,7 +100,7 @@ export function BankAccountForm({ onSuccess }: BankAccountFormProps) {
         />
         <FormField
           control={form.control}
-          name="bank_name"
+          name='bank_name'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Bank Name</FormLabel>
@@ -113,7 +111,7 @@ export function BankAccountForm({ onSuccess }: BankAccountFormProps) {
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={isCreatingBankAccount}>
+        <Button type='submit' disabled={isCreatingBankAccount}>
           {isCreatingBankAccount ? 'Adding...' : 'Add Bank Account'}
         </Button>
       </form>
