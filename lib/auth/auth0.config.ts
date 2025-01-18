@@ -1,9 +1,13 @@
+const AUTH0_DOMAIN = 'dev-rkchrceel6xwqe2g.us.auth0.com'
+const AUTH0_API = 'https://dev-rkchrceel6xwqe2g.us.auth0.com/api/v2'
+const BASE_URL = 'http://localhost:4200'
+
 export const auth0Config = {
-  domain: 'dev-rkchrceel6xwqe2g.us.auth0.com',
+  domain: AUTH0_DOMAIN,
   clientId: process.env.AUTH0_CLIENT_ID,
   clientSecret: process.env.AUTH0_CLIENT_SECRET,
-  issuerBaseURL: 'https://dev-rkchrceel6xwqe2g.us.auth0.com',
-  baseURL: process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:4200',
+  issuerBaseURL: `https://${AUTH0_DOMAIN}`,
+  baseURL: BASE_URL,
   routes: {
     callback: '/api/auth/callback',
     postLogoutRedirect: '/',
@@ -14,7 +18,7 @@ export const auth0Config = {
   },
   authorizationParams: {
     response_type: 'code',
-    audience: 'https://dev-rkchrceel6xwqe2g.us.auth0.com/api/v2/',
+    audience: AUTH0_API,
     scope: 'openid profile email',
   },
 }
