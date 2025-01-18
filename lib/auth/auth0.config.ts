@@ -3,7 +3,7 @@ export const auth0Config = {
   clientId: process.env.AUTH0_CLIENT_ID,
   clientSecret: process.env.AUTH0_CLIENT_SECRET,
   issuerBaseURL: 'https://dev-rkchrceel6xwqe2g.us.auth0.com',
-  baseURL: process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000',
+  baseURL: process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:4200',
   routes: {
     callback: '/api/auth/callback',
     postLogoutRedirect: '/',
