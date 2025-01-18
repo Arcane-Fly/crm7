@@ -33,24 +33,26 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // Check auth status
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  const { data: { session } } = await supabase.auth.getSession()
+  const path = request.nextUrl.pathname
 
-  // Protect all routes except auth and public ones
-  const isAuthPage = request.nextUrl.pathname.startsWith('/auth')
-  const isPublicPage = ['/_next', '/images', '/api/public', '/favicon.ico'].some((path) =>
-    request.nextUrl.pathname.startsWith(path)
-  )
+  // Public routes that don't require authentication
+  const publicRoutes = ['/login', '/signup', '/forgot-password']
+  const isPublicRoute = publicRoutes.includes(path)
 
-  if (!session && !isAuthPage && !isPublicPage) {
-    return NextResponse.redirect(new URL('/auth', request.url))
+  if (!session && !isPublicRoute) {
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  if (session && isAuthPage) {
-    return NextResponse.redirect(new URL('/', request.url))
+  if (session && isPublicRoute) {
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   return response
+}
+
+export const config = {
+  matcher: [
+    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.).*)',
+  ],
 }
