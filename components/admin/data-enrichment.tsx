@@ -66,8 +66,8 @@ export function DataEnrichment({ type, id, onComplete }: DataEnrichmentProps) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Search className="h-4 w-4 mr-2" />
+        <Button variant='outline' size='sm'>
+          <Search className='mr-2 h-4 w-4' />
           Enrich Data
         </Button>
       </DialogTrigger>
@@ -75,26 +75,20 @@ export function DataEnrichment({ type, id, onComplete }: DataEnrichmentProps) {
         <DialogHeader>
           <DialogTitle>Enrich Data with AI</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
-              Website URL (Optional)
-            </label>
+        <div className='space-y-4 py-4'>
+          <div className='space-y-2'>
+            <label className='text-sm font-medium'>Website URL (Optional)</label>
             <Input
-              placeholder="Enter website URL to scrape"
+              placeholder='Enter website URL to scrape'
               value={websiteUrl}
               onChange={(e) => setWebsiteUrl(e.target.value)}
             />
-            <p className="text-sm text-gray-500">
+            <p className='text-sm text-gray-500'>
               Enter a URL to extract additional information, or leave blank to use AI insights only.
             </p>
           </div>
-          <Button 
-            onClick={handleEnrich} 
-            disabled={isLoading}
-            className="w-full"
-          >
-            {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+          <Button onClick={handleEnrich} disabled={isLoading} className='w-full'>
+            {isLoading && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
             {isLoading ? 'Enriching...' : 'Start Enrichment'}
           </Button>
         </div>

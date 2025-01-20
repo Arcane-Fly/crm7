@@ -16,34 +16,36 @@ export default function AuthPage() {
 
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session: currentSession } } = await supabase.auth.getSession()
+      const {
+        data: { session: currentSession },
+      } = await supabase.auth.getSession()
       if (currentSession) {
         router.push('/')
       }
     }
-    
+
     checkSession()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event) => {
-        if (event === 'SIGNED_IN') {
-          router.push('/')
-        }
-        if (event === 'SIGNED_OUT') {
-          router.push('/auth')
-        }
-        if (event === 'USER_UPDATED') {
-          const { error } = await supabase.auth.getSession()
-          if (error) {
-            toast({
-              variant: 'destructive',
-              title: 'Authentication Error',
-              description: error.message,
-            })
-          }
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event) => {
+      if (event === 'SIGNED_IN') {
+        router.push('/')
+      }
+      if (event === 'SIGNED_OUT') {
+        router.push('/auth')
+      }
+      if (event === 'USER_UPDATED') {
+        const { error } = await supabase.auth.getSession()
+        if (error) {
+          toast({
+            variant: 'destructive',
+            title: 'Authentication Error',
+            description: error.message,
+          })
         }
       }
-    )
+    })
 
     return () => subscription.unsubscribe()
   }, [router, toast, supabase.auth])
@@ -56,8 +58,8 @@ export default function AuthPage() {
     const password = formData.get('password') as string
 
     try {
-      let error;
-      
+      let error
+
       if (isSignUp) {
         const { error: signUpError } = await supabase.auth.signUp({
           email,
@@ -67,7 +69,7 @@ export default function AuthPage() {
           },
         })
         error = signUpError
-        
+
         if (!error) {
           toast({
             title: 'Check your email',

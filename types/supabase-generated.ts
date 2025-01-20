@@ -1,10 +1,4 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export interface Database {
   public: {
@@ -80,7 +74,331 @@ export interface Database {
           updated_at?: string
         }
       }
-      // Add other tables as needed
+      bank_accounts: {
+        Row: {
+          id: string
+          org_id: string
+          account_name: string
+          account_number: string
+          bsb: string
+          bank_name: string
+          is_active: boolean
+          metadata?: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          org_id: string
+          account_name: string
+          account_number: string
+          bsb: string
+          bank_name: string
+          is_active?: boolean
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          org_id?: string
+          account_name?: string
+          account_number?: string
+          bsb?: string
+          bank_name?: string
+          is_active?: boolean
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      bank_transactions: {
+        Row: {
+          id: string
+          org_id: string
+          account_id: string
+          transaction_type: 'credit' | 'debit'
+          amount: number
+          description: string
+          reference?: string
+          status: 'pending' | 'completed' | 'failed'
+          metadata?: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          org_id: string
+          account_id: string
+          transaction_type: 'credit' | 'debit'
+          amount: number
+          description: string
+          reference?: string
+          status?: 'pending' | 'completed' | 'failed'
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          org_id?: string
+          account_id?: string
+          transaction_type?: 'credit' | 'debit'
+          amount?: number
+          description?: string
+          reference?: string
+          status?: 'pending' | 'completed' | 'failed'
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      payment_requests: {
+        Row: {
+          id: string
+          org_id: string
+          account_id: string
+          amount: number
+          description: string
+          due_date: string
+          status: 'pending' | 'approved' | 'rejected' | 'completed'
+          approver_id?: string
+          metadata?: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          org_id: string
+          account_id: string
+          amount: number
+          description: string
+          due_date: string
+          status?: 'pending' | 'approved' | 'rejected' | 'completed'
+          approver_id?: string
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          org_id?: string
+          account_id?: string
+          amount?: number
+          description?: string
+          due_date?: string
+          status?: 'pending' | 'approved' | 'rejected' | 'completed'
+          approver_id?: string
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      courses: {
+        Row: {
+          id: string
+          org_id: string
+          title: string
+          description: string
+          duration: number
+          level: string
+          status: string
+          metadata?: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          org_id: string
+          title: string
+          description: string
+          duration: number
+          level: string
+          status?: string
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          org_id?: string
+          title?: string
+          description?: string
+          duration?: number
+          level?: string
+          status?: string
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      enrollments: {
+        Row: {
+          id: string
+          org_id: string
+          course_id: string
+          user_id: string
+          status: string
+          progress: number
+          start_date: string
+          completion_date?: string
+          metadata?: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          org_id: string
+          course_id: string
+          user_id: string
+          status?: string
+          progress?: number
+          start_date: string
+          completion_date?: string
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          org_id?: string
+          course_id?: string
+          user_id?: string
+          status?: string
+          progress?: number
+          start_date?: string
+          completion_date?: string
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      assessments: {
+        Row: {
+          id: string
+          org_id: string
+          course_id: string
+          title: string
+          description: string
+          type: string
+          duration: number
+          passing_grade: number
+          metadata?: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          org_id: string
+          course_id: string
+          title: string
+          description: string
+          type: string
+          duration: number
+          passing_grade: number
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          org_id?: string
+          course_id?: string
+          title?: string
+          description?: string
+          type?: string
+          duration?: number
+          passing_grade?: number
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      units: {
+        Row: {
+          id: string
+          org_id: string
+          course_id: string
+          title: string
+          description: string
+          order: number
+          content: Json
+          metadata?: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          org_id: string
+          course_id: string
+          title: string
+          description: string
+          order: number
+          content: Json
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          org_id?: string
+          course_id?: string
+          title?: string
+          description?: string
+          order?: number
+          content?: Json
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      expenses: {
+        Row: {
+          id: string
+          org_id: string
+          user_id: string
+          amount: number
+          description: string
+          category: string
+          date: string
+          status: 'pending' | 'approved' | 'rejected'
+          approver_id?: string
+          receipt_url?: string
+          metadata?: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          org_id: string
+          user_id: string
+          amount: number
+          description: string
+          category: string
+          date: string
+          status?: 'pending' | 'approved' | 'rejected'
+          approver_id?: string
+          receipt_url?: string
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          org_id?: string
+          user_id?: string
+          amount?: number
+          description?: string
+          category?: string
+          date?: string
+          status?: 'pending' | 'approved' | 'rejected'
+          approver_id?: string
+          receipt_url?: string
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never

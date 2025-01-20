@@ -20,11 +20,7 @@ export async function getTimeEntries(employeeId: string) {
 
 export async function createTimeEntry(entry: Tables['time_entries']['Insert']) {
   const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('time_entries')
-    .insert(entry)
-    .select()
-    .single()
+  const { data, error } = await supabase.from('time_entries').insert(entry).select().single()
 
   if (error) throw error
   return data
@@ -37,8 +33,7 @@ export async function uploadDocument(
 ) {
   const supabase = await createClient()
   // First upload the file to storage
-  const { data: fileData, error: uploadError } = await supabase
-    .storage
+  const { data: fileData, error: uploadError } = await supabase.storage
     .from('documents')
     .upload(`${document.userId}/${file.name}`, file)
 
@@ -74,11 +69,7 @@ export async function getQuotes(userId: string) {
 
 export async function createQuote(quote: Tables['quotes']['Insert']) {
   const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('quotes')
-    .insert(quote)
-    .select()
-    .single()
+  const { data, error } = await supabase.from('quotes').insert(quote).select().single()
 
   if (error) throw error
   return data
@@ -100,11 +91,7 @@ export async function getEmailTemplate(name: string) {
 // Reports
 export async function scheduleReport(report: Tables['reports']['Insert']) {
   const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('reports')
-    .insert(report)
-    .select()
-    .single()
+  const { data, error } = await supabase.from('reports').insert(report).select().single()
 
   if (error) throw error
   return data
@@ -118,20 +105,20 @@ export async function logIntegrationEvent(
   metadata: any = {}
 ) {
   const supabase = await createClient()
-  const { error } = await supabase
-    .from('integration_logs')
-    .insert({
-      integration,
-      event,
-      message,
-      metadata,
-    })
+  const { error } = await supabase.from('integration_logs').insert({
+    integration,
+    event,
+    message,
+    metadata,
+  })
 
   if (error) throw error
 }
 
 export async function getServerSession() {
   const supabase = await createClient()
-  const { data: { session } } = await supabase.auth.getSession()
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
   return session
 }

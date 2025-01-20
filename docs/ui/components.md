@@ -5,68 +5,77 @@
 ### Data Management Components
 
 #### DataTable
+
 ```typescript
 interface DataTableProps<T> {
-  data: T[];
-  columns: Column<T>[];
-  searchFields: (keyof T)[];
-  filterOptions: Record<string, { value: string; label: string; }[]>;
-  initialFilters: Record<string, string>;
-  filterFn: (item: T, filters: Record<string, string>) => boolean;
-  onRowClick?: (item: T) => void;
-  isLoading?: boolean;
-  error?: string;
-  searchPlaceholder?: string;
+  data: T[]
+  columns: Column<T>[]
+  searchFields: (keyof T)[]
+  filterOptions: Record<string, { value: string; label: string }[]>
+  initialFilters: Record<string, string>
+  filterFn: (item: T, filters: Record<string, string>) => boolean
+  onRowClick?: (item: T) => void
+  isLoading?: boolean
+  error?: string
+  searchPlaceholder?: string
 }
 ```
+
 Source: crm3, enhanced with features from crm4
 
 #### ColumnCustomizer
+
 ```typescript
 interface ColumnCustomizerProps<T> {
-  columns: Column<T>[];
-  visibleColumns: string[];
-  onColumnChange: (columns: string[]) => void;
+  columns: Column<T>[]
+  visibleColumns: string[]
+  onColumnChange: (columns: string[]) => void
 }
 ```
+
 Source: crm4, with enhanced UI from crm7
 
 ### Apprentice Management Components
 
 #### CompetencyMatrix
+
 ```typescript
 interface CompetencyUnit {
-  code: string;
-  title: string;
-  status: 'completed' | 'in_progress' | 'not_started';
-  dueDate?: string;
-  completionDate?: string;
+  code: string
+  title: string
+  status: 'completed' | 'in_progress' | 'not_started'
+  dueDate?: string
+  completionDate?: string
 }
 
 interface CompetencyMatrixProps {
-  apprenticeId: string;
-  units: CompetencyUnit[];
-  onStatusChange: (unitCode: string, status: string) => void;
+  apprenticeId: string
+  units: CompetencyUnit[]
+  onStatusChange: (unitCode: string, status: string) => void
 }
 ```
+
 Source: crm4, with real-time updates from crm7
 
 ### Document Management
 
 #### DocumentUpload
+
 ```typescript
 interface DocumentUploadProps {
-  onUpload: (file: File) => Promise<void>;
-  allowedTypes: string[];
-  maxSize: number;
-  multiple?: boolean;
+  onUpload: (file: File) => Promise<void>
+  allowedTypes: string[]
+  maxSize: number
+  multiple?: boolean
 }
 ```
+
 Source: crm7, with enhanced validation from crm3
 
 ## Interaction Patterns
 
 ### Form Handling
+
 - Real-time validation
 - Autosave functionality
 - Error messaging
@@ -74,6 +83,7 @@ Source: crm7, with enhanced validation from crm3
 - Loading states
 
 ### Data Loading
+
 - Skeleton loaders
 - Error boundaries
 - Retry mechanisms
@@ -81,12 +91,14 @@ Source: crm7, with enhanced validation from crm3
 - Infinite scroll
 
 ### Notifications
+
 - Toast messages
 - Alert dialogs
 - Progress indicators
 - Status updates
 
 ### Navigation
+
 - Breadcrumbs
 - Context menus
 - Quick actions
@@ -97,38 +109,42 @@ Source: crm7, with enhanced validation from crm3
 ### Context Providers
 
 #### PayRateChat Context
+
 ```typescript
 interface PayRateChatState {
-  messages: ChatMessage[];
-  isLoading: boolean;
-  selectedAward?: Award;
-  selectedClassification?: Classification;
-  error?: string;
+  messages: ChatMessage[]
+  isLoading: boolean
+  selectedAward?: Award
+  selectedClassification?: Classification
+  error?: string
 }
 
 interface PayRateChatContext {
-  state: PayRateChatState;
-  sendMessage: (content: string) => Promise<void>;
-  clearChat: () => void;
+  state: PayRateChatState
+  sendMessage: (content: string) => Promise<void>
+  clearChat: () => void
 }
 ```
+
 Source: crm4, enhanced with features from crm3
 
 #### Toast Context
+
 ```typescript
 interface Toast {
-  id: string;
-  title: string;
-  description?: string;
-  variant?: 'success' | 'error' | 'warning' | 'info';
+  id: string
+  title: string
+  description?: string
+  variant?: 'success' | 'error' | 'warning' | 'info'
 }
 
 interface ToastContext {
-  toasts: Toast[];
-  showToast: (toast: Omit<Toast, 'id'>) => void;
-  dismissToast: (id: string) => void;
+  toasts: Toast[]
+  showToast: (toast: Omit<Toast, 'id'>) => void
+  dismissToast: (id: string) => void
 }
 ```
+
 Source: crm3, with enhanced styling from crm7
 
 ## Hooks
@@ -136,6 +152,7 @@ Source: crm3, with enhanced styling from crm7
 ### Data Fetching
 
 #### useCompetencyMatrix
+
 ```typescript
 function useCompetencyMatrix(apprenticeId: string) {
   return {
@@ -145,9 +162,11 @@ function useCompetencyMatrix(apprenticeId: string) {
   };
 }
 ```
+
 Source: crm4
 
 #### useDocuments
+
 ```typescript
 interface UseDocumentsOptions {
   type?: string;
@@ -163,11 +182,13 @@ function useDocuments(options?: UseDocumentsOptions) {
   };
 }
 ```
+
 Source: crm4, with enhanced search from crm7
 
 ## Styling
 
 ### Theme System
+
 - Light/dark mode support
 - Custom color schemes
 - Typography system
@@ -175,6 +196,7 @@ Source: crm4, with enhanced search from crm7
 - Component variants
 
 ### Layout Components
+
 - Responsive grid
 - Flex containers
 - Card layouts
@@ -184,6 +206,7 @@ Source: crm4, with enhanced search from crm7
 ## Accessibility
 
 ### Standards
+
 - WCAG 2.1 compliance
 - Keyboard navigation
 - Screen reader support
@@ -191,6 +214,7 @@ Source: crm4, with enhanced search from crm7
 - ARIA attributes
 
 ### Responsive Design
+
 - Mobile-first approach
 - Breakpoint system
 - Fluid typography
@@ -200,6 +224,7 @@ Source: crm4, with enhanced search from crm7
 ## Performance
 
 ### Optimization
+
 - Code splitting
 - Lazy loading
 - Image optimization
@@ -207,6 +232,7 @@ Source: crm4, with enhanced search from crm7
 - Cache strategies
 
 ### Monitoring
+
 - Performance metrics
 - Error tracking
 - Usage analytics

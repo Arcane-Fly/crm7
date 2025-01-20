@@ -61,7 +61,7 @@ export default function TopNav() {
   const pathname = usePathname()
 
   return (
-    <div className='fixed left-0 right-0 top-0 z-50 bg-white border-b'>
+    <div className='fixed left-0 right-0 top-0 z-50 border-b bg-white'>
       <div className='flex h-14 items-center gap-4 px-4'>
         <div className='flex items-center gap-2 font-semibold'>
           <span className='text-lg'>GTO Manager</span>
@@ -76,7 +76,7 @@ export default function TopNav() {
                 className={cn(
                   'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
                   isActive
-                    ? 'bg-blue-50 text-blue-600 font-medium'
+                    ? 'bg-blue-50 font-medium text-blue-600'
                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                 )}
               >

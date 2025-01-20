@@ -1,8 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { vi } from 'vitest'
 import { RateCalculator } from '../RateCalculator'
 import { ratesService } from '@/lib/services/rates'
 
+// Mock the rates service
 vi.mock('@/lib/services/rates', () => ({
   ratesService: {
     getTemplates: vi.fn(),
@@ -10,68 +11,110 @@ vi.mock('@/lib/services/rates', () => ({
   },
 }))
 
+const mockTemplates = [
+  {
+    id: '1',
+    template_name: 'Test Template',
+    template_type: 'apprentice',
+    base_rate: 20,
+  },
+]
+
+const mockCalculation = {
+  base_rate: 20,
+  super_amount: 2,
+  leave_loading: 1,
+  training_costs: 1,
+  insurance_costs: 1,
+  total_cost: 25,
+  final_rate: 30,
+}
+
 describe('RateCalculator', () => {
-  const mockOrgId = 'test-org-id'
-  const mockTemplates = [
-    { id: '1', name: 'Template 1', multiplier: 1.5 },
-    { id: '2', name: 'Template 2', multiplier: 2.0 },
-  ]
-
   beforeEach(() => {
-    vi.clearAllMocks()
-    ;(ratesService.getTemplates as any).mockResolvedValue({ data: mockTemplates })
+    vi.mocked(ratesService.getTemplates).mockResolvedValue({ data: mockTemplates })
+    vi.mocked(ratesService.calculateRate).mockResolvedValue({ data: mockCalculation })
   })
 
-  it('renders loading skeleton initially', () => {
-    render(<RateCalculator orgId={mockOrgId} />)
-    expect(screen.getByTestId('rate-calculator-skeleton')).toBeInTheDocument()
+  it('renders without crashing', () => {
+    render(<RateCalculator orgId='test-org' />)
+    expect(screen.getByText(/Rate Template/i)).toBeInTheDocument()
   })
 
-  it('loads and displays templates', async () => {
-    render(<RateCalculator orgId={mockOrgId} />)
-
-    await waitFor(() =>
+  it('loads templates on mount', async () => {
+    render(<RateCalculator orgId='test-org' />)
+    await waitFor(() => {
       expect(ratesService.getTemplates).toHaveBeenCalledWith({
-        org_id: mockOrgId,
+        org_id: 'test-org',
+        is_active: true,
+        status: 'active',
       })
-    )
-
-    mockTemplates.forEach((template) => {
-      expect(screen.getByText(template.name)).toBeInTheDocument()
     })
   })
 
-  it('handles calculation with valid inputs', async () => {
-    const mockCalculation = {
-      base_rate: 100,
-      multiplier: 1.5,
-      final_rate: 150,
-    }
-    ;(ratesService.calculateRate as any).mockResolvedValue({
-      data: mockCalculation,
-    })
-
-    render(<RateCalculator orgId={mockOrgId} />)
+  it('calculates rates when form is submitted', async () => {
+    render(<RateCalculator orgId='test-org' />)
 
     // Wait for templates to load
-    await screen.findByLabelText(/base rate/i)
-
-    // Set values and calculate
-    fireEvent.change(screen.getByLabelText(/base rate/i), {
-      target: { value: '100' },
+    await waitFor(() => {
+      expect(screen.getByText(/Test Template/i)).toBeInTheDocument()
     })
-    fireEvent.click(screen.getByText(/calculate/i))
 
-    // Check result
-    expect(await screen.findByText('150')).toBeInTheDocument()
+    // Select template
+    fireEvent.change(screen.getByRole('combobox'), {
+      target: { value: '1' },
+    })
+
+    // Enter base rate
+    fireEvent.change(screen.getByRole('spinbutton'), {
+      target: { value: '20' },
+    })
+
+    // Click calculate button
+    fireEvent.click(screen.getByRole('button', { name: /Calculate Rate/i }))
+
+    // Verify calculation was called
+    await waitFor(() => {
+      expect(ratesService.calculateRate).toHaveBeenCalled()
+    })
+
+    // Verify results are displayed
+    expect(screen.getByText(/Final Rate/i)).toBeInTheDocument()
+    expect(screen.getByText(/\$30.00/)).toBeInTheDocument()
   })
 
-  it('displays error message on API failure', async () => {
-    const errorMessage = 'Failed to load templates'
-    ;(ratesService.getTemplates as any).mockRejectedValue(new Error(errorMessage))
+  it('shows error message when calculation fails', async () => {
+    vi.mocked(ratesService.calculateRate).mockRejectedValueOnce(new Error('Test error'))
 
-    render(<RateCalculator orgId={mockOrgId} />)
+    render(<RateCalculator orgId='test-org' />)
 
-    expect(await screen.findByText(errorMessage)).toBeInTheDocument()
+    // Wait for templates to load
+    await waitFor(() => {
+      expect(screen.getByText(/Test Template/i)).toBeInTheDocument()
+    })
+
+    // Select template
+    fireEvent.change(screen.getByRole('combobox'), {
+      target: { value: '1' },
+    })
+
+    // Enter base rate
+    fireEvent.change(screen.getByRole('spinbutton'), {
+      target: { value: '20' },
+    })
+
+    // Click calculate button
+    fireEvent.click(screen.getByRole('button', { name: /Calculate Rate/i }))
+
+    // Verify error message is displayed
+    await waitFor(() => {
+      expect(screen.getByText(/Failed to calculate rate/i)).toBeInTheDocument()
+    })
+  })
+
+  it('disables calculate button when form is invalid', () => {
+    render(<RateCalculator orgId='test-org' />)
+    const calculateButton = screen.getByRole('button', { name: /Calculate Rate/i })
+    expect(calculateButton).toBeDisabled()
   })
 })

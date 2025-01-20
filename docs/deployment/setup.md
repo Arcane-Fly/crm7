@@ -3,12 +3,14 @@
 ## Vercel Deployment
 
 ### Prerequisites
+
 - Node.js 18+
 - Vercel CLI
 - Supabase account
 - Environment variables configured
 
 ### Environment Variables
+
 ```env
 # Authentication
 NEXT_PUBLIC_SUPABASE_URL=
@@ -30,12 +32,15 @@ PAYROLL_API_ENDPOINT=
 ```
 
 ### Deployment Steps
+
 1. Install Vercel CLI:
+
    ```bash
    npm i -g vercel
    ```
 
 2. Link project:
+
    ```bash
    vercel link
    ```
@@ -46,12 +51,14 @@ PAYROLL_API_ENDPOINT=
    ```
 
 ### CI/CD Pipeline
+
 - GitHub Actions workflow
 - Automated testing
 - Preview deployments
 - Production deployments
 
 ### Monitoring
+
 - Vercel Analytics
 - Error tracking
 - Performance monitoring

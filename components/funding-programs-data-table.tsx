@@ -1,12 +1,12 @@
-"use client"
+'use client'
 
-import * as React from "react"
+import * as React from 'react'
 import type {
   ColumnDef,
   ColumnFiltersState,
   SortingState,
   VisibilityState,
-} from "@tanstack/react-table"
+} from '@tanstack/react-table'
 import {
   flexRender,
   getCoreRowModel,
@@ -14,10 +14,10 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table"
+} from '@tanstack/react-table'
 import { ArrowUpDown, ChevronDown, MoreHorizontal, Eye, Edit, Trash2, FileText } from 'lucide-react'
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -26,8 +26,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
+} from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
 import {
   Table,
   TableBody,
@@ -35,65 +35,65 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+} from '@/components/ui/table'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 import styles from './funding-programs-data-table.module.css'
 
 const data: FundingProgram[] = [
   {
-    id: "1",
-    name: "Australian Apprenticeships Incentives Program",
-    code: "AAIP-2023",
-    source: "Federal",
-    startDate: "2023-01-01",
-    endDate: "2023-12-31",
-    status: "Active",
+    id: '1',
+    name: 'Australian Apprenticeships Incentives Program',
+    code: 'AAIP-2023',
+    source: 'Federal',
+    startDate: '2023-01-01',
+    endDate: '2023-12-31',
+    status: 'Active',
     totalFunding: 1000000,
     claimedFunding: 250000,
   },
   {
-    id: "2",
-    name: "NSW Apprenticeship Wage Subsidy",
-    code: "NSW-AWS-2023",
-    source: "State (NSW)",
-    startDate: "2023-03-01",
-    endDate: "2024-02-29",
-    status: "Active",
+    id: '2',
+    name: 'NSW Apprenticeship Wage Subsidy',
+    code: 'NSW-AWS-2023',
+    source: 'State (NSW)',
+    startDate: '2023-03-01',
+    endDate: '2024-02-29',
+    status: 'Active',
     totalFunding: 500000,
     claimedFunding: 180000,
   },
   {
-    id: "3",
-    name: "QLD Apprentice and Trainee Boost",
-    code: "QLD-ATB-2023",
-    source: "State (QLD)",
-    startDate: "2023-07-01",
-    endDate: "2024-06-30",
-    status: "Active",
+    id: '3',
+    name: 'QLD Apprentice and Trainee Boost',
+    code: 'QLD-ATB-2023',
+    source: 'State (QLD)',
+    startDate: '2023-07-01',
+    endDate: '2024-06-30',
+    status: 'Active',
     totalFunding: 750000,
     claimedFunding: 120000,
   },
   {
-    id: "4",
-    name: "VIC Jobs and Skills Incentive",
-    code: "VIC-JSI-2023",
-    source: "State (VIC)",
-    startDate: "2023-01-01",
-    endDate: "2023-12-31",
-    status: "Active",
+    id: '4',
+    name: 'VIC Jobs and Skills Incentive',
+    code: 'VIC-JSI-2023',
+    source: 'State (VIC)',
+    startDate: '2023-01-01',
+    endDate: '2023-12-31',
+    status: 'Active',
     totalFunding: 600000,
     claimedFunding: 200000,
   },
   {
-    id: "5",
-    name: "Rural and Regional Skills Shortage Incentive",
-    code: "RRSSI-2023",
-    source: "Federal",
-    startDate: "2023-01-01",
-    endDate: "2023-12-31",
-    status: "Active",
+    id: '5',
+    name: 'Rural and Regional Skills Shortage Incentive',
+    code: 'RRSSI-2023',
+    source: 'Federal',
+    startDate: '2023-01-01',
+    endDate: '2023-12-31',
+    status: 'Active',
     totalFunding: 800000,
     claimedFunding: 150000,
   },
@@ -106,107 +106,108 @@ export type FundingProgram = {
   source: string
   startDate: string
   endDate: string
-  status: "Active" | "Inactive" | "Upcoming"
+  status: 'Active' | 'Inactive' | 'Upcoming'
   totalFunding: number
   claimedFunding: number
 }
 
 export const columns: ColumnDef<FundingProgram>[] = [
   {
-    accessorKey: "name",
+    accessorKey: 'name',
     header: ({ column }) => {
       return (
         <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          variant='ghost'
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Program Name
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDown className='ml-2 h-4 w-4' />
         </Button>
       )
     },
-    cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
+    cell: ({ row }) => <div className='font-medium'>{row.getValue('name')}</div>,
   },
   {
-    accessorKey: "code",
-    header: "Code",
-    cell: ({ row }) => <div>{row.getValue("code")}</div>,
+    accessorKey: 'code',
+    header: 'Code',
+    cell: ({ row }) => <div>{row.getValue('code')}</div>,
   },
   {
-    accessorKey: "source",
-    header: "Source",
-    cell: ({ row }) => <div>{row.getValue("source")}</div>,
+    accessorKey: 'source',
+    header: 'Source',
+    cell: ({ row }) => <div>{row.getValue('source')}</div>,
   },
   {
-    accessorKey: "status",
-    header: "Status",
+    accessorKey: 'status',
+    header: 'Status',
     cell: ({ row }) => {
-      const status = row.getValue("status") as string
+      const status = row.getValue('status') as string
       return (
-        <Badge variant={status === "Active" ? "secondary" : status === "Inactive" ? "destructive" : "default"}>
+        <Badge
+          variant={
+            status === 'Active' ? 'secondary' : status === 'Inactive' ? 'destructive' : 'default'
+          }
+        >
           {status}
         </Badge>
       )
     },
   },
   {
-    accessorKey: "totalFunding",
-    header: "Total Funding",
-    cell: ({ row }) => <div>${row.getValue<number>("totalFunding").toLocaleString()}</div>,
+    accessorKey: 'totalFunding',
+    header: 'Total Funding',
+    cell: ({ row }) => <div>${row.getValue<number>('totalFunding').toLocaleString()}</div>,
   },
   {
-    accessorKey: "claimedFunding",
-    header: "Claimed Funding",
+    accessorKey: 'claimedFunding',
+    header: 'Claimed Funding',
     cell: ({ row }) => {
-      const totalFunding = row.getValue<number>("totalFunding")
-      const claimedFunding = row.getValue<number>("claimedFunding")
+      const totalFunding = row.getValue<number>('totalFunding')
+      const claimedFunding = row.getValue<number>('claimedFunding')
       const percentage = (claimedFunding / totalFunding) * 100
       return (
-        <div className="flex items-center">
+        <div className='flex items-center'>
           <div>${claimedFunding.toLocaleString()}</div>
-          <div className="ml-2 w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className={styles.progressBar}
-              data-percentage={percentage}
-            />
+          <div className='ml-2 h-2 w-16 overflow-hidden rounded-full bg-gray-200'>
+            <div className={styles.progressBar} data-percentage={percentage} />
           </div>
         </div>
       )
     },
   },
   {
-    id: "actions",
+    id: 'actions',
     cell: ({ row }) => {
       const program = row.original
 
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
+            <Button variant='ghost' className='h-8 w-8 p-0'>
+              <span className='sr-only'>Open menu</span>
+              <MoreHorizontal className='h-4 w-4' />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align='end'>
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem onClick={() => navigator.clipboard.writeText(program.id)}>
               Copy program ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <Eye className="mr-2 h-4 w-4" />
+              <Eye className='mr-2 h-4 w-4' />
               View details
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Edit className="mr-2 h-4 w-4" />
+              <Edit className='mr-2 h-4 w-4' />
               Edit program
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <FileText className="mr-2 h-4 w-4" />
+              <FileText className='mr-2 h-4 w-4' />
               View claims
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Trash2 className="mr-2 h-4 w-4" />
+              <Trash2 className='mr-2 h-4 w-4' />
               Delete program
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -248,22 +249,20 @@ export function FundingProgramsDataTable() {
         <CardDescription>Manage and view all funding programs</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="py-4 flex items-center">
+        <div className='flex items-center py-4'>
           <Input
-            placeholder="Filter programs..."
-            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-            onChange={(event) =>
-              table.getColumn("name")?.setFilterValue(event.target.value)
-            }
-            className="max-w-sm"
+            placeholder='Filter programs...'
+            value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
+            onChange={(event) => table.getColumn('name')?.setFilterValue(event.target.value)}
+            className='max-w-sm'
           />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-auto">
-                Columns <ChevronDown className="ml-2 h-4 w-4" />
+              <Button variant='outline' className='ml-auto'>
+                Columns <ChevronDown className='ml-2 h-4 w-4' />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align='end'>
               {table
                 .getAllColumns()
                 .filter((column) => column.getCanHide())
@@ -271,11 +270,9 @@ export function FundingProgramsDataTable() {
                   return (
                     <DropdownMenuCheckboxItem
                       key={column.id}
-                      className="capitalize"
+                      className='capitalize'
                       checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }
+                      onCheckedChange={(value) => column.toggleVisibility(!!value)}
                     >
                       {column.id}
                     </DropdownMenuCheckboxItem>
@@ -284,7 +281,7 @@ export function FundingProgramsDataTable() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <div className="rounded-md border">
+        <div className='rounded-md border'>
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
@@ -294,10 +291,7 @@ export function FundingProgramsDataTable() {
                       <TableHead key={header.id}>
                         {header.isPlaceholder
                           ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
+                          : flexRender(header.column.columnDef.header, header.getContext())}
                       </TableHead>
                     )
                   })}
@@ -307,10 +301,7 @@ export function FundingProgramsDataTable() {
             <TableBody>
               {table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                  >
+                  <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -320,7 +311,7 @@ export function FundingProgramsDataTable() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className="h-24 text-center">
+                  <TableCell colSpan={columns.length} className='h-24 text-center'>
                     No results.
                   </TableCell>
                 </TableRow>
@@ -328,23 +319,23 @@ export function FundingProgramsDataTable() {
             </TableBody>
           </Table>
         </div>
-        <div className="flex items-center justify-end space-x-2 py-4">
-          <div className="flex-1 text-sm text-muted-foreground">
-            {table.getFilteredSelectedRowModel().rows.length} of{" "}
+        <div className='flex items-center justify-end space-x-2 py-4'>
+          <div className='flex-1 text-sm text-muted-foreground'>
+            {table.getFilteredSelectedRowModel().rows.length} of{' '}
             {table.getFilteredRowModel().rows.length} row(s) selected.
           </div>
-          <div className="space-x-2">
+          <div className='space-x-2'>
             <Button
-              variant="outline"
-              size="sm"
+              variant='outline'
+              size='sm'
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
               Previous
             </Button>
             <Button
-              variant="outline"
-              size="sm"
+              variant='outline'
+              size='sm'
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >

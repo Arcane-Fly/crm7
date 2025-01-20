@@ -85,29 +85,41 @@ export const columns: ColumnDef<TrainingPlan>[] = [
       const isDraft = plan.status === 'draft'
 
       const handleViewDetails = () => {
-        logger.info(`Viewing training plan details`, {
-          apprenticeName: plan.apprenticeName,
-          qualification: plan.qualification,
-          planId: plan.id
-        }, 'TrainingPlan')
+        logger.info(
+          `Viewing training plan details`,
+          {
+            apprenticeName: plan.apprenticeName,
+            qualification: plan.qualification,
+            planId: plan.id,
+          },
+          'TrainingPlan'
+        )
       }
 
       const handleEditPlan = () => {
         if (isCompleted) return
-        logger.info(`Editing training plan`, {
-          apprenticeName: plan.apprenticeName,
-          planId: plan.id,
-          status: plan.status
-        }, 'TrainingPlan')
+        logger.info(
+          `Editing training plan`,
+          {
+            apprenticeName: plan.apprenticeName,
+            planId: plan.id,
+            status: plan.status,
+          },
+          'TrainingPlan'
+        )
       }
 
       const handleScheduleReview = () => {
         if (isCompleted || isDraft) return
-        logger.info(`Scheduling training plan review`, {
-          apprenticeName: plan.apprenticeName,
-          planId: plan.id,
-          nextReview: plan.nextReview
-        }, 'TrainingPlan')
+        logger.info(
+          `Scheduling training plan review`,
+          {
+            apprenticeName: plan.apprenticeName,
+            planId: plan.id,
+            nextReview: plan.nextReview,
+          },
+          'TrainingPlan'
+        )
       }
 
       return (

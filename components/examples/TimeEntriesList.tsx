@@ -13,11 +13,11 @@ interface TimeEntry {
 }
 
 export function TimeEntriesList({ employeeId }: { employeeId: string }) {
-  const { data: timeEntries, isLoading, error } = useRealtimeData<TimeEntry>(
-    'time_entries',
-    [],
-    { column: 'employee_id', value: employeeId }
-  )
+  const {
+    data: timeEntries,
+    isLoading,
+    error,
+  } = useRealtimeData<TimeEntry>('time_entries', [], { column: 'employee_id', value: employeeId })
 
   if (isLoading) return <div>Loading...</div>
   if (error) return <div>Error: {error.message}</div>

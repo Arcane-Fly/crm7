@@ -20,12 +20,7 @@ interface BulkOperationsProps {
   onComplete: () => void
 }
 
-export function BulkOperations({
-  table,
-  selectedIds,
-  columns,
-  onComplete,
-}: BulkOperationsProps) {
+export function BulkOperations({ table, selectedIds, columns, onComplete }: BulkOperationsProps) {
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
   const supabase = createClient()
@@ -104,10 +99,7 @@ export function BulkOperations({
     try {
       setIsLoading(true)
 
-      const { error } = await supabase
-        .from(table)
-        .delete()
-        .in('id', selectedIds)
+      const { error } = await supabase.from(table).delete().in('id', selectedIds)
 
       if (error) throw error
 
@@ -130,32 +122,24 @@ export function BulkOperations({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" disabled={isLoading}>
+        <Button variant='outline' disabled={isLoading}>
           Bulk Actions
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuItem onClick={handleExport}>
-          <Download className="mr-2 h-4 w-4" />
+          <Download className='mr-2 h-4 w-4' />
           Export Selected
         </DropdownMenuItem>
         <DropdownMenuItem>
-          <label className="flex items-center cursor-pointer">
-            <Upload className="mr-2 h-4 w-4" />
+          <label className='flex cursor-pointer items-center'>
+            <Upload className='mr-2 h-4 w-4' />
             Import
-            <input
-              type="file"
-              accept=".xlsx,.xls"
-              className="hidden"
-              onChange={handleImport}
-            />
+            <input type='file' accept='.xlsx,.xls' className='hidden' onChange={handleImport} />
           </label>
         </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={handleDelete}
-          className="text-red-600 focus:text-red-600"
-        >
-          <Trash2 className="mr-2 h-4 w-4" />
+        <DropdownMenuItem onClick={handleDelete} className='text-red-600 focus:text-red-600'>
+          <Trash2 className='mr-2 h-4 w-4' />
           Delete Selected
         </DropdownMenuItem>
       </DropdownMenuContent>

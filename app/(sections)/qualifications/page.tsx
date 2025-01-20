@@ -17,16 +17,16 @@ export default function QualificationsPage() {
   const [data] = useState([])
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className='space-y-6'>
+      <div className='flex items-center justify-between'>
         <Breadcrumb>
-          <BreadcrumbItem href="/dashboard">Dashboard</BreadcrumbItem>
+          <BreadcrumbItem href='/dashboard'>Dashboard</BreadcrumbItem>
           <BreadcrumbItem>Qualifications</BreadcrumbItem>
         </Breadcrumb>
-        <div className="flex items-center space-x-2">
+        <div className='flex items-center space-x-2'>
           {isAdmin && selectedIds.length === 1 && (
             <DataEnrichment
-              type="qualification"
+              type='qualification'
               id={selectedIds[0]}
               onComplete={() => {
                 // Refresh data
@@ -34,14 +34,15 @@ export default function QualificationsPage() {
             />
           )}
           <Button onClick={() => router.push('/qualifications/new')}>
-            <Plus className="mr-2 h-4 w-4" /> Add Qualification
+            <Plus className='mr-2 h-4 w-4' /> Add Qualification
           </Button>
         </div>
       </div>
       <DataTable
         columns={columns}
         data={data}
-        searchPlaceholder="Search qualifications..."
+        filterColumn='name'
+        enableRowSelection={true}
         onSelectedIdsChange={setSelectedIds}
       />
     </div>

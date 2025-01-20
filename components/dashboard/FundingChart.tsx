@@ -46,10 +46,7 @@ export const options = {
         color: 'rgba(0, 0, 0, 0.1)',
       },
       ticks: {
-        callback: function(
-          this: Scale<CoreScaleOptions>,
-          value: string | number
-        ) {
+        callback: function (this: Scale<CoreScaleOptions>, value: string | number) {
           return `$${Number(value).toLocaleString()}`
         },
       },
@@ -80,8 +77,8 @@ export const data = {
 
 export function FundingChart() {
   return (
-    <div className="rounded-lg bg-white p-4 shadow-sm">
-      <div className="h-[400px] w-full">
+    <div className='rounded-lg bg-white p-4 shadow-sm'>
+      <div className='h-[400px] w-full'>
         <Line options={options} data={data} />
       </div>
     </div>

@@ -1,188 +1,122 @@
-/**
- * Logger service for consistent error and event logging across the application
- * @module logger
- */
+type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
-import { env } from '@/env.mjs'
-
-/**
- * Log level enumeration
- */
-export enum LogLevel {
-  DEBUG = 'debug',
-  INFO = 'info',
-  WARN = 'warn',
-  ERROR = 'error'
-}
-
-/**
- * Log entry structure
- */
 interface LogEntry {
   timestamp: string
   level: LogLevel
   message: string
-  error?: Error
   context?: Record<string, unknown>
   component?: string
+  error?: Error
 }
 
-/**
- * Logger configuration options
- */
-interface LoggerConfig {
-  minLevel: LogLevel
-  includeTimestamp: boolean
-  enableConsole: boolean
-  externalService?: {
-    url: string
-    apiKey: string
-  }
-}
-
-const DEFAULT_CONFIG: LoggerConfig = {
-  minLevel: LogLevel.INFO,
-  includeTimestamp: true,
-  enableConsole: env.NODE_ENV !== 'production',
-  externalService: env.EXTERNAL_LOGGING_URL && env.EXTERNAL_LOGGING_API_KEY ? {
-    url: env.EXTERNAL_LOGGING_URL,
-    apiKey: env.EXTERNAL_LOGGING_API_KEY
-  } : undefined
-}
-
-/**
- * Logger class for handling application-wide logging
- */
 export class Logger {
-  private config: LoggerConfig
   private static instance: Logger
+  private logLevel: LogLevel = 'info'
+  private shouldLog = process.env.NODE_ENV !== 'test'
 
-  private constructor(config: Partial<LoggerConfig> = {}) {
-    this.config = { ...DEFAULT_CONFIG, ...config }
-  }
+  private constructor() {}
 
-  /**
-   * Get logger instance (Singleton pattern)
-   */
-  public static getInstance(config?: Partial<LoggerConfig>): Logger {
+  static getInstance(): Logger {
     if (!Logger.instance) {
-      Logger.instance = new Logger(config)
+      Logger.instance = new Logger()
     }
     return Logger.instance
   }
 
-  /**
-   * Create a log entry
-   */
+  private formatMessage(entry: LogEntry): string {
+    const context = entry.context ? ` | ${JSON.stringify(entry.context)}` : ''
+    const component = entry.component ? ` | ${entry.component}` : ''
+    return `[${entry.timestamp}] ${entry.level.toUpperCase()}: ${entry.message}${component}${context}`
+  }
+
   private createLogEntry(
     level: LogLevel,
     message: string,
-    error?: Error,
     context?: Record<string, unknown>,
-    component?: string
+    component?: string,
+    error?: Error
   ): LogEntry {
     return {
       timestamp: new Date().toISOString(),
       level,
       message,
-      error,
       context,
-      component
+      component,
+      error,
     }
   }
 
-  /**
-   * Format log entry for console output
-   */
-  private formatLogEntry(entry: LogEntry): string {
-    const timestamp = this.config.includeTimestamp ? `[${entry.timestamp}] ` : ''
-    const component = entry.component ? `[${entry.component}] ` : ''
-    const context = entry.context ? `\nContext: ${JSON.stringify(entry.context, null, 2)}` : ''
-    const error = entry.error ? `\nError: ${entry.error.message}\nStack: ${entry.error.stack}` : ''
-
-    return `${timestamp}${component}${entry.level.toUpperCase()}: ${entry.message}${context}${error}`
-  }
-
-  /**
-   * Log to console if enabled
-   */
-  private logToConsole(entry: LogEntry): void {
-    if (!this.config.enableConsole || entry.level < this.config.minLevel) return
-
-    const formattedMessage = this.formatLogEntry(entry)
-    // Using process.stdout/stderr to avoid linting issues with console statements
-    switch (entry.level) {
-      case LogLevel.DEBUG:
-        process.stdout.write(`${formattedMessage}\n`)
-        break
-      case LogLevel.INFO:
-        process.stdout.write(`${formattedMessage}\n`)
-        break
-      case LogLevel.WARN:
-        process.stderr.write(`${formattedMessage}\n`)
-        break
-      case LogLevel.ERROR:
-        process.stderr.write(`${formattedMessage}\n`)
-        break
-    }
-  }
-
-  /**
-   * Send log to external service if configured
-   */
-  private async logToExternalService(entry: LogEntry): Promise<void> {
-    if (!this.config.externalService) return
-
-    try {
-      const response = await fetch(this.config.externalService.url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.config.externalService.apiKey}`
-        },
-        body: JSON.stringify(entry)
-      })
-
-      if (!response.ok) {
-        throw new Error(`Failed to send log to external service: ${response.statusText}`)
+  private logToConsole(entry: LogEntry) {
+    const formattedMessage = this.formatMessage(entry)
+    // Only log errors and warnings in production
+    if (process.env.NODE_ENV === 'production') {
+      switch (entry.level) {
+        case 'warn':
+          console.warn(formattedMessage)
+          break
+        case 'error':
+          console.error(formattedMessage, entry.error)
+          break
       }
-    } catch (error) {
-      // Use process.stderr to avoid console.error
-      process.stderr.write(`Failed to send log to external service: ${error instanceof Error ? error.message : 'Unknown error'}\n`)
+    } else {
+      switch (entry.level) {
+        case 'debug':
+          console.debug(formattedMessage)
+          break
+        case 'info':
+          console.info(formattedMessage)
+          break
+        case 'warn':
+          console.warn(formattedMessage)
+          break
+        case 'error':
+          console.error(formattedMessage, entry.error)
+          break
+      }
     }
   }
 
-  /**
-   * Log a message at the specified level
-   */
+  private logToExternalService(_entry: LogEntry) {
+    // TODO: Implement external logging service integration
+    // This could be Sentry, LogRocket, or another service
+    if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+      // Send to Sentry
+    }
+  }
+
   private log(
     level: LogLevel,
     message: string,
-    error?: Error,
     context?: Record<string, unknown>,
-    component?: string
-  ): void {
-    const entry = this.createLogEntry(level, message, error, context, component)
+    component?: string,
+    error?: Error
+  ) {
+    if (!this.shouldLog) return
+
+    const entry = this.createLogEntry(level, message, context, component, error)
     this.logToConsole(entry)
-    void this.logToExternalService(entry)
+    this.logToExternalService(entry)
   }
 
-  public debug(message: string, context?: Record<string, unknown>, component?: string): void {
-    this.log(LogLevel.DEBUG, message, undefined, context, component)
+  debug(message: string, context?: Record<string, unknown>, component?: string) {
+    this.log('debug', message, context, component)
   }
 
-  public info(message: string, context?: Record<string, unknown>, component?: string): void {
-    this.log(LogLevel.INFO, message, undefined, context, component)
+  info(message: string, context?: Record<string, unknown>, component?: string) {
+    this.log('info', message, context, component)
   }
 
-  public warn(message: string, context?: Record<string, unknown>, component?: string): void {
-    this.log(LogLevel.WARN, message, undefined, context, component)
+  warn(message: string, context?: Record<string, unknown>, component?: string) {
+    this.log('warn', message, context, component)
   }
 
-  public error(message: string, error?: Error, context?: Record<string, unknown>, component?: string): void {
-    this.log(LogLevel.ERROR, message, error, context, component)
+  error(message: string, error: Error, context?: Record<string, unknown>, component?: string) {
+    this.log('error', message, context, component, error)
+  }
+
+  setLogLevel(level: LogLevel) {
+    this.logLevel = level
   }
 }
 
-// Export default logger instance
 export const logger = Logger.getInstance()

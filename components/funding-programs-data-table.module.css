@@ -6,7 +6,7 @@
 }
 
 .progressBar[data-percentage] {
-  --percentage: attr(data-percentage)%;
+  --percentage: attr(data-percentage) %;
 }
 
 .flexItemsCenter {

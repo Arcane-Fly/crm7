@@ -1,7 +1,9 @@
 # CRM7R Architecture
 
 ## Overview
+
 A comprehensive Group Training Organisation (GTO) and labour hire CRM system that handles:
+
 - Apprentice/Trainee Management
 - Host Employer Management
 - Training & Compliance
@@ -12,6 +14,7 @@ A comprehensive Group Training Organisation (GTO) and labour hire CRM system tha
 ## Technical Stack
 
 ### Frontend
+
 - Next.js 15 with App Router
 - TypeScript for type safety
 - Tailwind CSS for styling
@@ -21,6 +24,7 @@ A comprehensive Group Training Organisation (GTO) and labour hire CRM system tha
 - Recharts for data visualization
 
 ### Backend & Auth
+
 - Supabase for database and authentication
   - @supabase/ssr for server-side auth
   - Protected routes with middleware
@@ -31,6 +35,7 @@ A comprehensive Group Training Organisation (GTO) and labour hire CRM system tha
 - WebSocket for real-time features (planned)
 
 ### Infrastructure
+
 - Vercel for hosting
 - GitHub Actions for CI/CD
 - Docker for containerization
@@ -39,15 +44,18 @@ A comprehensive Group Training Organisation (GTO) and labour hire CRM system tha
 ## Core Systems
 
 ### Navigation Structure
+
 The application uses a three-tier navigation system:
 
 1. Top Navigation Bar
+
    - User profile and settings
    - Global search
    - Notifications
    - Theme toggle
 
 2. Main Sidebar
+
    - Collapsible with keyboard shortcut (Ctrl/Cmd + B)
    - Mobile responsive with slide-out menu
    - Persistent state using cookies
@@ -65,12 +73,14 @@ See [Navigation Structure](./NAVIGATION.md) for the complete navigation hierarch
 ### Authentication Flow
 
 1. Server-Side Auth
+
    - Protected routes with middleware
    - Server-side session validation
    - Automatic redirects
    - Cookie-based session management
 
 2. Client-Side Auth
+
    - AuthProvider context
    - Real-time session updates
    - Automatic token refresh
@@ -84,36 +94,42 @@ See [Navigation Structure](./NAVIGATION.md) for the complete navigation hierarch
 ### Integration Points
 
 #### Government Systems
+
 - Fair Work API for award interpretation
 - Training.gov.au for qualification frameworks
 - Government funding portals
 - Apprenticeship Network Providers
 
 #### Training Systems
+
 - RTO Management Systems
 - Learning Management Systems
 - Competency Tracking
 - Assessment Tools
 
 #### Safety & Compliance
+
 - WHS/OHS Systems
 - Incident Reporting
 - Risk Management
 - Compliance Monitoring
 
 #### Financial Systems
+
 - Payroll Processing
 - Funding Claims
 - Invoice Generation
 - Expense Management
 
 ### AI Integration (Planned)
+
 - LLM for award interpretation
 - Predictive analytics for completion rates
 - Automated compliance checking
 - Smart document processing
 
 ### Security
+
 - Role-based access control
 - JWT authentication with SSR
 - OAuth2 integration (planned)
@@ -123,6 +139,7 @@ See [Navigation Structure](./NAVIGATION.md) for the complete navigation hierarch
 ## Module Details
 
 ### Apprentice Management
+
 - Profile Management
 - Progress Tracking
 - Placement History
@@ -130,6 +147,7 @@ See [Navigation Structure](./NAVIGATION.md) for the complete navigation hierarch
 - Training Records
 
 ### Host Employer Management
+
 - Company Profiles
 - Agreement Management
 - Placement Management
@@ -137,6 +155,7 @@ See [Navigation Structure](./NAVIGATION.md) for the complete navigation hierarch
 - Communication Tools
 
 ### Training Management
+
 - Course Catalog
 - Progress Tracking
 - Assessment Management
@@ -144,6 +163,7 @@ See [Navigation Structure](./NAVIGATION.md) for the complete navigation hierarch
 - Compliance Monitoring
 
 ### Payroll & Finance
+
 - Award Interpretation
 - Timesheet Management
 - Payment Processing
@@ -151,6 +171,7 @@ See [Navigation Structure](./NAVIGATION.md) for the complete navigation hierarch
 - Financial Reporting
 
 ### Reporting & Analytics
+
 - Standard Reports
 - Custom Report Builder
 - Data Visualization

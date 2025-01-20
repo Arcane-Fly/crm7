@@ -43,7 +43,7 @@ export function SchemaEditor({ table, onUpdate }: SchemaEditorProps) {
       const { error: schemaError } = await supabase.rpc('add_column_to_table', {
         p_table_name: table,
         p_column_name: newColumn.name,
-        p_column_type: newColumn.type
+        p_column_type: newColumn.type,
       })
 
       if (schemaError) throw schemaError
@@ -66,8 +66,8 @@ export function SchemaEditor({ table, onUpdate }: SchemaEditorProps) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Settings2 className="h-4 w-4 mr-2" />
+        <Button variant='outline' size='sm'>
+          <Settings2 className='mr-2 h-4 w-4' />
           Edit Schema
         </Button>
       </DialogTrigger>
@@ -75,30 +75,30 @@ export function SchemaEditor({ table, onUpdate }: SchemaEditorProps) {
         <DialogHeader>
           <DialogTitle>Edit Table Schema</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
+        <div className='space-y-4 py-4'>
+          <div className='space-y-2'>
             <Label>Column Name</Label>
             <Input
               value={newColumn.name}
               onChange={(e) => setNewColumn({ ...newColumn, name: e.target.value })}
-              placeholder="Enter column name"
+              placeholder='Enter column name'
             />
           </div>
-          <div className="space-y-2">
+          <div className='space-y-2'>
             <Label>Column Type</Label>
             <Select
               value={newColumn.type}
               onValueChange={(value) => setNewColumn({ ...newColumn, type: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select column type" />
+                <SelectValue placeholder='Select column type' />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="text">Text</SelectItem>
-                <SelectItem value="integer">Integer</SelectItem>
-                <SelectItem value="boolean">Boolean</SelectItem>
-                <SelectItem value="timestamp">Timestamp</SelectItem>
-                <SelectItem value="jsonb">JSONB</SelectItem>
+                <SelectItem value='text'>Text</SelectItem>
+                <SelectItem value='integer'>Integer</SelectItem>
+                <SelectItem value='boolean'>Boolean</SelectItem>
+                <SelectItem value='timestamp'>Timestamp</SelectItem>
+                <SelectItem value='jsonb'>JSONB</SelectItem>
               </SelectContent>
             </Select>
           </div>

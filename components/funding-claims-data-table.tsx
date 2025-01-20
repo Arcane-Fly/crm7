@@ -1,12 +1,12 @@
-"use client"
+'use client'
 
-import * as React from "react"
+import * as React from 'react'
 import type {
   ColumnDef,
   ColumnFiltersState,
   SortingState,
   VisibilityState,
-} from "@tanstack/react-table"
+} from '@tanstack/react-table'
 import {
   flexRender,
   getCoreRowModel,
@@ -14,10 +14,10 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table"
+} from '@tanstack/react-table'
 import { ArrowUpDown, ChevronDown, MoreHorizontal } from 'lucide-react'
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -26,8 +26,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
+} from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
 import {
   Table,
   TableBody,
@@ -35,53 +35,53 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from '@/components/ui/table'
 
 const data: FundingClaim[] = [
   {
-    id: "1",
-    programCode: "AAIP-2023",
-    apprenticeName: "John Smith",
-    employerName: "TechCorp Pty Ltd",
-    claimDate: "2023-06-15",
+    id: '1',
+    programCode: 'AAIP-2023',
+    apprenticeName: 'John Smith',
+    employerName: 'TechCorp Pty Ltd',
+    claimDate: '2023-06-15',
     amount: 4000,
-    status: "Approved",
+    status: 'Approved',
   },
   {
-    id: "2",
-    programCode: "NSW-AWS-2023",
-    apprenticeName: "Sarah Johnson",
-    employerName: "BuildRight Construction",
-    claimDate: "2023-07-01",
+    id: '2',
+    programCode: 'NSW-AWS-2023',
+    apprenticeName: 'Sarah Johnson',
+    employerName: 'BuildRight Construction',
+    claimDate: '2023-07-01',
     amount: 3000,
-    status: "Pending",
+    status: 'Pending',
   },
   {
-    id: "3",
-    programCode: "QLD-ATB-2023",
-    apprenticeName: "Michael Brown",
-    employerName: "Queensland Electrics",
-    claimDate: "2023-07-10",
+    id: '3',
+    programCode: 'QLD-ATB-2023',
+    apprenticeName: 'Michael Brown',
+    employerName: 'Queensland Electrics',
+    claimDate: '2023-07-10',
     amount: 2500,
-    status: "Under Review",
+    status: 'Under Review',
   },
   {
-    id: "4",
-    programCode: "VIC-JSI-2023",
-    apprenticeName: "Emily Taylor",
-    employerName: "Melbourne Plumbing Services",
-    claimDate: "2023-06-30",
+    id: '4',
+    programCode: 'VIC-JSI-2023',
+    apprenticeName: 'Emily Taylor',
+    employerName: 'Melbourne Plumbing Services',
+    claimDate: '2023-06-30',
     amount: 3500,
-    status: "Approved",
+    status: 'Approved',
   },
   {
-    id: "5",
-    programCode: "RRSSI-2023",
-    apprenticeName: "David Wilson",
-    employerName: "Rural Mechanics Ltd",
-    claimDate: "2023-07-05",
+    id: '5',
+    programCode: 'RRSSI-2023',
+    apprenticeName: 'David Wilson',
+    employerName: 'Rural Mechanics Ltd',
+    claimDate: '2023-07-05',
     amount: 5000,
-    status: "Pending",
+    status: 'Pending',
   },
 ]
 
@@ -92,54 +92,52 @@ export type FundingClaim = {
   employerName: string
   claimDate: string
   amount: number
-  status: "Pending" | "Approved" | "Rejected" | "Under Review"
+  status: 'Pending' | 'Approved' | 'Rejected' | 'Under Review'
 }
 
 export const columns: ColumnDef<FundingClaim>[] = [
   {
-    accessorKey: "programCode",
-    header: "Program Code",
-    cell: ({ row }) => <div>{row.getValue("programCode")}</div>,
+    accessorKey: 'programCode',
+    header: 'Program Code',
+    cell: ({ row }) => <div>{row.getValue('programCode')}</div>,
   },
   {
-    accessorKey: "apprenticeName",
-    header: "Apprentice Name",
-    cell: ({ row }) => <div>{row.getValue("apprenticeName")}</div>,
+    accessorKey: 'apprenticeName',
+    header: 'Apprentice Name',
+    cell: ({ row }) => <div>{row.getValue('apprenticeName')}</div>,
   },
   {
-    accessorKey: "employerName",
-    header: "Employer Name",
-    cell: ({ row }) => <div>{row.getValue("employerName")}</div>,
+    accessorKey: 'employerName',
+    header: 'Employer Name',
+    cell: ({ row }) => <div>{row.getValue('employerName')}</div>,
   },
   {
-    accessorKey: "claimDate",
+    accessorKey: 'claimDate',
     header: ({ column }) => {
       return (
         <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          variant='ghost'
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Claim Date
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDown className='ml-2 h-4 w-4' />
         </Button>
       )
     },
-    cell: ({ row }) => <div>{row.getValue("claimDate")}</div>,
+    cell: ({ row }) => <div>{row.getValue('claimDate')}</div>,
   },
   {
-    accessorKey: "amount",
-    header: "Amount",
-    cell: ({ row }) => <div>${row.getValue("amount")}</div>,
+    accessorKey: 'amount',
+    header: 'Amount',
+    cell: ({ row }) => <div>${row.getValue('amount')}</div>,
   },
   {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("status")}</div>
-    ),
+    accessorKey: 'status',
+    header: 'Status',
+    cell: ({ row }) => <div className='capitalize'>{row.getValue('status')}</div>,
   },
   {
-    id: "actions",
+    id: 'actions',
     enableHiding: false,
     cell: ({ row }) => {
       const claim = row.original
@@ -147,16 +145,14 @@ export const columns: ColumnDef<FundingClaim>[] = [
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
+            <Button variant='ghost' className='h-8 w-8 p-0'>
+              <span className='sr-only'>Open menu</span>
+              <MoreHorizontal className='h-4 w-4' />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align='end'>
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(claim.id)}
-            >
+            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(claim.id)}>
               Copy claim ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -196,23 +192,23 @@ export function FundingClaimsDataTable() {
   })
 
   return (
-    <div className="w-full">
-      <div className="flex items-center py-4">
+    <div className='w-full'>
+      <div className='flex items-center py-4'>
         <Input
-          placeholder="Filter claims..."
-          value={(table.getColumn("apprenticeName")?.getFilterValue() as string) ?? ""}
+          placeholder='Filter claims...'
+          value={(table.getColumn('apprenticeName')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
-            table.getColumn("apprenticeName")?.setFilterValue(event.target.value)
+            table.getColumn('apprenticeName')?.setFilterValue(event.target.value)
           }
-          className="max-w-sm"
+          className='max-w-sm'
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
+            <Button variant='outline' className='ml-auto'>
+              Columns <ChevronDown className='ml-2 h-4 w-4' />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align='end'>
             {table
               .getAllColumns()
               .filter((column) => column.getCanHide())
@@ -220,11 +216,9 @@ export function FundingClaimsDataTable() {
                 return (
                   <DropdownMenuCheckboxItem
                     key={column.id}
-                    className="capitalize"
+                    className='capitalize'
                     checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
+                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
                   >
                     {column.id}
                   </DropdownMenuCheckboxItem>
@@ -233,7 +227,7 @@ export function FundingClaimsDataTable() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <div className="rounded-md border">
+      <div className='rounded-md border'>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -243,10 +237,7 @@ export function FundingClaimsDataTable() {
                     <TableHead key={header.id}>
                       {header.isPlaceholder
                         ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                        : flexRender(header.column.columnDef.header, header.getContext())}
                     </TableHead>
                   )
                 })}
@@ -256,10 +247,7 @@ export function FundingClaimsDataTable() {
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
+                <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -269,7 +257,7 @@ export function FundingClaimsDataTable() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell colSpan={columns.length} className='h-24 text-center'>
                   No results.
                 </TableCell>
               </TableRow>
@@ -277,23 +265,23 @@ export function FundingClaimsDataTable() {
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
+      <div className='flex items-center justify-end space-x-2 py-4'>
+        <div className='flex-1 text-sm text-muted-foreground'>
+          {table.getFilteredSelectedRowModel().rows.length} of{' '}
           {table.getFilteredRowModel().rows.length} row(s) selected.
         </div>
-        <div className="space-x-2">
+        <div className='space-x-2'>
           <Button
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
             Previous
           </Button>
           <Button
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
