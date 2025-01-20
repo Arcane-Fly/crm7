@@ -27,17 +27,17 @@ export function useAuth() {
       if (session?.user) {
         setUser({
           id: session.user.id,
-          email: session.user.email,
-          name: session.user.user_metadata?.name,
-          avatar_url: session.user.user_metadata?.avatar_url,
+          email: session.user.email || undefined,
+          name: session.user.user_metadata?.name || undefined,
+          avatar_url: session.user.user_metadata?.avatar_url || undefined,
           provider: 'supabase',
         })
       } else if (auth0User) {
         setUser({
           id: auth0User.sub!,
-          email: auth0User.email,
-          name: auth0User.name,
-          avatar_url: auth0User.picture,
+          email: auth0User.email || undefined,
+          name: auth0User.name || undefined,
+          avatar_url: auth0User.picture || undefined,
           provider: 'auth0',
         })
       } else {
