@@ -48,17 +48,17 @@ export function EnrollmentList() {
 
   if (enrollments.isLoading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className='flex items-center justify-center p-8'>
+        <Loader2 className='h-8 w-8 animate-spin' />
       </div>
     )
   }
 
   if (enrollments.isError) {
     return (
-      <div className="flex flex-col items-center justify-center p-8">
-        <p className="text-sm text-muted-foreground">Failed to load enrollments</p>
-        <Button variant="outline" onClick={() => enrollments.refetch()} className="mt-4">
+      <div className='flex flex-col items-center justify-center p-8'>
+        <p className='text-sm text-muted-foreground'>Failed to load enrollments</p>
+        <Button variant='outline' onClick={() => enrollments.refetch()} className='mt-4'>
           Retry
         </Button>
       </div>
@@ -66,26 +66,28 @@ export function EnrollmentList() {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
       {enrollments.data?.map((enrollment) => (
         <Card key={enrollment.id}>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
+            <div className='flex items-center justify-between'>
+              <div className='space-y-1'>
                 <CardTitle>Student ID: {enrollment.student_id}</CardTitle>
                 <CardDescription>Course ID: {enrollment.course_id}</CardDescription>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" disabled={isUpdatingEnrollment}>
-                    <MoreVertical className="h-4 w-4" />
+                  <Button variant='ghost' size='icon' disabled={isUpdatingEnrollment}>
+                    <MoreVertical className='h-4 w-4' />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align='end'>
                   <DropdownMenuItem onClick={() => router.push(`/enrollments/${enrollment.id}`)}>
                     View Details
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => router.push(`/enrollments/${enrollment.id}/edit`)}>
+                  <DropdownMenuItem
+                    onClick={() => router.push(`/enrollments/${enrollment.id}/edit`)}
+                  >
                     Edit Enrollment
                   </DropdownMenuItem>
                   {enrollment.status === 'active' && (
@@ -98,27 +100,27 @@ export function EnrollmentList() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
+            <div className='space-y-4'>
+              <div className='flex items-center gap-2'>
                 <Badge
                   variant={
                     enrollment.status === 'active'
                       ? 'default'
                       : enrollment.status === 'completed'
-                      ? 'success'
-                      : 'secondary'
+                        ? 'success'
+                        : 'secondary'
                   }
                 >
                   {enrollment.status}
                 </Badge>
               </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
+              <div className='space-y-2'>
+                <div className='flex justify-between text-sm'>
                   <span>Progress:</span>
                   <span>{enrollment.progress}%</span>
                 </div>
                 {enrollment.grade !== undefined && (
-                  <div className="flex justify-between text-sm">
+                  <div className='flex justify-between text-sm'>
                     <span>Grade:</span>
                     <span>{enrollment.grade}%</span>
                   </div>
@@ -127,12 +129,12 @@ export function EnrollmentList() {
             </div>
           </CardContent>
           <CardFooter>
-            <div className="w-full text-sm text-muted-foreground">
-              <div className="flex justify-between">
+            <div className='w-full text-sm text-muted-foreground'>
+              <div className='flex justify-between'>
                 <span>Created:</span>
                 <span>{format(new Date(enrollment.created_at), 'MMM d, yyyy')}</span>
               </div>
-              <div className="flex justify-between">
+              <div className='flex justify-between'>
                 <span>Updated:</span>
                 <span>{format(new Date(enrollment.updated_at), 'MMM d, yyyy')}</span>
               </div>

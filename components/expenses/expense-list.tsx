@@ -71,11 +71,7 @@ export function ExpenseList() {
       header: 'Amount',
       cell: ({ row }: { row: any }) => {
         const amount = row.original.amount
-        return (
-          <span>
-            ${amount.toFixed(2)}
-          </span>
-        )
+        return <span>${amount.toFixed(2)}</span>
       },
     },
     {
@@ -104,19 +100,15 @@ export function ExpenseList() {
       cell: ({ row }: { row: any }) => {
         const expense = row.original
         return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSelectedExpense(expense)}
-            >
-              <Eye className="h-4 w-4" />
+          <div className='flex items-center gap-2'>
+            <Button variant='ghost' size='icon' onClick={() => setSelectedExpense(expense)}>
+              <Eye className='h-4 w-4' />
             </Button>
             {expense.status === 'pending' && (
               <>
                 <Button
-                  variant="ghost"
-                  size="icon"
+                  variant='ghost'
+                  size='icon'
                   onClick={() =>
                     approveExpense({
                       match: { id: expense.id },
@@ -124,11 +116,11 @@ export function ExpenseList() {
                     })
                   }
                 >
-                  <Check className="h-4 w-4" />
+                  <Check className='h-4 w-4' />
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="icon"
+                  variant='ghost'
+                  size='icon'
                   onClick={() =>
                     rejectExpense({
                       match: { id: expense.id },
@@ -136,7 +128,7 @@ export function ExpenseList() {
                     })
                   }
                 >
-                  <X className="h-4 w-4" />
+                  <X className='h-4 w-4' />
                 </Button>
               </>
             )}
@@ -148,18 +140,18 @@ export function ExpenseList() {
 
   if (error) {
     return (
-      <div className="flex h-[400px] items-center justify-center">
-        <p className="text-destructive">Failed to load expenses</p>
+      <div className='flex h-[400px] items-center justify-center'>
+        <p className='text-destructive'>Failed to load expenses</p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       <DataTable
         columns={columns}
         data={expenses || []}
-        filterColumn="description"
+        filterColumn='description'
         enableColumnVisibility
       />
       <Dialog open={!!selectedExpense} onOpenChange={() => setSelectedExpense(null)}>

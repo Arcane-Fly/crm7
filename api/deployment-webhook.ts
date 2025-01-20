@@ -6,7 +6,7 @@ export const runtime = 'edge'
 export async function POST(request: NextRequest) {
   try {
     const payload = await request.json()
-    
+
     // Verify webhook signature
     const signature = request.headers.get('x-vercel-signature')
     if (!signature) {
@@ -24,8 +24,8 @@ export async function POST(request: NextRequest) {
         name: payload.name,
         url: payload.url,
         state: payload.state,
-        createdAt: payload.createdAt
-      })
+        createdAt: payload.createdAt,
+      }),
     })
 
     return new NextResponse('OK', { status: 200 })
@@ -36,9 +36,9 @@ export async function POST(request: NextRequest) {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ error })
+      body: JSON.stringify({ error }),
     })
-    
+
     return new NextResponse('Internal Server Error', { status: 500 })
   }
 }

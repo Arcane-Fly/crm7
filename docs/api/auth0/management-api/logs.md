@@ -12,17 +12,17 @@ Retrieves log entries.
 
 ### Query Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| page | number | Page number, zero based |
-| per_page | number | Number of results per page |
-| sort | string | Sort field and order (e.g., date:-1) |
-| fields | string | Fields to include in response |
+| Parameter      | Type    | Description                              |
+| -------------- | ------- | ---------------------------------------- |
+| page           | number  | Page number, zero based                  |
+| per_page       | number  | Number of results per page               |
+| sort           | string  | Sort field and order (e.g., date:-1)     |
+| fields         | string  | Fields to include in response            |
 | include_fields | boolean | True to include fields, false to exclude |
-| include_totals | boolean | True to include totals |
-| from | string | Log entries from this date |
-| take | number | Number of entries to retrieve |
-| q | string | Query in Lucene query string syntax |
+| include_totals | boolean | True to include totals                   |
+| from           | string  | Log entries from this date               |
+| take           | number  | Number of entries to retrieve            |
+| q              | string  | Query in Lucene query string syntax      |
 
 ### Response
 
@@ -63,9 +63,9 @@ Retrieves a log entry by ID.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the log entry to retrieve |
+| Parameter | Type   | Description                         |
+| --------- | ------ | ----------------------------------- |
+| id        | string | The ID of the log entry to retrieve |
 
 ### Response
 
@@ -91,6 +91,7 @@ Retrieves a log entry by ID.
 ## Log Event Types
 
 Common log event types:
+
 - `s`: Success Login
 - `f`: Failed Login
 - `fu`: Failed Login (Invalid Email/Username)
@@ -114,6 +115,7 @@ Common log event types:
 ## Error Responses
 
 ### 400 Bad Request
+
 ```json
 {
   "error": "bad_request",
@@ -123,6 +125,7 @@ Common log event types:
 ```
 
 ### 401 Unauthorized
+
 ```json
 {
   "error": "unauthorized",
@@ -132,6 +135,7 @@ Common log event types:
 ```
 
 ### 403 Forbidden
+
 ```json
 {
   "error": "forbidden",
@@ -141,6 +145,7 @@ Common log event types:
 ```
 
 ### 404 Not Found
+
 ```json
 {
   "error": "not_found",
@@ -150,6 +155,7 @@ Common log event types:
 ```
 
 ### 429 Too Many Requests
+
 ```json
 {
   "error": "too_many_requests",
@@ -161,12 +167,14 @@ Common log event types:
 ## Best Practices
 
 1. **Log Management**
+
    - Monitor critical events
    - Set up alerts
    - Archive old logs
    - Analyze patterns
 
 2. **Security**
+
    - Track failed attempts
    - Monitor suspicious IPs
    - Review API access
@@ -186,6 +194,7 @@ The Logs API endpoints are subject to rate limiting:
 - Enterprise: 100 requests per minute
 
 Rate limit information is included in the response headers:
+
 - `X-RateLimit-Limit`
 - `X-RateLimit-Remaining`
 - `X-RateLimit-Reset`
@@ -195,16 +204,19 @@ Rate limit information is included in the response headers:
 ### Query Examples
 
 1. **Search by User**
+
 ```
 user_id:"auth0|123" AND type:s
 ```
 
 2. **Search by Date Range**
+
 ```
 date:[2023-01-01 TO 2023-01-31] AND type:f
 ```
 
 3. **Search by IP Address**
+
 ```
 ip:"192.0.2.1" AND type:f
 ```
@@ -212,6 +224,7 @@ ip:"192.0.2.1" AND type:f
 ### Log Fields
 
 Available fields for querying:
+
 - `date`: Event timestamp
 - `type`: Event type
 - `description`: Event description
@@ -233,6 +246,7 @@ Available fields for querying:
 ### Log Retention
 
 Log retention periods:
+
 - Free: 2 days
 - Developer: 7 days
 - Developer Pro: 30 days
@@ -241,13 +255,16 @@ Log retention periods:
 ### Export Options
 
 Methods to export logs:
+
 1. **API Export**
+
    - Use pagination
    - Filter by date
    - Select fields
    - Sort results
 
 2. **Log Streams**
+
    - Real-time export
    - Multiple destinations
    - Custom formatting

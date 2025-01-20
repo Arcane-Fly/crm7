@@ -51,7 +51,9 @@ export async function middleware(request: NextRequest) {
 
   try {
     // Check Supabase session
-    const { data: { session: supabaseSession } } = await supabase.auth.getSession()
+    const {
+      data: { session: supabaseSession },
+    } = await supabase.auth.getSession()
     const path = request.nextUrl.pathname
 
     // Public routes that don't require authentication
@@ -65,9 +67,9 @@ export async function middleware(request: NextRequest) {
       '/_next',
       '/static',
       '/images',
-      '/favicon.ico'
+      '/favicon.ico',
     ]
-    const isPublicRoute = publicRoutes.some(route => path.startsWith(route))
+    const isPublicRoute = publicRoutes.some((route) => path.startsWith(route))
 
     // Skip auth check for public routes
     if (isPublicRoute) {
@@ -79,31 +81,32 @@ export async function middleware(request: NextRequest) {
       try {
         const auth0Session = await getSession(request, response)
         if (!auth0Session) {
-          return new NextResponse(
-            JSON.stringify({ error: 'Unauthorized' }),
-            { status: 401, headers: { 'Content-Type': 'application/json' } }
-          )
+          return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+          })
         }
 
         // Check role-based access for protected routes
         const userRoles = auth0Session.user?.['https://crm7.app/roles'] || []
-        const requiredRoles = Object.entries(PROTECTED_ROUTES).find(([route]) => 
-          path.startsWith(route))?.[1]
+        const requiredRoles = Object.entries(PROTECTED_ROUTES).find(([route]) =>
+          path.startsWith(route)
+        )?.[1]
 
-        if (requiredRoles && !requiredRoles.some(role => userRoles.includes(role))) {
-          return new NextResponse(
-            JSON.stringify({ error: 'Forbidden' }),
-            { status: 403, headers: { 'Content-Type': 'application/json' } }
-          )
+        if (requiredRoles && !requiredRoles.some((role) => userRoles.includes(role))) {
+          return new NextResponse(JSON.stringify({ error: 'Forbidden' }), {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' },
+          })
         }
 
         return response
       } catch (error) {
         logger.error('Auth0 session check failed', { error, path })
-        return new NextResponse(
-          JSON.stringify({ error: 'Authentication error' }),
-          { status: 500, headers: { 'Content-Type': 'application/json' } }
-        )
+        return new NextResponse(JSON.stringify({ error: 'Authentication error' }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        })
       }
     }
 
@@ -117,25 +120,24 @@ export async function middleware(request: NextRequest) {
 
     // Check role-based access for protected routes
     const userRoles = supabaseSession.user.app_metadata?.roles || []
-    const requiredRoles = Object.entries(PROTECTED_ROUTES).find(([route]) => 
-      path.startsWith(route))?.[1]
+    const requiredRoles = Object.entries(PROTECTED_ROUTES).find(([route]) =>
+      path.startsWith(route)
+    )?.[1]
 
-    if (requiredRoles && !requiredRoles.some(role => userRoles.includes(role))) {
+    if (requiredRoles && !requiredRoles.some((role) => userRoles.includes(role))) {
       return NextResponse.redirect(new URL('/unauthorized', request.url))
     }
 
     return response
   } catch (error) {
     logger.error('Middleware error', { error, path: request.nextUrl.pathname })
-    return new NextResponse(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    )
+    return new NextResponse(JSON.stringify({ error: 'Internal server error' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    })
   }
 }
 
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.).*)'],
 }

@@ -14,11 +14,11 @@ const nextConfig = {
       config.resolve.fallback = {
         ...config.resolve.fallback,
         canvas: false,
-      };
+      }
     }
 
-    return config;
+    return config
   },
 }
 
-export default nextConfig;
+export default nextConfig

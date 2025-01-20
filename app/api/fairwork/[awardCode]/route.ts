@@ -1,22 +1,22 @@
-import { NextRequest } from 'next/server';
-import { z } from 'zod';
-import { FairWorkService } from '@/lib/services/fairwork/fairwork-service';
-import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
-import { defaultConfig } from '@/lib/services/fairwork/fairwork.config';
-import { logger } from '@/lib/logger';
-import { createApiResponse } from '@/lib/api/response';
-import { withErrorHandler } from '@/lib/api/error-handler';
-import { withAuth } from '@/lib/api/auth';
+import { NextRequest } from 'next/server'
+import { z } from 'zod'
+
+import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client'
+import { defaultConfig } from '@/lib/services/fairwork/fairwork.config'
+
+import { createApiResponse } from '@/lib/api/response'
+import { withErrorHandler } from '@/lib/api/error-handler'
+import { withAuth } from '@/lib/api/auth'
 
 // Initialize services
-const fairworkService = new FairWorkService(defaultConfig);
-const fairworkClient = new FairWorkClient(defaultConfig);
+
+const fairworkClient = new FairWorkClient(defaultConfig)
 
 // Request validation schemas
 const DateParamsSchema = z.object({
   date: z.string().datetime().optional(),
   type: z.string().optional(),
-});
+})
 
 /**
  * GET /api/fairwork/[awardCode]
@@ -24,10 +24,10 @@ const DateParamsSchema = z.object({
  */
 export const GET = withErrorHandler(
   withAuth(async (req: NextRequest, { params }: { params: { awardCode: string } }) => {
-    const award = await fairworkClient.getAward(params.awardCode);
-    return createApiResponse(award);
+    const award = await fairworkClient.getAward(params.awardCode)
+    return createApiResponse(award)
   })
-);
+)
 
 /**
  * GET /api/fairwork/[awardCode]/penalties
@@ -39,14 +39,12 @@ export async function GET_penalties(
 ) {
   return withErrorHandler(
     withAuth(async () => {
-      const searchParams = DateParamsSchema.parse(
-        Object.fromEntries(new URL(req.url).searchParams)
-      );
+      const searchParams = DateParamsSchema.parse(Object.fromEntries(new URL(req.url).searchParams))
 
-      const penalties = await fairworkClient.getPenalties(params.awardCode, searchParams);
-      return createApiResponse(penalties);
+      const penalties = await fairworkClient.getPenalties(params.awardCode, searchParams)
+      return createApiResponse(penalties)
     })
-  )(req);
+  )(req)
 }
 
 /**
@@ -59,14 +57,12 @@ export async function GET_allowances(
 ) {
   return withErrorHandler(
     withAuth(async () => {
-      const searchParams = DateParamsSchema.parse(
-        Object.fromEntries(new URL(req.url).searchParams)
-      );
+      const searchParams = DateParamsSchema.parse(Object.fromEntries(new URL(req.url).searchParams))
 
-      const allowances = await fairworkClient.getAllowances(params.awardCode, searchParams);
-      return createApiResponse(allowances);
+      const allowances = await fairworkClient.getAllowances(params.awardCode, searchParams)
+      return createApiResponse(allowances)
     })
-  )(req);
+  )(req)
 }
 
 /**
@@ -79,16 +75,15 @@ export async function GET_leaveEntitlements(
 ) {
   return withErrorHandler(
     withAuth(async () => {
-      const searchParams = z.object({
-        employmentType: z.enum(['casual', 'permanent', 'fixed-term']),
-        date: z.string().datetime().optional(),
-      }).parse(Object.fromEntries(new URL(req.url).searchParams));
+      const searchParams = z
+        .object({
+          employmentType: z.enum(['casual', 'permanent', 'fixed-term']),
+          date: z.string().datetime().optional(),
+        })
+        .parse(Object.fromEntries(new URL(req.url).searchParams))
 
-      const entitlements = await fairworkClient.getLeaveEntitlements(
-        params.awardCode,
-        searchParams
-      );
-      return createApiResponse(entitlements);
+      const entitlements = await fairworkClient.getLeaveEntitlements(params.awardCode, searchParams)
+      return createApiResponse(entitlements)
     })
-  )(req);
+  )(req)
 }

@@ -72,17 +72,17 @@ export function PaymentForm({ onSuccess }: PaymentFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
         <FormField
           control={form.control}
-          name="account_id"
+          name='account_id'
           render={({ field }) => (
             <FormItem>
               <FormLabel>From Account</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select an account" />
+                    <SelectValue placeholder='Select an account' />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -99,15 +99,15 @@ export function PaymentForm({ onSuccess }: PaymentFormProps) {
         />
         <FormField
           control={form.control}
-          name="amount"
+          name='amount'
           render={({ field: { onChange, ...field } }) => (
             <FormItem>
               <FormLabel>Amount</FormLabel>
               <FormControl>
                 <Input
                   {...field}
-                  type="number"
-                  step="0.01"
+                  type='number'
+                  step='0.01'
                   onChange={(e) => onChange(parseFloat(e.target.value))}
                 />
               </FormControl>
@@ -117,7 +117,7 @@ export function PaymentForm({ onSuccess }: PaymentFormProps) {
         />
         <FormField
           control={form.control}
-          name="description"
+          name='description'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Description</FormLabel>
@@ -130,7 +130,7 @@ export function PaymentForm({ onSuccess }: PaymentFormProps) {
         />
         <FormField
           control={form.control}
-          name="recipient_name"
+          name='recipient_name'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Recipient Name</FormLabel>
@@ -143,7 +143,7 @@ export function PaymentForm({ onSuccess }: PaymentFormProps) {
         />
         <FormField
           control={form.control}
-          name="recipient_account"
+          name='recipient_account'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Recipient Account</FormLabel>
@@ -156,7 +156,7 @@ export function PaymentForm({ onSuccess }: PaymentFormProps) {
         />
         <FormField
           control={form.control}
-          name="recipient_bank"
+          name='recipient_bank'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Recipient Bank</FormLabel>
@@ -167,7 +167,7 @@ export function PaymentForm({ onSuccess }: PaymentFormProps) {
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={isCreatingPayment}>
+        <Button type='submit' disabled={isCreatingPayment}>
           {isCreatingPayment ? 'Creating...' : 'Create Payment'}
         </Button>
       </form>

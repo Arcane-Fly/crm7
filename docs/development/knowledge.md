@@ -71,6 +71,29 @@ pnpm audit
 - Specify exact pnpm version to avoid engine compatibility issues
 - Remove loading prop from DataTable component as it's not supported
 
+### API Endpoint Implementation
+
+When creating new API endpoints:
+
+1. Use monitorAPIEndpoint for performance tracking
+2. Wrap operations in withMonitoring
+3. Add structured logging with context
+4. Include timestamps and response times
+5. Follow error handling guidelines
+
+Example:
+
+```typescript
+export const myEndpoint = monitorAPIEndpoint('/api/my-endpoint')(async () => {
+  return await withMonitoring('operationName', async () => {
+    logger.info('Operation started', { context: 'value' })
+    // ... implementation
+    logger.info('Operation completed', { result: 'value' })
+    return result
+  })
+})
+```
+
 ### Links
 
 - [Vercel Documentation](https://vercel.com/docs)

@@ -75,11 +75,11 @@ export function useSupabaseQuery<T extends TableName>({
         if (error instanceof PostgrestError) {
           throw error
         }
-        throw new PostgrestError({ 
+        throw new PostgrestError({
           message: 'Unknown error occurred',
           code: 'UNKNOWN_ERROR',
           details: '',
-          hint: ''
+          hint: '',
         })
       }
     },
@@ -104,22 +104,24 @@ export function useSupabaseMutation<T extends TableName>({
         if (match) {
           const { data: result, error } = await query.update(data).match(match)
           if (error) throw error
-          if (!result?.[0]) throw new PostgrestError({
-            message: 'No rows returned',
-            code: 'NO_ROWS_RETURNED',
-            details: '',
-            hint: ''
-          })
+          if (!result?.[0])
+            throw new PostgrestError({
+              message: 'No rows returned',
+              code: 'NO_ROWS_RETURNED',
+              details: '',
+              hint: '',
+            })
           return result[0] as TableRow<T>
         } else {
           const { data: result, error } = await query.insert(data)
           if (error) throw error
-          if (!result?.[0]) throw new PostgrestError({
-            message: 'No rows returned',
-            code: 'NO_ROWS_RETURNED',
-            details: '',
-            hint: ''
-          })
+          if (!result?.[0])
+            throw new PostgrestError({
+              message: 'No rows returned',
+              code: 'NO_ROWS_RETURNED',
+              details: '',
+              hint: '',
+            })
           return result[0] as TableRow<T>
         }
       } catch (error) {
@@ -131,7 +133,7 @@ export function useSupabaseMutation<T extends TableName>({
           message: 'Unknown error occurred',
           code: 'UNKNOWN_ERROR',
           details: '',
-          hint: ''
+          hint: '',
         })
       }
     },

@@ -37,7 +37,8 @@ interface EnrollmentFormProps {
 
 export function EnrollmentForm({ enrollmentId, defaultValues, onSuccess }: EnrollmentFormProps) {
   const { user } = useAuth()
-  const { createEnrollment, updateEnrollment, isCreatingEnrollment, isUpdatingEnrollment } = useLMS()
+  const { createEnrollment, updateEnrollment, isCreatingEnrollment, isUpdatingEnrollment } =
+    useLMS()
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = React.useState(false)
 
@@ -91,12 +92,12 @@ export function EnrollmentForm({ enrollmentId, defaultValues, onSuccess }: Enrol
   }
 
   return (
-    <Card className="p-6">
+    <Card className='p-6'>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
           <FormField
             control={form.control}
-            name="student_id"
+            name='student_id'
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Student ID</FormLabel>
@@ -109,7 +110,7 @@ export function EnrollmentForm({ enrollmentId, defaultValues, onSuccess }: Enrol
           />
           <FormField
             control={form.control}
-            name="course_id"
+            name='course_id'
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Course ID</FormLabel>
@@ -122,18 +123,18 @@ export function EnrollmentForm({ enrollmentId, defaultValues, onSuccess }: Enrol
           />
           <FormField
             control={form.control}
-            name="status"
+            name='status'
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Status</FormLabel>
                 <FormControl>
                   <select
                     {...field}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    className='w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
                   >
-                    <option value="active">Active</option>
-                    <option value="completed">Completed</option>
-                    <option value="withdrawn">Withdrawn</option>
+                    <option value='active'>Active</option>
+                    <option value='completed'>Completed</option>
+                    <option value='withdrawn'>Withdrawn</option>
                   </select>
                 </FormControl>
                 <FormMessage />
@@ -142,12 +143,16 @@ export function EnrollmentForm({ enrollmentId, defaultValues, onSuccess }: Enrol
           />
           <FormField
             control={form.control}
-            name="progress"
+            name='progress'
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Progress (%)</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} onChange={e => field.onChange(Number(e.target.value))} />
+                  <Input
+                    type='number'
+                    {...field}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -155,29 +160,34 @@ export function EnrollmentForm({ enrollmentId, defaultValues, onSuccess }: Enrol
           />
           <FormField
             control={form.control}
-            name="grade"
+            name='grade'
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Grade (%)</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
-                    {...field} 
-                    onChange={e => field.onChange(e.target.value ? Number(e.target.value) : undefined)} 
+                  <Input
+                    type='number'
+                    {...field}
+                    onChange={(e) =>
+                      field.onChange(e.target.value ? Number(e.target.value) : undefined)
+                    }
                   />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <Button type="submit" disabled={isSubmitting || isCreatingEnrollment || isUpdatingEnrollment}>
+          <Button
+            type='submit'
+            disabled={isSubmitting || isCreatingEnrollment || isUpdatingEnrollment}
+          >
             {isSubmitting || isCreatingEnrollment || isUpdatingEnrollment
               ? enrollmentId
                 ? 'Updating...'
                 : 'Creating...'
               : enrollmentId
-              ? 'Update Enrollment'
-              : 'Create Enrollment'}
+                ? 'Update Enrollment'
+                : 'Create Enrollment'}
           </Button>
         </form>
       </Form>

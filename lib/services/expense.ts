@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/client'
-import type { Database } from '@/types/supabase'
 
 export interface Expense {
   id: string
@@ -23,7 +22,7 @@ export type ExpenseCategory = 'travel' | 'meals' | 'supplies' | 'training' | 'eq
 export type ExpenseStatus = 'draft' | 'submitted' | 'approved' | 'rejected' | 'reimbursed'
 
 export class ExpenseService {
-  private supabase = createClient<Database>()
+  private supabase = createClient()
 
   async getExpenses(params: {
     org_id: string

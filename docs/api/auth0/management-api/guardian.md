@@ -44,9 +44,9 @@ Retrieves an enrollment.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the enrollment to retrieve |
+| Parameter | Type   | Description                          |
+| --------- | ------ | ------------------------------------ |
+| id        | string | The ID of the enrollment to retrieve |
 
 ### Response
 
@@ -73,9 +73,9 @@ Deletes an enrollment.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the enrollment to delete |
+| Parameter | Type   | Description                        |
+| --------- | ------ | ---------------------------------- |
+| id        | string | The ID of the enrollment to delete |
 
 ### Response
 
@@ -125,9 +125,9 @@ Retrieves settings for a specific factor.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| name | string | The name of the factor (sms, push-notification, email, otp, webauthn-roaming, webauthn-platform) |
+| Parameter | Type   | Description                                                                                      |
+| --------- | ------ | ------------------------------------------------------------------------------------------------ |
+| name      | string | The name of the factor (sms, push-notification, email, otp, webauthn-roaming, webauthn-platform) |
 
 ### Response
 
@@ -150,9 +150,9 @@ Updates settings for a specific factor.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| name | string | The name of the factor to update |
+| Parameter | Type   | Description                      |
+| --------- | ------ | -------------------------------- |
+| name      | string | The name of the factor to update |
 
 ### Request Body
 
@@ -168,6 +168,7 @@ Updates settings for a specific factor.
 ## Error Responses
 
 ### 400 Bad Request
+
 ```json
 {
   "error": "bad_request",
@@ -177,6 +178,7 @@ Updates settings for a specific factor.
 ```
 
 ### 401 Unauthorized
+
 ```json
 {
   "error": "unauthorized",
@@ -186,6 +188,7 @@ Updates settings for a specific factor.
 ```
 
 ### 403 Forbidden
+
 ```json
 {
   "error": "forbidden",
@@ -195,6 +198,7 @@ Updates settings for a specific factor.
 ```
 
 ### 404 Not Found
+
 ```json
 {
   "error": "not_found",
@@ -204,6 +208,7 @@ Updates settings for a specific factor.
 ```
 
 ### 429 Too Many Requests
+
 ```json
 {
   "error": "too_many_requests",
@@ -215,12 +220,14 @@ Updates settings for a specific factor.
 ## Best Practices
 
 1. **Factor Configuration**
+
    - Enable appropriate factors
    - Configure backup methods
    - Test enrollment process
    - Monitor factor usage
 
 2. **Security**
+
    - Review factor settings
    - Monitor failed attempts
    - Configure rate limiting
@@ -240,6 +247,7 @@ The Guardian API endpoints are subject to rate limiting:
 - Enterprise: 100 requests per minute
 
 Rate limit information is included in the response headers:
+
 - `X-RateLimit-Limit`
 - `X-RateLimit-Remaining`
 - `X-RateLimit-Reset`
@@ -249,24 +257,28 @@ Rate limit information is included in the response headers:
 ### Available Factors
 
 1. **Push Notifications**
+
    - Mobile app required
    - Secure and convenient
    - Real-time notifications
    - Device binding
 
 2. **SMS**
+
    - Phone number required
    - Widely supported
    - Easy to use
    - Regional coverage
 
 3. **Email**
+
    - Email address required
    - Backup method
    - Template customization
    - Delivery tracking
 
 4. **OTP (One-Time Password)**
+
    - TOTP standard
    - Authenticator app
    - Offline support
@@ -281,6 +293,7 @@ Rate limit information is included in the response headers:
 ### Template Variables
 
 Available variables for SMS and email templates:
+
 - `{{code}}`: Verification code
 - `{{tenant.friendly_name}}`: Tenant name
 - `{{enrollment.ticket}}`: Enrollment ticket

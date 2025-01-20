@@ -5,6 +5,7 @@
 ### 1. Training Plan Management
 
 - **Customizable Training Plans**
+
   - Individual learning pathways
   - Competency mapping
   - Progress tracking
@@ -25,6 +26,7 @@
 ### 2. Apprentice Management
 
 - **Profile Management**
+
   - Personal details
   - Qualification tracking
   - Employment history
@@ -45,6 +47,7 @@
 ### 3. Assessment & Progress Tracking
 
 - **Assessment Tools**
+
   - Online assessments
   - Practical evaluations
   - Evidence collection
@@ -65,6 +68,7 @@
 ### 4. Funding & Financial Management
 
 - **Funding Management**
+
   - Government incentives
   - Training subsidies
   - Payment tracking
@@ -85,6 +89,7 @@
 ### 5. Communication & Collaboration
 
 - **Stakeholder Communication**
+
   - Multi-channel messaging
   - Automated notifications
   - Document sharing
@@ -105,6 +110,7 @@
 ### 6. Reporting & Analytics
 
 - **Compliance Reporting**
+
   - AVETMISS reporting
   - Government reporting
   - Completion rates
@@ -125,6 +131,7 @@
 ### 7. Resource Management
 
 - **Learning Resources**
+
   - Digital content
   - Assessment materials
   - Training guides
@@ -147,6 +154,7 @@
 ### 1. AI & Automation
 
 - **Smart Automation**
+
   - Progress predictions
   - Risk identification
   - Resource suggestions
@@ -167,6 +175,7 @@
 ### 2. Mobile & Accessibility
 
 - **Mobile Features**
+
   - Native apps
   - Offline access
   - Field assessments
@@ -187,6 +196,7 @@
 ### 3. Integration & APIs
 
 - **System Integration**
+
   - HR systems
   - Payroll systems
   - LMS platforms

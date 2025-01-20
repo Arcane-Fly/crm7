@@ -1,11 +1,6 @@
 name: Deployment Notifications
 
-on:
-  deployment_status:
-    branches:
-      - master
-      - main
-    types: [created, started, completed, error]
+on: deployment_status
 
 jobs:
   notify:
@@ -17,7 +12,7 @@ jobs:
       - name: Send Deployment Status
         uses: slackapi/slack-github-action@v1.24.0
         with:
-          channel-id: 'deployments'  # Replace with your channel ID
+          channel-id: 'deployments'
           slack-message: |
             Deployment Status: ${{ github.event.deployment_status.state }}
             Environment: ${{ github.event.deployment.environment }}

@@ -7,7 +7,8 @@
       {
         "argsIgnorePattern": "^_",
         "varsIgnorePattern": "^_",
-        "destructuredArrayIgnorePattern": "^_"
+        "destructuredArrayIgnorePattern": "^_",
+        "ignoreRestSiblings": true
       }
     ],
     "@typescript-eslint/consistent-type-imports": "off",

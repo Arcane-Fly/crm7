@@ -72,20 +72,23 @@ export function useAuth() {
     }
   }, [user, supabase, router])
 
-  const signInWithSupabase = useCallback(async (provider: 'github' | 'google') => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: `${window.location.origin}/api/auth/callback`,
-        },
-      })
-      if (error) throw error
-    } catch (error) {
-      logger.error('Supabase sign in error', { error, provider })
-      setError(error as Error)
-    }
-  }, [supabase])
+  const signInWithSupabase = useCallback(
+    async (provider: 'github' | 'google') => {
+      try {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider,
+          options: {
+            redirectTo: `${window.location.origin}/api/auth/callback`,
+          },
+        })
+        if (error) throw error
+      } catch (error) {
+        logger.error('Supabase sign in error', { error, provider })
+        setError(error as Error)
+      }
+    },
+    [supabase]
+  )
 
   const signInWithAuth0 = useCallback(() => {
     router.push(AUTH0_ENDPOINTS.LOGIN)

@@ -48,17 +48,17 @@ export function CourseList() {
 
   if (courses.isLoading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className='flex items-center justify-center p-8'>
+        <Loader2 className='h-8 w-8 animate-spin' />
       </div>
     )
   }
 
   if (courses.isError) {
     return (
-      <div className="flex flex-col items-center justify-center p-8">
-        <p className="text-sm text-muted-foreground">Failed to load courses</p>
-        <Button variant="outline" onClick={() => courses.refetch()} className="mt-4">
+      <div className='flex flex-col items-center justify-center p-8'>
+        <p className='text-sm text-muted-foreground'>Failed to load courses</p>
+        <Button variant='outline' onClick={() => courses.refetch()} className='mt-4'>
           Retry
         </Button>
       </div>
@@ -66,22 +66,22 @@ export function CourseList() {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
       {courses.data?.map((course) => (
         <Card key={course.id}>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
+            <div className='flex items-center justify-between'>
+              <div className='space-y-1'>
                 <CardTitle>{course.title}</CardTitle>
                 <CardDescription>Instructor: {course.instructor}</CardDescription>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" disabled={isUpdatingCourse}>
-                    <MoreVertical className="h-4 w-4" />
+                  <Button variant='ghost' size='icon' disabled={isUpdatingCourse}>
+                    <MoreVertical className='h-4 w-4' />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align='end'>
                   <DropdownMenuItem onClick={() => router.push(`/courses/${course.id}`)}>
                     View Details
                   </DropdownMenuItem>
@@ -96,9 +96,9 @@ export function CourseList() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">{course.description}</p>
-              <div className="flex items-center gap-2">
+            <div className='space-y-4'>
+              <p className='text-sm text-muted-foreground'>{course.description}</p>
+              <div className='flex items-center gap-2'>
                 <Badge variant={course.status === 'active' ? 'default' : 'secondary'}>
                   {course.status}
                 </Badge>
@@ -106,13 +106,9 @@ export function CourseList() {
             </div>
           </CardContent>
           <CardFooter>
-            <div className="flex w-full items-center justify-between text-sm text-muted-foreground">
-              <div>
-                Start: {format(new Date(course.start_date), 'MMM d, yyyy')}
-              </div>
-              <div>
-                End: {format(new Date(course.end_date), 'MMM d, yyyy')}
-              </div>
+            <div className='flex w-full items-center justify-between text-sm text-muted-foreground'>
+              <div>Start: {format(new Date(course.start_date), 'MMM d, yyyy')}</div>
+              <div>End: {format(new Date(course.end_date), 'MMM d, yyyy')}</div>
             </div>
           </CardFooter>
         </Card>

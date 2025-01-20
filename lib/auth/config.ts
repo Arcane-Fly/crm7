@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 
 export const createServerSupabaseClient = async () => {
   'use server'
-  
+
   const cookieStore = cookies()
 
   return createServerClient(

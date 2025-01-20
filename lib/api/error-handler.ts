@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
-import { logger } from '@/lib/logger';
-import { createErrorResponse } from './response';
+import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { logger } from '@/lib/logger'
+import { createErrorResponse } from './response'
 
 export class ApiError extends Error {
   constructor(
@@ -10,15 +10,15 @@ export class ApiError extends Error {
     public status: number = 400,
     public details?: unknown
   ) {
-    super(message);
-    this.name = 'ApiError';
+    super(message)
+    this.name = 'ApiError'
   }
 }
 
 type RouteHandler = (
   req: NextRequest,
   context: { params: Record<string, string> }
-) => Promise<NextResponse>;
+) => Promise<NextResponse>
 
 /**
  * Wrap a route handler with error handling
@@ -26,7 +26,7 @@ type RouteHandler = (
 export function withErrorHandler(handler: RouteHandler): RouteHandler {
   return async (req: NextRequest, context: { params: Record<string, string> }) => {
     try {
-      return await handler(req, context);
+      return await handler(req, context)
     } catch (error) {
       // Handle known API errors
       if (error instanceof ApiError) {
@@ -34,23 +34,18 @@ export function withErrorHandler(handler: RouteHandler): RouteHandler {
           code: error.code,
           message: error.message,
           details: error.details,
-        });
-        return createErrorResponse(error.code, error.message, error.details, error.status);
+        })
+        return createErrorResponse(error.code, error.message, error.details, error.status)
       }
 
       // Handle Zod validation errors
       if (error instanceof z.ZodError) {
-        logger.warn('Validation Error', { issues: error.issues });
-        return createErrorResponse(
-          'VALIDATION_ERROR',
-          'Invalid request data',
-          error.issues,
-          400
-        );
+        logger.warn('Validation Error', { issues: error.issues })
+        return createErrorResponse('VALIDATION_ERROR', 'Invalid request data', error.issues, 400)
       }
 
       // Log unknown errors
-      logger.error('Unhandled Error', { error });
+      logger.error('Unhandled Error', { error })
 
       // Return generic error in production
       if (process.env.NODE_ENV === 'production') {
@@ -59,7 +54,7 @@ export function withErrorHandler(handler: RouteHandler): RouteHandler {
           'An unexpected error occurred',
           undefined,
           500
-        );
+        )
       }
 
       // Return detailed error in development
@@ -68,7 +63,7 @@ export function withErrorHandler(handler: RouteHandler): RouteHandler {
         error instanceof Error ? error.message : 'An unexpected error occurred',
         error,
         500
-      );
+      )
     }
-  };
+  }
 }

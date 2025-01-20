@@ -10,6 +10,7 @@ export interface Course {
   start_date: string
   end_date: string
   status: 'active' | 'inactive'
+  difficulty?: 'beginner' | 'intermediate' | 'advanced'
   created_at: string
   updated_at: string
 }
@@ -38,6 +39,9 @@ export interface Assessment {
   status: 'draft' | 'published' | 'archived'
   created_at: string
   updated_at: string
+  metadata?: {
+    passing_grade: number
+  }
 }
 
 export interface Unit {
@@ -63,7 +67,7 @@ export class LMSService {
   // Course Management
   async getCourses(params: {
     category?: string
-    level?: Course['level']
+    level?: Course['difficulty']
     status?: Course['status']
   }) {
     try {
@@ -181,7 +185,7 @@ export class LMSService {
 
       // Update enrollment if grade is passing
       const assessment = await this.getAssessmentById(params.assessment_id)
-      if (params.grade >= assessment.data.passing_grade) {
+      if (params.grade >= (assessment.data.metadata?.passing_grade || 70)) {
         await this.updateProgress(params.enrollment_id, 100)
       }
 

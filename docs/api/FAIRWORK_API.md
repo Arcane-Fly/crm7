@@ -6,7 +6,7 @@ The Fair Work API provides endpoints for accessing award rates, classifications,
 
 ## Base URL
 
-```
+```http
 /api/fairwork
 ```
 
@@ -14,9 +14,11 @@ The Fair Work API provides endpoints for accessing award rates, classifications,
 
 All endpoints require authentication. Include your authentication token in the request headers:
 
-```typescript
-headers: {
-  'Authorization': 'Bearer YOUR_TOKEN'
+```json
+{
+  "headers": {
+    "Authorization": "Bearer YOUR_TOKEN"
+  }
 }
 ```
 
@@ -40,15 +42,17 @@ Query Parameters:
 
 Response:
 
-```typescript
+```json
 {
-  items: Array<{
-    code: string;
-    name: string;
-    industry?: string;
-    occupation?: string;
-  }>;
-  total: number;
+  "items": [
+    {
+      "code": "string",
+      "name": "string",
+      "industry": "string",
+      "occupation": "string"
+    }
+  ],
+  "total": 0
 }
 ```
 
@@ -60,15 +64,15 @@ GET /api/fairwork/[awardCode]
 
 Response:
 
-```typescript
+```json
 {
-  code: string;
-  name: string;
-  industry?: string;
-  occupation?: string;
-  description?: string;
-  effectiveFrom: string;
-  effectiveTo?: string;
+  "code": "string",
+  "name": "string",
+  "industry": "string",
+  "occupation": "string",
+  "description": "string",
+  "effectiveFrom": "string",
+  "effectiveTo": "string"
 }
 ```
 
@@ -82,15 +86,15 @@ GET /api/fairwork/[awardCode]/[classificationCode]
 
 Response:
 
-```typescript
+```json
 {
-  code: string;
-  name: string;
-  level: string;
-  description?: string;
-  minimumRate: number;
-  effectiveFrom: string;
-  effectiveTo?: string;
+  "code": "string",
+  "name": "string",
+  "level": "string",
+  "description": "string",
+  "minimumRate": 0,
+  "effectiveFrom": "string",
+  "effectiveTo": "string"
 }
 ```
 
@@ -107,13 +111,13 @@ Query Parameters:
 
 Response:
 
-```typescript
+```json
 {
-  baseRate: number;
-  casualLoading?: number;
-  total: number;
-  effectiveFrom: string;
-  effectiveTo?: string;
+  "baseRate": 0,
+  "casualLoading": 0,
+  "total": 0,
+  "effectiveFrom": "string",
+  "effectiveTo": "string"
 }
 ```
 
@@ -132,14 +136,16 @@ Query Parameters:
 
 Response:
 
-```typescript
+```json
 {
-  rates: Array<{
-    date: string;
-    baseRate: number;
-    casualLoading?: number;
-    total: number;
-  }>;
+  "rates": [
+    {
+      "date": "string",
+      "baseRate": 0,
+      "casualLoading": 0,
+      "total": 0
+    }
+  ]
 }
 ```
 
@@ -155,14 +161,16 @@ Query Parameters:
 
 Response:
 
-```typescript
+```json
 {
-  rates: Array<{
-    date: string;
-    baseRate: number;
-    casualLoading?: number;
-    total: number;
-  }>;
+  "rates": [
+    {
+      "date": "string",
+      "baseRate": 0,
+      "casualLoading": 0,
+      "total": 0
+    }
+  ]
 }
 ```
 
@@ -174,22 +182,22 @@ POST /api/fairwork/[awardCode]/[classificationCode]/validate
 
 Request Body:
 
-```typescript
+```json
 {
-  rate: number;
-  date: string; // YYYY-MM-DD
-  employmentType: 'casual' | 'permanent' | 'fixed-term';
+  "rate": 0,
+  "date": "string",
+  "employmentType": "string"
 }
 ```
 
 Response:
 
-```typescript
+```json
 {
-  isValid: boolean;
-  minimumRate: number;
-  difference: number;
-  message?: string;
+  "isValid": true,
+  "minimumRate": 0,
+  "difference": 0,
+  "message": "string"
 }
 ```
 
@@ -208,15 +216,17 @@ Query Parameters:
 
 Response:
 
-```typescript
-Array<{
-  code: string;
-  rate: number;
-  description: string;
-  type?: string;
-  effectiveFrom: string;
-  effectiveTo?: string;
-}>
+```json
+[
+  {
+    "code": "string",
+    "rate": 0,
+    "description": "string",
+    "type": "string",
+    "effectiveFrom": "string",
+    "effectiveTo": "string"
+  }
+]
 ```
 
 #### Get Allowances
@@ -232,15 +242,17 @@ Query Parameters:
 
 Response:
 
-```typescript
-Array<{
-  code: string;
-  amount: number;
-  description: string;
-  type?: string;
-  effectiveFrom: string;
-  effectiveTo?: string;
-}>
+```json
+[
+  {
+    "code": "string",
+    "amount": 0,
+    "description": "string",
+    "type": "string",
+    "effectiveFrom": "string",
+    "effectiveTo": "string"
+  }
+]
 ```
 
 ### Leave Entitlements
@@ -258,27 +270,29 @@ Query Parameters:
 
 Response:
 
-```typescript
-Array<{
-  type: string;
-  amount: number;
-  unit: string;
-  description?: string;
-  effectiveFrom: string;
-  effectiveTo?: string;
-}>
+```json
+[
+  {
+    "type": "string",
+    "amount": 0,
+    "unit": "string",
+    "description": "string",
+    "effectiveFrom": "string",
+    "effectiveTo": "string"
+  }
+]
 ```
 
 ## Error Handling
 
 The API uses standard HTTP status codes and returns error responses in the following format:
 
-```typescript
+```json
 {
-  error: {
-    code: string;
-    message: string;
-    details?: any;
+  "error": {
+    "code": "string",
+    "message": "string",
+    "details": {}
   }
 }
 ```

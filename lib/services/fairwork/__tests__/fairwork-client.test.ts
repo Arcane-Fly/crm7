@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { FairWorkClient, FairWorkConfig } from '../fairwork-client';
-import axios from 'axios';
-import { logger } from '@/lib/logger';
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { FairWorkClient, FairWorkConfig } from '../fairwork-client'
+import axios from 'axios'
+import { logger } from '@/lib/logger'
 
 // Mock dependencies
-vi.mock('axios');
-vi.mock('@/lib/logger');
+vi.mock('axios')
+vi.mock('@/lib/logger')
 
 const mockConfig: FairWorkConfig = {
   apiKey: 'test-api-key',
@@ -13,15 +13,15 @@ const mockConfig: FairWorkConfig = {
   environment: 'sandbox',
   timeout: 5000,
   retryAttempts: 3,
-};
+}
 
 describe('FairWorkClient', () => {
-  let client: FairWorkClient;
-  let mockAxios: any;
+  let client: FairWorkClient
+  let mockAxios: any
 
   beforeEach(() => {
     // Reset mocks
-    vi.clearAllMocks();
+    vi.clearAllMocks()
 
     // Setup mock axios instance
     mockAxios = {
@@ -32,12 +32,12 @@ describe('FairWorkClient', () => {
           use: vi.fn(),
         },
       },
-    };
-    (axios.create as any).mockReturnValue(mockAxios);
+    }
+    ;(axios.create as any).mockReturnValue(mockAxios)
 
     // Create client instance
-    client = new FairWorkClient(mockConfig);
-  });
+    client = new FairWorkClient(mockConfig)
+  })
 
   describe('constructor', () => {
     it('should create axios instance with correct config', () => {
@@ -45,37 +45,40 @@ describe('FairWorkClient', () => {
         baseURL: mockConfig.apiUrl,
         timeout: mockConfig.timeout,
         headers: {
-          'Authorization': `Bearer ${mockConfig.apiKey}`,
+          Authorization: `Bearer ${mockConfig.apiKey}`,
           'Content-Type': 'application/json',
           'X-Environment': mockConfig.environment,
         },
-      });
-    });
+      })
+    })
 
     it('should throw error for invalid config', () => {
-      expect(() => new FairWorkClient({
-        ...mockConfig,
-        apiUrl: 'invalid-url',
-      })).toThrow();
-    });
-  });
+      expect(
+        () =>
+          new FairWorkClient({
+            ...mockConfig,
+            apiUrl: 'invalid-url',
+          })
+      ).toThrow()
+    })
+  })
 
   describe('getAward', () => {
     it('should fetch award details', async () => {
-      const awardCode = 'MA000001';
+      const awardCode = 'MA000001'
       const mockResponse = {
         data: {
           code: awardCode,
           name: 'Test Award',
         },
-      };
+      }
 
-      mockAxios.get.mockResolvedValue(mockResponse);
+      mockAxios.get.mockResolvedValue(mockResponse)
 
-      const result = await client.getAward(awardCode);
-      expect(result).toEqual(mockResponse.data);
-      expect(mockAxios.get).toHaveBeenCalledWith(`/awards/${awardCode}`);
-    });
+      const result = await client.getAward(awardCode)
+      expect(result).toEqual(mockResponse.data)
+      expect(mockAxios.get).toHaveBeenCalledWith(`/awards/${awardCode}`)
+    })
 
     it('should handle API error', async () => {
       const error = {
@@ -83,14 +86,14 @@ describe('FairWorkClient', () => {
           status: 404,
           data: { message: 'Award not found' },
         },
-      };
+      }
 
-      mockAxios.get.mockRejectedValue(error);
+      mockAxios.get.mockRejectedValue(error)
 
-      await expect(client.getAward('invalid')).rejects.toThrow('Award not found');
-      expect(logger.error).toHaveBeenCalled();
-    });
-  });
+      await expect(client.getAward('invalid')).rejects.toThrow('Award not found')
+      expect(logger.error).toHaveBeenCalled()
+    })
+  })
 
   describe('searchAwards', () => {
     it('should search awards with parameters', async () => {
@@ -99,7 +102,7 @@ describe('FairWorkClient', () => {
         industry: 'retail',
         page: 1,
         limit: 10,
-      };
+      }
 
       const mockResponse = {
         data: {
@@ -109,48 +112,48 @@ describe('FairWorkClient', () => {
           ],
           total: 2,
         },
-      };
+      }
 
-      mockAxios.get.mockResolvedValue(mockResponse);
+      mockAxios.get.mockResolvedValue(mockResponse)
 
-      const result = await client.searchAwards(params);
-      expect(result).toEqual(mockResponse.data);
-      expect(mockAxios.get).toHaveBeenCalledWith('/awards', { params });
-    });
-  });
+      const result = await client.searchAwards(params)
+      expect(result).toEqual(mockResponse.data)
+      expect(mockAxios.get).toHaveBeenCalledWith('/awards', { params })
+    })
+  })
 
   describe('getClassification', () => {
     it('should fetch classification details', async () => {
-      const awardCode = 'MA000001';
-      const classificationCode = 'L1';
+      const awardCode = 'MA000001'
+      const classificationCode = 'L1'
       const mockResponse = {
         data: {
           code: classificationCode,
           name: 'Level 1',
         },
-      };
+      }
 
-      mockAxios.get.mockResolvedValue(mockResponse);
+      mockAxios.get.mockResolvedValue(mockResponse)
 
-      const result = await client.getClassification(awardCode, classificationCode);
-      expect(result).toEqual(mockResponse.data);
+      const result = await client.getClassification(awardCode, classificationCode)
+      expect(result).toEqual(mockResponse.data)
       expect(mockAxios.get).toHaveBeenCalledWith(
         `/awards/${awardCode}/classifications/${classificationCode}`
-      );
-    });
-  });
+      )
+    })
+  })
 
   describe('calculatePay', () => {
     it('should calculate pay with all components', async () => {
-      const awardCode = 'MA000001';
-      const classificationCode = 'L1';
+      const awardCode = 'MA000001'
+      const classificationCode = 'L1'
       const params = {
         date: '2025-01-01',
         employmentType: 'casual' as const,
         hours: 38,
         penalties: ['SAT'],
         allowances: ['TOOL'],
-      };
+      }
 
       const mockResponse = {
         data: {
@@ -158,28 +161,28 @@ describe('FairWorkClient', () => {
           casualLoading: 25,
           total: 47.375,
         },
-      };
+      }
 
-      mockAxios.post.mockResolvedValue(mockResponse);
+      mockAxios.post.mockResolvedValue(mockResponse)
 
-      const result = await client.calculatePay(awardCode, classificationCode, params);
-      expect(result).toEqual(mockResponse.data);
+      const result = await client.calculatePay(awardCode, classificationCode, params)
+      expect(result).toEqual(mockResponse.data)
       expect(mockAxios.post).toHaveBeenCalledWith(
         `/awards/${awardCode}/classifications/${classificationCode}/calculate`,
         params
-      );
-    });
-  });
+      )
+    })
+  })
 
   describe('validatePayRate', () => {
     it('should validate pay rate', async () => {
-      const awardCode = 'MA000001';
-      const classificationCode = 'L1';
+      const awardCode = 'MA000001'
+      const classificationCode = 'L1'
       const params = {
         rate: 30,
         date: '2025-01-01',
         employmentType: 'permanent' as const,
-      };
+      }
 
       const mockResponse = {
         data: {
@@ -187,115 +190,106 @@ describe('FairWorkClient', () => {
           minimumRate: 25.5,
           difference: 4.5,
         },
-      };
+      }
 
-      mockAxios.post.mockResolvedValue(mockResponse);
+      mockAxios.post.mockResolvedValue(mockResponse)
 
-      const result = await client.validatePayRate(awardCode, classificationCode, params);
-      expect(result).toEqual(mockResponse.data);
+      const result = await client.validatePayRate(awardCode, classificationCode, params)
+      expect(result).toEqual(mockResponse.data)
       expect(mockAxios.post).toHaveBeenCalledWith(
         `/awards/${awardCode}/classifications/${classificationCode}/validate`,
         params
-      );
-    });
-  });
+      )
+    })
+  })
 
   describe('getPenalties', () => {
     it('should fetch penalties', async () => {
-      const awardCode = 'MA000001';
+      const awardCode = 'MA000001'
       const params = {
         date: '2025-01-01',
         type: 'weekend',
-      };
+      }
 
       const mockResponse = {
         data: [
           { code: 'SAT', rate: 25, description: 'Saturday penalty' },
           { code: 'SUN', rate: 50, description: 'Sunday penalty' },
         ],
-      };
+      }
 
-      mockAxios.get.mockResolvedValue(mockResponse);
+      mockAxios.get.mockResolvedValue(mockResponse)
 
-      const result = await client.getPenalties(awardCode, params);
-      expect(result).toEqual(mockResponse.data);
-      expect(mockAxios.get).toHaveBeenCalledWith(
-        `/awards/${awardCode}/penalties`,
-        { params }
-      );
-    });
-  });
+      const result = await client.getPenalties(awardCode, params)
+      expect(result).toEqual(mockResponse.data)
+      expect(mockAxios.get).toHaveBeenCalledWith(`/awards/${awardCode}/penalties`, { params })
+    })
+  })
 
   describe('getAllowances', () => {
     it('should fetch allowances', async () => {
-      const awardCode = 'MA000001';
+      const awardCode = 'MA000001'
       const params = {
         date: '2025-01-01',
         type: 'tools',
-      };
+      }
 
       const mockResponse = {
-        data: [
-          { code: 'TOOL', amount: 15.5, description: 'Tool allowance' },
-        ],
-      };
+        data: [{ code: 'TOOL', amount: 15.5, description: 'Tool allowance' }],
+      }
 
-      mockAxios.get.mockResolvedValue(mockResponse);
+      mockAxios.get.mockResolvedValue(mockResponse)
 
-      const result = await client.getAllowances(awardCode, params);
-      expect(result).toEqual(mockResponse.data);
-      expect(mockAxios.get).toHaveBeenCalledWith(
-        `/awards/${awardCode}/allowances`,
-        { params }
-      );
-    });
-  });
+      const result = await client.getAllowances(awardCode, params)
+      expect(result).toEqual(mockResponse.data)
+      expect(mockAxios.get).toHaveBeenCalledWith(`/awards/${awardCode}/allowances`, { params })
+    })
+  })
 
   describe('getLeaveEntitlements', () => {
     it('should fetch leave entitlements', async () => {
-      const awardCode = 'MA000001';
+      const awardCode = 'MA000001'
       const params = {
         employmentType: 'permanent' as const,
         date: '2025-01-01',
-      };
+      }
 
       const mockResponse = {
         data: [
           { type: 'annual', amount: 20, unit: 'days' },
           { type: 'sick', amount: 10, unit: 'days' },
         ],
-      };
+      }
 
-      mockAxios.get.mockResolvedValue(mockResponse);
+      mockAxios.get.mockResolvedValue(mockResponse)
 
-      const result = await client.getLeaveEntitlements(awardCode, params);
-      expect(result).toEqual(mockResponse.data);
-      expect(mockAxios.get).toHaveBeenCalledWith(
-        `/awards/${awardCode}/leave-entitlements`,
-        { params }
-      );
-    });
-  });
+      const result = await client.getLeaveEntitlements(awardCode, params)
+      expect(result).toEqual(mockResponse.data)
+      expect(mockAxios.get).toHaveBeenCalledWith(`/awards/${awardCode}/leave-entitlements`, {
+        params,
+      })
+    })
+  })
 
   describe('getPublicHolidays', () => {
     it('should fetch public holidays', async () => {
       const params = {
         state: 'NSW',
         year: 2025,
-      };
+      }
 
       const mockResponse = {
         data: [
-          { date: '2025-01-01', name: 'New Year\'s Day' },
+          { date: '2025-01-01', name: "New Year's Day" },
           { date: '2025-01-26', name: 'Australia Day' },
         ],
-      };
+      }
 
-      mockAxios.get.mockResolvedValue(mockResponse);
+      mockAxios.get.mockResolvedValue(mockResponse)
 
-      const result = await client.getPublicHolidays(params);
-      expect(result).toEqual(mockResponse.data);
-      expect(mockAxios.get).toHaveBeenCalledWith('/public-holidays', { params });
-    });
-  });
-});
+      const result = await client.getPublicHolidays(params)
+      expect(result).toEqual(mockResponse.data)
+      expect(mockAxios.get).toHaveBeenCalledWith('/public-holidays', { params })
+    })
+  })
+})

@@ -1,10 +1,10 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
-import axios from 'axios';
-import { z } from 'zod';
+import { useQuery, useMutation } from '@tanstack/react-query'
+import axios from 'axios'
+import { z } from 'zod'
 
 // Types
-export const EmploymentType = z.enum(['casual', 'permanent', 'fixed-term']);
-export type EmploymentType = z.infer<typeof EmploymentType>;
+export const EmploymentType = z.enum(['casual', 'permanent', 'fixed-term'])
+export type EmploymentType = z.infer<typeof EmploymentType>
 
 export const SearchParams = z.object({
   query: z.string().optional(),
@@ -12,8 +12,8 @@ export const SearchParams = z.object({
   occupation: z.string().optional(),
   page: z.number().optional(),
   limit: z.number().optional(),
-});
-export type SearchParams = z.infer<typeof SearchParams>;
+})
+export type SearchParams = z.infer<typeof SearchParams>
 
 export const CalculateParams = z.object({
   awardCode: z.string(),
@@ -23,8 +23,8 @@ export const CalculateParams = z.object({
   hours: z.number().optional(),
   penalties: z.array(z.string()).optional(),
   allowances: z.array(z.string()).optional(),
-});
-export type CalculateParams = z.infer<typeof CalculateParams>;
+})
+export type CalculateParams = z.infer<typeof CalculateParams>
 
 export const ValidateParams = z.object({
   awardCode: z.string(),
@@ -32,48 +32,46 @@ export const ValidateParams = z.object({
   rate: z.number(),
   date: z.string(),
   employmentType: EmploymentType,
-});
-export type ValidateParams = z.infer<typeof ValidateParams>;
+})
+export type ValidateParams = z.infer<typeof ValidateParams>
 
 // API client
 const fairworkApi = axios.create({
   baseURL: '/api/fairwork',
-});
+})
 
 // Hooks
 export function useSearchAwards(params?: SearchParams) {
   return useQuery({
     queryKey: ['awards', params],
     queryFn: async () => {
-      const { data } = await fairworkApi.get('/awards', { params });
-      return data;
+      const { data } = await fairworkApi.get('/awards', { params })
+      return data
     },
     enabled: !!params,
-  });
+  })
 }
 
 export function useAward(awardCode: string) {
   return useQuery({
     queryKey: ['award', awardCode],
     queryFn: async () => {
-      const { data } = await fairworkApi.get(`/${awardCode}`);
-      return data;
+      const { data } = await fairworkApi.get(`/${awardCode}`)
+      return data
     },
     enabled: !!awardCode,
-  });
+  })
 }
 
 export function useClassification(awardCode: string, classificationCode: string) {
   return useQuery({
     queryKey: ['classification', awardCode, classificationCode],
     queryFn: async () => {
-      const { data } = await fairworkApi.get(
-        `/${awardCode}/${classificationCode}`
-      );
-      return data;
+      const { data } = await fairworkApi.get(`/${awardCode}/${classificationCode}`)
+      return data
     },
     enabled: !!awardCode && !!classificationCode,
-  });
+  })
 }
 
 export function usePayRates(
@@ -85,16 +83,13 @@ export function usePayRates(
   return useQuery({
     queryKey: ['rates', awardCode, classificationCode, date, employmentType],
     queryFn: async () => {
-      const { data } = await fairworkApi.get(
-        `/${awardCode}/${classificationCode}/rates`,
-        {
-          params: { date, employmentType },
-        }
-      );
-      return data;
+      const { data } = await fairworkApi.get(`/${awardCode}/${classificationCode}/rates`, {
+        params: { date, employmentType },
+      })
+      return data
     },
     enabled: !!awardCode && !!classificationCode,
-  });
+  })
 }
 
 export function useRateHistory(
@@ -106,36 +101,26 @@ export function useRateHistory(
   return useQuery({
     queryKey: ['history', awardCode, classificationCode, startDate, endDate],
     queryFn: async () => {
-      const { data } = await fairworkApi.get(
-        `/${awardCode}/${classificationCode}/history`,
-        {
-          params: { startDate, endDate },
-        }
-      );
-      return data;
+      const { data } = await fairworkApi.get(`/${awardCode}/${classificationCode}/history`, {
+        params: { startDate, endDate },
+      })
+      return data
     },
     enabled: !!awardCode && !!classificationCode && !!startDate && !!endDate,
-  });
+  })
 }
 
-export function useFutureRates(
-  awardCode: string,
-  classificationCode: string,
-  fromDate: string
-) {
+export function useFutureRates(awardCode: string, classificationCode: string, fromDate: string) {
   return useQuery({
     queryKey: ['future', awardCode, classificationCode, fromDate],
     queryFn: async () => {
-      const { data } = await fairworkApi.get(
-        `/${awardCode}/${classificationCode}/future`,
-        {
-          params: { fromDate },
-        }
-      );
-      return data;
+      const { data } = await fairworkApi.get(`/${awardCode}/${classificationCode}/future`, {
+        params: { fromDate },
+      })
+      return data
     },
     enabled: !!awardCode && !!classificationCode && !!fromDate,
-  });
+  })
 }
 
 export function usePenalties(awardCode: string, date?: string, type?: string) {
@@ -144,11 +129,11 @@ export function usePenalties(awardCode: string, date?: string, type?: string) {
     queryFn: async () => {
       const { data } = await fairworkApi.get(`/${awardCode}/penalties`, {
         params: { date, type },
-      });
-      return data;
+      })
+      return data
     },
     enabled: !!awardCode,
-  });
+  })
 }
 
 export function useAllowances(awardCode: string, date?: string, type?: string) {
@@ -157,11 +142,11 @@ export function useAllowances(awardCode: string, date?: string, type?: string) {
     queryFn: async () => {
       const { data } = await fairworkApi.get(`/${awardCode}/allowances`, {
         params: { date, type },
-      });
-      return data;
+      })
+      return data
     },
     enabled: !!awardCode,
-  });
+  })
 }
 
 export function useLeaveEntitlements(
@@ -174,20 +159,20 @@ export function useLeaveEntitlements(
     queryFn: async () => {
       const { data } = await fairworkApi.get(`/${awardCode}/leave-entitlements`, {
         params: { employmentType, date },
-      });
-      return data;
+      })
+      return data
     },
     enabled: !!awardCode && !!employmentType,
-  });
+  })
 }
 
 export function useCalculatePay() {
   return useMutation({
     mutationFn: async (params: CalculateParams) => {
-      const { data } = await fairworkApi.post('/calculate', params);
-      return data;
+      const { data } = await fairworkApi.post('/calculate', params)
+      return data
     },
-  });
+  })
 }
 
 export function useValidateRate() {
@@ -196,8 +181,8 @@ export function useValidateRate() {
       const { data } = await fairworkApi.post(
         `/${params.awardCode}/${params.classificationCode}/validate`,
         params
-      );
-      return data;
+      )
+      return data
     },
-  });
+  })
 }

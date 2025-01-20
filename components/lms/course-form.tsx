@@ -93,12 +93,12 @@ export function CourseForm({ courseId, defaultValues, onSuccess }: CourseFormPro
   }
 
   return (
-    <Card className="p-6">
+    <Card className='p-6'>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
           <FormField
             control={form.control}
-            name="title"
+            name='title'
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Title</FormLabel>
@@ -111,7 +111,7 @@ export function CourseForm({ courseId, defaultValues, onSuccess }: CourseFormPro
           />
           <FormField
             control={form.control}
-            name="description"
+            name='description'
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Description</FormLabel>
@@ -124,7 +124,7 @@ export function CourseForm({ courseId, defaultValues, onSuccess }: CourseFormPro
           />
           <FormField
             control={form.control}
-            name="instructor"
+            name='instructor'
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Instructor</FormLabel>
@@ -135,15 +135,15 @@ export function CourseForm({ courseId, defaultValues, onSuccess }: CourseFormPro
               </FormItem>
             )}
           />
-          <div className="grid grid-cols-2 gap-4">
+          <div className='grid grid-cols-2 gap-4'>
             <FormField
               control={form.control}
-              name="start_date"
+              name='start_date'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Start Date</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} />
+                    <Input type='date' {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -151,26 +151,26 @@ export function CourseForm({ courseId, defaultValues, onSuccess }: CourseFormPro
             />
             <FormField
               control={form.control}
-              name="end_date"
+              name='end_date'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>End Date</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} />
+                    <Input type='date' {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </div>
-          <Button type="submit" disabled={isSubmitting || isCreatingCourse || isUpdatingCourse}>
+          <Button type='submit' disabled={isSubmitting || isCreatingCourse || isUpdatingCourse}>
             {isSubmitting || isCreatingCourse || isUpdatingCourse
               ? courseId
                 ? 'Updating...'
                 : 'Creating...'
               : courseId
-              ? 'Update Course'
-              : 'Create Course'}
+                ? 'Update Course'
+                : 'Create Course'}
           </Button>
         </form>
       </Form>

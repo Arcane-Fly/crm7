@@ -97,7 +97,7 @@ jobs:
           echo "Monitoring deployment job: $JOB_ID"
           MAX_ATTEMPTS=30
           ATTEMPT=0
-          
+
           while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
             RESPONSE=$(curl -H "Authorization: Bearer $VERCEL_TOKEN" \
               "https://api.vercel.com/v1/deployments/$JOB_ID")
@@ -117,7 +117,7 @@ jobs:
             ATTEMPT=$((ATTEMPT + 1))
             sleep 10
           done
-          
+
           echo "Deployment timed out after $MAX_ATTEMPTS attempts"
           exit 1
 

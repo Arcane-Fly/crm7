@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/auth/config'
-import { auth0Config } from '@/lib/auth/auth0.config'
+
 
 export default function LoginPage() {
   const router = useRouter()
@@ -63,11 +63,7 @@ export default function LoginPage() {
         </div>
 
         <form onSubmit={handleLogin} className='space-y-4'>
-          {error && (
-            <div className='rounded-md bg-red-50 p-4 text-sm text-red-700'>
-              {error}
-            </div>
-          )}
+          {error && <div className='rounded-md bg-red-50 p-4 text-sm text-red-700'>{error}</div>}
 
           <div>
             <label htmlFor='email' className='block text-sm font-medium text-gray-700'>

@@ -12,10 +12,10 @@ Retrieves all forms.
 
 ### Query Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| page | number | Page number, zero based |
-| per_page | number | Number of results per page |
+| Parameter      | Type    | Description                   |
+| -------------- | ------- | ----------------------------- |
+| page           | number  | Page number, zero based       |
+| per_page       | number  | Number of results per page    |
 | include_totals | boolean | Include total number of forms |
 
 ### Response
@@ -146,9 +146,9 @@ Retrieves a form by ID.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the form to retrieve |
+| Parameter | Type   | Description                    |
+| --------- | ------ | ------------------------------ |
+| id        | string | The ID of the form to retrieve |
 
 ### Response
 
@@ -193,9 +193,9 @@ Updates a form.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the form to update |
+| Parameter | Type   | Description                  |
+| --------- | ------ | ---------------------------- |
+| id        | string | The ID of the form to update |
 
 ### Request Body
 
@@ -234,9 +234,9 @@ Deletes a form.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the form to delete |
+| Parameter | Type   | Description                  |
+| --------- | ------ | ---------------------------- |
+| id        | string | The ID of the form to delete |
 
 ### Response
 
@@ -245,6 +245,7 @@ A successful deletion returns a 204 No Content status with no response body.
 ## Form Types
 
 Available form types:
+
 - `signup`: User registration
 - `login`: User login
 - `reset-password`: Password reset
@@ -256,6 +257,7 @@ Available form types:
 ## Field Types
 
 Available field types:
+
 - `text`: Text input
 - `email`: Email input
 - `password`: Password input
@@ -271,6 +273,7 @@ Available field types:
 ## Error Responses
 
 ### 400 Bad Request
+
 ```json
 {
   "error": "bad_request",
@@ -280,6 +283,7 @@ Available field types:
 ```
 
 ### 401 Unauthorized
+
 ```json
 {
   "error": "unauthorized",
@@ -289,6 +293,7 @@ Available field types:
 ```
 
 ### 403 Forbidden
+
 ```json
 {
   "error": "forbidden",
@@ -298,6 +303,7 @@ Available field types:
 ```
 
 ### 404 Not Found
+
 ```json
 {
   "error": "not_found",
@@ -307,6 +313,7 @@ Available field types:
 ```
 
 ### 429 Too Many Requests
+
 ```json
 {
   "error": "too_many_requests",
@@ -318,12 +325,14 @@ Available field types:
 ## Best Practices
 
 1. **Form Design**
+
    - Keep forms simple and focused
    - Use clear labels
    - Provide helpful placeholders
    - Implement validation
 
 2. **Field Configuration**
+
    - Group related fields
    - Use appropriate field types
    - Mark required fields
@@ -343,6 +352,7 @@ The Forms API endpoints are subject to rate limiting:
 - Enterprise: 100 requests per minute
 
 Rate limit information is included in the response headers:
+
 - `X-RateLimit-Limit`
 - `X-RateLimit-Remaining`
 - `X-RateLimit-Reset`
@@ -352,6 +362,7 @@ Rate limit information is included in the response headers:
 ### Field Validation
 
 Common validation rules:
+
 ```json
 {
   "validation": {
@@ -366,6 +377,7 @@ Common validation rules:
 ### Field Dependencies
 
 Example of conditional fields:
+
 ```json
 {
   "dependencies": {
@@ -380,6 +392,7 @@ Example of conditional fields:
 ### Custom Styling
 
 Example of field styling:
+
 ```json
 {
   "style": {
@@ -389,3 +402,4 @@ Example of field styling:
     "border_color": "#ccc"
   }
 }
+```

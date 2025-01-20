@@ -5,6 +5,7 @@
 ### 1. Rate Calculation Engine
 
 - **Base Rate Calculations**
+
   - Award rate integration
   - Enterprise agreement parsing
   - Base wage calculations
@@ -24,6 +25,7 @@
 ### 2. Award Integration
 
 - **Fair Work Integration**
+
   - Real-time award updates
   - Classification mapping
   - Pay rate validation
@@ -42,6 +44,7 @@
 ### 3. Template Management
 
 - **Rate Templates**
+
   - Multiple template types
     - Apprentice rates
     - Trainee rates
@@ -64,6 +67,7 @@
 ### 4. Advanced Features
 
 - **ML-Powered Calculations**
+
   - Rate predictions
   - Margin optimization
   - Anomaly detection
@@ -82,6 +86,7 @@
 ### 5. Compliance & Reporting
 
 - **Compliance Management**
+
   - Award compliance checking
   - EA compliance validation
   - Audit trail maintenance
@@ -102,6 +107,7 @@
 ### 1. AI & Automation
 
 - **Intelligent Processing**
+
   - Smart document parsing
   - Automated classifications
   - Pattern recognition
@@ -120,6 +126,7 @@
 ### 2. Integration Features
 
 - **System Integration**
+
   - Fair Work API
   - Payroll systems
   - HR platforms
@@ -138,6 +145,7 @@
 ### 3. User Experience
 
 - **Interface Features**
+
   - Intuitive calculators
   - Bulk processing
   - Template management

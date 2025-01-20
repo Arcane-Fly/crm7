@@ -1,12 +1,12 @@
-import { z } from 'zod';
+import { z } from 'zod'
 
 // Log level schema
-export const LogLevel = z.enum(['debug', 'info', 'warn', 'error']);
-export type LogLevel = z.infer<typeof LogLevel>;
+export const LogLevel = z.enum(['debug', 'info', 'warn', 'error'])
+export type LogLevel = z.infer<typeof LogLevel>
 
 // Log metadata schema
-export const LogMetadata = z.record(z.unknown());
-export type LogMetadata = z.infer<typeof LogMetadata>;
+export const LogMetadata = z.record(z.unknown())
+export type LogMetadata = z.infer<typeof LogMetadata>
 
 // Log entry schema
 export const LogEntry = z.object({
@@ -14,21 +14,21 @@ export const LogEntry = z.object({
   message: z.string(),
   timestamp: z.date(),
   metadata: LogMetadata.optional(),
-});
-export type LogEntry = z.infer<typeof LogEntry>;
+})
+export type LogEntry = z.infer<typeof LogEntry>
 
 class Logger {
-  private static instance: Logger;
-  private logBuffer: LogEntry[] = [];
-  private readonly maxBufferSize = 1000;
+  private static instance: Logger
+  private logBuffer: LogEntry[] = []
+  private readonly maxBufferSize = 1000
 
   private constructor() {}
 
   static getInstance(): Logger {
     if (!Logger.instance) {
-      Logger.instance = new Logger();
+      Logger.instance = new Logger()
     }
-    return Logger.instance;
+    return Logger.instance
   }
 
   private log(level: LogLevel, message: string, metadata?: LogMetadata): void {
@@ -37,46 +37,46 @@ class Logger {
       message,
       timestamp: new Date(),
       metadata,
-    });
+    })
 
     // Add to buffer
-    this.logBuffer.push(entry);
+    this.logBuffer.push(entry)
     if (this.logBuffer.length > this.maxBufferSize) {
-      this.logBuffer.shift();
+      this.logBuffer.shift()
     }
 
     // Log to console in development
+    // Use process.stdout for direct logging in development
     if (process.env.NODE_ENV === 'development') {
-      const meta = metadata ? `\nMetadata: ${JSON.stringify(metadata, null, 2)}` : '';
-      console[level](`[${entry.timestamp.toISOString()}] ${message}${meta}`);
+      process.stdout.write(`[${entry.timestamp.toISOString()}] ${level.toUpperCase()}: ${message}${metadata ? '\nMetadata: ' + JSON.stringify(metadata, null, 2) : ''}\n`)
     }
 
     // TODO: Add production logging (e.g., to a service like Sentry or CloudWatch)
   }
 
   debug(message: string, metadata?: LogMetadata): void {
-    this.log('debug', message, metadata);
+    this.log('debug', message, metadata)
   }
 
   info(message: string, metadata?: LogMetadata): void {
-    this.log('info', message, metadata);
+    this.log('info', message, metadata)
   }
 
   warn(message: string, metadata?: LogMetadata): void {
-    this.log('warn', message, metadata);
+    this.log('warn', message, metadata)
   }
 
   error(message: string, metadata?: LogMetadata): void {
-    this.log('error', message, metadata);
+    this.log('error', message, metadata)
   }
 
   getRecentLogs(count = 100): LogEntry[] {
-    return this.logBuffer.slice(-count);
+    return this.logBuffer.slice(-count)
   }
 
   clearLogs(): void {
-    this.logBuffer = [];
+    this.logBuffer = []
   }
 }
 
-export const logger = Logger.getInstance();
+export const logger = Logger.getInstance()

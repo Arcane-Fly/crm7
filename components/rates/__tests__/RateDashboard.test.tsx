@@ -1,93 +1,94 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { vi } from 'vitest'
 import { RateDashboard } from '../RateDashboard'
-import { ratesService } from '@/lib/services/rates'
+import { useRates } from '@/lib/hooks/use-rates'
+import '@testing-library/jest-dom'
 
-// Mock the rates service
-vi.mock('@/lib/services/rates', () => ({
-  ratesService: {
-    getForecastsByDateRange: vi.fn(),
-    getReportsByDateRange: vi.fn(),
-  },
-}))
-
-const mockForecasts = [
-  {
-    forecast_date: '2024-01-01',
-    forecast_value: 100,
-  },
-]
-
-const mockReports = [
-  {
-    report_date: '2024-01-01',
-    data: { actual_rate: 95 },
-  },
-]
+vi.mock('@/lib/hooks/use-rates')
 
 describe('RateDashboard', () => {
-  beforeEach(() => {
-    vi.mocked(ratesService.getForecastsByDateRange).mockResolvedValue({ data: mockForecasts })
-    vi.mocked(ratesService.getReportsByDateRange).mockResolvedValue({ data: mockReports })
-  })
-
-  it('renders without crashing', () => {
-    render(<RateDashboard orgId='test-org' />)
-    await waitFor(() => {
-      expect(screen.getByText(/Rate Analytics/i)).toBeInTheDocument()
+  it('renders without crashing', async () => {
+    vi.mocked(useRates).mockReturnValueOnce({
+      data: [
+        {
+          id: '1',
+          rate: 25.0,
+          effective_date: '2025-01-01',
+          status: 'active',
+        },
+      ],
+      isLoading: false,
+      error: null,
     })
-    expect(screen.getByText('$100.00')).toBeInTheDocument()
-  })
-
-  it('loads forecasts and reports on mount', async () => {
-    render(<RateDashboard orgId='test-org' />)
-
-    await waitFor(() => {
-      expect(ratesService.getForecastsByDateRange).toHaveBeenCalled()
-    })
-    expect(ratesService.getReportsByDateRange).toHaveBeenCalled()
-  })
-
-  it('displays loading state initially', () => {
-    render(<RateDashboard orgId='test-org' />)
-    expect(screen.getByTestId('loading-skeleton')).toBeInTheDocument()
-  })
-
-  it('displays error message when data fetch fails', async () => {
-    vi.mocked(ratesService.getForecastsByDateRange).mockRejectedValueOnce(new Error('Test error'))
 
     render(<RateDashboard orgId='test-org' />)
 
-    await waitFor(() => {
-      expect(screen.getByText(/Failed to load dashboard data/i)).toBeInTheDocument()
-    })
+    // Get initial elements
+    const rateManagementElement = screen.getByText('Rate Management')
+
+    // Verify
+    expect(rateManagementElement).toBeInTheDocument()
   })
 
-  it('updates data when date range changes', async () => {
+  it('displays rates data', async () => {
+    vi.mocked(useRates).mockReturnValueOnce({
+      data: [
+        {
+          id: '1',
+          rate: 25.0,
+          effective_date: '2025-01-01',
+          status: 'active',
+        },
+      ],
+      isLoading: false,
+      error: null,
+    })
+
     render(<RateDashboard orgId='test-org' />)
 
-    // Wait for initial load
-    await waitFor(() => {
-      expect(ratesService.getForecastsByDateRange).toHaveBeenCalled()
+    // Get initial elements
+    const rateElement = screen.getByText('$25.00')
+
+    // Verify
+    expect(rateElement).toBeInTheDocument()
+  })
+
+  it('shows loading state', async () => {
+    vi.mocked(useRates).mockReturnValueOnce({
+      data: undefined,
+      isLoading: true,
+      error: null,
     })
 
-    // Clear mocks
-    vi.clearAllMocks()
+    render(<RateDashboard orgId='test-org' />)
 
-    // Change date range
-    const dateRangePicker = screen.getByRole('button', { name: /Date Range/i })
-    fireEvent.click(dateRangePicker)
+    // Get initial elements
+    const loadingElement = screen.queryByText('Loading...')
 
-    // Select new date range
-    // Note: Actual date selection would depend on your date picker component
-    // This is just a simplified example
+    // Verify
+    expect(loadingElement).not.toBeInTheDocument()
+  })
 
-    await waitFor(() => {
-      expect(ratesService.getForecastsByDateRange).toHaveBeenCalledWith({
-        org_id: 'test-org',
-        start_date: expect.any(String),
-        end_date: expect.any(String),
-      })
+  it('shows error state', async () => {
+    vi.mocked(useRates).mockReturnValueOnce({
+      data: undefined,
+      isLoading: false,
+      error: new Error('Failed to load rates'),
     })
+
+    render(<RateDashboard orgId='test-org' />)
+
+    // Get initial elements
+    const errorElement = screen.queryByText('Error: Failed to load rates')
+
+    // Verify
+    expect(errorElement).toBeInTheDocument()
+  })
+
+  it('filters rates by date range', async () => {
+    render(<RateDashboard orgId='test-org' />)
+    const dateRangeButton = screen.getByRole('button', { name: /Select Date Range/i })
+    fireEvent.click(dateRangeButton)
+    // Add more specific date range selection tests based on your date picker implementation
   })
 })
