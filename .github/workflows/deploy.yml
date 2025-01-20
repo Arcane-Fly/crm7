@@ -9,6 +9,13 @@ on:
       - main
       - master
 
+env:
+  NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  VERCEL_PROJECT_ID: prj_ZcvIEwYIBFQBfbJafOjGuc2THSbA
+  VERCEL_DEPLOY_HOOK: MRewLE6RLO
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -50,6 +57,9 @@ jobs:
 
       - name: Build
         run: pnpm build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ env.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ env.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
 
   deploy:
     needs: build
@@ -70,27 +80,26 @@ jobs:
       - name: Build
         run: pnpm build
         env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ env.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ env.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
 
       - name: Trigger Vercel Deployment
         id: deploy
         run: |
-          DEPLOY_RESPONSE=$(curl -X POST "https://api.vercel.com/v1/integrations/deploy/prj_ZcvIEwYIBFQBfbJafOjGuc2THSbA/MRewLE6RLO")
+          DEPLOY_RESPONSE=$(curl -X POST "https://api.vercel.com/v1/integrations/deploy/${{ env.VERCEL_PROJECT_ID }}/${{ env.VERCEL_DEPLOY_HOOK }}")
           JOB_ID=$(echo $DEPLOY_RESPONSE | jq -r '.job.id')
           echo "job_id=$JOB_ID" >> $GITHUB_OUTPUT
 
       - name: Monitor Deployment
         env:
           JOB_ID: ${{ steps.deploy.outputs.job_id }}
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
           echo "Monitoring deployment job: $JOB_ID"
           MAX_ATTEMPTS=30
           ATTEMPT=0
           
           while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-            RESPONSE=$(curl -H "Authorization: Bearer $VERCEL_TOKEN" \
+            RESPONSE=$(curl -H "Authorization: Bearer ${{ env.VERCEL_TOKEN }}" \
               "https://api.vercel.com/v1/deployments/$JOB_ID")
             
             STATE=$(echo $RESPONSE | jq -r '.state')
@@ -102,7 +111,6 @@ jobs:
               exit 0
             elif [ "$STATE" = "ERROR" ]; then
               echo "Deployment failed!"
-              echo $RESPONSE | jq '.'
               exit 1
             fi
             
@@ -110,7 +118,7 @@ jobs:
             sleep 10
           done
           
-          echo "Deployment timed out after 5 minutes"
+          echo "Deployment timed out after $MAX_ATTEMPTS attempts"
           exit 1
 
       - name: Notify on Success
