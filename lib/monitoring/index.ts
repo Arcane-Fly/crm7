@@ -1,10 +1,11 @@
-itimport * as Sentry from '@sentry/nextjs'
+import * as Sentry from '@sentry/nextjs'
 import type { EventHint } from '@sentry/types'
 import type {
   SentrySpan as Span,
   SentryTransaction as Transaction,
   SentryHub,
-  SentryScope
+  SentryScope,
+  SpanContext
 } from './types'
 import { SpanStatus } from './types'
 import { env } from '../config/environment'
@@ -59,7 +60,15 @@ export function captureError(
   }
 
   Sentry.captureException(error, eventHint)
-  logger.error(error.message, context ? { ...context, error } : { error })
+  const metadata = {
+    ...(context || {}),
+    error: {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    }
+  }
+  logger.error(error.message, metadata)
 }
 
 // Set user context for error tracking
@@ -98,7 +107,15 @@ export function startTransaction(
     return transaction
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error))
-    logger.error('Failed to start transaction:', { error: err, name, op })
+    const metadata = {
+      error: {
+        message: err.message,
+        stack: err.stack,
+        name: err.name
+      },
+      context: { name, op }
+    }
+    logger.error('Failed to start transaction', metadata)
     return undefined
   }
 }
@@ -118,13 +135,26 @@ export function startSpan(
       return undefined
     }
 
-    return transaction.startChild({
-      op: name,
-      ...options,
-    })
+    const spanContext: SpanContext = {
+      name,
+      op: options.op as string || name,
+      description: options.description as string,
+      data: options.data as Record<string, unknown>,
+      tags: options.tags as Record<string, string>
+    }
+
+    return transaction.startChild(spanContext)
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error))
-    logger.error('Failed to start span:', { error: err, name })
+    const metadata = {
+      error: {
+        message: err.message,
+        stack: err.stack,
+        name: err.name
+      },
+      context: { name }
+    }
+    logger.error('Failed to start span', metadata)
     return undefined
   }
 }
@@ -160,7 +190,7 @@ export async function withMonitoring<T>(
     return result
   } catch (error) {
     finishSpan(span, SpanStatus.InternalError, {
-      error: error instanceof Error ? error.message : String(error),
+      errorMessage: error instanceof Error ? error.message : String(error),
     })
     throw error
   }
@@ -179,7 +209,7 @@ export async function monitorDatabaseQuery<T>(
     return result
   } catch (error) {
     finishSpan(span, SpanStatus.InternalError, {
-      error: error instanceof Error ? error.message : String(error),
+      errorMessage: error instanceof Error ? error.message : String(error),
     })
     throw error
   }
@@ -199,7 +229,7 @@ export function monitorAPIEndpoint(endpoint: string) {
         return result
       } catch (error) {
         finishSpan(transaction, SpanStatus.InternalError, {
-          error: error instanceof Error ? error.message : String(error),
+          errorMessage: error instanceof Error ? error.message : String(error),
         })
         throw error
       }
