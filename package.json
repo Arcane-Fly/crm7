@@ -121,5 +121,10 @@
     "vite-tsconfig-paths": "5.1.4",
     "vitest": "^1.6.0",
     "winston": "3.17.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "lru-cache": "10.2.0"
+    }
   }
 }
