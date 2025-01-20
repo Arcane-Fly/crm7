@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { FairWorkService } from '@/lib/services/fairwork/fairwork-service';
 import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
 import { defaultConfig } from '@/lib/services/fairwork/fairwork.config';
-import { logger } from '@/lib/logger';
 import { createApiResponse } from '@/lib/api/response';
 import { withErrorHandler } from '@/lib/api/error-handler';
 import { withAuth } from '@/lib/api/auth';
@@ -30,7 +29,7 @@ const ValidateSchema = z.object({
  */
 export const GET = withErrorHandler(
   withAuth(async (
-    req: NextRequest,
+    _req: NextRequest,
     { params }: { params: { awardCode: string; classificationCode: string } }
   ) => {
     const classification = await fairworkClient.getClassification(
@@ -63,7 +62,7 @@ export async function GET_rates(
       );
       return createApiResponse(rates);
     })
-  )(req);
+  )(req, { params });
 }
 
 /**
@@ -88,7 +87,7 @@ export async function GET_history(
       });
       return createApiResponse(history);
     })
-  )(req);
+  )(req, { params });
 }
 
 /**
@@ -112,7 +111,7 @@ export async function GET_future(
       });
       return createApiResponse(futureRates);
     })
-  )(req);
+  )(req, { params });
 }
 
 /**
@@ -126,7 +125,7 @@ export async function POST_validate(
   return withErrorHandler(
     withAuth(async () => {
       const body = await req.json();
-      const { rate, date, employmentType } = ValidateSchema.parse(body);
+      const { rate, date } = ValidateSchema.parse(body);
 
       const validation = await fairworkService.validateRate({
         awardCode: params.awardCode,
@@ -136,5 +135,5 @@ export async function POST_validate(
       });
       return createApiResponse(validation);
     })
-  )(req);
+  )(req, { params });
 }
