@@ -1,6 +1,6 @@
 {
-  "buildCommand": "pnpm run build",
-  "installCommand": "pnpm install",
+  "buildCommand": "corepack enable && pnpm run build",
+  "installCommand": "corepack enable && pnpm install",
   "framework": "nextjs",
   "outputDirectory": ".next",
   "regions": ["iad1"],
@@ -14,7 +14,8 @@
     "env": {
       "NEXT_TELEMETRY_DISABLED": "1",
       "PNPM_VERSION": "9.0.0",
-      "NODE_VERSION": "18.x"
+      "NODE_VERSION": "18.x",
+      "ENABLE_COREPACK": "1"
     }
   }
 }
