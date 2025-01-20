@@ -3,6 +3,7 @@
 ## Service Overview
 
 ### Purpose
+
 Provide real-time access to Fair Work award rates, conditions, and compliance rules through a dedicated microservice that handles all Fair Work API interactions and data management.
 
 ## Technical Architecture

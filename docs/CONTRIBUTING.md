@@ -33,7 +33,7 @@
 
 ### File Structure
 
-```
+```text
 src/
   components/     # Reusable UI components
   features/       # Feature-specific components
