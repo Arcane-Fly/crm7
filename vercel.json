@@ -15,7 +15,8 @@
       "NEXT_TELEMETRY_DISABLED": "1",
       "PNPM_VERSION": "9.0.0",
       "NODE_VERSION": "18.x",
-      "ENABLE_COREPACK": "1"
+      "ENABLE_COREPACK": "1",
+      "ENABLE_EXPERIMENTAL_COREPACK": "1"
     }
   }
 }
