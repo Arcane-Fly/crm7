@@ -1,279 +1,290 @@
-# Auth0 Management API v2 Documentation
+# Auth0 Management API Documentation
 
-The Auth0 Management APIv2 provides programmatic access to manage all aspects of your Auth0 tenant. This RESTful API enables you to automate tenant configuration, manage users, and handle various Auth0 resources.
+This document provides comprehensive documentation for the Auth0 Management API endpoints used in this application.
+
+## Table of Contents
+
+- [Authentication](#authentication)
+- [Base URL](#base-url)
+- [API Endpoints](#api-endpoints)
+  - [Actions](#actions)
+  - [Anomaly Detection](#anomaly-detection)
+  - [Attack Protection](#attack-protection)
+  - [Branding](#branding)
+  - [Client Grants](#client-grants)
+  - [Clients](#clients)
+  - [Connections](#connections)
+  - [Device Credentials](#device-credentials)
+  - [Email Templates](#email-templates)
+  - [Email Provider](#email-provider)
+  - [Enterprise](#enterprise)
+  - [Flows](#flows)
+  - [Forms](#forms)
+  - [Grants](#grants)
+  - [Guardian](#guardian)
+  - [Hooks](#hooks)
+  - [Jobs](#jobs)
+  - [Keys](#keys)
+  - [Log Streams](#log-streams)
+  - [Logs](#logs)
+  - [Organizations](#organizations)
 
 ## Authentication
 
-### Getting an Access Token
+All API requests must include an access token in the Authorization header:
 
-Before using the Management API, you need to obtain an access token:
-
-```typescript
-const getToken = async () => {
-  const response = await fetch(`https://${domain}/oauth/token`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      client_id: clientId,
-      client_secret: clientSecret,
-      audience: `https://${domain}/api/v2/`,
-      grant_type: 'client_credentials'
-    })
-  });
-  return response.json();
-};
+```http
+Authorization: Bearer YOUR_ACCESS_TOKEN
 ```
+
+To obtain an access token, you need to authenticate using your Auth0 credentials. See the [Auth0 Authentication guide](https://auth0.com/docs/api/authentication) for more details.
+
+## Base URL
+
+```
+https://{YOUR_AUTH0_DOMAIN}/api/v2/
+```
+
+Replace `{YOUR_AUTH0_DOMAIN}` with your Auth0 domain (e.g., `your-tenant.auth0.com`).
 
 ## API Endpoints
 
-### Users
+### Actions
 
-#### List Users
+#### Get Actions
 ```http
-GET https://{tenant}.auth0.com/api/v2/users
+GET /api/v2/actions
 ```
 
-Parameters:
-- `q`: Search query
-- `search_engine`: Search engine version
-- `page`: Page number
-- `per_page`: Items per page
-- `include_totals`: Include total count
-- `sort`: Sort field and order
+Retrieves a list of all actions.
 
-#### Create User
+**Query Parameters:**
+- `triggerId` (optional): Filter actions by trigger
+- `actionName` (optional): Filter actions by name
+- `page` (optional): Page number, zero based
+- `per_page` (optional): Number of results per page
+- `installed` (optional): Return installed actions only
+
+**Response:** List of action objects
+
+#### Create Action
 ```http
-POST https://{tenant}.auth0.com/api/v2/users
+POST /api/v2/actions
 ```
 
+Creates a new action.
+
+**Request Body:**
 ```json
 {
-  "email": "user@example.com",
-  "email_verified": false,
-  "name": "John Doe",
-  "connection": "Username-Password-Authentication",
-  "password": "secret-password"
+  "name": "string",
+  "supported_triggers": [
+    {
+      "id": "string",
+      "version": "string"
+    }
+  ],
+  "code": "string",
+  "dependencies": [
+    {
+      "name": "string",
+      "version": "string"
+    }
+  ],
+  "runtime": "string",
+  "secrets": [
+    {
+      "name": "string",
+      "value": "string"
+    }
+  ]
 }
 ```
 
-#### Update User
+**Response:** Created action object
+
+### Anomaly Detection
+
+#### Get Blocked IPs
 ```http
-PATCH https://{tenant}.auth0.com/api/v2/users/{id}
+GET /api/v2/anomaly/blocks/ips/{id}
 ```
 
-#### Delete User
+Retrieves blocked IP addresses.
+
+#### Remove IP from Blocked IPs
 ```http
-DELETE https://{tenant}.auth0.com/api/v2/users/{id}
+DELETE /api/v2/anomaly/blocks/ips/{id}
 ```
 
-### Roles
+Removes an IP address from the blocked IPs list.
 
-#### List Roles
+### Attack Protection
+
+#### Get Breached Password Detection
 ```http
-GET https://{tenant}.auth0.com/api/v2/roles
+GET /api/v2/attack-protection/breached-password-detection
 ```
 
-#### Create Role
+Retrieves the breached password detection settings.
+
+#### Update Breached Password Detection
 ```http
-POST https://{tenant}.auth0.com/api/v2/roles
+PATCH /api/v2/attack-protection/breached-password-detection
 ```
 
-```json
-{
-  "name": "admin",
-  "description": "Administrator role"
-}
-```
+Updates the breached password detection settings.
 
-#### Assign Role to User
+### Branding
+
+#### Get Branding Settings
 ```http
-POST https://{tenant}.auth0.com/api/v2/users/{id}/roles
+GET /api/v2/branding
 ```
 
-### Applications (Clients)
+Retrieves the branding settings for your tenant.
 
-#### List Applications
+#### Update Branding Settings
 ```http
-GET https://{tenant}.auth0.com/api/v2/clients
+PATCH /api/v2/branding
 ```
 
-#### Create Application
+Updates the branding settings for your tenant.
+
+### Client Grants
+
+#### Get Client Grants
 ```http
-POST https://{tenant}.auth0.com/api/v2/clients
+GET /api/v2/client-grants
 ```
 
-```json
-{
-  "name": "My Application",
-  "description": "My Application Description",
-  "callbacks": ["http://localhost:3000/callback"],
-  "allowed_logout_urls": ["http://localhost:3000"],
-  "allowed_origins": ["http://localhost:3000"]
-}
+Retrieves all client grants.
+
+#### Create Client Grant
+```http
+POST /api/v2/client-grants
 ```
+
+Creates a new client grant.
+
+### Clients (Applications)
+
+#### Get Clients
+```http
+GET /api/v2/clients
+```
+
+Retrieves a list of all registered applications (clients).
+
+#### Create Client
+```http
+POST /api/v2/clients
+```
+
+Creates a new application (client).
 
 ### Connections
 
-#### List Connections
+#### Get Connections
 ```http
-GET https://{tenant}.auth0.com/api/v2/connections
+GET /api/v2/connections
 ```
+
+Retrieves all connections.
 
 #### Create Connection
 ```http
-POST https://{tenant}.auth0.com/api/v2/connections
+POST /api/v2/connections
 ```
 
-```json
-{
-  "name": "my-db-connection",
-  "strategy": "auth0",
-  "enabled_clients": ["client_id1", "client_id2"]
-}
+Creates a new connection.
+
+### Device Credentials
+
+#### Get Device Credentials
+```http
+GET /api/v2/device-credentials
 ```
 
-## Error Handling
+Retrieves device credentials.
 
-### Common Error Codes
+### Email Templates
 
-| Code | Description |
-|------|-------------|
-| 400 | Bad Request |
-| 401 | Unauthorized |
-| 403 | Forbidden |
-| 429 | Too Many Requests |
-| 500 | Internal Server Error |
-
-### Error Response Format
-
-```json
-{
-  "error": "forbidden",
-  "error_description": "Access denied.",
-  "message": "The access token does not contain the required scopes"
-}
+#### Get Email Template
+```http
+GET /api/v2/email-templates/{templateName}
 ```
+
+Retrieves an email template.
+
+### Email Provider
+
+#### Get Email Provider
+```http
+GET /api/v2/emails/provider
+```
+
+Retrieves the email provider settings.
+
+### Enterprise
+
+#### Get Enterprise Connections
+```http
+GET /api/v2/enterprise
+```
+
+Retrieves enterprise connections.
+
+### Organizations
+
+#### Get Organizations
+```http
+GET /api/v2/organizations
+```
+
+Retrieves all organizations.
+
+#### Create Organization
+```http
+POST /api/v2/organizations
+```
+
+Creates a new organization.
 
 ## Rate Limiting
 
-The Management API implements rate limiting with the following headers:
+The Auth0 Management API is subject to rate limiting. The specific limits depend on your subscription plan. Rate limit information is included in the response headers:
 
-- `X-RateLimit-Limit`: Request limit
-- `X-RateLimit-Remaining`: Remaining requests
-- `X-RateLimit-Reset`: Reset time in Unix epoch seconds
+- `X-RateLimit-Limit`: Number of requests allowed per minute
+- `X-RateLimit-Remaining`: Number of remaining requests in the current minute
+- `X-RateLimit-Reset`: Time until the rate limit resets (in UTC epoch seconds)
 
-Example implementation:
+## Error Handling
 
-```typescript
-const handleRateLimit = (headers: Headers) => {
-  const limit = headers.get('X-RateLimit-Limit');
-  const remaining = headers.get('X-RateLimit-Remaining');
-  const reset = headers.get('X-RateLimit-Reset');
+The API uses standard HTTP status codes to indicate the success or failure of requests:
 
-  if (remaining === '0') {
-    const waitTime = parseInt(reset || '0') * 1000 - Date.now();
-    return new Promise(resolve => setTimeout(resolve, waitTime));
-  }
-};
-```
+- 200: Success
+- 201: Created
+- 204: No Content
+- 400: Bad Request
+- 401: Unauthorized
+- 403: Forbidden
+- 404: Not Found
+- 429: Too Many Requests
+- 500: Internal Server Error
 
-## Pagination
+Error responses include a JSON object with additional information:
 
-Most endpoints that return arrays support pagination:
-
-```typescript
-const getAllUsers = async (accessToken: string) => {
-  let users = [];
-  let page = 0;
-  const perPage = 100;
-  
-  while (true) {
-    const response = await fetch(
-      `https://${domain}/api/v2/users?page=${page}&per_page=${perPage}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-    
-    const data = await response.json();
-    users = users.concat(data);
-    
-    if (data.length < perPage) break;
-    page++;
-  }
-  
-  return users;
-};
-```
-
-## Best Practices
-
-### Security
-
-1. **Token Management**
-   - Use short-lived tokens
-   - Store tokens securely
-   - Implement token rotation
-
-2. **Scopes**
-   - Request minimal required scopes
-   - Use separate tokens for different operations
-   - Regularly audit granted permissions
-
-### Performance
-
-1. **Batch Operations**
-   - Use bulk endpoints when available
-   - Implement pagination for large datasets
-   - Cache frequently accessed data
-
-2. **Rate Limiting**
-   - Implement exponential backoff
-   - Monitor rate limit headers
-   - Use bulk operations to reduce API calls
-
-## Code Examples
-
-### TypeScript SDK Usage
-
-```typescript
-import { ManagementClient } from 'auth0';
-
-const management = new ManagementClient({
-  domain: '{YOUR_ACCOUNT}.auth0.com',
-  clientId: '{YOUR_CLIENT_ID}',
-  clientSecret: '{YOUR_CLIENT_SECRET}',
-});
-
-// Get all users
-const getUsers = async () => {
-  try {
-    const users = await management.users.getAll();
-    return users;
-  } catch (error) {
-    console.error('Error:', error);
-    throw error;
-  }
-};
-
-// Create a user
-const createUser = async (userData: any) => {
-  try {
-    const user = await management.users.create(userData);
-    return user;
-  } catch (error) {
-    console.error('Error:', error);
-    throw error;
-  }
-};
+```json
+{
+  "error": "error_code",
+  "message": "Description of the error",
+  "statusCode": 400
+}
 ```
 
 ## Additional Resources
 
 - [Auth0 Management API Explorer](https://auth0.com/docs/api/management/v2)
-- [Auth0 Management API Tokens](https://auth0.com/docs/tokens/management-api-access-tokens)
-- [Rate Limit Policy](https://auth0.com/docs/policies/rate-limits)
-- [Auth0 Node.js SDK](https://github.com/auth0/node-auth0)
+- [Auth0 Management API Documentation](https://auth0.com/docs/api/management/v2/tokens)
+- [Rate Limits](https://auth0.com/docs/policies/rate-limits)
