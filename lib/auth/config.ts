@@ -1,15 +1,26 @@
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 
-export const supabase = createClientComponentClient()
+export const createClient = () => {
+  const cookieStore = cookies()
+
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        },
+      },
+    }
+  )
+}
 
 export const authConfig = {
   auth0: {
     domain: 'dev-rkchrceel6xwqe2g.us.auth0.com',
     apiUrl: process.env.AUTH0_ADMIN_API_KEY,
-  },
-  supabase: {
-    url: process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   },
   cookies: {
     name: 'sb-auth',

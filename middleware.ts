@@ -3,6 +3,14 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { getSession } from '@auth0/nextjs-auth0'
 import { logger } from '@/lib/logger'
 
+// Define protected routes and their required roles
+const PROTECTED_ROUTES = {
+  '/admin': ['admin'],
+  '/api/admin': ['admin'],
+  '/dashboard': ['user', 'admin'],
+  '/api/dashboard': ['user', 'admin'],
+} as const
+
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next({
     request: {
@@ -76,6 +84,19 @@ export async function middleware(request: NextRequest) {
             { status: 401, headers: { 'Content-Type': 'application/json' } }
           )
         }
+
+        // Check role-based access for protected routes
+        const userRoles = auth0Session.user?.['https://crm7.app/roles'] || []
+        const requiredRoles = Object.entries(PROTECTED_ROUTES).find(([route]) => 
+          path.startsWith(route))?.[1]
+
+        if (requiredRoles && !requiredRoles.some(role => userRoles.includes(role))) {
+          return new NextResponse(
+            JSON.stringify({ error: 'Forbidden' }),
+            { status: 403, headers: { 'Content-Type': 'application/json' } }
+          )
+        }
+
         return response
       } catch (error) {
         logger.error('Auth0 session check failed', { error, path })
@@ -92,6 +113,15 @@ export async function middleware(request: NextRequest) {
         returnTo: request.nextUrl.pathname,
       })
       return NextResponse.redirect(new URL(`/login?${searchParams}`, request.url))
+    }
+
+    // Check role-based access for protected routes
+    const userRoles = supabaseSession.user.app_metadata?.roles || []
+    const requiredRoles = Object.entries(PROTECTED_ROUTES).find(([route]) => 
+      path.startsWith(route))?.[1]
+
+    if (requiredRoles && !requiredRoles.some(role => userRoles.includes(role))) {
+      return NextResponse.redirect(new URL('/unauthorized', request.url))
     }
 
     return response
