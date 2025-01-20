@@ -118,19 +118,16 @@ export const Navigation: React.FC = () => {
 
       {/* Main Navigation */}
       <div className="flex-1 overflow-y-auto py-4">
-        <ul className="space-y-1 px-2">
-          {mainNavItems.map((item) => (
+        <ul className="space-y-1 px-2">{mainNavItems.map((item) => (
             <li key={item.href}>
               <div className="relative">
                 <Link
                   href={item.href}
-                  className={`
-                    flex items-center px-3 py-2 rounded-md text-sm font-medium
-                    ${isActive(item.href) || isActiveParent(item) 
-                      ? 'bg-primary text-primary-foreground' 
+                  className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${
+                    isActive(item.href) || isActiveParent(item)
+                      ? 'bg-primary text-primary-foreground'
                       : 'hover:bg-accent hover:text-accent-foreground'
-                    }
-                  `}
+                  }`}
                   onClick={() => setActiveItem(activeItem === item.href ? null : item.href)}
                 >
                   {item.icon}
@@ -144,30 +141,25 @@ export const Navigation: React.FC = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     className="pl-10 mt-1 space-y-1"
-                  >
-                    {item.subItems.map((subItem) => (
+                  >{item.subItems.map((subItem) => (
                       <li key={subItem.href}>
                         <Link
                           href={subItem.href}
-                          className={`
-                            flex items-center px-3 py-2 rounded-md text-sm
-                            ${isActive(subItem.href)
+                          className={`flex items-center px-3 py-2 rounded-md text-sm ${
+                            isActive(subItem.href)
                               ? 'bg-primary/10 text-primary'
                               : 'hover:bg-accent hover:text-accent-foreground'
-                            }
-                          `}
+                          }`}
                         >
                           {subItem.icon}
                           <span className="ml-3">{subItem.label}</span>
                         </Link>
                       </li>
-                    ))}
-                  </motion.ul>
+                    ))}</motion.ul>
                 )}
               </div>
             </li>
-          ))}
-        </ul>
+          ))}</ul>
       </div>
     </nav>
   );

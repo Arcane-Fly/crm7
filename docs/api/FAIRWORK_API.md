@@ -25,11 +25,13 @@ headers: {
 ### Awards
 
 #### Search Awards
+
 ```http
 GET /api/fairwork/awards
 ```
 
 Query Parameters:
+
 - `query` (optional): Search term
 - `industry` (optional): Industry filter
 - `occupation` (optional): Occupation filter
@@ -37,6 +39,7 @@ Query Parameters:
 - `limit` (optional): Results per page
 
 Response:
+
 ```typescript
 {
   items: Array<{
@@ -50,11 +53,13 @@ Response:
 ```
 
 #### Get Award Details
+
 ```http
 GET /api/fairwork/[awardCode]
 ```
 
 Response:
+
 ```typescript
 {
   code: string;
@@ -70,11 +75,13 @@ Response:
 ### Classifications
 
 #### Get Classification Details
+
 ```http
 GET /api/fairwork/[awardCode]/[classificationCode]
 ```
 
 Response:
+
 ```typescript
 {
   code: string;
@@ -88,15 +95,18 @@ Response:
 ```
 
 #### Get Pay Rates
+
 ```http
 GET /api/fairwork/[awardCode]/[classificationCode]/rates
 ```
 
 Query Parameters:
+
 - `date` (optional): Effective date
 - `employmentType` (optional): 'casual' | 'permanent' | 'fixed-term'
 
 Response:
+
 ```typescript
 {
   baseRate: number;
@@ -110,15 +120,18 @@ Response:
 ### Rate History & Validation
 
 #### Get Rate History
+
 ```http
 GET /api/fairwork/[awardCode]/[classificationCode]/history
 ```
 
 Query Parameters:
+
 - `startDate`: Start date (YYYY-MM-DD)
 - `endDate`: End date (YYYY-MM-DD)
 
 Response:
+
 ```typescript
 {
   rates: Array<{
@@ -131,14 +144,17 @@ Response:
 ```
 
 #### Get Future Rates
+
 ```http
 GET /api/fairwork/[awardCode]/[classificationCode]/future
 ```
 
 Query Parameters:
+
 - `fromDate`: Start date (YYYY-MM-DD)
 
 Response:
+
 ```typescript
 {
   rates: Array<{
@@ -151,11 +167,13 @@ Response:
 ```
 
 #### Validate Pay Rate
+
 ```http
 POST /api/fairwork/[awardCode]/[classificationCode]/validate
 ```
 
 Request Body:
+
 ```typescript
 {
   rate: number;
@@ -165,6 +183,7 @@ Request Body:
 ```
 
 Response:
+
 ```typescript
 {
   isValid: boolean;
@@ -177,15 +196,18 @@ Response:
 ### Penalties & Allowances
 
 #### Get Penalties
+
 ```http
 GET /api/fairwork/[awardCode]/penalties
 ```
 
 Query Parameters:
+
 - `date` (optional): Effective date
 - `type` (optional): Penalty type
 
 Response:
+
 ```typescript
 Array<{
   code: string;
@@ -198,15 +220,18 @@ Array<{
 ```
 
 #### Get Allowances
+
 ```http
 GET /api/fairwork/[awardCode]/allowances
 ```
 
 Query Parameters:
+
 - `date` (optional): Effective date
 - `type` (optional): Allowance type
 
 Response:
+
 ```typescript
 Array<{
   code: string;
@@ -221,15 +246,18 @@ Array<{
 ### Leave Entitlements
 
 #### Get Leave Entitlements
+
 ```http
 GET /api/fairwork/[awardCode]/leave-entitlements
 ```
 
 Query Parameters:
+
 - `employmentType`: 'casual' | 'permanent' | 'fixed-term'
 - `date` (optional): Effective date
 
 Response:
+
 ```typescript
 Array<{
   type: string;
@@ -256,6 +284,7 @@ The API uses standard HTTP status codes and returns error responses in the follo
 ```
 
 Common error codes:
+
 - `400`: Bad Request - Invalid parameters
 - `401`: Unauthorized - Missing or invalid authentication
 - `403`: Forbidden - Insufficient permissions
@@ -293,5 +322,6 @@ The API is versioned through the URL path. The current version is v1:
 ## Support
 
 For API support or questions, please contact:
-- Email: support@crm7.dev
-- Documentation: https://docs.crm7.dev/api/fairwork
+
+- Email: <support@crm7.dev>
+- Documentation: <https://docs.crm7.dev/api/fairwork>
