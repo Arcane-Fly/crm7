@@ -13,21 +13,32 @@ export async function POST(request: NextRequest) {
       return new NextResponse('Unauthorized', { status: 401 })
     }
 
-    // Log deployment status
-    console.log('Deployment Status:', {
-      id: payload.id,
-      name: payload.name,
-      url: payload.url,
-      state: payload.state,
-      createdAt: payload.createdAt
+    // Send deployment status to monitoring service
+    await fetch(process.env.MONITORING_WEBHOOK_URL!, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id: payload.id,
+        name: payload.name,
+        url: payload.url,
+        state: payload.state,
+        createdAt: payload.createdAt
+      })
     })
-
-    // Here you can add your own notification logic
-    // e.g., send to Slack, Discord, or email
 
     return new NextResponse('OK', { status: 200 })
   } catch (error) {
-    console.error('Webhook Error:', error)
+    // Log error to error tracking service
+    await fetch(process.env.ERROR_TRACKING_URL!, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ error })
+    })
+    
     return new NextResponse('Internal Server Error', { status: 500 })
   }
 }

@@ -1,5 +1,4 @@
 import { handleAuth } from '@auth0/nextjs-auth0'
-import { AUTH0_CONFIG } from '@/lib/auth0/client'
 
 /**
  * Dynamic API route handler for Auth0 authentication.
@@ -9,4 +8,23 @@ import { AUTH0_CONFIG } from '@/lib/auth0/client'
  * - /api/auth/callback: Auth0 callback after login
  * - /api/auth/me: Get user profile
  */
-export const GET = handleAuth(AUTH0_CONFIG)
+export const GET = handleAuth({
+  login: async (req, res) => {
+    return await handleAuth({
+      returnTo: '/dashboard'
+    })(req, res)
+  },
+  callback: async (req, res) => {
+    try {
+      return await handleAuth()(req, res)
+    } catch (error) {
+      console.error(error)
+      res.redirect('/api/auth/login')
+    }
+  },
+  logout: async (req, res) => {
+    return await handleAuth({
+      returnTo: '/'
+    })(req, res)
+  }
+})

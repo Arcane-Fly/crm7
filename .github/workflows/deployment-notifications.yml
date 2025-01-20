@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - main
+    types: [created, started, completed, error]
 
 jobs:
   notify:
