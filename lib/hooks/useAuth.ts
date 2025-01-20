@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@auth0/nextjs-auth0/client'
 import { logger } from '@/lib/logger'
+import { AUTH0_ENDPOINTS } from '@/lib/auth0/client'
 
 export type AuthUser = {
   id: string
@@ -63,7 +64,7 @@ export function useAuth() {
       if (user?.provider === 'supabase') {
         await supabase.auth.signOut()
       } else if (user?.provider === 'auth0') {
-        router.push('/api/auth/logout')
+        router.push(AUTH0_ENDPOINTS.LOGOUT)
       }
     } catch (error) {
       logger.error('Sign out error', { error })
@@ -86,11 +87,16 @@ export function useAuth() {
     }
   }, [supabase])
 
+  const signInWithAuth0 = useCallback(() => {
+    router.push(AUTH0_ENDPOINTS.LOGIN)
+  }, [router])
+
   return {
     user,
     loading: loading || auth0Loading,
     error,
     signOut,
     signInWithSupabase,
+    signInWithAuth0,
   }
 }
