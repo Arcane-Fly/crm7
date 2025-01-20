@@ -86,6 +86,9 @@ importers:
       '@tanstack/react-table':
         specifier: ^8.20.6
         version: 8.20.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      auth0:
+        specifier: 4.16.0
+        version: 4.16.0
       axios:
         specifier: ^1.6.7
         version: 1.7.9
@@ -2423,6 +2426,10 @@ packages:
   attr-accept@2.2.5:
     resolution: {integrity: sha512-0bDNnY/u6pPwHDMoF0FieU354oBi0a8rD9FcsLwzcGWbc8KS8KPIi7y+s13OlVY+gMWc/9xEMUgNE6Qm8ZllYQ==}
     engines: {node: '>=4'}
+
+  auth0@4.16.0:
+    resolution: {integrity: sha512-RB+CFDONkvDkH1W4blDq4eJbCa6QdeIeE2Fb8tTfUtC1HVqTYuJp/hFJVkTJSzrqlNRLWmrHaG4eEV4rDtpInw==}
+    engines: {node: '>=18'}
 
   autoprefixer@10.4.20:
     resolution: {integrity: sha512-XY25y5xSv/wEoqzDyXXME4AFfkZI0P23z6Fs3YgymDnKJkCGOnkL0iTxCa85UTqaSgfcqyf3UA6+c7wUvx/16g==}
@@ -7689,6 +7696,12 @@ snapshots:
   asynckit@0.4.0: {}
 
   attr-accept@2.2.5: {}
+
+  auth0@4.16.0:
+    dependencies:
+      jose: 4.15.9
+      undici-types: 6.19.8
+      uuid: 9.0.1
 
   autoprefixer@10.4.20(postcss@8.5.1):
     dependencies:
