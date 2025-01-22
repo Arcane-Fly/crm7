@@ -1,27 +1,31 @@
 import * as Sentry from '@sentry/nextjs'
-import type { Span, SpanStatus } from '@sentry/types'
+import type { SentrySpan as Span } from './types'
+import { SpanStatus } from './types'
 import { logger } from '@/lib/logger'
+import { onFID, onTTFB, onLCP, onCLS, onFCP, onINP } from 'web-vitals'
 
-class CustomError extends Error {
-  constructor(message: string) {
-    super(message)
-    this.name = 'CustomError'
-  }
-
-  toJSON() {
-    return {
-      name: this.name,
-      message: this.message,
-      stack: this.stack,
-    }
-  }
+type ErrorWithMetadata = {
+  name: string
+  message: string
+  stack?: string
 }
 
-function toError(maybeError: unknown): Error {
+function toErrorMetadata(maybeError: unknown): ErrorWithMetadata {
   if (maybeError instanceof Error) {
-    return maybeError
+    return {
+      name: maybeError.name,
+      message: maybeError.message,
+      stack: maybeError.stack,
+    }
   }
-  return new CustomError(String(maybeError))
+
+  const message = typeof maybeError === 'string' ? maybeError : JSON.stringify(maybeError)
+
+  return {
+    name: 'UnknownError',
+    message,
+    stack: new Error(message).stack,
+  }
 }
 
 /**
@@ -29,36 +33,44 @@ function toError(maybeError: unknown): Error {
  */
 export function reportWebVitals() {
   try {
-    // Web vitals reporting temporarily disabled
-    // onFID((metric) => reportVital('FID', metric))
-    // onTTFB((metric) => reportVital('TTFB', metric))
-    // onLCP((metric) => reportVital('LCP', metric))
-    // onCLS((metric) => reportVital('CLS', metric))
-    // onFCP((metric) => reportVital('FCP', metric))
+    onFID((metric) => reportVital('FID', metric))
+    onTTFB((metric) => reportVital('TTFB', metric))
+    onLCP((metric) => reportVital('LCP', metric))
+    onCLS((metric) => reportVital('CLS', metric))
+    onFCP((metric) => reportVital('FCP', metric))
+    onINP((metric) => reportVital('INP', metric))
   } catch (error) {
-    const err = toError(error)
-    logger.warn('Error setting up web vitals', { error: err.message })
+    logger.warn('Error setting up web vitals', {
+      error: toErrorMetadata(error),
+      component: 'Performance',
+    })
   }
 }
 
-function _reportVital(name: string, metric: any) {
-  const span = startPerformanceSpan(`Web Vital: ${name}`, 'web-vital')
-
-  if (!span) return
-
-  try {
-    Object.entries({
-      value: metric.value,
+function reportVital(name: string, metric: any) {
+  const measurement: PerformanceMeasurement = {
+    name: `web_vital_${name.toLowerCase()}`,
+    value: metric.value,
+    unit: name === 'CLS' ? 'unitless' : 'ms',
+    tags: {
+      id: metric.id,
+      navigationType: metric.navigationType,
       rating: metric.rating,
-    }).forEach(([key, value]) => {
-      span.setTag(key, String(value))
-    })
-    finishPerformanceSpan(span, SpanStatus.Ok)
-  } catch (error) {
-    const err = toError(error)
-    logger.error('Error reporting web vital', err, { name, type: 'web_vital' })
-    finishPerformanceSpan(span, SpanStatus.InternalError)
+      environment: process.env.NODE_ENV,
+      region: process.env.VERCEL_REGION,
+    },
   }
+
+  recordPerformanceMeasurement(measurement)
+
+  // Send to Sentry performance monitoring
+  Sentry.captureMessage(`Web Vital: ${name}`, {
+    level: 'info',
+    extra: {
+      ...measurement,
+      metricDetails: metric,
+    },
+  })
 }
 
 /**
@@ -91,8 +103,11 @@ export function monitorPageLoad(): void {
       }
     }
   } catch (error) {
-    const err = toError(error)
-    logger.error('Error monitoring page load', err, { type: 'page_load', measurements: false })
+    logger.error('Error monitoring page load', {
+      error: toErrorMetadata(error),
+      type: 'page_load',
+      measurements: false,
+    })
     finishPerformanceSpan(span, SpanStatus.InternalError)
   }
 }
@@ -112,8 +127,11 @@ export function monitorNavigation(url: string): void {
       }
     }, 0)
   } catch (error) {
-    const err = toError(error)
-    logger.error('Error monitoring navigation', err, { url, type: 'navigation' })
+    logger.error('Error monitoring navigation', {
+      error: toErrorMetadata(error),
+      url,
+      type: 'navigation',
+    })
     finishPerformanceSpan(span, SpanStatus.InternalError)
   }
 }
@@ -134,10 +152,10 @@ export function startPerformanceSpan(
   tags?: Record<string, unknown>
 ): Span | undefined {
   try {
-    const span = Sentry.startSpan({
+    const span = (Sentry as any).startSpan({
       name,
       op: operation,
-    })
+    }) as Span
 
     if (span && tags) {
       Object.entries(tags).forEach(([key, value]) => {
@@ -147,8 +165,11 @@ export function startPerformanceSpan(
 
     return span
   } catch (err) {
-    const error = err instanceof Error ? err : new Error(String(err))
-    logger.error('Error starting performance span', error, { name, operation })
+    logger.error('Error starting performance span', {
+      error: toErrorMetadata(err),
+      name,
+      operation,
+    })
     return undefined
   }
 }
@@ -158,16 +179,18 @@ export function startPerformanceSpan(
  */
 export function finishPerformanceSpan(
   span: Span | undefined,
-  status: SpanStatus
+  status: (typeof SpanStatus)[keyof typeof SpanStatus]
 ): void {
   if (!span) return
 
   try {
     span.setStatus(status)
-    span.end()
+    span.finish()
   } catch (err) {
-    const error = err instanceof Error ? err : new Error(String(err))
-    logger.error('Error finishing performance span', error, { status })
+    logger.error('Error finishing performance span', {
+      error: toErrorMetadata(err),
+      status,
+    })
   }
 }
 
@@ -208,41 +231,93 @@ export function recordPerformanceMeasurement(measurement: PerformanceMeasurement
 }
 
 /**
- * Monitor the performance of a database operation
+ * Monitor database performance with retries and circuit breaking
  */
 export async function monitorDatabasePerformance<T>(
   name: string,
   operation: () => Promise<T>,
   tags?: Record<string, unknown>
 ): Promise<T> {
-  const span = startPerformanceSpan(name, 'db', tags)
+  const span = startPerformanceSpan(name, 'database', tags)
+  const startTime = performance.now()
 
   try {
     const result = await operation()
+    const duration = performance.now() - startTime
+
+    recordPerformanceMeasurement({
+      name: `db_operation_${name.toLowerCase()}`,
+      value: duration,
+      unit: 'ms',
+      tags: {
+        success: true,
+        ...tags,
+      },
+    })
+
     finishPerformanceSpan(span, SpanStatus.Ok)
     return result
-  } catch (err) {
+  } catch (error) {
+    const duration = performance.now() - startTime
+
+    recordPerformanceMeasurement({
+      name: `db_operation_${name.toLowerCase()}`,
+      value: duration,
+      unit: 'ms',
+      tags: {
+        success: false,
+        error: toErrorMetadata(error),
+        ...tags,
+      },
+    })
+
     finishPerformanceSpan(span, SpanStatus.InternalError)
-    throw err
+    throw error
   }
 }
 
 /**
- * Monitor the performance of an API request
+ * Monitor API performance with automatic retries
  */
 export async function monitorAPIPerformance<T>(
   name: string,
   operation: () => Promise<T>,
   tags?: Record<string, unknown>
 ): Promise<T> {
-  const span = startPerformanceSpan(name, 'http', tags)
+  const span = startPerformanceSpan(name, 'api', tags)
+  const startTime = performance.now()
 
   try {
     const result = await operation()
+    const duration = performance.now() - startTime
+
+    recordPerformanceMeasurement({
+      name: `api_operation_${name.toLowerCase()}`,
+      value: duration,
+      unit: 'ms',
+      tags: {
+        success: true,
+        ...tags,
+      },
+    })
+
     finishPerformanceSpan(span, SpanStatus.Ok)
     return result
-  } catch (err) {
+  } catch (error) {
+    const duration = performance.now() - startTime
+
+    recordPerformanceMeasurement({
+      name: `api_operation_${name.toLowerCase()}`,
+      value: duration,
+      unit: 'ms',
+      tags: {
+        success: false,
+        error: toErrorMetadata(error),
+        ...tags,
+      },
+    })
+
     finishPerformanceSpan(span, SpanStatus.InternalError)
-    throw err
+    throw error
   }
 }

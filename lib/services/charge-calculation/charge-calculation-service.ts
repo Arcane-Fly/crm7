@@ -1,165 +1,174 @@
-import { supabase } from '@/lib/supabase/client'
-import { ApiError } from '@/lib/utils/error'
-import { logger } from '@/lib/services/logger'
-import { RateManagementService } from '@/lib/services/rates/rate-management-service'
-import type { ChargeRateConfig, ChargeRateResult, BillingMethod } from './types'
+import { RateManagementService } from '../rates/rate-management-service'
+import { logger } from '../logger'
+import type { ChargeConfig, ChargeCalculationResult, ChargeRateResult, RateTemplate } from './types'
+import { BillingMethod } from './types'
+
+interface RateCalculation {
+  rateId: string
+  amount: number
+  details: {
+    baseRate: number
+    adjustments: Array<{
+      type: string
+      amount: number
+    }>
+  }
+}
+
+interface ChargeResult {
+  charges: RateCalculation[]
+  metadata: {
+    calculatedAt: Date
+    config: ChargeConfig
+  }
+}
+
+class ChargeCalculationError extends Error {
+  constructor(message: string, public details?: Record<string, unknown>) {
+    super(message)
+    this.name = 'ChargeCalculationError'
+  }
+}
 
 /**
- * Service for calculating charge rates using Supabase
+ * Service for calculating charge rates
  */
 export class ChargeCalculationService {
   private rateService: RateManagementService
 
+  /**
+   * Initialize the charge calculation service with a rate management service
+   */
   constructor(rateService: RateManagementService) {
     this.rateService = rateService
   }
 
-  /**
-   * Calculate charge rates using the Supabase function
-   */
-  async calculateCharges(config: ChargeRateConfig): Promise<ChargeRateResult> {
+  private async getRateTemplates(orgId: string): Promise<RateTemplate[]> {
     try {
-      // Get the current pay rate with penalties and allowances
-      const rates = await this.rateService.getClassificationRates(
-        config.classificationCode,
-        new Date()
-      )
-
-      if (!rates.length) {
-        throw new ApiError({
-          message: 'No valid pay rates found for classification',
-          code: 'NO_RATES_FOUND',
-        })
+      const rates = await this.rateService.getRateTemplates(orgId)
+      if (!rates) {
+        throw new ChargeCalculationError('No rate templates found', { orgId })
       }
-
-      // Calculate the total rate including penalties and allowances
-      const rateResult = await this.rateService.calculateTotalRate(
-        rates[0].id,
-        config.weeklyHours,
-        new Date(),
-        config.conditions
-      )
-
-      // Convert to input format expected by Supabase function
-      const input = {
-        hourly_rate_award: rateResult.baseAmount / config.weeklyHours,
-        weekly_hours: config.weeklyHours,
-        total_paid_weeks: config.totalPaidWeeks,
-        on_site_weeks: config.onSiteWeeks,
-        annual_leave_weeks: config.annualLeaveWeeks,
-        sick_leave_weeks: config.sickLeaveWeeks,
-        training_weeks: config.trainingWeeks,
-        super_rate: config.superRate,
-        workers_comp_rate: config.workersCompRate,
-        other_on_costs: config.otherOnCosts,
-        funding_offset: config.fundingOffset,
-        margin_rate: config.marginRate,
-        leave_loading_rate: config.leaveLoadingRate || 0.175,
-        training_fees: config.trainingFees || {},
-      }
-
-      const { data, error } = await supabase.rpc('calculate_charges', { input })
-
-      if (error) {
-        logger.error('Error calculating charges:', {
-          error,
-          config,
-        })
-        throw new ApiError({
-          message: 'Failed to calculate charges',
-          cause: error,
-        })
-      }
-
-      // Convert snake_case response to camelCase
-      return {
-        annualBaseWage: data.annual_base_wage,
-        leaveLoadingCost: data.leave_loading_cost,
-        superannuation: data.superannuation,
-        workersComp: data.workers_comp,
-        otherOnCosts: data.other_on_costs,
-        trainingFees: data.training_fees,
-        grossAnnualCost: data.gross_annual_cost,
-        netAnnualCostAfterFunding: data.net_annual_cost_after_funding,
-        marginAmount: data.margin_amount,
-        totalAnnualCharge: data.total_annual_charge,
-        weeklyChargeSpread: data.weekly_charge_spread,
-        hourlyChargeSpread: data.hourly_charge_spread,
-        weeklyChargeOnSite: data.weekly_charge_on_site,
-        hourlyChargeOnSite: data.hourly_charge_on_site,
-      }
+      return rates
     } catch (error) {
-      logger.error('Error in calculateCharges:', error)
-      throw error instanceof ApiError
-        ? error
-        : new ApiError({
-            message: 'Failed to calculate charges',
-            cause: error instanceof Error ? error : new Error(String(error)),
-          })
+      logger.error('Failed to get rate templates', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        orgId,
+      })
+      throw new ChargeCalculationError('Failed to get rate templates', {
+        orgId,
+        cause: error
+      })
     }
   }
 
   /**
-   * Get the appropriate charge rate based on billing method
+   * Calculate charges based on configuration
    */
-  static getChargeRate(result: ChargeRateResult, method: BillingMethod) {
-    switch (method) {
-      case BillingMethod.SPREAD_ACROSS_YEAR:
-        return {
-          weeklyCharge: result.weeklyChargeSpread,
-          hourlyCharge: result.hourlyChargeSpread,
-        }
-      case BillingMethod.ON_SITE_ONLY:
-        return {
-          weeklyCharge: result.weeklyChargeOnSite,
-          hourlyCharge: result.hourlyChargeOnSite,
-        }
-      default:
-        throw new ApiError({
-          message: 'Invalid billing method',
-          code: 'INVALID_BILLING_METHOD',
+  async calculateCharges(config: ChargeConfig): Promise<ChargeCalculationResult> {
+    try {
+      const rates = await this.getRateTemplates(config.orgId)
+      const applicableRates = rates.filter((rate) => {
+        // Apply rate filtering logic based on config
+        return true // Simplified for now
+      })
+
+      if (applicableRates.length === 0) {
+        throw new ChargeCalculationError('No applicable rates found', { config })
+      }
+
+      const results = await Promise.all(
+        applicableRates.map(async (rate) => {
+          try {
+            const calculation = await this.rateService.calculateRate(rate)
+            return {
+              rateId: rate.id,
+              amount: calculation.totalRate,
+              details: {
+                baseRate: calculation.baseRate,
+                adjustments: calculation.adjustments
+              }
+            }
+          } catch (error) {
+            logger.error('Failed to calculate rate', {
+              error: error instanceof Error ? error.message : 'Unknown error',
+              rateId: rate.id,
+            })
+            throw new ChargeCalculationError('Failed to calculate rate', {
+              rateId: rate.id,
+              cause: error
+            })
+          }
         })
+      )
+
+      const baseCharge = results.reduce((sum, calc) => sum + calc.amount * config.hours, 0)
+      const otherOnCosts = Object.values(config.onCosts || {}).reduce((sum, cost) => sum + cost, 0)
+      const trainingFees = Object.values(config.trainingFees || {}).reduce((sum, fee) => sum + fee, 0)
+
+      return {
+        baseCharge,
+        otherOnCosts,
+        trainingFees,
+        totalCharge: baseCharge + otherOnCosts + trainingFees,
+        hours: config.hours
+      }
+
+    } catch (error) {
+      const err = new ChargeCalculationError('Failed to calculate charges', {
+        config,
+        cause: error
+      })
+      logger.error('Error calculating charges', {
+        error: err.message,
+        config
+      })
+      throw err
     }
   }
 
   /**
-   * Format currency for display
+   * Get charge rate based on calculation result and billing method
    */
-  static formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('en-AU', {
-      style: 'currency',
-      currency: 'AUD',
-    }).format(amount)
+  getChargeRate(result: ChargeCalculationResult, billingMethod: BillingMethod): ChargeRateResult {
+    return {
+      chargeRate: result.totalCharge / (billingMethod === 'hourly' ? result.hours : 1),
+      billingMethod,
+      baseCharge: result.baseCharge,
+      otherOnCosts: result.otherOnCosts,
+      trainingFees: result.trainingFees,
+      totalCharge: result.totalCharge
+    }
   }
 
   /**
    * Generate a summary of the charge calculation
    */
-  static generateSummary(result: ChargeRateResult): string {
-    const format = this.formatCurrency
+  generateChargeSummary(result: ChargeCalculationResult) {
+    try {
+      logger.info('Generating charge summary', { result })
 
-    return `
-Charge Rate Summary:
--------------------
-Base Annual Wage: ${format(result.annualBaseWage)}
-Leave Loading: ${format(result.leaveLoadingCost)}
-Superannuation: ${format(result.superannuation)}
-Workers Compensation: ${format(result.workersComp)}
-Other On-costs: ${format(result.otherOnCosts)}
-Training Fees: ${format(result.trainingFees)}
+      const summary = {
+        totalAmount: result.totalCharge,
+        timestamp: new Date().toISOString()
+      }
 
-Gross Annual Cost: ${format(result.grossAnnualCost)}
-Net Cost After Funding: ${format(result.netAnnualCostAfterFunding)}
-Margin Amount: ${format(result.marginAmount)}
-Total Annual Charge: ${format(result.totalAnnualCharge)}
+      logger.info('Charge summary generated', {
+        summary,
+        result
+      })
 
-Method A (Spread Across Year):
-Weekly Charge: ${format(result.weeklyChargeSpread)}
-Hourly Charge: ${format(result.hourlyChargeSpread)}
-
-Method B (On-site Only):
-Weekly Charge: ${format(result.weeklyChargeOnSite)}
-Hourly Charge: ${format(result.hourlyChargeOnSite)}
-`.trim()
+      return summary
+    } catch (error) {
+      const err = new ChargeCalculationError('Failed to generate charge summary', {
+        result,
+        cause: error
+      })
+      logger.error('Error generating charge summary', {
+        error: err.message,
+        result
+      })
+      throw err
+    }
   }
 }

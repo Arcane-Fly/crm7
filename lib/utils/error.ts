@@ -47,6 +47,7 @@ export class ApiError extends Error {
     // Capture error in monitoring with context
     captureError(this, {
       severity: 'error',
+      context: `api-error:${this.code}`,
       statusCode: this.statusCode,
       code: this.code,
       ...this.context,

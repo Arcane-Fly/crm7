@@ -9,21 +9,41 @@ import type { DateRange } from 'react-day-picker'
 
 interface Employee {
   id: string
+  org_id: string
   name: string
   position: string
   department: string
   status: 'active' | 'inactive'
-  hireDate: string
   salary: number
   performance: number
+  hire_date: string
+  created_at: string
+  updated_at: string
 }
 
 interface Attendance {
   id: string
-  employeeId: string
+  org_id: string
+  employee_id: string
   date: string
   status: 'present' | 'absent' | 'late'
+  created_at: string
+  updated_at: string
+}
+
+interface ChartData {
+  date: string
+  present: number
+  absent: number
+  late: number
   hoursWorked: number
+}
+
+interface DepartmentStats {
+  department: string
+  count: number
+  avgPerformance: number
+  totalSalary: number
 }
 
 export function HRDashboard() {
@@ -36,12 +56,12 @@ export function HRDashboard() {
   if (dateRange?.from) queryKey.push(dateRange.from.toISOString())
   if (dateRange?.to) queryKey.push(dateRange.to.toISOString())
 
-  const { data: employees = [] } = useQueryWithSupabase<Employee>({
+  const { data: employees = [] } = useQueryWithSupabase<Employee[]>({
     queryKey,
     table: 'employees',
   })
 
-  const { data: attendance = [] } = useQueryWithSupabase<Attendance>({
+  const { data: attendance = [] } = useQueryWithSupabase<Attendance[]>({
     queryKey: [
       'attendance',
       dateRange?.from ? dateRange.from.toISOString() : '',
@@ -57,29 +77,35 @@ export function HRDashboard() {
         : undefined,
   })
 
-  const activeEmployees = employees.filter((e) => e.status === 'active')
+  const activeEmployees = employees.filter((e: Employee) => e.status === 'active')
   const totalEmployees = employees.length
-  const averageSalary = employees.reduce((sum, emp) => sum + emp.salary, 0) / employees.length || 0
+  const averageSalary = employees.reduce((sum: number, emp: Employee) => sum + emp.salary, 0) / employees.length || 0
   const averagePerformance =
-    employees.reduce((sum, emp) => sum + emp.performance, 0) / employees.length || 0
+    employees.reduce((sum: number, emp: Employee) => sum + emp.performance, 0) / employees.length || 0
 
   const departmentStats = employees.reduce(
-    (acc, emp) => {
-      if (!acc[emp.department]) {
-        acc[emp.department] = { count: 0, totalSalary: 0, avgPerformance: 0 }
+    (acc: Record<string, DepartmentStats>, emp: Employee) => {
+      const dept = emp.department
+      if (!acc[dept]) {
+        acc[dept] = {
+          department: dept,
+          count: 0,
+          avgPerformance: 0,
+          totalSalary: 0,
+        }
       }
-      acc[emp.department].count++
-      acc[emp.department].totalSalary += emp.salary
-      acc[emp.department].avgPerformance += emp.performance
+      acc[dept].count++
+      acc[dept].avgPerformance += emp.performance
+      acc[dept].totalSalary += emp.salary
       return acc
     },
-    {} as Record<string, { count: number; totalSalary: number; avgPerformance: number }>
+    {}
   )
 
   const attendanceStats = attendance.reduce(
-    (acc, record) => {
+    (acc: ChartData[], record: Attendance) => {
       const date = format(new Date(record.date), 'MM/dd')
-      const existing = acc.find((d) => d.date === date)
+      const existing = acc.find((d: ChartData) => d.date === date)
       if (existing) {
         existing[record.status]++
         existing.hoursWorked += record.hoursWorked
@@ -94,7 +120,7 @@ export function HRDashboard() {
       }
       return acc
     },
-    [] as { date: string; present: number; absent: number; late: number; hoursWorked: number }[]
+    []
   )
 
   return (
@@ -219,7 +245,7 @@ export function HRDashboard() {
           <CardContent>
             <div className='space-y-4'>
               {employees
-                .sort((a, b) => new Date(b.hireDate).getTime() - new Date(a.hireDate).getTime())
+                .sort((a, b) => new Date(b.hire_date).getTime() - new Date(a.hire_date).getTime())
                 .slice(0, 5)
                 .map((employee) => (
                   <div
@@ -234,7 +260,7 @@ export function HRDashboard() {
                     </div>
                     <div className='flex items-center gap-2'>
                       <div className='text-sm text-muted-foreground'>
-                        {format(new Date(employee.hireDate), 'PPP')}
+                        {format(new Date(employee.hire_date), 'PPP')}
                       </div>
                       <Badge variant={employee.status === 'active' ? 'default' : 'destructive'}>
                         {employee.status}

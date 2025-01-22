@@ -5,10 +5,10 @@ import { ApiError } from '@/lib/utils/error'
 interface FairWorkConfig {
   apiKey: string
   apiUrl: string
+  baseUrl: string
   environment: 'sandbox' | 'production'
   timeout: number
   retryAttempts: number
-  baseUrl: string
 }
 
 interface AwardRate {
@@ -98,6 +98,42 @@ export class FairWorkService {
     }
   }
 
+  private async handleRequest<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<T> {
+    try {
+      const response = await fetch(`${this.config.baseUrl}${endpoint}`, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': this.config.apiKey,
+          ...options.headers,
+        },
+      })
+
+      if (!response.ok) {
+        throw new ApiError({
+          message: `FairWork API error: ${response.statusText}`,
+          code: 'API_ERROR',
+          statusCode: response.status,
+        })
+      }
+
+      return await response.json()
+    } catch (error) {
+      logger.error('FairWork API request failed:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        endpoint,
+      })
+      throw new ApiError({
+        message: 'Failed to communicate with FairWork API',
+        code: 'API_ERROR',
+        cause: error instanceof Error ? error : undefined,
+      })
+    }
+  }
+
   /**
    * Get base rate for a classification under an award
    */
@@ -107,14 +143,32 @@ export class FairWorkService {
     date: Date
   }): Promise<number> {
     try {
-      const { data, error } = await this.supabase.rpc('get_award_base_rate', params)
-
-      if (error) throw error
-      return data
+      const response = await this.handleRequest<{ baseRate: number }>(
+        '/rates/base',
+        {
+          method: 'POST',
+          body: JSON.stringify(params),
+        }
+      )
+      return response.baseRate
     } catch (error) {
-      logger.error('Failed to get base rate', { error, params })
+      logger.error('Error getting base rate', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        params,
+      })
       throw error
     }
+  }
+
+  /**
+   * Get minimum wage
+   */
+  async getMinimumWage(): Promise<number> {
+    return this.getBaseRate({
+      awardCode: 'MA000001', // National Minimum Wage
+      classificationCode: 'L1', // Level 1
+      date: new Date(),
+    })
   }
 
   /**
@@ -131,7 +185,10 @@ export class FairWorkService {
       if (error) throw error
       return data
     } catch (error) {
-      logger.error('Failed to get award rate', { error, params })
+      logger.error('Failed to get award rate', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        params,
+      })
       throw error
     }
   }
@@ -151,7 +208,10 @@ export class FairWorkService {
       if (error) throw error
       return data
     } catch (error) {
-      logger.error('Failed to get classifications', { error, params })
+      logger.error('Failed to get classifications', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        params,
+      })
       throw error
     }
   }
@@ -166,7 +226,10 @@ export class FairWorkService {
       if (error) throw error
       return data
     } catch (error) {
-      logger.error('Failed to calculate rate', { error, params })
+      logger.error('Failed to calculate rate', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        params,
+      })
       throw error
     }
   }
@@ -190,7 +253,10 @@ export class FairWorkService {
       if (error) throw error
       return data
     } catch (error) {
-      logger.error('Failed to validate rate', { error, params })
+      logger.error('Failed to validate rate', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        params,
+      })
       throw error
     }
   }
@@ -210,7 +276,10 @@ export class FairWorkService {
       if (error) throw error
       return data
     } catch (error) {
-      logger.error('Failed to get rate history', { error, params })
+      logger.error('Failed to get rate history', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        params,
+      })
       throw error
     }
   }
@@ -229,78 +298,60 @@ export class FairWorkService {
       if (error) throw error
       return data
     } catch (error) {
-      logger.error('Failed to get future rates', { error, params })
+      logger.error('Failed to get future rates', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        params,
+      })
       throw error
     }
   }
 
-  async getAwardRates(awardCode: string): Promise<AwardRate[]> {
+  /**
+   * Get award rates
+   */
+  public async getAwardRates(awardCode: string): Promise<AwardRate[]> {
     try {
-      const response = await fetch(`${this.config.baseUrl}/awards/${awardCode}/rates`, {
-        headers: {
-          Authorization: `Bearer ${this.config.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-      })
-
-      if (!response.ok) {
-        throw new ApiError({
-          message: 'Failed to fetch award rates',
-          code: 'FAIRWORK_API_ERROR',
-          context: { status: response.status },
-        })
-      }
-
-      const data = await response.json()
-      return data.rates
+      const response = await this.handleRequest<AwardRate[]>(`/awards/${awardCode}/rates`)
+      return response
     } catch (error) {
-      logger.error('Error fetching award rates:', { error, awardCode })
-      throw error instanceof ApiError
-        ? error
-        : new ApiError({
-            message: 'Failed to fetch award rates',
-            code: 'FAIRWORK_API_ERROR',
-          })
+      logger.error(`Failed to get award rates for award ${awardCode}:`, {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        awardCode,
+      })
+      throw new ApiError({
+        message: 'Failed to fetch award rates',
+        code: 'FETCH_ERROR',
+        cause: error instanceof Error ? error : undefined,
+      })
     }
   }
 
-  async getClassificationRates(
+  /**
+   * Get classification rates
+   */
+  public async getClassificationRates(
     awardCode: string,
     classificationCode: string
   ): Promise<AwardRate[]> {
     try {
-      const response = await fetch(
-        `${this.config.baseUrl}/awards/${awardCode}/classifications/${classificationCode}/rates`,
+      const response = await this.handleRequest<AwardRate[]>(
+        `/awards/${awardCode}/classifications/${classificationCode}/rates`
+      )
+      return response
+    } catch (error) {
+      logger.error(
+        `Failed to get classification rates for award ${awardCode}, classification ${classificationCode}:`,
         {
-          headers: {
-            Authorization: `Bearer ${this.config.apiKey}`,
-            'Content-Type': 'application/json',
-          },
+          error: error instanceof Error ? error.message : 'Unknown error',
+          awardCode,
+          classificationCode,
         }
       )
-
-      if (!response.ok) {
-        throw new ApiError({
-          message: 'Failed to fetch classification rates',
-          code: 'FAIRWORK_API_ERROR',
-          context: { status: response.status },
-        })
-      }
-
-      const data = await response.json()
-      return data.rates
-    } catch (error) {
-      logger.error('Error fetching classification rates:', {
-        error,
-        awardCode,
-        classificationCode,
+      throw new ApiError({
+        message: 'Failed to fetch classification rates',
+        code: 'FETCH_ERROR',
+        cause: error instanceof Error ? error : undefined,
       })
-      throw error instanceof ApiError
-        ? error
-        : new ApiError({
-            message: 'Failed to fetch classification rates',
-            code: 'FAIRWORK_API_ERROR',
-          })
     }
   }
 }

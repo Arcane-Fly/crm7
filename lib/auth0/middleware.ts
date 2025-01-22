@@ -43,6 +43,7 @@ export async function withAuth0(
     return response
   } catch (error) {
     captureError(error instanceof Error ? error : new Error(String(error)), {
+      severity: 'error',
       context: 'auth0/middleware',
       url: request.url,
     })
@@ -66,9 +67,9 @@ export function withRoles(allowedRoles: string[]) {
 
       if (!allowedRoles.some((role) => userRoles.includes(role))) {
         captureError(new Error('Unauthorized access attempt'), {
+          severity: 'warning',
           context: 'auth0/middleware',
           url: req.url,
-          severity: 'warning',
         })
         return new NextResponse('Unauthorized', { status: 403 })
       }
@@ -78,6 +79,7 @@ export function withRoles(allowedRoles: string[]) {
       })
     } catch (error) {
       captureError(error instanceof Error ? error : new Error(String(error)), {
+        severity: 'error',
         context: 'auth0/middleware',
         url: req.url,
       })

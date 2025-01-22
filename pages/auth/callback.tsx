@@ -20,7 +20,7 @@ export default function AuthCallbackPage() {
     }
 
     handleAuthCallback()
-  }, [router])
+  }, [router, supabase.auth])
 
   return null
 }

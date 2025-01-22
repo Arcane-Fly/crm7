@@ -14,6 +14,16 @@ interface Performance {
   expenses: number
   profit: number
   margin: number
+  created_at: string
+  updated_at: string
+}
+
+interface ChartData {
+  date: string
+  revenue: number
+  expenses: number
+  profit: number
+  margin: number
 }
 
 export function FinancialPerformanceDashboard() {
@@ -26,7 +36,7 @@ export function FinancialPerformanceDashboard() {
   if (dateRange?.from) queryKey.push(dateRange.from.toISOString())
   if (dateRange?.to) queryKey.push(dateRange.to.toISOString())
 
-  const { data: performance = [] } = useQueryWithSupabase<Performance>({
+  const { data: performance = [] } = useQueryWithSupabase<Performance[]>({
     queryKey,
     table: 'financial_performance',
     filter: dateRange
@@ -43,17 +53,17 @@ export function FinancialPerformanceDashboard() {
     return date >= dateRange.from && date <= dateRange.to
   })
 
-  const totalRevenue = filteredPerformance.reduce((sum, record) => sum + record.revenue, 0)
-  const totalExpenses = filteredPerformance.reduce((sum, record) => sum + record.expenses, 0)
-  const totalProfit = filteredPerformance.reduce((sum, record) => sum + record.profit, 0)
+  const totalRevenue = filteredPerformance.reduce((sum: number, record: Performance) => sum + record.revenue, 0)
+  const totalExpenses = filteredPerformance.reduce((sum: number, record: Performance) => sum + record.expenses, 0)
+  const totalProfit = filteredPerformance.reduce((sum: number, record: Performance) => sum + record.profit, 0)
   const averageMargin =
-    filteredPerformance.reduce((sum, record) => sum + record.margin, 0) /
+    filteredPerformance.reduce((sum: number, record: Performance) => sum + record.margin, 0) /
       filteredPerformance.length || 0
 
   const chartData = filteredPerformance.reduce(
-    (acc, record) => {
+    (acc: ChartData[], record: Performance) => {
       const date = format(new Date(record.date), 'MM/dd')
-      const existing = acc.find((d) => d.date === date)
+      const existing = acc.find((d: ChartData) => d.date === date)
       if (existing) {
         existing.revenue += record.revenue
         existing.expenses += record.expenses
@@ -70,7 +80,7 @@ export function FinancialPerformanceDashboard() {
       }
       return acc
     },
-    [] as { date: string; revenue: number; expenses: number; profit: number; margin: number }[]
+    [] as ChartData[]
   )
 
   return (
@@ -180,7 +190,7 @@ export function FinancialPerformanceDashboard() {
         </CardHeader>
         <CardContent>
           <div className='space-y-4'>
-            {filteredPerformance.slice(0, 5).map((record) => (
+            {filteredPerformance.slice(0, 5).map((record: Performance) => (
               <div
                 key={record.id}
                 className='flex items-center justify-between rounded-lg border p-4'

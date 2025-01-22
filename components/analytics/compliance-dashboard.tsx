@@ -9,10 +9,19 @@ import type { DateRange } from 'react-day-picker'
 
 interface ComplianceRecord {
   id: string
+  org_id: string
+  status: 'compliant' | 'non-compliant'
   date: string
   type: string
-  status: 'compliant' | 'non-compliant'
   details: string
+  created_at: string
+  updated_at: string
+}
+
+interface ChartData {
+  date: string
+  total: number
+  compliant: number
 }
 
 export function ComplianceDashboard() {
@@ -25,7 +34,7 @@ export function ComplianceDashboard() {
   if (date?.from) queryKey.push(date.from.toISOString())
   if (date?.to) queryKey.push(date.to.toISOString())
 
-  const { data: complianceRecords = [] } = useQueryWithSupabase<ComplianceRecord>({
+  const { data: complianceRecords = [] } = useQueryWithSupabase<ComplianceRecord[]>({
     queryKey,
     table: 'compliance_records',
     filter: date
@@ -36,19 +45,27 @@ export function ComplianceDashboard() {
       : undefined,
   })
 
-  const complianceRate = complianceRecords.length
-    ? (complianceRecords.filter((r) => r.status === 'compliant').length /
-        complianceRecords.length) *
-      100
+  const filteredRecords = complianceRecords.filter((r: ComplianceRecord) => {
+    const recordDate = new Date(r.date)
+    return (!date?.from || recordDate >= date.from) &&
+           (!date?.to || recordDate <= date.to)
+  })
+
+  const complianceRate = filteredRecords.length > 0
+    ? (filteredRecords.filter((r: ComplianceRecord) => r.status === 'compliant').length /
+       filteredRecords.length) * 100
     : 0
 
-  const chartData = complianceRecords.reduce(
-    (acc, record) => {
+  const chartData = filteredRecords.reduce(
+    (acc: ChartData[], record: ComplianceRecord) => {
       const date = format(new Date(record.date), 'MM/dd')
-      const existing = acc.find((d) => d.date === date)
+      const existing = acc.find((d: ChartData) => d.date === date)
+
       if (existing) {
-        existing.total += 1
-        if (record.status === 'compliant') existing.compliant += 1
+        existing.total++
+        if (record.status === 'compliant') {
+          existing.compliant++
+        }
       } else {
         acc.push({
           date,
@@ -56,9 +73,10 @@ export function ComplianceDashboard() {
           compliant: record.status === 'compliant' ? 1 : 0,
         })
       }
+
       return acc
     },
-    [] as { date: string; total: number; compliant: number }[]
+    []
   )
 
   return (

@@ -7,7 +7,9 @@ import { useMounted } from '@/lib/hooks/use-mounted'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Suspense } from 'react'
 
-function getBreadcrumbSegments(pathname: string) {
+function getBreadcrumbSegments(pathname: string | null) {
+  if (!pathname) return []
+
   const segments = pathname.split('/').filter(Boolean)
   const breadcrumbs = []
 
@@ -69,17 +71,17 @@ export default function SectionsLayout({ children }: { children: React.ReactNode
 
   return (
     <div className='flex min-h-screen flex-col'>
-      <div className='flex-1'>
-        <div className='container mx-auto px-4 py-4'>
-          <Breadcrumb className='mb-4'>
-            {segments.map((segment, _index) => (
-              <BreadcrumbItem key={segment.href} href={segment.href}>
-                {segment.title}
-              </BreadcrumbItem>
-            ))}
-          </Breadcrumb>
-          <Suspense fallback={<LoadingSkeleton />}>{children}</Suspense>
-        </div>
+      <div className='container flex-1 space-y-4 py-8'>
+        <Breadcrumb>
+          <BreadcrumbItem href='/'>Home</BreadcrumbItem>
+          {segments.map((segment, i) => (
+            <BreadcrumbItem key={i} href={segment.href}>
+              {segment.title}
+            </BreadcrumbItem>
+          ))}
+        </Breadcrumb>
+
+        <Suspense fallback={<LoadingSkeleton />}>{children}</Suspense>
       </div>
     </div>
   )

@@ -16,15 +16,16 @@ export const SpanStatus = {
   Unimplemented: 'unimplemented',
   Unavailable: 'unavailable',
   DataLoss: 'data_loss',
-  Unauthenticated: 'unauthenticated'
+  Unauthenticated: 'unauthenticated',
 } as const
 
-export type SpanStatusType = typeof SpanStatus[keyof typeof SpanStatus]
+export type SpanStatusType = (typeof SpanStatus)[keyof typeof SpanStatus]
 
 // Extend Sentry's types with the methods we need
 export interface SentrySpan extends Omit<Span, 'setStatus'> {
   setTag(key: string, value: string): this
-  setStatus(status: SpanStatusType): this
+  setStatus(status: (typeof SpanStatus)[keyof typeof SpanStatus]): this
+  setData(key: string, value: unknown): this
   finish(endTimestamp?: number): void
   startChild(context: SpanContext): SentrySpan
 }
@@ -32,6 +33,10 @@ export interface SentrySpan extends Omit<Span, 'setStatus'> {
 export interface SentryTransaction extends SentrySpan {
   setName(name: string): this
   startChild(context: SpanContext): SentrySpan
+}
+
+export interface BrowserTracing {
+  new (): Integration
 }
 
 export interface SentryScope extends Omit<Hub['getScope'], ''> {
@@ -62,7 +67,6 @@ export interface ErrorWithContext extends Error {
 
 // Re-export for use in other files
 export type { Integration }
-
 
 export interface SpanContext {
   name: string

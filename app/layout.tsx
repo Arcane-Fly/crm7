@@ -12,6 +12,36 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'CRM System',
   description: 'A modern CRM system built with Next.js',
+  icons: {
+    icon: [
+      {
+        url: '/favicon.ico',
+        sizes: 'any',
+      },
+      {
+        url: '/icon.png',
+        type: 'image/png',
+        sizes: '32x32',
+      },
+      {
+        url: '/icon.png',
+        type: 'image/png',
+        sizes: '192x192',
+      },
+      {
+        url: '/icon.png',
+        type: 'image/png',
+        sizes: '512x512',
+      },
+    ],
+    apple: [
+      {
+        url: '/apple-icon.png',
+        sizes: '180x180',
+        type: 'image/png',
+      },
+    ],
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

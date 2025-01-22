@@ -1,264 +1,279 @@
-import { supabase } from '@/lib/supabase/client'
-import { FairWorkService } from '@/lib/services/fairwork/fairwork-service'
-import { ApiError } from '@/lib/utils/error'
-import { logger } from '@/lib/services/logger'
+import { logger } from '../logger'
+import { FairWorkService } from '../fairwork/fairwork-service'
+import { createClient } from '@supabase/supabase-js'
+import type { Database } from '@/lib/types/supabase'
 
-export enum RateSourceType {
-  FAIRWORK_API = 'FAIRWORK_API',
-  ENTERPRISE_AGREEMENT = 'ENTERPRISE_AGREEMENT',
-  MANUAL_ENTRY = 'MANUAL_ENTRY',
-}
+type BaseRateTemplate = Database['public']['Tables']['rate_templates']['Row']
 
-interface PenaltyRate {
-  code: string
-  rate: number
-  description?: string
-  conditions?: Record<string, unknown>
-}
-
-interface Allowance {
-  code: string
-  amount: number
-  isPercentage: boolean
-  description?: string
-  conditions?: Record<string, unknown>
+interface RateTemplate extends BaseRateTemplate {
+  type?: 'fairwork' | 'custom'
+  location_adjustment?: number
+  skill_adjustment?: number
 }
 
 interface RateCalculationResult {
-  baseAmount: number
-  casualLoadingAmount: number
-  penaltyAmounts: Array<{
-    code: string
-    description?: string
+  baseRate: number
+  adjustments: {
+    type: string
     amount: number
-  }>
-  allowanceAmounts: Array<{
-    code: string
-    description?: string
-    amount: number
-  }>
-  totalAmount: number
-  metadata: {
-    calculatedAt: Date
-    effectiveDate: Date
-    sourceType: RateSourceType
-    sourceReference: string
-    classificationCode: string
+  }[]
+  totalRate: number
+  metadata?: {
+    configId?: string
+  }
+}
+
+interface ValidationResult {
+  isValid: boolean
+  errors: string[]
+}
+
+class RateManagementError extends Error {
+  constructor(message: string, public details?: Record<string, unknown>) {
+    super(message)
+    this.name = 'RateManagementError'
   }
 }
 
 export class RateManagementService {
   private fairWorkService: FairWorkService
+  private readonly supabase = createClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
 
   constructor(fairWorkService: FairWorkService) {
     this.fairWorkService = fairWorkService
   }
 
-  /**
-   * Sync rates from FairWork API to local database
-   */
-  async syncFairWorkRates(awardCode: string, classificationCode: string) {
+  private handleError(err: unknown, context: string): never {
+    const error = err instanceof Error ? err : new Error(String(err))
+    logger.error(`Rate management error: ${context}`, {
+      message: error.message,
+      context,
+    })
+    throw new RateManagementError({
+      message: error.message,
+      code: 'RATE_ERROR',
+      cause: error,
+    })
+  }
+
+  async syncFairWorkRates(): Promise<void> {
     try {
-      // Get rates from FairWork API
-      const awardRate = await this.fairWorkService.getAwardRate({
-        awardCode,
-        classificationCode,
-        date: new Date(),
+      logger.info('Starting FairWork rate sync')
+
+      const minWage = await this.fairWorkService.getBaseRate({
+        awardCode: 'MA000001',
+        classificationCode: 'L1',
+        date: new Date()
       })
 
-      // Insert or update base rate
-      const { data: payRate, error: payRateError } = await supabase
-        .from('pay_rates')
-        .upsert({
-          source_type: RateSourceType.FAIRWORK_API,
-          source_reference: awardCode,
-          classification_code: classificationCode,
-          base_rate: awardRate.baseRate,
-          casual_loading: awardRate.casualLoading,
-          valid_from: awardRate.effectiveFrom,
-          valid_to: awardRate.effectiveTo,
-        })
-        .select()
-        .single()
+      const { data: templates, error } = await this.supabase
+        .from('rate_templates')
+        .select('*')
+        .eq('type', 'fairwork')
 
-      if (payRateError) throw payRateError
-
-      // Insert or update penalties
-      if (awardRate.penalties?.length) {
-        const { error: penaltyError } = await supabase.from('penalty_rates').upsert(
-          awardRate.penalties.map((penalty) => ({
-            pay_rate_id: payRate.id,
-            code: penalty.code,
-            rate: penalty.rate,
-            description: penalty.description,
-          }))
-        )
-
-        if (penaltyError) throw penaltyError
+      if (error) {
+        throw new RateManagementError('Failed to fetch templates', { error })
       }
 
-      // Insert or update allowances
-      if (awardRate.allowances?.length) {
-        const { error: allowanceError } = await supabase.from('allowances').upsert(
-          awardRate.allowances.map((allowance) => ({
-            pay_rate_id: payRate.id,
-            code: allowance.code,
-            amount: allowance.amount,
-            description: allowance.description,
-          }))
-        )
-
-        if (allowanceError) throw allowanceError
+      if (!templates) {
+        throw new RateManagementError('No templates found')
       }
 
-      return payRate
-    } catch (error) {
-      logger.error('Error syncing FairWork rates:', error)
-      throw error instanceof ApiError
-        ? error
-        : new ApiError({
-            message: 'Failed to sync FairWork rates',
-            cause: error instanceof Error ? error : new Error(String(error)),
+      for (const template of templates) {
+        try {
+          await this.updateRateTemplate({
+            ...template,
+            base_rate: minWage,
+            updated_at: new Date().toISOString(),
           })
+        } catch (error) {
+          this.handleError(error, 'Error updating template during sync')
+        }
+      }
+    } catch (error) {
+      this.handleError(error, 'Failed to sync FairWork rates')
     }
   }
 
-  /**
-   * Calculate total pay rate including penalties and allowances
-   */
-  async calculateTotalRate(
-    payRateId: string,
-    hours: number,
-    date: Date,
-    conditions: Record<string, unknown> = {}
-  ): Promise<RateCalculationResult> {
+  async calculateRate(template: RateTemplate): Promise<RateCalculationResult> {
     try {
-      const { data, error } = await supabase.rpc('calculate_total_pay_rate', {
-        p_pay_rate_id: payRateId,
-        p_hours: hours,
-        p_date: date.toISOString(),
-        p_conditions: conditions,
-      })
+      logger.info('Calculating rate', { templateId: template.id })
 
-      if (error) throw error
+      let baseRate = template.base_rate
+
+      if (template.type === 'fairwork') {
+        baseRate = await this.fairWorkService.getBaseRate({
+          awardCode: 'MA000001',
+          classificationCode: 'L1',
+          date: new Date()
+        })
+      }
+
+      const adjustments: RateCalculationResult['adjustments'] = []
+
+      if (template.location_adjustment) {
+        adjustments.push({
+          type: 'location',
+          amount: baseRate * (template.location_adjustment / 100)
+        })
+      }
+
+      if (template.skill_adjustment) {
+        adjustments.push({
+          type: 'skill',
+          amount: baseRate * (template.skill_adjustment / 100)
+        })
+      }
+
+      const totalRate = baseRate + adjustments.reduce((sum, adj) => sum + adj.amount, 0)
 
       return {
-        baseAmount: data.baseAmount,
-        casualLoadingAmount: data.casualLoadingAmount,
-        penaltyAmounts: data.penaltyAmounts,
-        allowanceAmounts: data.allowanceAmounts,
-        totalAmount: data.totalAmount,
+        baseRate,
+        adjustments,
+        totalRate,
         metadata: {
-          calculatedAt: new Date(data.metadata.calculatedAt),
-          effectiveDate: new Date(data.metadata.effectiveDate),
-          sourceType: data.metadata.sourceType,
-          sourceReference: data.metadata.sourceReference,
-          classificationCode: data.metadata.classificationCode,
-        },
+          configId: template.id
+        }
       }
     } catch (error) {
-      logger.error('Error calculating total rate:', error)
-      throw error instanceof ApiError
-        ? error
-        : new ApiError({
-            message: 'Failed to calculate total rate',
-            cause: error instanceof Error ? error : new Error(String(error)),
-          })
+      this.handleError(error, 'Failed to calculate rate')
     }
   }
 
-  /**
-   * Add or update manual pay rate
-   */
-  async upsertManualRate(
-    classificationCode: string,
-    baseRate: number,
-    options: {
-      casualLoading?: number
-      validFrom: Date
-      validTo?: Date
-      penalties?: PenaltyRate[]
-      allowances?: Allowance[]
-    }
-  ) {
+  async validateRateTemplate(template: RateTemplate): Promise<ValidationResult> {
     try {
-      const { data: payRate, error: payRateError } = await supabase
-        .from('pay_rates')
-        .upsert({
-          source_type: RateSourceType.MANUAL_ENTRY,
-          classification_code: classificationCode,
-          base_rate: baseRate,
-          casual_loading: options.casualLoading,
-          valid_from: options.validFrom,
-          valid_to: options.validTo,
-        })
+      // Validate template structure
+      if (!template.base_rate || template.base_rate <= 0) {
+        throw new Error('Base rate must be greater than 0')
+      }
+
+      // Add more validation rules as needed
+      return {
+        isValid: true,
+        errors: [],
+      }
+    } catch (error) {
+      this.handleError(error, 'Failed to validate rate template')
+    }
+  }
+
+  async createRateTemplate(template: Omit<RateTemplate, 'id'>): Promise<RateTemplate> {
+    try {
+      const { data, error } = await this.supabase
+        .from('rate_templates')
+        .insert(template)
         .select()
         .single()
 
-      if (payRateError) throw payRateError
-
-      if (options.penalties?.length) {
-        const { error: penaltyError } = await supabase.from('penalty_rates').upsert(
-          options.penalties.map((penalty) => ({
-            pay_rate_id: payRate.id,
-            ...penalty,
-          }))
-        )
-
-        if (penaltyError) throw penaltyError
+      if (error) {
+        throw error
       }
 
-      if (options.allowances?.length) {
-        const { error: allowanceError } = await supabase.from('allowances').upsert(
-          options.allowances.map((allowance) => ({
-            pay_rate_id: payRate.id,
-            ...allowance,
-          }))
-        )
-
-        if (allowanceError) throw allowanceError
+      if (!data) {
+        throw new Error('No template data returned after creation')
       }
 
-      return payRate
+      return data
     } catch (error) {
-      logger.error('Error upserting manual rate:', error)
-      throw error instanceof ApiError
-        ? error
-        : new ApiError({
-            message: 'Failed to upsert manual rate',
-            cause: error instanceof Error ? error : new Error(String(error)),
-          })
+      this.handleError(error, 'Failed to create rate template')
     }
   }
 
-  /**
-   * Get all rates for a classification
-   */
-  async getClassificationRates(classificationCode: string, date: Date = new Date()) {
+  async updateRateTemplate(template: RateTemplate): Promise<void> {
     try {
-      const { data, error } = await supabase
-        .from('pay_rates')
-        .select(
-          `
-          *,
-          penalty_rates (*),
-          allowances (*)
-        `
-        )
-        .eq('classification_code', classificationCode)
-        .lte('valid_from', date)
-        .or(`valid_to.is.null,valid_to.gte.${date.toISOString()}`)
+      const { error } = await this.supabase
+        .from('rate_templates')
+        .update(template)
+        .eq('id', template.id)
 
-      if (error) throw error
+      if (error) {
+        throw error
+      }
+    } catch (error) {
+      this.handleError(error, 'Failed to update rate template')
+    }
+  }
+
+  async deleteRateTemplate(id: string): Promise<void> {
+    try {
+      const { error } = await this.supabase
+        .from('rate_templates')
+        .delete()
+        .eq('id', id)
+
+      if (error) {
+        throw error
+      }
+    } catch (error) {
+      this.handleError(error, 'Failed to delete rate template')
+    }
+  }
+
+  async getRateTemplate(templateId: string): Promise<RateTemplate> {
+    try {
+      const { data, error } = await this.supabase
+        .from('rate_templates')
+        .select('*')
+        .eq('id', templateId)
+        .single()
+
+      if (error) {
+        throw error
+      }
+
+      if (!data) {
+        throw new Error('Template not found')
+      }
+
       return data
     } catch (error) {
-      logger.error('Error getting classification rates:', error)
-      throw error instanceof ApiError
-        ? error
-        : new ApiError({
-            message: 'Failed to get classification rates',
-            cause: error instanceof Error ? error : new Error(String(error)),
-          })
+      this.handleError(error, 'Failed to get rate template')
+    }
+  }
+
+  async getRateTemplates(orgId: string): Promise<RateTemplate[]> {
+    try {
+      const { data, error } = await this.supabase
+        .from('rate_templates')
+        .select('*')
+        .eq('org_id', orgId)
+
+      if (error) {
+        throw error
+      }
+
+      if (!data) {
+        return []
+      }
+
+      return data
+    } catch (error) {
+      this.handleError(error, 'Failed to list rate templates')
+    }
+  }
+
+  async saveTemplate(template: RateTemplate): Promise<RateTemplate> {
+    try {
+      const { data, error } = await this.supabase
+        .from('rate_templates')
+        .upsert(template)
+        .select()
+        .single()
+
+      if (error) {
+        throw error
+      }
+
+      if (!data) {
+        throw new Error('Failed to save template')
+      }
+
+      return data
+    } catch (error) {
+      this.handleError(error, 'Failed to save rate template')
     }
   }
 }

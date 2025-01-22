@@ -22,7 +22,7 @@ export function useRealtimeNotifications() {
   const [unreadCount, setUnreadCount] = useState(0)
 
   useEffect(() => {
-    if (!user) return
+    if (!user?.id) return
 
     const supabase = createClient()
     const channel = supabase
@@ -70,10 +70,10 @@ export function useRealtimeNotifications() {
     return () => {
       channel.unsubscribe()
     }
-  }, [user, toast])
+  }, [user?.id, toast])
 
   const markAsRead = async (id: string) => {
-    if (!user) return
+    if (!user?.id) return
 
     const supabase = createClient()
     const { error } = await supabase.from('notifications').update({ read: true }).eq('id', id)
@@ -85,7 +85,7 @@ export function useRealtimeNotifications() {
   }
 
   const markAllAsRead = async () => {
-    if (!user) return
+    if (!user?.id) return
 
     const supabase = createClient()
     const { error } = await supabase

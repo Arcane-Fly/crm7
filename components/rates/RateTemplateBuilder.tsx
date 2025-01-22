@@ -1,10 +1,16 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useEffect, useState } from 'react'
+import { useUser } from '@auth0/nextjs-auth0/client'
+import { ratesService } from '@/lib/services/rates'
+import type { RateTemplate } from '@/lib/types/rates'
+import type { ValidationResult } from '@/lib/types/validation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { DatePicker } from '@/components/ui/date-picker'
+import { useToast } from '@/components/ui/use-toast'
 import {
   Select,
   SelectContent,
@@ -12,95 +18,98 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useToast } from '@/components/ui/use-toast'
-import { useUser } from '@/lib/hooks/use-user'
-import { ratesService, type RateTemplate } from '@/lib/services/rates'
-import { DatePicker } from '@/components/ui/date-picker'
-import { format } from 'date-fns'
 
 export interface RateTemplateBuilderProps {
   templateId?: string
   onSave?: (template: RateTemplate) => void
 }
 
-export function RateTemplateBuilder({ templateId, onSave }: RateTemplateBuilderProps) {
-  const { toast } = useToast()
-  const { user } = useUser()
-  const [loading, setLoading] = useState(false)
-  const [template, setTemplate] = useState<Partial<RateTemplate>>({
-    template_type: 'apprentice' as const,
-    is_active: true,
-    rules: {},
-    leave_loading: 0,
-    training_cost_rate: 0,
-    base_rate: 0,
-  })
-  const [errors, setErrors] = useState<string[]>([])
+const initialTemplate: RateTemplate = {
+  id: '',
+  org_id: '',
+  template_name: '',
+  template_type: 'hourly',
+  description: '',
+  effective_from: '',
+  effective_to: '',
+  base_rate: 0,
+  base_margin: 0,
+  super_rate: 0,
+  leave_loading: 0,
+  workers_comp_rate: 0,
+  payroll_tax_rate: 0,
+  training_cost_rate: 0,
+  other_costs_rate: 0,
+  funding_offset: 0,
+  status: 'draft',
+  version_number: 1,
+  is_approved: false,
+  created_at: '',
+  updated_at: '',
+}
 
-  const loadTemplate = useCallback(async () => {
-    if (!templateId || !user?.org_id) return
-    try {
-      const response = await ratesService.getTemplate(templateId)
-      if (response.data) {
-        setTemplate(response.data)
-      }
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to load template',
-        variant: 'destructive',
-      })
-    }
-  }, [templateId, toast, user])
+export function RateTemplateBuilder({ templateId, onSave }: RateTemplateBuilderProps) {
+  const [template, setTemplate] = useState<RateTemplate>(initialTemplate)
+  const [error, setError] = useState<string | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
+  const { user } = useUser()
+  const { toast } = useToast()
 
   useEffect(() => {
-    if (user?.org_id) {
-      loadTemplate()
+    const loadTemplate = async () => {
+      if (!templateId) return
+
+      try {
+        const loadedTemplate = await ratesService.getTemplate(templateId)
+        if (loadedTemplate) {
+          setTemplate(loadedTemplate)
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load template')
+      }
     }
-  }, [loadTemplate, user])
+
+    loadTemplate()
+  }, [templateId])
+
+  const validateTemplate = async () => {
+    try {
+      const result = await ratesService.validateRateTemplate(template)
+      return result
+    } catch (err) {
+      return {
+        isValid: false,
+        errors: [err instanceof Error ? err.message : 'Validation failed'],
+        warnings: [],
+      }
+    }
+  }
 
   const handleSave = async () => {
-    if (!user?.org_id || !template.template_name) {
-      setErrors(['Required fields are missing'])
+    if (!user?.org_id) {
+      toast({
+        title: 'Error',
+        description: 'User organization not found',
+        variant: 'destructive',
+      })
       return
     }
 
     try {
-      setLoading(true)
-      setErrors([])
+      setError(null)
+      setIsSaving(true)
 
-      const validation = await ratesService.validateRateTemplate(template)
-      if (!validation.data.valid) {
-        setErrors(validation.data.errors || ['Validation failed'])
+      const validation = await validateTemplate()
+      if (!validation.isValid) {
+        setError(validation.errors.join(', '))
         return
-      }
-
-      // Generate a UUID for new templates
-      const id = templateId || crypto.randomUUID()
-
-      // Ensure required fields are present
-      if (!template.template_name) {
-        throw new Error('Template name is required')
       }
 
       const fullTemplate: RateTemplate = {
         ...template,
-        id,
-        template_name: template.template_name,
-        template_type: template.template_type || 'apprentice',
         org_id: user.org_id,
-        effective_from: format(new Date(), 'yyyy-MM-dd'),
-        version_number: template.version_number || 1,
-        rules: template.rules || {},
-        is_active: template.is_active || false,
-        is_approved: template.is_approved || false,
-        base_rate: template.base_rate || 0,
-        base_margin: template.base_margin || 0,
-        super_rate: template.super_rate || 0,
-        workers_comp_rate: template.workers_comp_rate || 0,
-        payroll_tax_rate: template.payroll_tax_rate || 0,
-        leave_loading: template.leave_loading || 0,
-        training_cost_rate: template.training_cost_rate || 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       }
 
       const savedTemplate = await ratesService.saveTemplate(fullTemplate)
@@ -110,81 +119,66 @@ export function RateTemplateBuilder({ templateId, onSave }: RateTemplateBuilderP
       })
       onSave?.(savedTemplate)
     } catch (error) {
-      const err = error as Error
-      setErrors([err.message])
+      setError(error instanceof Error ? error.message : 'Failed to save template')
       toast({
         title: 'Error',
-        description: 'Failed to save template',
+        description: error instanceof Error ? error.message : 'Failed to save template',
         variant: 'destructive',
       })
     } finally {
-      setLoading(false)
+      setIsSaving(false)
     }
   }
 
-  const handleEffectiveFromChange = useCallback(
-    (newDate: Date | ((prevDate: Date | undefined) => Date | undefined) | undefined) => {
-      if (newDate instanceof Date) {
-        setTemplate((prev) => ({
-          ...prev,
-          effective_from: format(newDate, 'yyyy-MM-dd'),
-        }))
-      }
-    },
-    []
-  )
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target
+    setTemplate((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+  }
 
-  const handleEffectiveToChange = useCallback(
-    (newDate: Date | ((prevDate: Date | undefined) => Date | undefined) | undefined) => {
-      if (newDate instanceof Date) {
-        setTemplate((prev) => ({
-          ...prev,
-          effective_to: format(newDate, 'yyyy-MM-dd'),
-        }))
-      }
-    },
-    []
-  )
+  const handleEffectiveFromChange = (date: React.SetStateAction<Date | undefined>) => {
+    if (date instanceof Date) {
+      setTemplate((prev) => ({
+        ...prev,
+        effective_from: date.toISOString(),
+      }))
+    }
+  }
+
+  const handleEffectiveToChange = (date: React.SetStateAction<Date | undefined>) => {
+    if (date instanceof Date) {
+      setTemplate((prev) => ({
+        ...prev,
+        effective_to: date.toISOString(),
+      }))
+    }
+  }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{templateId ? 'Edit Rate Template' : 'Create Rate Template'}</CardTitle>
+        <CardTitle>Rate Template</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className='space-y-4'>
-          {errors.length > 0 && (
-            <div className='rounded-md bg-destructive/10 p-4'>
-              <h4 className='mb-2 font-semibold text-destructive'>
-                Please fix the following errors:
-              </h4>
-              <ul className='list-inside list-disc space-y-1'>
-                {errors.map((error, index) => (
-                  <li key={index} className='text-destructive'>
-                    {error}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          <div className='space-y-2'>
+        <form className='space-y-4'>
+          <div>
             <Label htmlFor='templateName'>Template Name</Label>
             <Input
               id='templateName'
-              value={template.template_name || ''}
-              onChange={(e) =>
-                setTemplate((prev) => ({
-                  ...prev,
-                  template_name: e.target.value,
-                }))
-              }
+              name='template_name'
+              value={template.template_name}
+              onChange={handleInputChange}
             />
           </div>
 
-          <div className='space-y-2'>
+          <div>
             <Label htmlFor='templateType'>Template Type</Label>
             <Select
+              name='template_type'
               value={template.template_type}
               onValueChange={(value) =>
                 setTemplate((prev) => ({
@@ -193,181 +187,149 @@ export function RateTemplateBuilder({ templateId, onSave }: RateTemplateBuilderP
                 }))
               }
             >
-              <SelectTrigger id='templateType'>
-                <SelectValue />
+              <SelectTrigger>
+                <SelectValue placeholder='Select type' />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='apprentice'>Apprentice</SelectItem>
-                <SelectItem value='trainee'>Trainee</SelectItem>
-                <SelectItem value='casual'>Casual</SelectItem>
-                <SelectItem value='permanent'>Permanent</SelectItem>
-                <SelectItem value='contractor'>Contractor</SelectItem>
+                <SelectItem value='hourly'>Hourly</SelectItem>
+                <SelectItem value='daily'>Daily</SelectItem>
+                <SelectItem value='fixed'>Fixed</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          <div className='grid grid-cols-2 gap-4'>
-            <div className='space-y-2'>
-              <Label htmlFor='baseMargin'>Base Margin (%)</Label>
-              <Input
-                id='baseMargin'
-                type='number'
-                min='0'
-                step='0.01'
-                value={template.base_margin || ''}
-                onChange={(e) =>
-                  setTemplate((prev) => ({
-                    ...prev,
-                    base_margin: Number(e.target.value),
-                  }))
-                }
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='superRate'>Super Rate (%)</Label>
-              <Input
-                id='superRate'
-                type='number'
-                min='0'
-                step='0.01'
-                value={template.super_rate || ''}
-                onChange={(e) =>
-                  setTemplate((prev) => ({
-                    ...prev,
-                    super_rate: Number(e.target.value),
-                  }))
-                }
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='leaveLoading'>Leave Loading (%)</Label>
-              <Input
-                id='leaveLoading'
-                type='number'
-                min='0'
-                step='0.01'
-                value={template.leave_loading || ''}
-                onChange={(e) =>
-                  setTemplate((prev) => ({
-                    ...prev,
-                    leave_loading: Number(e.target.value),
-                  }))
-                }
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='workersCompRate'>Workers Comp Rate (%)</Label>
-              <Input
-                id='workersCompRate'
-                type='number'
-                min='0'
-                step='0.01'
-                value={template.workers_comp_rate || ''}
-                onChange={(e) =>
-                  setTemplate((prev) => ({
-                    ...prev,
-                    workers_comp_rate: Number(e.target.value),
-                  }))
-                }
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='payrollTaxRate'>Payroll Tax Rate (%)</Label>
-              <Input
-                id='payrollTaxRate'
-                type='number'
-                min='0'
-                step='0.01'
-                value={template.payroll_tax_rate || ''}
-                onChange={(e) =>
-                  setTemplate((prev) => ({
-                    ...prev,
-                    payroll_tax_rate: Number(e.target.value),
-                  }))
-                }
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='trainingCostRate'>Training Cost Rate (%)</Label>
-              <Input
-                id='trainingCostRate'
-                type='number'
-                min='0'
-                step='0.01'
-                value={template.training_cost_rate || ''}
-                onChange={(e) =>
-                  setTemplate((prev) => ({
-                    ...prev,
-                    training_cost_rate: Number(e.target.value),
-                  }))
-                }
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='otherCostsRate'>Other Costs Rate (%)</Label>
-              <Input
-                id='otherCostsRate'
-                type='number'
-                min='0'
-                step='0.01'
-                value={template.other_costs_rate || ''}
-                onChange={(e) =>
-                  setTemplate((prev) => ({
-                    ...prev,
-                    other_costs_rate: Number(e.target.value),
-                  }))
-                }
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='fundingOffset'>Funding Offset</Label>
-              <Input
-                id='fundingOffset'
-                type='number'
-                min='0'
-                step='0.01'
-                value={template.funding_offset || ''}
-                onChange={(e) =>
-                  setTemplate((prev) => ({
-                    ...prev,
-                    funding_offset: Number(e.target.value),
-                  }))
-                }
-              />
-            </div>
+          <div>
+            <Label htmlFor='description'>Description</Label>
+            <Input
+              id='description'
+              name='description'
+              value={template.description}
+              onChange={handleInputChange}
+            />
           </div>
 
           <div className='grid grid-cols-2 gap-4'>
-            <div className='space-y-2'>
+            <div>
               <Label>Effective From</Label>
               <DatePicker
-                date={template.effective_from ? new Date(template.effective_from) : undefined}
+                value={template.effective_from ? new Date(template.effective_from) : undefined}
                 onSelect={handleEffectiveFromChange}
               />
             </div>
-
-            <div className='space-y-2'>
+            <div>
               <Label>Effective To</Label>
               <DatePicker
-                date={template.effective_to ? new Date(template.effective_to) : undefined}
+                value={template.effective_to ? new Date(template.effective_to) : undefined}
                 onSelect={handleEffectiveToChange}
               />
             </div>
           </div>
 
-          <div className='pt-4'>
-            <Button onClick={handleSave} disabled={loading} className='w-full'>
-              {loading ? 'Saving...' : 'Save Template'}
-            </Button>
+          <div>
+            <Label htmlFor='baseRate'>Base Rate</Label>
+            <Input
+              id='baseRate'
+              name='base_rate'
+              type='number'
+              value={template.base_rate}
+              onChange={handleInputChange}
+            />
           </div>
-        </div>
+
+          <div>
+            <Label htmlFor='baseMargin'>Base Margin (%)</Label>
+            <Input
+              id='baseMargin'
+              name='base_margin'
+              type='number'
+              value={template.base_margin}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor='superRate'>Superannuation Rate (%)</Label>
+            <Input
+              id='superRate'
+              name='super_rate'
+              type='number'
+              value={template.super_rate}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor='leaveLoading'>Leave Loading Rate (%)</Label>
+            <Input
+              id='leaveLoading'
+              name='leave_loading'
+              type='number'
+              value={template.leave_loading}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor='workersCompRate'>Workers Comp Rate (%)</Label>
+            <Input
+              id='workersCompRate'
+              name='workers_comp_rate'
+              type='number'
+              value={template.workers_comp_rate}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor='payrollTaxRate'>Payroll Tax Rate (%)</Label>
+            <Input
+              id='payrollTaxRate'
+              name='payroll_tax_rate'
+              type='number'
+              value={template.payroll_tax_rate}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor='trainingCostRate'>Training Cost Rate (%)</Label>
+            <Input
+              id='trainingCostRate'
+              name='training_cost_rate'
+              type='number'
+              value={template.training_cost_rate}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor='otherCostsRate'>Other Costs Rate (%)</Label>
+            <Input
+              id='otherCostsRate'
+              name='other_costs_rate'
+              type='number'
+              value={template.other_costs_rate}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor='fundingOffset'>Funding Offset</Label>
+            <Input
+              id='fundingOffset'
+              name='funding_offset'
+              type='number'
+              value={template.funding_offset}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          {error && <div className='text-red-500'>{error}</div>}
+
+          <Button onClick={handleSave} disabled={isSaving}>
+            {isSaving ? 'Saving...' : 'Save Template'}
+          </Button>
+        </form>
       </CardContent>
     </Card>
   )

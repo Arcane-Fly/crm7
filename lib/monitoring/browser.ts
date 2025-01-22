@@ -1,29 +1,29 @@
 import * as Sentry from '@sentry/nextjs'
-import type { Span, SpanStatus, Transaction } from '@sentry/types'
+import type { SentryTransaction as Transaction, BrowserTracing } from './types'
+import { SpanStatus } from './types'
 import { logger } from '@/lib/logger'
 
-class CustomError extends Error {
-  constructor(message: string) {
-    super(message)
-    this.name = 'CustomError'
-  }
-
-  toJSON() {
-    return {
-      name: this.name,
-      message: this.message,
-      stack: this.stack,
-    }
-  }
+type ErrorWithMetadata = {
+  name: string
+  message: string
+  stack?: string
 }
 
-function toError(maybeError: unknown): Error {
-  if (maybeError instanceof Error) return maybeError
+function toErrorMetadata(maybeError: unknown): ErrorWithMetadata {
+  if (maybeError instanceof Error) {
+    return {
+      name: maybeError.name,
+      message: maybeError.message,
+      stack: maybeError.stack,
+    }
+  }
 
-  try {
-    return new CustomError(typeof maybeError === 'string' ? maybeError : JSON.stringify(maybeError))
-  } catch {
-    return new CustomError(String(maybeError))
+  const message = typeof maybeError === 'string' ? maybeError : JSON.stringify(maybeError)
+
+  return {
+    name: 'UnknownError',
+    message,
+    stack: new Error(message).stack,
   }
 }
 
@@ -33,10 +33,10 @@ function startBrowserSpan(
   tags?: Record<string, unknown>
 ): Transaction | undefined {
   try {
-    const span = Sentry.startTransaction({
+    const span = (Sentry as any).startTransaction({
       name,
       op: operation,
-    })
+    }) as Transaction
 
     if (span && tags) {
       Object.entries(tags).forEach(([key, value]) => {
@@ -46,15 +46,16 @@ function startBrowserSpan(
 
     return span
   } catch (err) {
-    const error = toError(err)
-    logger.error('Error starting browser span:', { error: error.toJSON() })
+    logger.error('Error starting browser span', {
+      error: toErrorMetadata(err),
+    })
     return undefined
   }
 }
 
 function finishBrowserSpan(
   span: Transaction | undefined,
-  status: SpanStatus,
+  status: (typeof SpanStatus)[keyof typeof SpanStatus],
   data?: Record<string, unknown>
 ): void {
   if (!span) return
@@ -65,12 +66,13 @@ function finishBrowserSpan(
         span.setData(key, value)
       })
     }
-    
+
     span.setStatus(status)
     span.finish()
   } catch (err) {
-    const error = toError(err)
-    logger.error('Error finishing browser span:', { error: error.toJSON() })
+    logger.error('Error finishing browser span', {
+      error: toErrorMetadata(err),
+    })
   }
 }
 
@@ -81,7 +83,10 @@ function initializeBrowserMonitoring(): void {
   try {
     const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN
     if (!dsn) {
-      logger.warn('Sentry DSN not configured', { status: 'disabled' }, 'BrowserMonitoring')
+      logger.warn('Sentry DSN not configured', {
+        status: 'disabled',
+        component: 'BrowserMonitoring',
+      })
       return
     }
 
@@ -89,19 +94,18 @@ function initializeBrowserMonitoring(): void {
       dsn,
       environment: process.env.NEXT_PUBLIC_ENVIRONMENT,
       tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-      integrations: [
-        new Sentry.BrowserTracing(),
-      ],
+      integrations: [new (Sentry as any).BrowserTracing() as BrowserTracing],
     })
 
-    logger.info(
-      'Browser monitoring initialized',
-      { status: 'initialized', dsn },
-      'BrowserMonitoring'
-    )
+    logger.info('Browser monitoring initialized', {
+      status: 'initialized',
+      dsn,
+      component: 'BrowserMonitoring',
+    })
   } catch (err) {
-    const error = toError(err)
-    logger.error('Failed to initialize browser monitoring:', { error: error.toJSON() })
+    logger.error('Failed to initialize browser monitoring', {
+      error: toErrorMetadata(err),
+    })
   }
 }
 
@@ -110,24 +114,23 @@ function initializeBrowserMonitoring(): void {
  */
 export function reportWebVitals(): void {
   try {
-    // onFID((metric) => reportVital('FID', metric))
-    // onTTFB((metric) => reportVital('TTFB', metric))
-    // onLCP((metric) => reportVital('LCP', metric))
-    // onCLS((metric) => reportVital('CLS', metric))
-    // onFCP((metric) => reportVital('FCP', metric))
+    // onFID((metric) => _reportVital('FID', metric))
+    // onTTFB((metric) => _reportVital('TTFB', metric))
+    // onLCP((metric) => _reportVital('LCP', metric))
+    // onCLS((metric) => _reportVital('CLS', metric))
+    // onFCP((metric) => _reportVital('FCP', metric))
   } catch (error) {
-    const err = toError(error)
-    logger.warn(
-      'Error setting up web vitals',
-      { error: err.message, status: 'failed' },
-      'BrowserMonitoring'
-    )
+    logger.warn('Error setting up web vitals', {
+      error: toErrorMetadata(error),
+      status: 'failed',
+      component: 'BrowserMonitoring',
+    })
   }
 }
 
-function reportVital(name: string, metric: any): void {
+function _reportVital(name: string, metric: any): void {
   const span = startBrowserSpan(name, 'web.vitals')
-  
+
   try {
     if (!span) return
 
@@ -136,11 +139,12 @@ function reportVital(name: string, metric: any): void {
     span.setData('delta', metric.delta)
     span.setData('navigationType', metric.navigationType)
 
-    span.setStatus('ok')
+    span.setStatus(SpanStatus.Ok)
     span.finish()
   } catch (err) {
-    const error = toError(err)
-    logger.error('Error reporting vital:', { error: error.toJSON() })
+    logger.error('Error reporting vital', {
+      error: toErrorMetadata(err),
+    })
   }
 }
 
@@ -149,7 +153,7 @@ function reportVital(name: string, metric: any): void {
  */
 export function startPageLoadMonitoring(): void {
   const span = startBrowserSpan('page.load', 'navigation')
-  
+
   try {
     if (!span) return
 
@@ -160,11 +164,12 @@ export function startPageLoadMonitoring(): void {
     span.setData('domComplete', timing.domComplete)
     span.setData('domInteractive', timing.domInteractive)
 
-    span.setStatus('ok')
+    span.setStatus(SpanStatus.Ok)
     span.finish()
   } catch (err) {
-    const error = toError(err)
-    finishBrowserSpan(span, 'error', { error: error.toJSON() })
+    finishBrowserSpan(span, SpanStatus.InternalError, {
+      error: toErrorMetadata(err),
+    })
   }
 }
 
@@ -173,16 +178,17 @@ export function startPageLoadMonitoring(): void {
  */
 export function startNavigationMonitoring(url: string): void {
   const span = startBrowserSpan('navigation', 'navigation')
-  
+
   try {
     if (!span) return
 
     span.setData('url', url)
-    span.setStatus('ok')
+    span.setStatus(SpanStatus.Ok)
     span.finish()
   } catch (err) {
-    const error = toError(err)
-    finishBrowserSpan(span, 'error', { error: error.toJSON() })
+    finishBrowserSpan(span, SpanStatus.InternalError, {
+      error: toErrorMetadata(err),
+    })
   }
 }
 
@@ -198,12 +204,13 @@ export async function monitorBrowserPerformance<T>(
 
   try {
     const result = await operation()
-    finishBrowserSpan(span, 'ok')
+    finishBrowserSpan(span, SpanStatus.Ok)
     return result
   } catch (err) {
-    const error = toError(err)
-    finishBrowserSpan(span, 'error', { error: error.toJSON() })
-    throw error
+    finishBrowserSpan(span, SpanStatus.InternalError, {
+      error: toErrorMetadata(err),
+    })
+    throw err
   }
 }
 
@@ -212,17 +219,18 @@ export async function monitorBrowserPerformance<T>(
  */
 export function monitorRouteChange(from: string, to: string): void {
   const span = startBrowserSpan('route.change', 'navigation')
-  
+
   try {
     if (!span) return
 
     span.setData('from', from)
     span.setData('to', to)
-    span.setStatus('ok')
+    span.setStatus(SpanStatus.Ok)
     span.finish()
   } catch (err) {
-    const error = toError(err)
-    finishBrowserSpan(span, 'error', { error: error.toJSON() })
+    finishBrowserSpan(span, SpanStatus.InternalError, {
+      error: toErrorMetadata(err),
+    })
   }
 }
 
@@ -238,12 +246,13 @@ export async function monitorUserInteraction<T>(
 
   try {
     const result = await operation()
-    finishBrowserSpan(span, 'ok')
+    finishBrowserSpan(span, SpanStatus.Ok)
     return result
   } catch (err) {
-    const error = toError(err)
-    finishBrowserSpan(span, 'error', { error: error.toJSON() })
-    throw error
+    finishBrowserSpan(span, SpanStatus.InternalError, {
+      error: toErrorMetadata(err),
+    })
+    throw err
   }
 }
 
@@ -259,35 +268,35 @@ export async function monitorAPIRequest<T>(
 
   try {
     const result = await operation()
-    finishBrowserSpan(span, 'ok')
+    finishBrowserSpan(span, SpanStatus.Ok)
     return result
   } catch (err) {
-    const error = toError(err)
-    finishBrowserSpan(span, 'error', { error: error.toJSON() })
-    throw error
+    finishBrowserSpan(span, SpanStatus.InternalError, {
+      error: toErrorMetadata(err),
+    })
+    throw err
   }
 }
 
 /**
  * Monitor resource loading
  */
-export function monitorResourceLoad(
-  resourceType: string,
-  url: string,
-  duration: number
-): void {
+export function monitorResourceLoad(resourceType: string, url: string, duration: number): void {
   const span = startBrowserSpan('resource.load', 'resource')
-  
+
   try {
     if (!span) return
 
     span.setData('type', resourceType)
     span.setData('url', url)
     span.setData('duration', duration)
-    span.setStatus('ok')
+    span.setStatus(SpanStatus.Ok)
     span.finish()
   } catch (err) {
-    const error = toError(err)
-    finishBrowserSpan(span, 'error', { error: error.toJSON() })
+    finishBrowserSpan(span, SpanStatus.InternalError, {
+      error: toErrorMetadata(err),
+    })
   }
 }
+
+export { initializeBrowserMonitoring }

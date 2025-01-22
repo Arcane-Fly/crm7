@@ -1,84 +1,88 @@
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query'
-import type { PostgrestError } from '@supabase/supabase-js'
-import type { UseQueryOptions, UseInfiniteQueryOptions } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase/client'
-import { logger } from '@/lib/services/logger'
+import { createClient } from '@supabase/supabase-js'
+import { Database } from '@/lib/types/supabase'
 
-type QueryOptions<T> = Omit<UseQueryOptions<T[], PostgrestError>, 'queryKey' | 'queryFn'>
-type InfiniteQueryOptions<T> = Omit<
-  UseInfiniteQueryOptions<T[], PostgrestError>,
-  'queryKey' | 'queryFn'
->
+const supabase = createClient<Database>(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
-export function useQueryWithSupabase<T>(
-  table: string,
+type TableNames = keyof Database['public']['Tables']
+
+export function useQueryWithSupabase<T extends TableNames>(
   queryKey: string[],
-  options: QueryOptions<T> = {}
+  options?: {
+    select?: (data: Database['public']['Tables'][T]['Row'][]) => any
+    enabled?: boolean
+    staleTime?: number
+  }
 ) {
-  return useQuery<T[], PostgrestError>({
-    queryKey: ['supabase', table, ...queryKey],
+  return useQuery({
+    queryKey,
     queryFn: async () => {
       try {
-        const { data, error } = await supabase.from(table).select('*')
-
+        const { data, error } = await supabase.from(queryKey[0] as T).select('*')
         if (error) {
-          logger.error('Error in useQueryWithSupabase:', {
+          throw {
             message: error.message,
             details: error.details,
-            table,
-          })
+            hint: error.hint,
+            code: error.code,
+          }
+        }
+        return options?.select ? options.select(data) : data
+      } catch (error) {
+        if (error instanceof Error) {
           throw error
         }
-
-        return data
-      } catch (error) {
-        logger.error('Error in useQueryWithSupabase:', {
-          message: (error as Error).message,
-          table,
-        })
-        throw error
+        throw new Error('Unknown error occurred')
       }
     },
-    ...options,
+    enabled: options?.enabled,
+    staleTime: options?.staleTime,
   })
 }
 
-export function useInfiniteSupabaseQuery<T>(
-  table: string,
+export function useInfiniteQueryWithSupabase<T extends TableNames>(
   queryKey: string[],
-  { pageSize = 10, ...options }: InfiniteQueryOptions<T> & { pageSize?: number } = {}
+  options?: {
+    select?: (data: Database['public']['Tables'][T]['Row'][]) => any
+    enabled?: boolean
+    staleTime?: number
+    pageSize?: number
+  }
 ) {
-  return useInfiniteQuery<T[], PostgrestError>({
-    queryKey: ['supabase', table, 'infinite', ...queryKey],
+  return useInfiniteQuery({
+    queryKey,
     queryFn: async ({ pageParam = 0 }) => {
       try {
         const { data, error } = await supabase
-          .from(table)
+          .from(queryKey[0] as T)
           .select('*')
-          .range(Number(pageParam) * pageSize, (Number(pageParam) + 1) * pageSize - 1)
+          .range(Number(pageParam) * (options?.pageSize || 10), (Number(pageParam) + 1) * (options?.pageSize || 10) - 1)
 
         if (error) {
-          logger.error('Error in useInfiniteSupabaseQuery:', {
+          throw {
             message: error.message,
             details: error.details,
-            table,
-          })
+            hint: error.hint,
+            code: error.code,
+          }
+        }
+        return options?.select ? options.select(data) : data
+      } catch (error) {
+        if (error instanceof Error) {
           throw error
         }
-
-        return data
-      } catch (error) {
-        logger.error('Error in useInfiniteSupabaseQuery:', {
-          message: (error as Error).message,
-          table,
-        })
-        throw error
+        throw new Error('Unknown error occurred')
       }
     },
-    getNextPageParam: (lastPage, allPages) => {
-      if (!lastPage || lastPage.length < pageSize) return undefined
-      return allPages.length
+    enabled: options?.enabled,
+    staleTime: options?.staleTime,
+    getNextPageParam: (lastPage: any[], pages) => {
+      if (!lastPage || lastPage.length < (options?.pageSize || 10)) return undefined
+      return pages.length
     },
-    ...options,
+    initialPageParam: 0,
   })
 }

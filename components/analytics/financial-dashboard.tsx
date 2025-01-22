@@ -16,6 +16,12 @@ interface Transaction {
   description: string
 }
 
+interface ChartData {
+  date: string
+  income: number
+  expenses: number
+}
+
 export function FinancialDashboard() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: new Date(new Date().setMonth(new Date().getMonth() - 1)),
@@ -44,19 +50,19 @@ export function FinancialDashboard() {
   })
 
   const totalIncome = filteredTransactions
-    .filter((t) => t.type === 'income')
-    .reduce((sum, t) => sum + t.amount, 0)
+    .filter((t: Transaction) => t.type === 'income')
+    .reduce((sum: number, t: Transaction) => sum + t.amount, 0)
 
   const totalExpenses = filteredTransactions
-    .filter((t) => t.type === 'expense')
-    .reduce((sum, t) => sum + t.amount, 0)
+    .filter((t: Transaction) => t.type === 'expense')
+    .reduce((sum: number, t: Transaction) => sum + t.amount, 0)
 
   const netIncome = totalIncome - totalExpenses
 
   const chartData = filteredTransactions.reduce(
-    (acc, transaction) => {
+    (acc: ChartData[], transaction: Transaction) => {
       const date = format(new Date(transaction.transaction_date), 'MM/dd')
-      const existing = acc.find((d) => d.date === date)
+      const existing = acc.find((d: ChartData) => d.date === date)
       if (existing) {
         if (transaction.type === 'income') {
           existing.income += transaction.amount
@@ -72,7 +78,7 @@ export function FinancialDashboard() {
       }
       return acc
     },
-    [] as { date: string; income: number; expenses: number }[]
+    [] as ChartData[]
   )
 
   return (

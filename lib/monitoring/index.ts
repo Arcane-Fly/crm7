@@ -5,7 +5,7 @@ import type {
   SentryTransaction as Transaction,
   SentryHub,
   SentryScope,
-  SpanContext
+  SpanContext,
 } from './types'
 import { SpanStatus } from './types'
 import { env } from '../config/environment'
@@ -49,26 +49,30 @@ function initSentry() {
 }
 
 // Capture and report errors with context
-export function captureError(
-  error: Error,
-  _severity: ErrorSeverity = 'error',
-  context?: Record<string, unknown>
-) {
+interface ErrorOptions {
+  severity?: ErrorSeverity
+  context?: string
+  url?: string
+  [key: string]: unknown
+}
+
+export function captureError(error: Error, options: ErrorOptions = {}) {
+  const { severity = 'error', ...context } = options
+
   const eventHint: EventHint = {
     originalException: error,
     data: context,
   }
 
   Sentry.captureException(error, eventHint)
-  const metadata = {
-    ...(context || {}),
-    error: {
-      message: error.message,
-      stack: error.stack,
-      name: error.name
-    }
+  const errorInfo = {
+    message: error.message,
+    stack: error.stack,
+    name: error.name,
+    severity,
+    ...context,
   }
-  logger.error(error.message, metadata)
+  logger.error('Error captured', errorInfo)
 }
 
 // Set user context for error tracking
@@ -107,24 +111,20 @@ export function startTransaction(
     return transaction
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error))
-    const metadata = {
-      error: {
-        message: err.message,
-        stack: err.stack,
-        name: err.name
-      },
-      context: { name, op }
+    const errorInfo = {
+      message: err.message,
+      stack: err.stack,
+      name: err.name,
+      transactionName: name,
+      operation: op,
     }
-    logger.error('Failed to start transaction', metadata)
+    logger.error('Failed to start transaction', errorInfo)
     return undefined
   }
 }
 
 // Start a new span within a transaction
-export function startSpan(
-  name: string,
-  options: Record<string, unknown> = {}
-): Span | undefined {
+export function startSpan(name: string, options: Record<string, unknown> = {}): Span | undefined {
   try {
     const hub = Sentry.getCurrentHub() as unknown as SentryHub
     const scope = hub.getScope()
@@ -137,24 +137,22 @@ export function startSpan(
 
     const spanContext: SpanContext = {
       name,
-      op: options.op as string || name,
+      op: (options.op as string) || name,
       description: options.description as string,
       data: options.data as Record<string, unknown>,
-      tags: options.tags as Record<string, string>
+      tags: options.tags as Record<string, string>,
     }
 
     return transaction.startChild(spanContext)
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error))
-    const metadata = {
-      error: {
-        message: err.message,
-        stack: err.stack,
-        name: err.name
-      },
-      context: { name }
+    const errorInfo = {
+      message: err.message,
+      stack: err.stack,
+      name: err.name,
+      spanName: name,
     }
-    logger.error('Failed to start span', metadata)
+    logger.error('Failed to start span', errorInfo)
     return undefined
   }
 }
@@ -162,7 +160,7 @@ export function startSpan(
 // Helper function to finish a span with status and data
 function finishSpan(
   span: Span | undefined,
-  status: typeof SpanStatus[keyof typeof SpanStatus],
+  status: (typeof SpanStatus)[keyof typeof SpanStatus],
   data?: Record<string, unknown>
 ) {
   if (span) {
@@ -197,10 +195,7 @@ export async function withMonitoring<T>(
 }
 
 // Monitor database queries with automatic span creation
-export async function monitorDatabaseQuery<T>(
-  name: string,
-  query: () => Promise<T>
-): Promise<T> {
+export async function monitorDatabaseQuery<T>(name: string, query: () => Promise<T>): Promise<T> {
   const span = startSpan(name, { op: 'db.query' })
 
   try {

@@ -1,177 +1,154 @@
-import { useState, useEffect, useCallback } from 'react'
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { useState, useEffect } from 'react'
 import { ratesService } from '@/lib/services/rates'
-import { useToast } from '@/components/ui/use-toast'
-import type { RateTemplate } from '@/types/rates'
+import type { RateTemplate } from '@/lib/types/rates'
 
-interface RateApprovalProps {
-  templateId: string
-}
-
-interface ApprovalHistoryItem {
+interface ApprovalHistory {
   id: string
   template_id: string
-  status: 'approved' | 'rejected'
+  action: 'approve' | 'reject'
   notes: string
+  approver_id: string
   created_at: string
-  updated_at: string
 }
 
-export function RateApproval({ templateId }: RateApprovalProps) {
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<Error | null>(null)
+export const RateApproval = ({ templateId }: { templateId: string }) => {
   const [template, setTemplate] = useState<RateTemplate | null>(null)
-  const [approvalHistory, setApprovalHistory] = useState<ApprovalHistoryItem[]>([])
+  const [history, setHistory] = useState<ApprovalHistory[]>([])
   const [notes, setNotes] = useState('')
-  const { toast } = useToast()
-
-  const loadTemplate = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      const response = await ratesService.getTemplate(templateId)
-      setTemplate(response.data)
-    } catch (err) {
-      const error = err as Error
-      setError(error)
-      toast({
-        title: 'Error',
-        description: 'Failed to load template',
-        variant: 'destructive',
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }, [templateId, toast])
-
-  const loadApprovalHistory = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      const response = await ratesService.getApprovalHistory(templateId)
-      setApprovalHistory(response.data)
-    } catch (err) {
-      const error = err as Error
-      setError(error)
-      toast({
-        title: 'Error',
-        description: 'Failed to load approval history',
-        variant: 'destructive',
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }, [templateId, toast])
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    Promise.all([loadTemplate(), loadApprovalHistory()])
-  }, [loadTemplate, loadApprovalHistory])
+    const loadTemplate = async () => {
+      try {
+        const template = await ratesService.getTemplate(templateId)
+        if (template) {
+          setTemplate(template)
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load template')
+      }
+    }
+
+    loadTemplate()
+  }, [templateId])
 
   const handleApprove = async () => {
+    if (!template) return
+
     try {
-      setIsLoading(true)
-      await ratesService.approveTemplate(templateId, { notes })
-      toast({
-        title: 'Success',
-        description: 'Template approved successfully',
-      })
-      await loadApprovalHistory()
+      // Save template with approval notes
+      const updatedTemplate = await ratesService.saveTemplate({
+        ...template,
+        status: 'approved',
+        is_approved: true,
+      }, notes)
+      setTemplate(updatedTemplate)
+
+      // Refresh history after approval
+      const updatedHistory = await ratesService.getTemplateHistory(templateId)
+      setHistory(updatedHistory)
     } catch (err) {
-      const error = err as Error
-      setError(error)
-      toast({
-        title: 'Error',
-        description: 'Failed to approve template',
-        variant: 'destructive',
-      })
-    } finally {
-      setIsLoading(false)
+      setError(err instanceof Error ? err.message : 'Failed to approve template')
     }
   }
 
   const handleReject = async () => {
+    if (!template) return
+
     try {
-      setIsLoading(true)
-      await ratesService.rejectTemplate(templateId, { notes })
-      toast({
-        title: 'Success',
-        description: 'Template rejected successfully',
-      })
-      await loadApprovalHistory()
+      // Save template with rejection notes
+      const updatedTemplate = await ratesService.saveTemplate({
+        ...template,
+        status: 'rejected',
+        is_approved: false,
+      }, notes)
+      setTemplate(updatedTemplate)
+
+      // Refresh history after rejection
+      const updatedHistory = await ratesService.getTemplateHistory(templateId)
+      setHistory(updatedHistory)
     } catch (err) {
-      const error = err as Error
-      setError(error)
-      toast({
-        title: 'Error',
-        description: 'Failed to reject template',
-        variant: 'destructive',
-      })
-    } finally {
-      setIsLoading(false)
+      setError(err instanceof Error ? err.message : 'Failed to reject template')
     }
   }
 
-  if (isLoading) {
+  useEffect(() => {
+    const loadHistory = async () => {
+      try {
+        const history = await ratesService.getTemplateHistory(templateId)
+        setHistory(history)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load history')
+      }
+    }
+
+    if (templateId) {
+      loadHistory()
+    }
+  }, [templateId])
+
+  if (!template) {
     return <div>Loading...</div>
   }
 
-  if (error) {
-    return <div className='text-red-500'>{error.message}</div>
-  }
-
-  if (!template) {
-    return <div>No template found</div>
-  }
-
   return (
-    <div className='grid gap-6'>
-      <Card className='p-6'>
-        <h3 className='mb-4 text-lg font-semibold'>Template Details</h3>
-        <div className='space-y-4'>
-          <div>
-            <Label>Name</Label>
-            <Input value={template.name} readOnly />
-          </div>
-          <div>
-            <Label>Status</Label>
-            <Input value={template.status} readOnly />
-          </div>
-          <div>
-            <Label>Notes</Label>
-            <Input
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder='Add approval/rejection notes...'
-            />
-          </div>
-          <div className='flex gap-4'>
-            <Button onClick={handleApprove} disabled={isLoading}>
-              Approve
-            </Button>
-            <Button onClick={handleReject} disabled={isLoading} variant='destructive'>
-              Reject
-            </Button>
-          </div>
-        </div>
-      </Card>
+    <div>
+      <h2>Rate Template Approval</h2>
 
-      <Card className='p-6'>
-        <h3 className='mb-4 text-lg font-semibold'>Approval History</h3>
-        <div className='space-y-4'>
-          {approvalHistory.map((item, index) => (
-            <div key={index} className='border-b pb-4'>
-              <div className='flex justify-between'>
-                <span className='font-medium'>{item.status}</span>
-                <span className='text-gray-500'>
-                  {new Date(item.created_at).toLocaleDateString()}
-                </span>
-              </div>
-              {item.notes && <p className='mt-2 text-gray-600'>{item.notes}</p>}
-            </div>
-          ))}
+      {error && (
+        <div className="text-red-600 mb-4">
+          {error}
         </div>
-      </Card>
+      )}
+
+      <div className="mb-4">
+        <h3>Template Details</h3>
+        <p>Name: {template.template_name}</p>
+        <p>Type: {template.template_type}</p>
+        <p>Base Rate: ${template.base_rate}</p>
+        <p>Status: {template.status}</p>
+      </div>
+
+      <div className="mb-4">
+        <label className="block mb-2">
+          Notes:
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            className="block w-full mt-1"
+          />
+        </label>
+      </div>
+
+      <div className="flex gap-4">
+        <button
+          onClick={handleApprove}
+          disabled={template.status === 'approved'}
+          className="bg-green-500 text-white px-4 py-2 rounded"
+        >
+          Approve
+        </button>
+        <button
+          onClick={handleReject}
+          disabled={template.status === 'rejected'}
+          className="bg-red-500 text-white px-4 py-2 rounded"
+        >
+          Reject
+        </button>
+      </div>
+
+      <div className="mt-8">
+        <h3>Approval History</h3>
+        {history.map((entry) => (
+          <div key={entry.id} className="border-t py-2">
+            <p>
+              {entry.action === 'approve' ? 'Approved' : 'Rejected'} on{' '}
+              {new Date(entry.created_at).toLocaleDateString()}
+            </p>
+            {entry.notes && <p>Notes: {entry.notes}</p>}
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

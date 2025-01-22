@@ -55,15 +55,20 @@ async function triggerDeployment() {
 
     const data = DeploymentResponseSchema.parse(response.data)
     spinner.succeed('Deployment triggered successfully')
-    logger.info('Deployment triggered successfully')
+    logger.info('Deployment triggered successfully', { jobId: data.job.id })
     return data.job.id
   } catch (error) {
     spinner.fail('Failed to trigger deployment')
-    logger.error('Failed to trigger deployment:', error)
     if (axios.isAxiosError(error)) {
-      logger.error(`Error: ${error.response?.data?.message || error.message}`)
+      logger.error('Failed to trigger deployment', {
+        message: error.response?.data?.message || error.message,
+        status: error.response?.status,
+        url: error.config?.url,
+      })
+    } else if (error instanceof Error) {
+      logger.error('Failed to trigger deployment', { message: error.message })
     } else {
-      logger.error(`Error: ${error}`)
+      logger.error('Failed to trigger deployment', { message: String(error) })
     }
     process.exit(1)
   }
@@ -79,7 +84,9 @@ async function monitorDeployment(jobId: string, options: DeploymentOptions) {
     try {
       EnvSchema.parse({ VERCEL_TOKEN: token })
     } catch (error) {
-      logger.error('Invalid Vercel token')
+      logger.error('Invalid Vercel token', {
+        error: error instanceof Error ? error.message : String(error),
+      })
       process.exit(1)
     }
   }
@@ -104,32 +111,38 @@ async function monitorDeployment(jobId: string, options: DeploymentOptions) {
       switch (deployment.state) {
         case 'READY':
           spinner.succeed(chalk.green('Deployment successful! 🚀'))
-          logger.info('Deployment completed successfully')
-          logger.info('Deployment URL:', { url: deployment.url })
-          logger.info('Deployment ID:', { id: deployment.id })
-          logger.info('Created:', { created: new Date(deployment.created).toLocaleString() })
-          logger.info('Ready:', {
+          logger.info('Deployment completed successfully', {
+            url: deployment.url,
+            id: deployment.id,
+            created: new Date(deployment.created).toLocaleString(),
             ready: deployment.ready ? new Date(deployment.ready).toLocaleString() : 'N/A',
           })
           return
 
         case 'ERROR':
           spinner.fail(chalk.red('Deployment failed! ❌'))
-          logger.error('Deployment failed:', { error: deployment.error?.message })
-          logger.error('Error Code:', { code: deployment.error?.code })
+          logger.error('Deployment failed', {
+            error: deployment.error?.message,
+            code: deployment.error?.code,
+          })
           process.exit(1)
 
         default:
           spinner.text = `Deployment status: ${deployment.state}`
-          logger.info('Deployment status:', { status: deployment.state })
+          logger.info('Deployment status', { status: deployment.state })
       }
     } catch (error) {
       spinner.fail('Failed to check deployment status')
-      logger.error('Error monitoring deployment:', error)
       if (axios.isAxiosError(error)) {
-        logger.error(`Error: ${error.response?.data?.message || error.message}`)
+        logger.error('Error monitoring deployment', {
+          message: error.response?.data?.message || error.message,
+          status: error.response?.status,
+          url: error.config?.url,
+        })
+      } else if (error instanceof Error) {
+        logger.error('Error monitoring deployment', { message: error.message })
       } else {
-        logger.error(`Error: ${error}`)
+        logger.error('Error monitoring deployment', { message: String(error) })
       }
       process.exit(1)
     }
@@ -139,7 +152,7 @@ async function monitorDeployment(jobId: string, options: DeploymentOptions) {
   }
 
   spinner.fail(chalk.yellow(`Deployment monitoring timed out after ${timeout} seconds`))
-  logger.error(`Deployment monitoring timed out after ${timeout} seconds`)
+  logger.error('Deployment monitoring timed out', { timeout })
   process.exit(1)
 }
 
@@ -151,7 +164,7 @@ program
   .description('Trigger a new deployment')
   .action(async () => {
     const jobId = await triggerDeployment()
-    logger.info('Deployment Job ID:', { jobId })
+    logger.info('Deployment triggered', { jobId })
   })
 
 program
@@ -177,7 +190,7 @@ program
   .option('--interval <seconds>', 'Check interval in seconds', '10')
   .action(async (options) => {
     const jobId = await triggerDeployment()
-    logger.info('Deployment Job ID:', { jobId })
+    logger.info('Deployment triggered', { jobId })
     await monitorDeployment(jobId, {
       token: options.token,
       timeout: parseInt(options.timeout),
