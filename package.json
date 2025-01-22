@@ -59,7 +59,7 @@
     "@tanstack/react-query-devtools": "5.64.1",
     "@tanstack/react-table": "^8.20.6",
     "auth0": "4.16.0",
-    "axios": "1.6.7",
+    "axios": "1.7.4",
     "chalk": "5.4.1",
     "chart.js": "4.4.7",
     "class-variance-authority": "0.7.1",
@@ -123,7 +123,7 @@
     "sharp": "0.33.5",
     "tailwindcss": "^3.4.17",
     "typescript": "5.3.3",
-    "vite": "^5.4.11",
+    "vite": "^5.4.12",
     "vite-tsconfig-paths": "5.1.4",
     "vitest": "^1.6.0",
     "winston": "3.17.0"
