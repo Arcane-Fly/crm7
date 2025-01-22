@@ -25,7 +25,9 @@ interface DataTableRowProps {
 }
 
 export function TransactionList() {
+  const { transactions: transactionResult } = useBankIntegration()
   const { transactions } = useBankIntegration()
+  const transactionList = transactions?.data || []
   const [dateRange, setDateRange] = React.useState<DateRange | undefined>()
   const [accountFilter, _setAccountFilter] = React.useState<string>('')
   const [typeFilter, setTypeFilter] = React.useState<'credit' | 'debit' | ''>('')
@@ -87,9 +89,7 @@ export function TransactionList() {
   ]
 
   const filteredData = React.useMemo(() => {
-    if (!transactions.data) return []
-
-    return transactions.data.filter((transaction: BankTransaction) => {
+    return transactionList.filter((transaction: BankTransaction) => {
       const matchesAccount = !accountFilter || transaction.account_id === accountFilter
       const matchesType = !typeFilter || transaction.type === typeFilter
       const matchesDate =
@@ -100,9 +100,9 @@ export function TransactionList() {
 
       return matchesAccount && matchesType && matchesDate
     })
-  }, [transactions.data, accountFilter, typeFilter, dateRange])
+  }, [transactions, accountFilter, typeFilter, dateRange])
 
-  if (transactions.isLoading) {
+  if (transactionResult.isLoading) {
     return (
       <div className='flex h-[400px] items-center justify-center'>
         <Loader2 className='h-8 w-8 animate-spin' />
@@ -110,7 +110,7 @@ export function TransactionList() {
     )
   }
 
-  if (transactions.error) {
+  if (transactionResult.error) {
     return (
       <div className='flex h-[400px] items-center justify-center'>
         <p className='text-destructive'>Failed to load transactions</p>

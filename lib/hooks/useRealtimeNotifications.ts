@@ -36,6 +36,8 @@ export function useRealtimeNotifications() {
           filter: `user_id=eq.${user.id}`,
         },
         (payload) => {
+          if (!user?.id) return
+
           const notification = payload.new as Notification
           setNotifications((current) => [notification, ...current])
           setUnreadCount((count) => count + 1)
@@ -52,6 +54,8 @@ export function useRealtimeNotifications() {
 
     // Fetch initial notifications
     async function fetchNotifications() {
+      if (!user?.id) return
+
       const { data, error } = await supabase
         .from('notifications')
         .select('*')

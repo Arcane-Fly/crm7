@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/select'
 import { useToast } from '@/components/ui/use-toast'
 import { useUser } from '@/lib/hooks/use-user'
-import type { RateTemplate } from '@/lib/services/rates'
+import type { RateTemplate, RateCalculation } from '@/lib/types/rates'
 import { ratesService } from '@/lib/services/rates'
 import { DataTable } from '@/components/ui/data-table'
 import { formatCurrency, formatDate } from '@/lib/utils'
@@ -21,18 +21,34 @@ import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
+interface Employee {
+  id: string
+  name: string
+  hourlyRate: number
+  status: 'active' | 'inactive'
+}
+
+interface BulkCalculation {
+  id: string
+  employeeId: string
+  templateId: string
+  hours: number
+  calculatedAt: string
+  result: RateCalculation
+}
+
 export function BulkRateCalculator() {
   const { toast } = useToast()
   const { user } = useUser()
   const [loading, setLoading] = useState(false)
   const [templates, setTemplates] = useState<RateTemplate[]>([])
-  const [employees, setEmployees] = useState<any[]>([])
-  const [selectedTemplate, setSelectedTemplate] = useState<RateTemplate | null>(null)
+  const [employees, setEmployees] = useState<Employee[]>([])
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('')
   const [selectedEmployees, setSelectedEmployees] = useState<string[]>([])
   const [calculationDate, setCalculationDate] = useState<Date | undefined>(new Date())
   const [baseRate, setBaseRate] = useState<number>(0)
   const [casualLoading, setCasualLoading] = useState<number>(0)
-  const [bulkCalculations, setBulkCalculations] = useState<any[]>([])
+  const [bulkCalculations, setBulkCalculations] = useState<BulkCalculation[]>([])
 
   const loadTemplates = useCallback(async () => {
     try {
@@ -105,7 +121,7 @@ export function BulkRateCalculator() {
 
       const { data } = await ratesService.createBulkCalculation({
         org_id: user!.org_id,
-        template_id: selectedTemplate!.id,
+        template_id: selectedTemplate,
         employee_ids: selectedEmployees,
       })
 
@@ -130,7 +146,7 @@ export function BulkRateCalculator() {
 
     const results = Object.entries(calculation.results).map(([key, value]: [string, any]) => ({
       id: key,
-      template_name: templates.find((t) => t.id === value.template_id)?.template_name || 'Unknown',
+      name: templates.find((t) => t.id === value.template_id)?.name || 'Unknown',
       employee_name: employees.find((e) => e.id === value.employee_id)?.name || 'Unknown',
       base_rate: value.base_rate,
       final_rate: value.final_rate,
@@ -180,11 +196,8 @@ export function BulkRateCalculator() {
             <div className='space-y-2'>
               <Label>Templates</Label>
               <Select
-                value={selectedTemplate?.id}
-                onValueChange={(value) => {
-                  const template = templates.find((t) => t.id === value)
-                  setSelectedTemplate(template || null)
-                }}
+                value={selectedTemplate}
+                onValueChange={(value) => setSelectedTemplate(value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder='Select templates' />
@@ -192,7 +205,7 @@ export function BulkRateCalculator() {
                 <SelectContent>
                   {templates.map((template) => (
                     <SelectItem key={template.id} value={template.id}>
-                      {template.template_name}
+                      {template.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -220,7 +233,7 @@ export function BulkRateCalculator() {
 
             <div className='space-y-2'>
               <Label>Calculation Date</Label>
-              <DatePicker date={calculationDate} onSelect={setCalculationDate} />
+              <DatePicker value={calculationDate} onSelect={setCalculationDate} />
             </div>
 
             <div className='space-y-2'>

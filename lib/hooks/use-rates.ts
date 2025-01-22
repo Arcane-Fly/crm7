@@ -1,33 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
+import { ratesService } from '@/lib/services/rates'
+import type { RateTemplate } from '@/lib/types/rates'
 
-interface Rate {
-  id: string
-  rate: number
-  effective_date: string
-  status: 'active' | 'inactive' | 'pending'
-}
-
-interface UseRatesResult {
-  data?: Rate[]
-  isLoading: boolean
-  error: Error | null
-}
-
-async function fetchRates(orgId: string): Promise<Rate[]> {
-  const response = await axios.get(`/api/organizations/${orgId}/rates`)
-  return response.data
-}
-
-export function useRates(orgId: string): UseRatesResult {
-  const { data, isLoading, error } = useQuery({
+export function useRates(orgId: string) {
+  return useQuery<RateTemplate[], Error>({
     queryKey: ['rates', orgId],
-    queryFn: () => fetchRates(orgId),
+    queryFn: async () => {
+      const { data } = await ratesService.getTemplates({ org_id: orgId })
+      return data
+    }
   })
-
-  return {
-    data,
-    isLoading,
-    error: error as Error | null,
-  }
 }

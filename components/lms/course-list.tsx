@@ -21,6 +21,7 @@ import { Badge } from '@/components/ui/badge'
 import { Loader2, MoreVertical } from 'lucide-react'
 import { format } from 'date-fns'
 import { useRouter } from 'next/navigation'
+import type { Course } from '@/lib/types/lms'
 
 export function CourseList() {
   const router = useRouter()
@@ -29,10 +30,7 @@ export function CourseList() {
 
   const onArchive = async (courseId: string) => {
     try {
-      await updateCourse({
-        match: { id: courseId },
-        data: { status: 'inactive' },
-      })
+      await updateCourse(courseId, { status: 'inactive' })
       toast({
         title: 'Course archived',
         description: 'The course has been archived successfully.',
@@ -67,52 +65,55 @@ export function CourseList() {
 
   return (
     <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
-      {courses.data?.map((course) => (
-        <Card key={course.id}>
-          <CardHeader>
-            <div className='flex items-center justify-between'>
-              <div className='space-y-1'>
-                <CardTitle>{course.title}</CardTitle>
-                <CardDescription>Instructor: {course.instructor}</CardDescription>
+      {courses.data?.map((item: unknown) => {
+        const course = item as Course;
+        return (
+          <Card key={course.id}>
+            <CardHeader>
+              <div className='flex items-center justify-between'>
+                <div className='space-y-1'>
+                  <CardTitle>{course.title}</CardTitle>
+                  <CardDescription>Instructor: {course.instructor}</CardDescription>
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant='ghost' size='icon' disabled={isUpdatingCourse}>
+                      <MoreVertical className='h-4 w-4' />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align='end'>
+                    <DropdownMenuItem onClick={() => router.push(`/courses/${course.id}`)}>
+                      View Details
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push(`/courses/${course.id}/edit`)}>
+                      Edit Course
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onArchive(course.id)}>
+                      Archive Course
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant='ghost' size='icon' disabled={isUpdatingCourse}>
-                    <MoreVertical className='h-4 w-4' />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align='end'>
-                  <DropdownMenuItem onClick={() => router.push(`/courses/${course.id}`)}>
-                    View Details
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => router.push(`/courses/${course.id}/edit`)}>
-                    Edit Course
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onArchive(course.id)}>
-                    Archive Course
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className='space-y-4'>
-              <p className='text-sm text-muted-foreground'>{course.description}</p>
-              <div className='flex items-center gap-2'>
-                <Badge variant={course.status === 'active' ? 'default' : 'secondary'}>
-                  {course.status}
-                </Badge>
+            </CardHeader>
+            <CardContent>
+              <div className='space-y-4'>
+                <p className='text-sm text-muted-foreground'>{course.description}</p>
+                <div className='flex items-center gap-2'>
+                  <Badge variant={course.status === 'active' ? 'default' : 'secondary'}>
+                    {course.status}
+                  </Badge>
+                </div>
               </div>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <div className='flex w-full items-center justify-between text-sm text-muted-foreground'>
-              <div>Start: {format(new Date(course.start_date), 'MMM d, yyyy')}</div>
-              <div>End: {format(new Date(course.end_date), 'MMM d, yyyy')}</div>
-            </div>
-          </CardFooter>
-        </Card>
-      ))}
+            </CardContent>
+            <CardFooter>
+              <div className='flex w-full items-center justify-between text-sm text-muted-foreground'>
+                <div>Start: {format(new Date(course.start_date), 'MMM d, yyyy')}</div>
+                <div>End: {format(new Date(course.end_date), 'MMM d, yyyy')}</div>
+              </div>
+            </CardFooter>
+          </Card>
+        )
+      })}
     </div>
   )
 }

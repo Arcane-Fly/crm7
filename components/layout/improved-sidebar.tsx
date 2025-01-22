@@ -56,7 +56,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function Sidebar() {
-  const pathname = usePathname()
+  const pathname = usePathname() ?? '/'
   const { isCollapsed, toggleCollapse } = useSidebar()
   const [isMobileOpen, setIsMobileOpen] = React.useState(false)
 

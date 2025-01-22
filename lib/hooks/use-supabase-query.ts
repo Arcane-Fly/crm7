@@ -19,6 +19,8 @@ interface QueryConfig<T extends TableName> {
   table: T
   filter?: QueryFilter[]
   enabled?: boolean
+  select?: string
+  order?: Array<{ column: string; ascending: boolean }>
 }
 
 interface MutationConfig<T extends TableName> {

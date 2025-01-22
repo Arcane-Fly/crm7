@@ -10,6 +10,9 @@
   - Document decision-making
   - Validate assumptions
   - Use step-by-step analysis for complex tasks
+  - Critique your approach before coding begins.
+  - your reasoning should consider the project documentation found at /docs/*
+  - Tmestamp last @web search confirmation of docs update. i.e. package, best coding practices, versioning etc...
 
 ## 2. Code Quality Standards
 

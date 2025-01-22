@@ -1,164 +1,141 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
-import { format } from 'date-fns'
-import { DatePickerWithRange } from '@/components/ui/date-range-picker'
+import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { useQueryWithSupabase } from '@/lib/hooks/use-query-with-supabase'
-import type { DateRange } from 'react-day-picker'
+import { ComplianceRecord } from '@/lib/types/hr'
+import { supabase } from '@/lib/supabase'
+import { Database } from '@/lib/types/database'
 
-interface ComplianceRecord {
-  id: string
-  org_id: string
-  status: 'compliant' | 'non-compliant'
-  date: string
-  type: string
-  details: string
-  created_at: string
-  updated_at: string
-}
-
-interface ChartData {
-  date: string
+interface ComplianceStats {
   total: number
   compliant: number
+  nonCompliant: number
+  pending: number
+  complianceRate: number
 }
 
 export function ComplianceDashboard() {
-  const [date, setDate] = useState<DateRange | undefined>({
-    from: new Date(new Date().setMonth(new Date().getMonth() - 1)),
-    to: new Date(),
+  const [records, setRecords] = useState<ComplianceRecord[]>([])
+  const [stats, setStats] = useState<ComplianceStats>({
+    total: 0,
+    compliant: 0,
+    nonCompliant: 0,
+    pending: 0,
+    complianceRate: 0,
   })
 
-  const queryKey = ['compliance']
-  if (date?.from) queryKey.push(date.from.toISOString())
-  if (date?.to) queryKey.push(date.to.toISOString())
+  useEffect(() => {
+    async function fetchComplianceData() {
+      try {
+        const { data, error } = await supabase
+          .from<
+            'compliance_records',
+            Database['public']['Tables']['compliance_records']['Row']
+          >('compliance_records')
+          .select('*')
+          .order('dueDate', { ascending: false })
 
-  const { data: complianceRecords = [] } = useQueryWithSupabase<ComplianceRecord[]>({
-    queryKey,
-    table: 'compliance_records',
-    filter: date
-      ? [
-          { column: 'date', value: date.from?.toISOString() },
-          { column: 'date', value: date.to?.toISOString() },
-        ]
-      : undefined,
-  })
+        if (error) throw error
 
-  const filteredRecords = complianceRecords.filter((r: ComplianceRecord) => {
-    const recordDate = new Date(r.date)
-    return (!date?.from || recordDate >= date.from) &&
-           (!date?.to || recordDate <= date.to)
-  })
-
-  const complianceRate = filteredRecords.length > 0
-    ? (filteredRecords.filter((r: ComplianceRecord) => r.status === 'compliant').length /
-       filteredRecords.length) * 100
-    : 0
-
-  const chartData = filteredRecords.reduce(
-    (acc: ChartData[], record: ComplianceRecord) => {
-      const date = format(new Date(record.date), 'MM/dd')
-      const existing = acc.find((d: ChartData) => d.date === date)
-
-      if (existing) {
-        existing.total++
-        if (record.status === 'compliant') {
-          existing.compliant++
+        if (data) {
+          setRecords(data)
+          calculateStats(data)
         }
-      } else {
-        acc.push({
-          date,
-          total: 1,
-          compliant: record.status === 'compliant' ? 1 : 0,
-        })
+      } catch (error) {
+        console.error('Error fetching compliance data:', error)
       }
+    }
 
-      return acc
-    },
-    []
-  )
+    fetchComplianceData()
+  }, [])
+
+  const calculateStats = (records: ComplianceRecord[]) => {
+    const total = records.length
+    const compliant = records.filter((r) => r.status === 'compliant').length
+    const nonCompliant = records.filter((r) => r.status === 'non_compliant').length
+    const pending = records.filter((r) => r.status === 'pending').length
+    const complianceRate = total > 0 ? (compliant / total) * 100 : 0
+
+    setStats({
+      total,
+      compliant,
+      nonCompliant,
+      pending,
+      complianceRate,
+    })
+  }
+
+  const getStatusColor = (status: ComplianceRecord['status']) => {
+    switch (status) {
+      case 'compliant':
+        return 'bg-green-500'
+      case 'non_compliant':
+        return 'bg-red-500'
+      case 'pending':
+        return 'bg-yellow-500'
+      default:
+        return 'bg-gray-500'
+    }
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString()
+  }
 
   return (
     <div className='space-y-4'>
-      <div className='flex items-center justify-between'>
-        <h2 className='text-3xl font-bold tracking-tight'>Compliance Dashboard</h2>
-        <DatePickerWithRange date={date} onDateChange={setDate} />
-      </div>
-
-      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
-        <Card>
-          <CardHeader>
-            <CardTitle>Overall Compliance Rate</CardTitle>
-            <CardDescription>Percentage of compliant records</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>{complianceRate.toFixed(1)}%</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Total Records</CardTitle>
-            <CardDescription>Number of compliance records</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>{complianceRecords.length}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Non-Compliant Records</CardTitle>
-            <CardDescription>Records requiring attention</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>
-              {complianceRecords.filter((r) => r.status === 'non-compliant').length}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       <Card>
         <CardHeader>
-          <CardTitle>Compliance Trend</CardTitle>
-          <CardDescription>Historical view of compliance rates</CardDescription>
+          <CardTitle>Compliance Overview</CardTitle>
+          <CardDescription>Current compliance status and metrics</CardDescription>
         </CardHeader>
         <CardContent>
-          <LineChart width={800} height={400} data={chartData}>
-            <CartesianGrid strokeDasharray='3 3' />
-            <XAxis dataKey='date' />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Line type='monotone' dataKey='compliant' stroke='#10b981' name='Compliant Records' />
-            <Line type='monotone' dataKey='total' stroke='#6366f1' name='Total Records' />
-          </LineChart>
+          <div className='space-y-4'>
+            <div className='grid grid-cols-4 gap-4'>
+              <div>
+                <p className='text-sm font-medium'>Total Records</p>
+                <p className='text-2xl font-bold'>{stats.total}</p>
+              </div>
+              <div>
+                <p className='text-sm font-medium'>Compliant</p>
+                <p className='text-2xl font-bold text-green-600'>{stats.compliant}</p>
+              </div>
+              <div>
+                <p className='text-sm font-medium'>Non-Compliant</p>
+                <p className='text-2xl font-bold text-red-600'>{stats.nonCompliant}</p>
+              </div>
+              <div>
+                <p className='text-sm font-medium'>Pending</p>
+                <p className='text-2xl font-bold text-yellow-600'>{stats.pending}</p>
+              </div>
+            </div>
+
+            <div>
+              <p className='mb-2 text-sm font-medium'>Overall Compliance Rate</p>
+              <Progress value={stats.complianceRate} className='w-full' />
+              <p className='mt-1 text-sm text-gray-500'>{stats.complianceRate.toFixed(1)}%</p>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Recent Records</CardTitle>
-          <CardDescription>Latest compliance records</CardDescription>
+          <CardTitle>Recent Compliance Records</CardTitle>
+          <CardDescription>Latest compliance status updates</CardDescription>
         </CardHeader>
         <CardContent>
           <div className='space-y-4'>
-            {complianceRecords.slice(0, 5).map((record) => (
+            {records.slice(0, 5).map((record: ComplianceRecord) => (
               <div
                 key={record.id}
                 className='flex items-center justify-between rounded-lg border p-4'
               >
                 <div>
-                  <div className='font-medium'>{record.type}</div>
-                  <div className='text-sm text-muted-foreground'>
-                    {format(new Date(record.date), 'PPP')}
-                  </div>
+                  <h4 className='font-medium'>{record.type}</h4>
+                  <p className='text-sm text-gray-500'>Due: {formatDate(record.dueDate)}</p>
                 </div>
-                <Badge variant={record.status === 'compliant' ? 'default' : 'destructive'}>
-                  {record.status}
-                </Badge>
+                <Badge className={getStatusColor(record.status)}>{record.status}</Badge>
               </div>
             ))}
           </div>

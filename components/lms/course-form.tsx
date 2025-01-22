@@ -59,21 +59,18 @@ export function CourseForm({ courseId, defaultValues, onSuccess }: CourseFormPro
     try {
       setIsSubmitting(true)
       if (courseId) {
-        await updateCourse({
-          match: { id: courseId },
-          data: values,
-        })
+        await updateCourse(courseId, values)
         toast({
           title: 'Course updated',
           description: 'The course has been updated successfully.',
         })
       } else {
         await createCourse({
-          data: {
-            ...values,
-            org_id: user.org_id,
-            status: 'active',
-          },
+          ...values,
+          org_id: user.org_id,
+          status: 'active',
+          duration: 0, // Default duration
+          level: 'beginner' // Default level
         })
         toast({
           title: 'Course created',

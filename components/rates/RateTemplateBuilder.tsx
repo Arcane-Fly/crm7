@@ -1,336 +1,295 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import { useUser } from '@auth0/nextjs-auth0/client'
-import { ratesService } from '@/lib/services/rates'
-import type { RateTemplate } from '@/lib/types/rates'
-import type { ValidationResult } from '@/lib/types/validation'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { DatePicker } from '@/components/ui/date-picker'
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { useToast } from '@/components/ui/use-toast'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { RateTemplate, RateTemplateStatus } from '@/lib/types/rates'
+import { useSupabase } from '@/lib/supabase/supabase-provider'
+import { useUser } from '@/lib/hooks/useUser'
 
-export interface RateTemplateBuilderProps {
-  templateId?: string
+const rateTemplateSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  description: z.string().optional(),
+  template_type: z.enum(['hourly', 'daily', 'fixed']),
+  base_rate: z.number().min(0),
+  base_margin: z.number().min(0),
+  super_rate: z.number().min(0),
+  leave_loading: z.number().min(0),
+  workers_comp_rate: z.number().min(0),
+  payroll_tax_rate: z.number().min(0),
+  training_cost_rate: z.number().min(0),
+  other_costs_rate: z.number().min(0),
+  funding_offset: z.number().min(0),
+  effective_from: z.string().nullable(),
+  effective_to: z.string().nullable(),
+})
+
+type RateTemplateFormData = z.infer<typeof rateTemplateSchema>
+
+interface RateTemplateBuilderProps {
+  template?: RateTemplate
   onSave?: (template: RateTemplate) => void
+  onCancel?: () => void
 }
 
-const initialTemplate: RateTemplate = {
-  id: '',
-  org_id: '',
-  template_name: '',
-  template_type: 'hourly',
-  description: '',
-  effective_from: '',
-  effective_to: '',
-  base_rate: 0,
-  base_margin: 0,
-  super_rate: 0,
-  leave_loading: 0,
-  workers_comp_rate: 0,
-  payroll_tax_rate: 0,
-  training_cost_rate: 0,
-  other_costs_rate: 0,
-  funding_offset: 0,
-  status: 'draft',
-  version_number: 1,
-  is_approved: false,
-  created_at: '',
-  updated_at: '',
-}
-
-export function RateTemplateBuilder({ templateId, onSave }: RateTemplateBuilderProps) {
-  const [template, setTemplate] = useState<RateTemplate>(initialTemplate)
-  const [error, setError] = useState<string | null>(null)
-  const [isSaving, setIsSaving] = useState(false)
+export function RateTemplateBuilder({
+  template,
+  onSave,
+  onCancel
+}: RateTemplateBuilderProps) {
+  const { supabase } = useSupabase()
   const { user } = useUser()
   const { toast } = useToast()
 
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting }
+  } = useForm<RateTemplateFormData>({
+    resolver: zodResolver(rateTemplateSchema),
+    defaultValues: template || {
+      name: '',
+      description: '',
+      template_type: 'hourly',
+      base_rate: 0,
+      base_margin: 0,
+      super_rate: 10,
+      leave_loading: 0,
+      workers_comp_rate: 0,
+      payroll_tax_rate: 0,
+      training_cost_rate: 0,
+      other_costs_rate: 0,
+      funding_offset: 0,
+      effective_from: null,
+      effective_to: null,
+    }
+  })
+
   useEffect(() => {
-    const loadTemplate = async () => {
-      if (!templateId) return
+    if (template) {
+      reset(template)
+    }
+  }, [template, reset])
 
-      try {
-        const loadedTemplate = await ratesService.getTemplate(templateId)
-        if (loadedTemplate) {
-          setTemplate(loadedTemplate)
+  const onSubmit = async (data: RateTemplateFormData) => {
+    try {
+      const newTemplate: Partial<RateTemplate> = {
+        ...data,
+        org_id: user?.org_id as string,
+        status: template?.status || RateTemplateStatus.Draft,
+        updated_by: user?.id as string,
+      }
+
+      if (!template?.id) {
+        const { data: savedTemplate, error } = await supabase
+          .from('rate_templates')
+          .insert([newTemplate])
+          .select()
+          .single()
+
+        if (error) throw error
+        
+        toast({
+          title: 'Success',
+          description: 'Rate template created successfully',
+        })
+        
+        if (onSave && savedTemplate) {
+          onSave(savedTemplate as RateTemplate)
         }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load template')
+      } else {
+        const { data: updatedTemplate, error } = await supabase
+          .from('rate_templates')
+          .update(newTemplate)
+          .eq('id', template.id)
+          .select()
+          .single()
+
+        if (error) throw error
+        
+        toast({
+          title: 'Success',
+          description: 'Rate template updated successfully',
+        })
+        
+        if (onSave && updatedTemplate) {
+          onSave(updatedTemplate as RateTemplate)
+        }
       }
-    }
-
-    loadTemplate()
-  }, [templateId])
-
-  const validateTemplate = async () => {
-    try {
-      const result = await ratesService.validateRateTemplate(template)
-      return result
-    } catch (err) {
-      return {
-        isValid: false,
-        errors: [err instanceof Error ? err.message : 'Validation failed'],
-        warnings: [],
-      }
-    }
-  }
-
-  const handleSave = async () => {
-    if (!user?.org_id) {
-      toast({
-        title: 'Error',
-        description: 'User organization not found',
-        variant: 'destructive',
-      })
-      return
-    }
-
-    try {
-      setError(null)
-      setIsSaving(true)
-
-      const validation = await validateTemplate()
-      if (!validation.isValid) {
-        setError(validation.errors.join(', '))
-        return
-      }
-
-      const fullTemplate: RateTemplate = {
-        ...template,
-        org_id: user.org_id,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }
-
-      const savedTemplate = await ratesService.saveTemplate(fullTemplate)
-      toast({
-        title: 'Success',
-        description: 'Template saved successfully',
-      })
-      onSave?.(savedTemplate)
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to save template')
+      console.error('Error saving template:', error)
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to save template',
+        description: 'Failed to save rate template',
         variant: 'destructive',
       })
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target
-    setTemplate((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
-  }
-
-  const handleEffectiveFromChange = (date: React.SetStateAction<Date | undefined>) => {
-    if (date instanceof Date) {
-      setTemplate((prev) => ({
-        ...prev,
-        effective_from: date.toISOString(),
-      }))
-    }
-  }
-
-  const handleEffectiveToChange = (date: React.SetStateAction<Date | undefined>) => {
-    if (date instanceof Date) {
-      setTemplate((prev) => ({
-        ...prev,
-        effective_to: date.toISOString(),
-      }))
     }
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Rate Template</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form className='space-y-4'>
-          <div>
-            <Label htmlFor='templateName'>Template Name</Label>
-            <Input
-              id='templateName'
-              name='template_name'
-              value={template.template_name}
-              onChange={handleInputChange}
-            />
-          </div>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Name</label>
+          <input
+            type="text"
+            {...register('name')}
+            className="w-full rounded-md border p-2"
+          />
+          {errors.name && (
+            <p className="text-sm text-red-500">{errors.name.message}</p>
+          )}
+        </div>
 
-          <div>
-            <Label htmlFor='templateType'>Template Type</Label>
-            <Select
-              name='template_type'
-              value={template.template_type}
-              onValueChange={(value) =>
-                setTemplate((prev) => ({
-                  ...prev,
-                  template_type: value as RateTemplate['template_type'],
-                }))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder='Select type' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='hourly'>Hourly</SelectItem>
-                <SelectItem value='daily'>Daily</SelectItem>
-                <SelectItem value='fixed'>Fixed</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Template Type</label>
+          <select
+            {...register('template_type')}
+            className="w-full rounded-md border p-2"
+          >
+            <option value="hourly">Hourly</option>
+            <option value="daily">Daily</option>
+            <option value="fixed">Fixed</option>
+          </select>
+        </div>
 
-          <div>
-            <Label htmlFor='description'>Description</Label>
-            <Input
-              id='description'
-              name='description'
-              value={template.description}
-              onChange={handleInputChange}
-            />
-          </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Base Rate</label>
+          <input
+            type="number"
+            step="0.01"
+            {...register('base_rate', { valueAsNumber: true })}
+            className="w-full rounded-md border p-2"
+          />
+        </div>
 
-          <div className='grid grid-cols-2 gap-4'>
-            <div>
-              <Label>Effective From</Label>
-              <DatePicker
-                value={template.effective_from ? new Date(template.effective_from) : undefined}
-                onSelect={handleEffectiveFromChange}
-              />
-            </div>
-            <div>
-              <Label>Effective To</Label>
-              <DatePicker
-                value={template.effective_to ? new Date(template.effective_to) : undefined}
-                onSelect={handleEffectiveToChange}
-              />
-            </div>
-          </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Base Margin (%)</label>
+          <input
+            type="number"
+            step="0.01"
+            {...register('base_margin', { valueAsNumber: true })}
+            className="w-full rounded-md border p-2"
+          />
+        </div>
 
-          <div>
-            <Label htmlFor='baseRate'>Base Rate</Label>
-            <Input
-              id='baseRate'
-              name='base_rate'
-              type='number'
-              value={template.base_rate}
-              onChange={handleInputChange}
-            />
-          </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Super Rate (%)</label>
+          <input
+            type="number"
+            step="0.01"
+            {...register('super_rate', { valueAsNumber: true })}
+            className="w-full rounded-md border p-2"
+          />
+        </div>
 
-          <div>
-            <Label htmlFor='baseMargin'>Base Margin (%)</Label>
-            <Input
-              id='baseMargin'
-              name='base_margin'
-              type='number'
-              value={template.base_margin}
-              onChange={handleInputChange}
-            />
-          </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Leave Loading (%)</label>
+          <input
+            type="number"
+            step="0.01"
+            {...register('leave_loading', { valueAsNumber: true })}
+            className="w-full rounded-md border p-2"
+          />
+        </div>
 
-          <div>
-            <Label htmlFor='superRate'>Superannuation Rate (%)</Label>
-            <Input
-              id='superRate'
-              name='super_rate'
-              type='number'
-              value={template.super_rate}
-              onChange={handleInputChange}
-            />
-          </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Workers Comp Rate (%)</label>
+          <input
+            type="number"
+            step="0.01"
+            {...register('workers_comp_rate', { valueAsNumber: true })}
+            className="w-full rounded-md border p-2"
+          />
+        </div>
 
-          <div>
-            <Label htmlFor='leaveLoading'>Leave Loading Rate (%)</Label>
-            <Input
-              id='leaveLoading'
-              name='leave_loading'
-              type='number'
-              value={template.leave_loading}
-              onChange={handleInputChange}
-            />
-          </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Payroll Tax Rate (%)</label>
+          <input
+            type="number"
+            step="0.01"
+            {...register('payroll_tax_rate', { valueAsNumber: true })}
+            className="w-full rounded-md border p-2"
+          />
+        </div>
 
-          <div>
-            <Label htmlFor='workersCompRate'>Workers Comp Rate (%)</Label>
-            <Input
-              id='workersCompRate'
-              name='workers_comp_rate'
-              type='number'
-              value={template.workers_comp_rate}
-              onChange={handleInputChange}
-            />
-          </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Training Cost Rate (%)</label>
+          <input
+            type="number"
+            step="0.01"
+            {...register('training_cost_rate', { valueAsNumber: true })}
+            className="w-full rounded-md border p-2"
+          />
+        </div>
 
-          <div>
-            <Label htmlFor='payrollTaxRate'>Payroll Tax Rate (%)</Label>
-            <Input
-              id='payrollTaxRate'
-              name='payroll_tax_rate'
-              type='number'
-              value={template.payroll_tax_rate}
-              onChange={handleInputChange}
-            />
-          </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Other Costs Rate (%)</label>
+          <input
+            type="number"
+            step="0.01"
+            {...register('other_costs_rate', { valueAsNumber: true })}
+            className="w-full rounded-md border p-2"
+          />
+        </div>
 
-          <div>
-            <Label htmlFor='trainingCostRate'>Training Cost Rate (%)</Label>
-            <Input
-              id='trainingCostRate'
-              name='training_cost_rate'
-              type='number'
-              value={template.training_cost_rate}
-              onChange={handleInputChange}
-            />
-          </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Funding Offset</label>
+          <input
+            type="number"
+            step="0.01"
+            {...register('funding_offset', { valueAsNumber: true })}
+            className="w-full rounded-md border p-2"
+          />
+        </div>
 
-          <div>
-            <Label htmlFor='otherCostsRate'>Other Costs Rate (%)</Label>
-            <Input
-              id='otherCostsRate'
-              name='other_costs_rate'
-              type='number'
-              value={template.other_costs_rate}
-              onChange={handleInputChange}
-            />
-          </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Effective From</label>
+          <input
+            type="date"
+            {...register('effective_from')}
+            className="w-full rounded-md border p-2"
+          />
+        </div>
 
-          <div>
-            <Label htmlFor='fundingOffset'>Funding Offset</Label>
-            <Input
-              id='fundingOffset'
-              name='funding_offset'
-              type='number'
-              value={template.funding_offset}
-              onChange={handleInputChange}
-            />
-          </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Effective To</label>
+          <input
+            type="date"
+            {...register('effective_to')}
+            className="w-full rounded-md border p-2"
+          />
+        </div>
 
-          {error && <div className='text-red-500'>{error}</div>}
+        <div className="col-span-2 space-y-2">
+          <label className="text-sm font-medium">Description</label>
+          <textarea
+            {...register('description')}
+            className="w-full rounded-md border p-2"
+            rows={3}
+          />
+        </div>
+      </div>
 
-          <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? 'Saving...' : 'Save Template'}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+      <div className="flex justify-end space-x-4">
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
+          >
+            Cancel
+          </button>
+        )}
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+        >
+          {isSubmitting ? 'Saving...' : template ? 'Update' : 'Create'}
+        </button>
+      </div>
+    </form>
   )
 }

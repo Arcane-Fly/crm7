@@ -2,6 +2,8 @@
 
 import * as React from 'react'
 import { useForm } from 'react-hook-form'
+import type { BankAccount } from '@/lib/types/bank'
+import type { QueryResult } from '@/types/test-utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import {
@@ -43,6 +45,7 @@ interface PaymentFormProps {
 export function PaymentForm({ onSuccess }: PaymentFormProps) {
   const { user } = useAuth()
   const { accounts, createPayment, isCreatingPayment } = useBankIntegration()
+  const accountsData = accounts.data || []
 
   const form = useForm<PaymentFormValues>({
     resolver: zodResolver(paymentSchema),
@@ -60,11 +63,10 @@ export function PaymentForm({ onSuccess }: PaymentFormProps) {
     if (!user) return
 
     createPayment({
-      data: {
-        ...values,
-        org_id: user.org_id,
-        status: 'pending',
-      },
+      ...values,
+      org_id: user.org_id,
+      status: 'pending',
+      due_date: new Date().toISOString()
     })
 
     onSuccess?.()
@@ -86,7 +88,7 @@ export function PaymentForm({ onSuccess }: PaymentFormProps) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {accounts.data?.map((account) => (
+                  {accountsData?.map((account: BankAccount) => (
                     <SelectItem key={account.id} value={account.id}>
                       {account.account_name} - {account.bank_name}
                     </SelectItem>

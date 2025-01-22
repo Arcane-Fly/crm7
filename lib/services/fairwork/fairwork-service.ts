@@ -3,12 +3,21 @@ import { logger } from '@/lib/logger'
 import { ApiError } from '@/lib/utils/error'
 
 interface FairWorkConfig {
-  apiKey: string
-  apiUrl: string
-  baseUrl: string
-  environment: 'sandbox' | 'production'
-  timeout: number
-  retryAttempts: number
+  apiKey?: string
+  apiUrl?: string
+  baseUrl?: string
+  environment?: 'sandbox' | 'production'
+  timeout?: number
+  retryAttempts?: number
+}
+
+const DEFAULT_CONFIG: Required<FairWorkConfig> = {
+  apiKey: process.env.FAIRWORK_API_KEY || '',
+  apiUrl: process.env.FAIRWORK_API_URL || 'https://api.fairwork.gov.au',
+  baseUrl: process.env.FAIRWORK_BASE_URL || 'https://fairwork.gov.au',
+  environment: process.env.NODE_ENV === 'production' ? 'production' : 'sandbox',
+  timeout: 30000,
+  retryAttempts: 3
 }
 
 interface AwardRate {
@@ -86,11 +95,11 @@ interface RateCalculationResponse {
 
 export class FairWorkService {
   private readonly supabase = createClient()
-  private readonly config: FairWorkConfig
+  private readonly config: Required<FairWorkConfig>
 
-  constructor(config: FairWorkConfig) {
-    this.config = config
-    if (!config.baseUrl || !config.apiKey) {
+  constructor(config: FairWorkConfig = {}) {
+    this.config = { ...DEFAULT_CONFIG, ...config }
+    if (!this.config.baseUrl || !this.config.apiKey) {
       throw new ApiError({
         message: 'Invalid FairWork configuration',
         code: 'INVALID_CONFIG',

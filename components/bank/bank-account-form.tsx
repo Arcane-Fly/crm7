@@ -50,7 +50,8 @@ export function BankAccountForm({ onSuccess }: BankAccountFormProps) {
     createBankAccount({
       ...values,
       org_id: user.org_id,
-      status: 'active',
+      is_active: true,
+      bsb: values.routing_number // Using routing number as BSB for Australian banking
     })
 
     onSuccess?.()

@@ -13,7 +13,7 @@ import { Z_INDEXES } from '@/config/constants'
 
 export function Header() {
   const sidebar = React.useContext(SidebarContext)
-  const pathname = usePathname()
+  const pathname = usePathname() ?? '/'
 
   if (!sidebar) {
     return null

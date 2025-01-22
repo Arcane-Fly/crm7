@@ -1,151 +1,156 @@
-import { useState, useEffect } from 'react'
-import { ratesService } from '@/lib/services/rates'
-import type { RateTemplate } from '@/lib/types/rates'
+import { useState, useEffect, useCallback } from 'react'
+import { useSupabase } from '@/lib/supabase/supabase-provider'
+import { RateTemplate, RateTemplateStatus } from '@/lib/types/rates'
+import { useToast } from '@/components/ui/use-toast'
+import { useUser } from '@/lib/hooks/useUser'
 
-interface ApprovalHistory {
-  id: string
-  template_id: string
-  action: 'approve' | 'reject'
-  notes: string
-  approver_id: string
-  created_at: string
+interface RateApprovalProps {
+  org_id: string
+  onApprove?: (template: RateTemplate) => void
+  onReject?: (template: RateTemplate) => void
 }
 
-export const RateApproval = ({ templateId }: { templateId: string }) => {
-  const [template, setTemplate] = useState<RateTemplate | null>(null)
-  const [history, setHistory] = useState<ApprovalHistory[]>([])
-  const [notes, setNotes] = useState('')
+export default function RateApproval({ org_id, onApprove, onReject }: RateApprovalProps) {
+  const { supabase } = useSupabase()
+  const { user } = useUser()
+  const { toast } = useToast()
+  const [templates, setTemplates] = useState<RateTemplate[]>([])
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const loadTemplate = async () => {
-      try {
-        const template = await ratesService.getTemplate(templateId)
-        if (template) {
-          setTemplate(template)
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load template')
-      }
-    }
+    fetchPendingTemplates()
+  }, [org_id, fetchPendingTemplates])
 
-    loadTemplate()
-  }, [templateId])
-
-  const handleApprove = async () => {
-    if (!template) return
-
+  const fetchPendingTemplates = useCallback(async () => {
     try {
-      // Save template with approval notes
-      const updatedTemplate = await ratesService.saveTemplate({
-        ...template,
-        status: 'approved',
-        is_approved: true,
-      }, notes)
-      setTemplate(updatedTemplate)
+      const { data, error } = await supabase
+        .from('rate_templates')
+        .select('*')
+        .eq('org_id', org_id)
+        .eq('status', RateTemplateStatus.Pending)
+        .order('created_at', { ascending: false })
 
-      // Refresh history after approval
-      const updatedHistory = await ratesService.getTemplateHistory(templateId)
-      setHistory(updatedHistory)
+      if (error) throw error
+
+      setTemplates(data as RateTemplate[])
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to approve template')
+      console.error('Error fetching pending templates:', err)
+      setError('Failed to load pending templates')
+      toast({
+        title: 'Error',
+        description: 'Failed to load pending templates',
+        variant: 'destructive',
+      })
+    } finally {
+      setLoading(false)
     }
-  }
+  }, [org_id, supabase])
 
-  const handleReject = async () => {
-    if (!template) return
-
+  const handleApprove = async (template: RateTemplate) => {
     try {
-      // Save template with rejection notes
-      const updatedTemplate = await ratesService.saveTemplate({
-        ...template,
-        status: 'rejected',
-        is_approved: false,
-      }, notes)
-      setTemplate(updatedTemplate)
+      const { data, error } = await supabase
+        .from('rate_templates')
+        .update({
+          status: RateTemplateStatus.Active,
+          updated_by: user?.id,
+        })
+        .eq('id', template.id)
+        .select()
+        .single()
 
-      // Refresh history after rejection
-      const updatedHistory = await ratesService.getTemplateHistory(templateId)
-      setHistory(updatedHistory)
+      if (error) throw error
+
+      toast({
+        title: 'Success',
+        description: 'Rate template approved successfully',
+      })
+
+      setTemplates(prev => prev.filter(t => t.id !== template.id))
+      onApprove?.(data as RateTemplate)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to reject template')
+      console.error('Error approving template:', err)
+      toast({
+        title: 'Error',
+        description: 'Failed to approve template',
+        variant: 'destructive',
+      })
     }
   }
 
-  useEffect(() => {
-    const loadHistory = async () => {
-      try {
-        const history = await ratesService.getTemplateHistory(templateId)
-        setHistory(history)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load history')
-      }
-    }
+  const handleReject = async (template: RateTemplate) => {
+    try {
+      const { data, error } = await supabase
+        .from('rate_templates')
+        .update({
+          status: RateTemplateStatus.Inactive,
+          updated_by: user?.id,
+        })
+        .eq('id', template.id)
+        .select()
+        .single()
 
-    if (templateId) {
-      loadHistory()
-    }
-  }, [templateId])
+      if (error) throw error
 
-  if (!template) {
-    return <div>Loading...</div>
+      toast({
+        title: 'Success',
+        description: 'Rate template rejected successfully',
+      })
+
+      setTemplates(prev => prev.filter(t => t.id !== template.id))
+      onReject?.(data as RateTemplate)
+    } catch (err) {
+      console.error('Error rejecting template:', err)
+      toast({
+        title: 'Error',
+        description: 'Failed to reject template',
+        variant: 'destructive',
+      })
+    }
   }
+
+  if (loading) return <div>Loading pending templates...</div>
+  if (error) return <div className="text-red-500">{error}</div>
+  if (!templates.length) return <div>No pending templates to approve</div>
 
   return (
-    <div>
-      <h2>Rate Template Approval</h2>
-
-      {error && (
-        <div className="text-red-600 mb-4">
-          {error}
-        </div>
-      )}
-
-      <div className="mb-4">
-        <h3>Template Details</h3>
-        <p>Name: {template.template_name}</p>
-        <p>Type: {template.template_type}</p>
-        <p>Base Rate: ${template.base_rate}</p>
-        <p>Status: {template.status}</p>
-      </div>
-
-      <div className="mb-4">
-        <label className="block mb-2">
-          Notes:
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            className="block w-full mt-1"
-          />
-        </label>
-      </div>
-
-      <div className="flex gap-4">
-        <button
-          onClick={handleApprove}
-          disabled={template.status === 'approved'}
-          className="bg-green-500 text-white px-4 py-2 rounded"
-        >
-          Approve
-        </button>
-        <button
-          onClick={handleReject}
-          disabled={template.status === 'rejected'}
-          className="bg-red-500 text-white px-4 py-2 rounded"
-        >
-          Reject
-        </button>
-      </div>
-
-      <div className="mt-8">
-        <h3>Approval History</h3>
-        {history.map((entry) => (
-          <div key={entry.id} className="border-t py-2">
-            <p>
-              {entry.action === 'approve' ? 'Approved' : 'Rejected'} on{' '}
-              {new Date(entry.created_at).toLocaleDateString()}
-            </p>
-            {entry.notes && <p>Notes: {entry.notes}</p>}
+    <div className="space-y-6">
+      <h2 className="text-lg font-medium">Pending Rate Templates</h2>
+      <div className="divide-y">
+        {templates.map(template => (
+          <div key={template.id} className="py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <h3 className="font-medium">{template.name}</h3>
+                <p className="text-sm text-gray-500">{template.description}</p>
+              </div>
+              <div>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <span className="text-gray-500">Base Rate:</span>
+                  <span>${template.base_rate}</span>
+                  <span className="text-gray-500">Base Margin:</span>
+                  <span>{template.base_margin}%</span>
+                  <span className="text-gray-500">Super Rate:</span>
+                  <span>{template.super_rate}%</span>
+                  <span className="text-gray-500">Template Type:</span>
+                  <span className="capitalize">{template.template_type}</span>
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 flex justify-end space-x-4">
+              <button
+                onClick={() => handleReject(template)}
+                className="rounded-md bg-red-100 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-200"
+              >
+                Reject
+              </button>
+              <button
+                onClick={() => handleApprove(template)}
+                className="rounded-md bg-green-100 px-4 py-2 text-sm font-medium text-green-700 hover:bg-green-200"
+              >
+                Approve
+              </button>
+            </div>
           </div>
         ))}
       </div>

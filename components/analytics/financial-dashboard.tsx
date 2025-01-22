@@ -1,144 +1,142 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
-import { format } from 'date-fns'
-import { DatePickerWithRange } from '@/components/ui/date-range-picker'
+import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { useQueryWithSupabase } from '@/lib/hooks/use-query-with-supabase'
-import type { DateRange } from 'react-day-picker'
+import { Transaction } from '@/lib/types/hr'
+import { supabase } from '@/lib/supabase'
 
-interface Transaction {
-  id: string
-  transaction_date: string
-  amount: number
-  type: 'income' | 'expense'
-  category: string
-  description: string
+interface FinancialStats {
+  totalTransactions: number
+  totalAmount: number
+  pendingAmount: number
+  completedAmount: number
+  failedAmount: number
+  successRate: number
 }
 
-interface ChartData {
-  date: string
-  income: number
-  expenses: number
-}
-
-export function FinancialDashboard() {
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: new Date(new Date().setMonth(new Date().getMonth() - 1)),
-    to: new Date(),
+export const FinancialDashboard = () => {
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [stats, setStats] = useState<FinancialStats>({
+    totalTransactions: 0,
+    totalAmount: 0,
+    pendingAmount: 0,
+    completedAmount: 0,
+    failedAmount: 0,
+    successRate: 0,
   })
 
-  const queryKey = ['transactions']
-  if (dateRange?.from) queryKey.push(dateRange.from.toISOString())
-  if (dateRange?.to) queryKey.push(dateRange.to.toISOString())
+  useEffect(() => {
+    async function fetchFinancialData() {
+      try {
+        const { data, error } = await supabase
+          .from('transactions')
+          .select('*')
+          .order('date', { ascending: false })
 
-  const { data: transactions = [] } = useQueryWithSupabase<Transaction>({
-    queryKey,
-    table: 'transactions',
-    filter: dateRange
-      ? [
-          { column: 'transaction_date', value: dateRange.from?.toISOString() },
-          { column: 'transaction_date', value: dateRange.to?.toISOString() },
-        ]
-      : undefined,
-  })
+        if (error) throw error
 
-  const filteredTransactions = transactions.filter((transaction: Transaction) => {
-    if (!dateRange?.from || !dateRange?.to) return true
-    const date = new Date(transaction.transaction_date)
-    return date >= dateRange.from && date <= dateRange.to
-  })
-
-  const totalIncome = filteredTransactions
-    .filter((t: Transaction) => t.type === 'income')
-    .reduce((sum: number, t: Transaction) => sum + t.amount, 0)
-
-  const totalExpenses = filteredTransactions
-    .filter((t: Transaction) => t.type === 'expense')
-    .reduce((sum: number, t: Transaction) => sum + t.amount, 0)
-
-  const netIncome = totalIncome - totalExpenses
-
-  const chartData = filteredTransactions.reduce(
-    (acc: ChartData[], transaction: Transaction) => {
-      const date = format(new Date(transaction.transaction_date), 'MM/dd')
-      const existing = acc.find((d: ChartData) => d.date === date)
-      if (existing) {
-        if (transaction.type === 'income') {
-          existing.income += transaction.amount
-        } else {
-          existing.expenses += transaction.amount
+        if (data) {
+          const typedTransactions = data as Transaction[]
+          setTransactions(typedTransactions)
+          calculateStats(typedTransactions)
         }
-      } else {
-        acc.push({
-          date,
-          income: transaction.type === 'income' ? transaction.amount : 0,
-          expenses: transaction.type === 'expense' ? transaction.amount : 0,
-        })
+      } catch (error) {
+        console.error('Error fetching financial data:', error)
       }
-      return acc
-    },
-    [] as ChartData[]
-  )
+    }
+
+    fetchFinancialData()
+  }, [])
+
+  const calculateStats = (transactions: Transaction[]) => {
+    const totalTransactions = transactions.length
+    const totalAmount = transactions.reduce((sum: number, t: Transaction) => sum + t.amount, 0)
+    const pendingAmount = transactions
+      .filter((t) => t.status === 'pending')
+      .reduce((sum: number, t: Transaction) => sum + t.amount, 0)
+    const completedAmount = transactions
+      .filter((t) => t.status === 'completed')
+      .reduce((sum: number, t: Transaction) => sum + t.amount, 0)
+    const failedAmount = transactions
+      .filter((t) => t.status === 'failed')
+      .reduce((sum: number, t: Transaction) => sum + t.amount, 0)
+    const successRate =
+      totalTransactions > 0
+        ? (transactions.filter((t) => t.status === 'completed').length / totalTransactions) * 100
+        : 0
+
+    setStats({
+      totalTransactions,
+      totalAmount,
+      pendingAmount,
+      completedAmount,
+      failedAmount,
+      successRate,
+    })
+  }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(amount)
+  }
+
+  const getStatusColor = (status: Transaction['status']) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-500'
+      case 'failed':
+        return 'bg-red-500'
+      case 'pending':
+        return 'bg-yellow-500'
+      default:
+        return 'bg-gray-500'
+    }
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString()
+  }
 
   return (
     <div className='space-y-4'>
-      <div className='flex items-center justify-between'>
-        <h2 className='text-3xl font-bold tracking-tight'>Financial Dashboard</h2>
-        <DatePickerWithRange date={dateRange} onDateChange={setDateRange} />
-      </div>
-
-      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
-        <Card>
-          <CardHeader>
-            <CardTitle>Total Income</CardTitle>
-            <CardDescription>Revenue for selected period</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold text-green-600'>${totalIncome.toLocaleString()}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Total Expenses</CardTitle>
-            <CardDescription>Costs for selected period</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold text-red-600'>${totalExpenses.toLocaleString()}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Net Income</CardTitle>
-            <CardDescription>Profit/Loss for selected period</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div
-              className={`text-2xl font-bold ${netIncome >= 0 ? 'text-green-600' : 'text-red-600'}`}
-            >
-              ${netIncome.toLocaleString()}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       <Card>
         <CardHeader>
-          <CardTitle>Income vs Expenses</CardTitle>
-          <CardDescription>Financial trend over time</CardDescription>
+          <CardTitle>Financial Overview</CardTitle>
+          <CardDescription>Current financial metrics and status</CardDescription>
         </CardHeader>
         <CardContent>
-          <LineChart width={800} height={400} data={chartData}>
-            <CartesianGrid strokeDasharray='3 3' />
-            <XAxis dataKey='date' />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Line type='monotone' dataKey='income' stroke='#10b981' name='Income' />
-            <Line type='monotone' dataKey='expenses' stroke='#ef4444' name='Expenses' />
-          </LineChart>
+          <div className='space-y-4'>
+            <div className='grid grid-cols-4 gap-4'>
+              <div>
+                <p className='text-sm font-medium'>Total Transactions</p>
+                <p className='text-2xl font-bold'>{stats.totalTransactions}</p>
+              </div>
+              <div>
+                <p className='text-sm font-medium'>Total Amount</p>
+                <p className='text-2xl font-bold'>{formatCurrency(stats.totalAmount)}</p>
+              </div>
+              <div>
+                <p className='text-sm font-medium'>Completed Amount</p>
+                <p className='text-2xl font-bold text-green-600'>
+                  {formatCurrency(stats.completedAmount)}
+                </p>
+              </div>
+              <div>
+                <p className='text-sm font-medium'>Pending Amount</p>
+                <p className='text-2xl font-bold text-yellow-600'>
+                  {formatCurrency(stats.pendingAmount)}
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <p className='mb-2 text-sm font-medium'>Transaction Success Rate</p>
+              <Progress value={stats.successRate} className='w-full' />
+              <p className='mt-1 text-sm text-gray-500'>{stats.successRate.toFixed(1)}%</p>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -149,29 +147,18 @@ export function FinancialDashboard() {
         </CardHeader>
         <CardContent>
           <div className='space-y-4'>
-            {filteredTransactions.slice(0, 5).map((transaction) => (
+            {transactions.slice(0, 5).map((transaction: Transaction) => (
               <div
                 key={transaction.id}
                 className='flex items-center justify-between rounded-lg border p-4'
               >
                 <div>
-                  <div className='font-medium'>{transaction.description}</div>
-                  <div className='text-sm text-muted-foreground'>
-                    {format(new Date(transaction.transaction_date), 'PPP')} - {transaction.category}
-                  </div>
+                  <h4 className='font-medium'>{transaction.type}</h4>
+                  <p className='text-sm text-gray-500'>Date: {formatDate(transaction.date)}</p>
                 </div>
-                <div className='flex items-center gap-2'>
-                  <div
-                    className={`font-medium ${
-                      transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
-                    }`}
-                  >
-                    {transaction.type === 'income' ? '+' : '-'}$
-                    {transaction.amount.toLocaleString()}
-                  </div>
-                  <Badge variant={transaction.type === 'income' ? 'default' : 'destructive'}>
-                    {transaction.type}
-                  </Badge>
+                <div className='flex items-center space-x-4'>
+                  <p className='font-medium'>{formatCurrency(transaction.amount)}</p>
+                  <Badge className={getStatusColor(transaction.status)}>{transaction.status}</Badge>
                 </div>
               </div>
             ))}

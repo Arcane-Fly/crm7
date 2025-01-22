@@ -1,174 +1,139 @@
-import { RateManagementService } from '../rates/rate-management-service'
-import { logger } from '../logger'
-import type { ChargeConfig, ChargeCalculationResult, ChargeRateResult, RateTemplate } from './types'
-import { BillingMethod } from './types'
+import type { RateTemplate } from '@/lib/types/rates'
 
-interface RateCalculation {
-  rateId: string
-  amount: number
-  details: {
-    baseRate: number
-    adjustments: Array<{
-      type: string
-      amount: number
-    }>
-  }
-}
-
-interface ChargeResult {
-  charges: RateCalculation[]
-  metadata: {
-    calculatedAt: Date
-    config: ChargeConfig
-  }
-}
-
-class ChargeCalculationError extends Error {
-  constructor(message: string, public details?: Record<string, unknown>) {
+export class ChargeCalculationError extends Error {
+  constructor(
+    message: string,
+    public readonly context: string,
+    public readonly details?: Record<string, unknown>
+  ) {
     super(message)
     this.name = 'ChargeCalculationError'
   }
 }
 
-/**
- * Service for calculating charge rates
- */
-export class ChargeCalculationService {
-  private rateService: RateManagementService
+export interface RateComponents {
+  superannuation: number
+  leaveLoading: number
+  workersComp: number
+  payrollTax: number
+  trainingCosts: number
+  otherCosts: number
+  fundingOffset: number
+}
 
-  /**
-   * Initialize the charge calculation service with a rate management service
-   */
-  constructor(rateService: RateManagementService) {
-    this.rateService = rateService
+export interface RateCalculation {
+  baseRate: number
+  margin: number
+  finalRate: number
+  components: RateComponents
+}
+
+export interface ChargeResult {
+  rateId: string
+  amount: number
+  components: {
+    base: number
+    margin: number
+    superannuation: number
+    leaveLoading: number
+    workersComp: number
+    payrollTax: number
+    trainingCosts: number
+    otherCosts: number
+    fundingOffset: number
   }
+}
 
-  private async getRateTemplates(orgId: string): Promise<RateTemplate[]> {
+export interface ChargeConfig {
+  template: RateTemplate
+  hours: number
+}
+
+class ChargeCalculationService {
+  async calculateChargeRate(template: RateTemplate, hours: number): Promise<RateCalculation> {
     try {
-      const rates = await this.rateService.getRateTemplates(orgId)
-      if (!rates) {
-        throw new ChargeCalculationError('No rate templates found', { orgId })
-      }
-      return rates
-    } catch (error) {
-      logger.error('Failed to get rate templates', {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        orgId,
-      })
-      throw new ChargeCalculationError('Failed to get rate templates', {
-        orgId,
-        cause: error
-      })
-    }
-  }
-
-  /**
-   * Calculate charges based on configuration
-   */
-  async calculateCharges(config: ChargeConfig): Promise<ChargeCalculationResult> {
-    try {
-      const rates = await this.getRateTemplates(config.orgId)
-      const applicableRates = rates.filter((rate) => {
-        // Apply rate filtering logic based on config
-        return true // Simplified for now
-      })
-
-      if (applicableRates.length === 0) {
-        throw new ChargeCalculationError('No applicable rates found', { config })
+      if (!template) {
+        throw new ChargeCalculationError('Template is required', 'calculateChargeRate')
       }
 
-      const results = await Promise.all(
-        applicableRates.map(async (rate) => {
-          try {
-            const calculation = await this.rateService.calculateRate(rate)
-            return {
-              rateId: rate.id,
-              amount: calculation.totalRate,
-              details: {
-                baseRate: calculation.baseRate,
-                adjustments: calculation.adjustments
-              }
-            }
-          } catch (error) {
-            logger.error('Failed to calculate rate', {
-              error: error instanceof Error ? error.message : 'Unknown error',
-              rateId: rate.id,
-            })
-            throw new ChargeCalculationError('Failed to calculate rate', {
-              rateId: rate.id,
-              cause: error
-            })
-          }
-        })
-      )
+      if (hours <= 0) {
+        throw new ChargeCalculationError('Hours must be greater than 0', 'calculateChargeRate')
+      }
 
-      const baseCharge = results.reduce((sum, calc) => sum + calc.amount * config.hours, 0)
-      const otherOnCosts = Object.values(config.onCosts || {}).reduce((sum, cost) => sum + cost, 0)
-      const trainingFees = Object.values(config.trainingFees || {}).reduce((sum, fee) => sum + fee, 0)
+      const baseRate = template.baseRate || 0
+      const margin = baseRate * (template.baseMargin / 100) || 0
+      const components = {
+        superannuation: baseRate * (template.superRate / 100),
+        leaveLoading: baseRate * (template.leaveLoading / 100),
+        workersComp: baseRate * (template.workersCompRate / 100),
+        payrollTax: baseRate * (template.payrollTaxRate / 100),
+        trainingCosts: baseRate * (template.trainingCostRate / 100),
+        otherCosts: baseRate * (template.otherCostsRate / 100),
+        fundingOffset: template.fundingOffset || 0,
+      }
+
+      const totalComponents = Object.values(components).reduce((sum, val) => sum + val, 0)
+      const finalRate = baseRate + margin + totalComponents
 
       return {
-        baseCharge,
-        otherOnCosts,
-        trainingFees,
-        totalCharge: baseCharge + otherOnCosts + trainingFees,
-        hours: config.hours
+        baseRate,
+        margin,
+        finalRate,
+        components,
       }
-
     } catch (error) {
-      const err = new ChargeCalculationError('Failed to calculate charges', {
-        config,
-        cause: error
-      })
-      logger.error('Error calculating charges', {
-        error: err.message,
-        config
-      })
-      throw err
+      throw error instanceof ChargeCalculationError
+        ? error
+        : new ChargeCalculationError('Failed to calculate charge rate', 'calculateChargeRate', {
+            error,
+          })
     }
   }
 
-  /**
-   * Get charge rate based on calculation result and billing method
-   */
-  getChargeRate(result: ChargeCalculationResult, billingMethod: BillingMethod): ChargeRateResult {
-    return {
-      chargeRate: result.totalCharge / (billingMethod === 'hourly' ? result.hours : 1),
-      billingMethod,
-      baseCharge: result.baseCharge,
-      otherOnCosts: result.otherOnCosts,
-      trainingFees: result.trainingFees,
-      totalCharge: result.totalCharge
-    }
-  }
-
-  /**
-   * Generate a summary of the charge calculation
-   */
-  generateChargeSummary(result: ChargeCalculationResult) {
+  async calculateCharge(config: ChargeConfig): Promise<ChargeResult> {
     try {
-      logger.info('Generating charge summary', { result })
+      const { template, hours } = config
+      const calculation = await this.calculateChargeRate(template, hours)
 
-      const summary = {
-        totalAmount: result.totalCharge,
-        timestamp: new Date().toISOString()
+      return {
+        rateId: template.id,
+        amount: calculation.finalRate * hours,
+        components: {
+          base: calculation.baseRate,
+          margin: calculation.margin,
+          ...calculation.components,
+        },
       }
-
-      logger.info('Charge summary generated', {
-        summary,
-        result
-      })
-
-      return summary
     } catch (error) {
-      const err = new ChargeCalculationError('Failed to generate charge summary', {
-        result,
-        cause: error
+      throw error instanceof ChargeCalculationError
+        ? error
+        : new ChargeCalculationError('Failed to calculate charge', 'calculateCharge', { error })
+    }
+  }
+
+  async calculateTotalCharge(template: RateTemplate, hours: number): Promise<ChargeResult> {
+    try {
+      const rate = await this.calculateChargeRate(template, hours)
+      const totalAmount = rate.finalRate
+
+      return {
+        rateId: template.id,
+        amount: totalAmount,
+        components: {
+          base: rate.baseRate,
+          margin: rate.margin,
+          ...rate.components,
+        },
+      }
+    } catch (error) {
+      if (error instanceof ChargeCalculationError) {
+        throw error
+      }
+      throw new ChargeCalculationError('Failed to calculate total charge', 'calculateTotalCharge', {
+        cause: error,
       })
-      logger.error('Error generating charge summary', {
-        error: err.message,
-        result
-      })
-      throw err
     }
   }
 }
+
+export const chargeCalculationService = new ChargeCalculationService()

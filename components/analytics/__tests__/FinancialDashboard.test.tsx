@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { vi } from 'vitest'
-import { FinancialDashboard } from '../FinancialDashboard'
+import { useBankIntegration } from '@/lib/hooks/use-bank-integration'
+import { FinancialDashboard } from '../financial-dashboard'
 import type { PostgrestError } from '@supabase/supabase-js'
 import type { Database } from '@/types/supabase'
 
@@ -60,7 +61,7 @@ describe('FinancialDashboard', () => {
   })
 
   it('displays error state for transactions', () => {
-    vi.mocked(useBankIntegration).mockReturnValueOnce({
+    vi.mocked(useBankIntegration as jest.Mock).mockReturnValueOnce({
       transactions: {
         data: undefined,
         error: { message: 'Failed to load transactions' } as PostgrestError,
@@ -95,6 +96,10 @@ describe('FinancialDashboard', () => {
       createBankAccount: vi.fn(),
       createPayment: vi.fn(),
       refreshData: vi.fn(),
+      isLoading: false,
+      error: null,
+      isCreatingBankAccount: false,
+      isCreatingPayment: false
     })
 
     render(<FinancialDashboard />)

@@ -59,20 +59,17 @@ export function EnrollmentForm({ enrollmentId, defaultValues, onSuccess }: Enrol
     try {
       setIsSubmitting(true)
       if (enrollmentId) {
-        await updateEnrollment({
-          match: { id: enrollmentId },
-          data: values,
-        })
+        await updateEnrollment(enrollmentId, values)
         toast({
           title: 'Enrollment updated',
           description: 'The enrollment has been updated successfully.',
         })
       } else {
         await createEnrollment({
-          data: {
-            ...values,
-            org_id: user.org_id,
-          },
+          ...values,
+          org_id: user.org_id,
+          user_id: user.id,
+          start_date: new Date().toISOString()
         })
         toast({
           title: 'Enrollment created',

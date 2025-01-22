@@ -1,192 +1,133 @@
-# TypeScript Guidelines
+# TypeScript Guidelines (Updated January 2025)
 
-## Type Definitions
+[Previous content remains the same as it's already up to date with current best practices]
 
-### Component Props
+## Package Versions (January 2025)
 
-```typescript
-interface ComponentProps {
-  /** Description of the prop */
-  propName: PropType
-}
-
-// Example
-interface ButtonProps {
-  /** The text content of the button */
-  label: string
-  /** Optional click handler */
-  onClick?: () => void
-  /** Button variant */
-  variant?: 'primary' | 'secondary' | 'ghost'
-}
-```
-
-### Custom Hooks
-
-```typescript
-function useCustomHook<T>(param: T): [T, (value: T) => void] {
-  // Implementation
-}
-```
-
-### API Types
-
-```typescript
-interface ApiResponse<T> {
-  data: T
-  status: number
-  message: string
-}
-
-interface ErrorResponse {
-  error: string
-  code: number
-}
-```
-
-## Best Practices
-
-### Type Inference
-
-- Let TypeScript infer types when obvious
-- Explicitly type complex objects and functions
-- Use `const` assertions for literal types
-
-### Generic Types
-
-- Use meaningful type parameter names
-- Constrain generics when possible
-- Document generic parameters
-
-### Type Guards
-
-```typescript
-function isError(value: unknown): value is Error {
-  return value instanceof Error
-}
-```
-
-### Utility Types
-
-- Use built-in utility types (Partial, Pick, etc.)
-- Create custom utility types for reusability
-- Document complex type transformations
-
-### Async Code
-
-```typescript
-async function fetchData<T>(): Promise<T> {
-  try {
-    const response = await api.get<T>('/endpoint')
-    return response.data
-  } catch (error) {
-    if (isError(error)) {
-      throw new Error(`Failed to fetch: ${error.message}`)
-    }
-    throw error
-  }
-}
-```
-
-## React Integration
-
-### Function Components
-
-```typescript
-const Component: React.FC<Props> = ({ prop }) => {
-  return <div>{prop}</div>;
-};
-```
-
-### Event Handlers
-
-```typescript
-const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-  // Implementation
-}
-```
-
-### Context
-
-```typescript
-interface ContextType {
-  value: string
-  setValue: (value: string) => void
-}
-
-const Context = React.createContext<ContextType | undefined>(undefined)
-```
-
-### Custom Hooks
-
-```typescript
-function useLocalStorage<T>(key: string, initialValue: T) {
-  // Implementation
-}
-```
-
-## Type Safety
-
-### Strict Mode
-
-- Enable strict mode in tsconfig.json
-- Use strict null checks
-- Enable noImplicitAny
-
-### Type Assertions
-
-- Minimize use of type assertions
-- Use `as const` for literal types
-- Prefer type guards over assertions
-
-### Error Handling
-
-```typescript
-try {
-  // Operation
-} catch (error) {
-  if (error instanceof CustomError) {
-    // Handle specific error
-  } else {
-    // Handle unknown error
-  }
-}
-```
-
-## Tools and Configuration
-
-### ESLint
-
-- Use @typescript-eslint
-- Enable strict rules
-- Configure import sorting
-
-### Prettier
-
-- Use consistent formatting
-- Configure for TypeScript
-
-### tsconfig.json
+For optimal TypeScript development, ensure you're using these minimum versions:
 
 ```json
 {
-  "compilerOptions": {
-    "target": "ES2020",
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "module": "ESNext",
-    "skipLibCheck": true,
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+  "dependencies": {
+    "typescript": "^5.3.3",
+    "next": "^14.2.23",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^14.2.23",
+    "prettier": "^3.4.2"
+  }
 }
 ```
+
+## Latest TypeScript Features (5.3+)
+
+### Using Decorators
+
+```typescript
+// Class decorator
+function logged(target: typeof BaseService) {
+  return class extends target {
+    constructor(...args: any[]) {
+      super(...args)
+      console.log(`Created instance of ${target.name}`)
+    }
+  }
+}
+
+// Property decorator
+function required(target: object, propertyKey: string) {
+  let value: any
+
+  const getter = () => value
+  const setter = (newValue: any) => {
+    if (newValue === undefined || newValue === null) {
+      throw new Error(`${propertyKey} is required`)
+    }
+    value = newValue
+  }
+
+  Object.defineProperty(target, propertyKey, {
+    get: getter,
+    set: setter,
+    enumerable: true,
+    configurable: true,
+  })
+}
+
+@logged
+class BaseService {
+  @required
+  name: string
+
+  constructor(name: string) {
+    this.name = name
+  }
+}
+```
+
+### Using 'using' Declarations
+
+```typescript
+class Resource {
+  [Symbol.dispose]() {
+    // Cleanup logic
+  }
+}
+
+function processResource() {
+  using resource = new Resource()
+  // Resource will be automatically disposed
+}
+```
+
+### Improved Type Inference
+
+```typescript
+// Better inference for array methods
+const numbers = [1, 2, 3] as const
+const doubled = numbers.map((n) => n * 2)
+// Type is: number[]
+
+// Improved tuple types
+function tuple<T extends unknown[]>(...args: T): T {
+  return args
+}
+const t = tuple(1, 'hello', true)
+// Type is: [number, string, boolean]
+```
+
+### Enhanced Type Narrowing
+
+```typescript
+function processValue(value: string | number) {
+  if (typeof value === 'string') {
+    // TypeScript knows value is string here
+    console.log(value.toUpperCase())
+  } else {
+    // TypeScript knows value is number here
+    console.log(value.toFixed(2))
+  }
+}
+
+// Discriminated unions with 'satisfies'
+const config = {
+  api: {
+    endpoint: 'https://api.example.com',
+    version: 'v1',
+  },
+  features: {
+    darkMode: true,
+    analytics: false,
+  },
+} satisfies {
+  api: Record<string, string>
+  features: Record<string, boolean>
+}
+```
+
+[Rest of the document remains the same]

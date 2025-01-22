@@ -1,33 +1,39 @@
-export type BillingMethod = 'hourly' | 'fixed'
+import type { RateTemplate } from '@/lib/types/rates'
+
+export interface RateComponents {
+  superannuation: number
+  leaveLoading: number
+  workersComp: number
+  payrollTax: number
+  trainingCosts: number
+  otherCosts: number
+  fundingOffset: number
+}
+
+export interface RateCalculation {
+  baseRate: number
+  margin: number
+  finalRate: number
+  components: RateComponents
+  leave_loading_amount: number
+  training_cost_amount: number
+  other_costs_amount: number
+  funding_offset_amount: number
+  final_rate: number
+}
 
 export interface ChargeConfig {
-  orgId: string
-  baseRate: number
-  hours: number
-  onCosts?: Record<string, number>
-  trainingFees?: Record<string, number>
-}
-
-export interface ChargeCalculationResult {
-  baseCharge: number
-  otherOnCosts: number
-  trainingFees: number
-  totalCharge: number
+  template: RateTemplate
   hours: number
 }
 
-export interface ChargeRateResult {
-  chargeRate: number
-  billingMethod: BillingMethod
-  baseCharge: number
-  otherOnCosts: number
-  trainingFees: number
+export interface ChargeResult {
   totalCharge: number
+  breakdown: {
+    baseCharge: number
+    adjustments: Record<string, number>
+  }
+  metadata?: Record<string, unknown>
 }
 
-export interface ChargeSummary {
-  totalAmount: number
-  numberOfRates: number
-  averageRate: number
-  timestamp: string
-}
+export { RateTemplate }

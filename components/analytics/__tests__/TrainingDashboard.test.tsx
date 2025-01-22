@@ -1,65 +1,65 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { vi } from 'vitest'
+import { PostgrestErrorType } from '@/types/test-utils'
+import { fireEvent } from '@testing-library/react'
 import { TrainingDashboard } from '../training-dashboard'
 import { useLMS } from '@/lib/hooks/use-lms'
+import { createMockQueryResult } from '@/types/test-utils'
+import type { Course, Enrollment } from '@/lib/types/lms'
 
 // Mock the hooks
 vi.mock('@/lib/hooks/use-lms')
 
-const mockCourses = [
+const mockCourses: Course[] = [
   {
     id: '1',
-    title: 'Course 1',
-    description: 'Test course',
+    org_id: 'org1',
+    title: 'Test Course',
+    description: 'Test Description',
     duration: 60,
     level: 'beginner',
     status: 'active',
-  },
-  {
-    id: '2',
-    title: 'Course 2',
-    description: 'Another test course',
-    duration: 90,
-    level: 'intermediate',
-    status: 'active',
-  },
+    instructor: 'Test Instructor',
+    start_date: '2025-01-01',
+    end_date: '2025-12-31',
+    created_at: '2025-01-01',
+    updated_at: '2025-01-01'
+  }
 ]
 
-const mockEnrollments = [
+const mockEnrollments: Enrollment[] = [
   {
     id: '1',
+    org_id: 'org1',
     course_id: '1',
-    status: 'completed',
-    progress: 100,
-    start_date: '2024-01-01',
-  },
-  {
-    id: '2',
-    course_id: '2',
-    status: 'in_progress',
+    user_id: 'user1',
+    student_id: 'student1',
+    status: 'active',
     progress: 50,
-    start_date: '2024-01-02',
-  },
+    start_date: '2025-01-01',
+    created_at: '2025-01-01',
+    updated_at: '2025-01-01'
+  }
 ]
 
 describe('TrainingDashboard', () => {
   beforeEach(() => {
     vi.mocked(useLMS).mockReturnValue({
-      courses: {
+      courses: createMockQueryResult<Course[]>({
         data: mockCourses,
         isLoading: false,
         error: null,
-      },
-      enrollments: {
+      }),
+      enrollments: createMockQueryResult<Enrollment[]>({
         data: mockEnrollments,
         isLoading: false,
         error: null,
-      },
+      }),
       actions: {
         enrollInCourse: vi.fn(),
         updateProgress: vi.fn(),
         getAssessments: vi.fn(),
-      },
+      }
     })
   })
 
@@ -78,16 +78,16 @@ describe('TrainingDashboard', () => {
 
   it('shows loading state', () => {
     vi.mocked(useLMS).mockReturnValue({
-      courses: {
-        data: null,
+      courses: createMockQueryResult<Course[]>({
+        data: undefined,
         isLoading: true,
         error: null,
-      },
-      enrollments: {
-        data: null,
+      }),
+      enrollments: createMockQueryResult<Enrollment[]>({
+        data: undefined,
         isLoading: true,
         error: null,
-      },
+      }),
       actions: {
         enrollInCourse: vi.fn(),
         updateProgress: vi.fn(),
@@ -100,22 +100,30 @@ describe('TrainingDashboard', () => {
   })
 
   it('shows error state', () => {
+    const mockError = new Error('Failed to load courses')
+    
     vi.mocked(useLMS).mockReturnValue({
-      courses: {
-        data: null,
+      courses: createMockQueryResult<Course[]>({
+        data: [],
         isLoading: false,
-        error: new Error('Failed to load courses'),
-      },
-      enrollments: {
-        data: null,
+        error: new PostgrestErrorType('Failed to load courses'),
+      }),
+      enrollments: createMockQueryResult<Enrollment[]>({
+        data: [],
         isLoading: false,
         error: null,
-      },
-      actions: {
-        enrollInCourse: vi.fn(),
-        updateProgress: vi.fn(),
-        getAssessments: vi.fn(),
-      },
+      }),
+      createCourse: vi.fn(),
+      updateCourse: vi.fn(), 
+      deleteCourse: vi.fn(),
+      createEnrollment: vi.fn(),
+      updateEnrollment: vi.fn(),
+      deleteEnrollment: vi.fn(),
+      isCreatingCourse: false,
+      isUpdatingCourse: false,
+      isDeletingCourse: false,
+      isCreatingEnrollment: false,
+      isUpdatingEnrollment: false
     })
 
     render(<TrainingDashboard />)

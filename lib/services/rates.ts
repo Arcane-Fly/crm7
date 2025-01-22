@@ -6,12 +6,8 @@ import type {
   GetReportsParams,
   ApiResponse,
 } from '@/types/rates'
-import type {
-  RateTemplate,
-  RateCalculation,
-  ValidationResult,
-  RateTemplateHistory,
-} from '../types/rates'
+import type { RateTemplate, RateCalculation, RateTemplateHistory } from '../types/rates'
+import type { ValidationResult } from '../types/validation'
 import { logger } from './logger'
 import { supabase } from '@/lib/supabase'
 
@@ -89,15 +85,22 @@ class RatesService {
     }
   }
 
-  async getTemplate(id: string): Promise<RateTemplate | null> {
+  async getTemplate(id: string): Promise<RateTemplate> {
     const { data, error } = await this.supabase
       .from('rate_templates')
       .select('*')
       .eq('id', id)
       .single()
 
-    if (error) throw error
-    return data
+    if (error) {
+      throw new Error(`Failed to get template: ${error.message}`)
+    }
+
+    if (!data) {
+      throw new Error('Template not found')
+    }
+
+    return this.mapToRateTemplate(data)
   }
 
   async getTemplates(params: { org_id: string }): Promise<{ data: RateTemplate[] }> {
@@ -107,7 +110,7 @@ class RatesService {
       .eq('org_id', params.org_id)
 
     if (error) throw error
-    return { data }
+    return { data: data.map(this.mapToRateTemplate) }
   }
 
   async validateRateTemplate(template: RateTemplate): Promise<ValidationResult> {
@@ -115,69 +118,70 @@ class RatesService {
     const warnings: string[] = []
 
     // Required fields
-    if (!template.template_name) {
+    if (!template.name) {
       errors.push('Template name is required')
     }
 
-    if (!template.template_type) {
+    if (!template.templateType) {
       errors.push('Template type is required')
     }
 
-    if (!template.effective_from) {
+    if (!template.effectiveFrom) {
       errors.push('Effective from date is required')
     }
 
-    if (!template.effective_to) {
+    if (!template.effectiveTo) {
       errors.push('Effective to date is required')
     }
 
     // Numeric validations
-    if (template.base_rate < 0) {
+    if (template.baseRate < 0) {
       errors.push('Base rate cannot be negative')
     }
 
-    if (template.base_margin < 0) {
+    if (template.baseMargin < 0) {
       errors.push('Base margin cannot be negative')
     }
 
-    if (template.super_rate < 0) {
+    if (template.superRate < 0) {
       errors.push('Superannuation rate cannot be negative')
     }
 
-    if (template.leave_loading < 0) {
+    if (template.leaveLoading < 0) {
       errors.push('Leave loading cannot be negative')
     }
 
-    if (template.workers_comp_rate < 0) {
+    if (template.workersCompRate < 0) {
       errors.push('Workers compensation rate cannot be negative')
     }
 
-    if (template.payroll_tax_rate < 0) {
+    if (template.payrollTaxRate < 0) {
       errors.push('Payroll tax rate cannot be negative')
     }
 
-    if (template.training_cost_rate < 0) {
+    if (template.trainingCostRate < 0) {
       errors.push('Training cost rate cannot be negative')
     }
 
-    if (template.other_costs_rate < 0) {
+    if (template.otherCostsRate < 0) {
       errors.push('Other costs rate cannot be negative')
     }
 
     // Date validations
-    const effectiveFrom = new Date(template.effective_from)
-    const effectiveTo = new Date(template.effective_to)
-
-    if (effectiveTo < effectiveFrom) {
-      errors.push('Effective to date must be after effective from date')
+    if (template.effectiveFrom && template.effectiveTo) {
+      const from = new Date(template.effectiveFrom)
+      const to = new Date(template.effectiveTo)
+      if (from > to) {
+        errors.push('Effective from date must be before effective to date')
+      }
     }
 
     // Business rule warnings
-    if (template.base_margin > 50) {
+    if (template.baseMargin > 50) {
       warnings.push('Base margin is unusually high (>50%)')
     }
 
-    if (template.super_rate < 10.5) {
+    if (template.superRate < 10.5) {
       warnings.push('Superannuation rate is below the statutory minimum (10.5%)')
     }
 
@@ -191,7 +195,7 @@ class RatesService {
   async saveTemplate(template: RateTemplate, approverNotes?: string): Promise<RateTemplate> {
     const { data, error } = await this.supabase
       .from('rate_templates')
-      .upsert(template)
+      .upsert(this.mapFromRateTemplate(template))
       .select()
       .single()
 
@@ -203,8 +207,25 @@ class RatesService {
         template_id: template.id,
         action: template.status === 'approved' ? 'approve' : 'reject',
         notes: approverNotes,
-        approver_id: 'current-user-id', // TODO: Get from auth context
-      });
+        approver_id: template.updatedBy || 'system',
+        created_by: template.updatedBy || 'system',
+        changes: {},
+      })
+    }
+
+    return this.mapToRateTemplate(data)
+  }
+
+  async updateTemplate(template: RateTemplate): Promise<RateTemplate> {
+    const { data, error } = await this.supabase
+      .from('rate_templates')
+      .update(template)
+      .eq('id', template.id)
+      .select()
+      .single()
+
+    if (error) {
+      throw new Error(`Failed to update template: ${error.message}`)
     }
 
     return data
@@ -215,62 +236,111 @@ class RatesService {
       .from('rate_template_history')
       .select('*')
       .eq('template_id', templateId)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
 
-    if (error) throw error;
-    return data;
+    if (error) {
+      throw new Error(`Failed to get template history: ${error.message}`)
+    }
+
+    return data || []
   }
 
-  private async addTemplateHistory(history: Omit<RateTemplateHistory, 'id' | 'created_at'>): Promise<RateTemplateHistory> {
+  private async addTemplateHistory(
+    history: Omit<RateTemplateHistory, 'id' | 'created_at'>
+  ): Promise<RateTemplateHistory> {
     const { data, error } = await this.supabase
       .from('rate_template_history')
       .insert(history)
       .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  }
-
-  async calculateRate(params: { template_id: string; org_id: string }): Promise<{ data: RateCalculation }> {
-    const template = await this.getTemplate(params.template_id)
-    if (!template) {
-      throw new Error('Template not found')
-    }
-
-    // Calculate the rate based on the template
-    const calculation: RateCalculation = {
-      id: crypto.randomUUID(),
-      org_id: params.org_id,
-      template_id: params.template_id,
-      employee_id: '', // This would be set when calculating for a specific employee
-      date: new Date().toISOString(),
-      hours: 0, // This would be set based on actual hours
-      base_rate: template.base_rate,
-      multipliers: {
-        super_rate: template.super_rate,
-        leave_loading: template.leave_loading,
-        workers_comp_rate: template.workers_comp_rate,
-        payroll_tax_rate: template.payroll_tax_rate,
-        training_cost_rate: template.training_cost_rate,
-        other_costs_rate: template.other_costs_rate,
-      },
-      total_amount: template.base_rate * (1 + template.base_margin / 100),
-      status: 'pending',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }
-
-    // Save the calculation
-    const { data, error } = await this.supabase
-      .from('rate_calculations')
-      .insert(calculation)
-      .select()
       .single()
 
     if (error) throw error
-    return { data }
+    return data
+  }
+
+  async calculateRate(template: RateTemplate): Promise<RateCalculation> {
+    const baseAmount = template.baseRate * (1 + template.baseMargin / 100)
+    const superAmount = baseAmount * (template.superRate / 100)
+    const leaveAmount = baseAmount * (template.leaveLoading / 100)
+    const workersCompAmount = baseAmount * (template.workersCompRate / 100)
+    const payrollTaxAmount = baseAmount * (template.payrollTaxRate / 100)
+    const trainingAmount = baseAmount * (template.trainingCostRate / 100)
+    const otherAmount = baseAmount * (template.otherCostsRate / 100)
+    const fundingAmount = template.fundingOffset || 0
+
+    return {
+      baseRate: template.baseRate,
+      components: {
+        superannuation: superAmount,
+        leaveLoading: leaveAmount,
+        workersComp: workersCompAmount,
+        payrollTax: payrollTaxAmount,
+        trainingCosts: trainingAmount,
+        otherCosts: otherAmount,
+        fundingOffset: fundingAmount,
+      },
+      totalAmount:
+        baseAmount +
+        superAmount +
+        leaveAmount +
+        workersCompAmount +
+        payrollTaxAmount +
+        trainingAmount +
+        otherAmount -
+        fundingAmount,
+    }
+  }
+
+  private mapToRateTemplate(data: any): RateTemplate {
+    if (!data) throw new Error('No data to map to RateTemplate')
+
+    return {
+      id: data.id,
+      orgId: data.org_id,
+      name: data.name,
+      templateType: data.template_type,
+      description: data.description,
+      baseRate: data.base_rate,
+      baseMargin: data.base_margin,
+      superRate: data.super_rate,
+      leaveLoading: data.leave_loading,
+      workersCompRate: data.workers_comp_rate,
+      payrollTaxRate: data.payroll_tax_rate,
+      trainingCostRate: data.training_cost_rate,
+      otherCostsRate: data.other_costs_rate,
+      fundingOffset: data.funding_offset,
+      effectiveFrom: data.effective_from,
+      effectiveTo: data.effective_to,
+      status: data.status,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+      updatedBy: data.updated_by,
+    }
+  }
+
+  private mapFromRateTemplate(template: Partial<RateTemplate>): Record<string, any> {
+    return {
+      org_id: template.orgId,
+      name: template.name,
+      template_type: template.templateType,
+      description: template.description,
+      base_rate: template.baseRate,
+      base_margin: template.baseMargin,
+      super_rate: template.superRate,
+      leave_loading: template.leaveLoading,
+      workers_comp_rate: template.workersCompRate,
+      payroll_tax_rate: template.payrollTaxRate,
+      training_cost_rate: template.trainingCostRate,
+      other_costs_rate: template.otherCostsRate,
+      funding_offset: template.fundingOffset,
+      effective_from: template.effectiveFrom,
+      effective_to: template.effectiveTo,
+      status: template.status,
+      updated_by: template.updatedBy,
+    }
   }
 }
 
 export const ratesService = new RatesService()
+
+export type { RateTemplate, RateCalculation }

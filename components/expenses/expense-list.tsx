@@ -17,14 +17,14 @@ export function ExpenseList() {
   const { user } = useAuth()
   const { toast } = useToast()
   const [selectedExpense, setSelectedExpense] = React.useState<Expense | null>(null)
-  const { data: expenses, error } = useSupabaseQuery<Expense>({
+  const { data: expenses, error } = useSupabaseQuery<'expenses'>({
     queryKey: ['expenses', user?.org_id || ''],
     table: 'expenses',
     filter: user ? [{ column: 'org_id', value: user.org_id }] : undefined,
     enabled: !!user,
   })
 
-  const { mutate: approveExpense, isPending: _isApproving } = useSupabaseMutation<Expense>({
+  const { mutate: approveExpense, isPending: _isApproving } = useSupabaseMutation<'expenses'>({
     table: 'expenses',
     onSuccess: () => {
       toast({
@@ -42,7 +42,7 @@ export function ExpenseList() {
     invalidateQueries: [['expenses', user?.org_id || '']],
   })
 
-  const { mutate: rejectExpense, isPending: _isRejecting } = useSupabaseMutation<Expense>({
+  const { mutate: rejectExpense, isPending: _isRejecting } = useSupabaseMutation<'expenses'>({
     table: 'expenses',
     onSuccess: () => {
       toast({

@@ -1,10 +1,14 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/router'
-import { createBrowserSupabaseClient } from '@/lib/auth/config'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 export default function AuthCallbackPage() {
   const router = useRouter()
-  const supabase = createBrowserSupabaseClient()
 
   useEffect(() => {
     const handleAuthCallback = async () => {
@@ -20,7 +24,7 @@ export default function AuthCallbackPage() {
     }
 
     handleAuthCallback()
-  }, [router, supabase.auth])
+  }, [router]) // Only depend on router since supabase is constant
 
   return null
 }

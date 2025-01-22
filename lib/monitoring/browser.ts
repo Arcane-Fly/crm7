@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/nextjs'
-import type { SentryTransaction as Transaction, BrowserTracing } from './types'
+import type { SentryTransaction as _Transaction, BrowserTracing } from './types'
 import { SpanStatus } from './types'
 import { logger } from '@/lib/logger'
 
@@ -31,12 +31,12 @@ function startBrowserSpan(
   name: string,
   operation: string,
   tags?: Record<string, unknown>
-): Transaction | undefined {
+): _Transaction | undefined {
   try {
     const span = (Sentry as any).startTransaction({
       name,
       op: operation,
-    }) as Transaction
+    }) as _Transaction
 
     if (span && tags) {
       Object.entries(tags).forEach(([key, value]) => {
@@ -54,7 +54,7 @@ function startBrowserSpan(
 }
 
 function finishBrowserSpan(
-  span: Transaction | undefined,
+  span: _Transaction | undefined,
   status: (typeof SpanStatus)[keyof typeof SpanStatus],
   data?: Record<string, unknown>
 ): void {
@@ -79,7 +79,7 @@ function finishBrowserSpan(
 /**
  * Initialize browser monitoring
  */
-function initializeBrowserMonitoring(): void {
+function _initializeBrowserMonitoring(): void {
   try {
     const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN
     if (!dsn) {
@@ -299,4 +299,4 @@ export function monitorResourceLoad(resourceType: string, url: string, duration:
   }
 }
 
-export { initializeBrowserMonitoring }
+export { _initializeBrowserMonitoring }

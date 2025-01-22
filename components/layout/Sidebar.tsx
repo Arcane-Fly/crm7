@@ -203,7 +203,7 @@ const sidebarSections: Record<string, SidebarSection> = {
 }
 
 function MenuItem({ href, icon, title }: MenuItem) {
-  const pathname = usePathname()
+  const pathname = usePathname() ?? '/'
   const isActive = pathname === href
 
   const Icon = iconMap[icon]
@@ -224,7 +224,7 @@ function MenuItem({ href, icon, title }: MenuItem) {
 
 export function Sidebar() {
   const pathname = usePathname()
-  const section = Object.keys(sidebarSections).find((key) => pathname.startsWith(key))
+  const section = Object.keys(sidebarSections).find((key) => pathname?.startsWith(key) ?? false)
   const sidebarSection = section ? sidebarSections[section] : null
 
   if (!sidebarSection) return null

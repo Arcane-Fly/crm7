@@ -1,218 +1,146 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
-import { format } from 'date-fns'
-import { DatePickerWithRange } from '@/components/ui/date-range-picker'
+import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { useQueryWithSupabase } from '@/lib/hooks/use-query-with-supabase'
-import type { DateRange } from 'react-day-picker'
+import { Performance } from '@/lib/types/hr'
+import { supabase } from '@/lib/supabase'
+import { Database } from '@/lib/types/database'
 
-interface Performance {
-  id: string
-  date: string
-  revenue: number
-  expenses: number
-  profit: number
-  margin: number
-  created_at: string
-  updated_at: string
+interface PerformanceStats {
+  totalReviews: number
+  averageRating: number
+  draftCount: number
+  submittedCount: number
+  approvedCount: number
+  completionRate: number
 }
 
-interface ChartData {
-  date: string
-  revenue: number
-  expenses: number
-  profit: number
-  margin: number
-}
-
-export function FinancialPerformanceDashboard() {
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: new Date(new Date().setMonth(new Date().getMonth() - 1)),
-    to: new Date(),
+export const FinancialPerformanceDashboard = () => {
+  const [performances, setPerformances] = useState<Performance[]>([])
+  const [stats, setStats] = useState<PerformanceStats>({
+    totalReviews: 0,
+    averageRating: 0,
+    draftCount: 0,
+    submittedCount: 0,
+    approvedCount: 0,
+    completionRate: 0,
   })
 
-  const queryKey = ['performance']
-  if (dateRange?.from) queryKey.push(dateRange.from.toISOString())
-  if (dateRange?.to) queryKey.push(dateRange.to.toISOString())
+  useEffect(() => {
+    async function fetchPerformanceData() {
+      try {
+        const { data, error } = await supabase
+          .from<
+            'financial_transactions',
+            Database['public']['Tables']['financial_transactions']['Row']
+          >('financial_transactions')
+          .select('*')
+          .order('date', { ascending: false })
 
-  const { data: performance = [] } = useQueryWithSupabase<Performance[]>({
-    queryKey,
-    table: 'financial_performance',
-    filter: dateRange
-      ? [
-          { column: 'date', value: dateRange.from?.toISOString() },
-          { column: 'date', value: dateRange.to?.toISOString() },
-        ]
-      : undefined,
-  })
+        if (error) throw error
 
-  const filteredPerformance = performance.filter((record: Performance) => {
-    if (!dateRange?.from || !dateRange?.to) return true
-    const date = new Date(record.date)
-    return date >= dateRange.from && date <= dateRange.to
-  })
-
-  const totalRevenue = filteredPerformance.reduce((sum: number, record: Performance) => sum + record.revenue, 0)
-  const totalExpenses = filteredPerformance.reduce((sum: number, record: Performance) => sum + record.expenses, 0)
-  const totalProfit = filteredPerformance.reduce((sum: number, record: Performance) => sum + record.profit, 0)
-  const averageMargin =
-    filteredPerformance.reduce((sum: number, record: Performance) => sum + record.margin, 0) /
-      filteredPerformance.length || 0
-
-  const chartData = filteredPerformance.reduce(
-    (acc: ChartData[], record: Performance) => {
-      const date = format(new Date(record.date), 'MM/dd')
-      const existing = acc.find((d: ChartData) => d.date === date)
-      if (existing) {
-        existing.revenue += record.revenue
-        existing.expenses += record.expenses
-        existing.profit += record.profit
-        existing.margin = (existing.profit / existing.revenue) * 100
-      } else {
-        acc.push({
-          date,
-          revenue: record.revenue,
-          expenses: record.expenses,
-          profit: record.profit,
-          margin: record.margin,
-        })
+        if (data) {
+          setPerformances(data)
+          calculateStats(data)
+        }
+      } catch (error) {
+        console.error('Error fetching performance data:', error)
       }
-      return acc
-    },
-    [] as ChartData[]
-  )
+    }
+
+    fetchPerformanceData()
+  }, [])
+
+  const calculateStats = (performances: Performance[]) => {
+    const totalReviews = performances.length
+    const averageRating =
+      performances.length > 0
+        ? performances.reduce((sum, p) => sum + p.rating, 0) / totalReviews
+        : 0
+    const draftCount = performances.filter((p) => p.status === 'draft').length
+    const submittedCount = performances.filter((p) => p.status === 'submitted').length
+    const approvedCount = performances.filter((p) => p.status === 'approved').length
+    const completionRate = totalReviews > 0 ? (approvedCount / totalReviews) * 100 : 0
+
+    setStats({
+      totalReviews,
+      averageRating,
+      draftCount,
+      submittedCount,
+      approvedCount,
+      completionRate,
+    })
+  }
+
+  const getStatusColor = (status: Performance['status']) => {
+    switch (status) {
+      case 'approved':
+        return 'bg-green-500'
+      case 'submitted':
+        return 'bg-yellow-500'
+      case 'draft':
+        return 'bg-gray-500'
+      default:
+        return 'bg-gray-500'
+    }
+  }
 
   return (
     <div className='space-y-4'>
-      <div className='flex items-center justify-between'>
-        <h2 className='text-3xl font-bold tracking-tight'>Financial Performance</h2>
-        <DatePickerWithRange date={dateRange} onDateChange={setDateRange} />
-      </div>
-
-      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
-        <Card>
-          <CardHeader>
-            <CardTitle>Total Revenue</CardTitle>
-            <CardDescription>Total earnings for period</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold text-blue-600'>${totalRevenue.toLocaleString()}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Total Expenses</CardTitle>
-            <CardDescription>Total costs for period</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold text-red-600'>${totalExpenses.toLocaleString()}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Total Profit</CardTitle>
-            <CardDescription>Net earnings for period</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div
-              className={`text-2xl font-bold ${
-                totalProfit >= 0 ? 'text-green-600' : 'text-red-600'
-              }`}
-            >
-              ${totalProfit.toLocaleString()}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Average Margin</CardTitle>
-            <CardDescription>Profit margin percentage</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div
-              className={`text-2xl font-bold ${
-                averageMargin >= 0 ? 'text-green-600' : 'text-red-600'
-              }`}
-            >
-              {averageMargin.toFixed(1)}%
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       <Card>
         <CardHeader>
-          <CardTitle>Performance Trends</CardTitle>
-          <CardDescription>Financial metrics over time</CardDescription>
+          <CardTitle>Performance Overview</CardTitle>
+          <CardDescription>Current performance metrics and status</CardDescription>
         </CardHeader>
         <CardContent>
-          <LineChart width={800} height={400} data={chartData}>
-            <CartesianGrid strokeDasharray='3 3' />
-            <XAxis dataKey='date' />
-            <YAxis yAxisId='left' />
-            <YAxis yAxisId='right' orientation='right' />
-            <Tooltip />
-            <Legend />
-            <Line
-              yAxisId='left'
-              type='monotone'
-              dataKey='revenue'
-              stroke='#3b82f6'
-              name='Revenue'
-            />
-            <Line
-              yAxisId='left'
-              type='monotone'
-              dataKey='expenses'
-              stroke='#ef4444'
-              name='Expenses'
-            />
-            <Line yAxisId='left' type='monotone' dataKey='profit' stroke='#10b981' name='Profit' />
-            <Line
-              yAxisId='right'
-              type='monotone'
-              dataKey='margin'
-              stroke='#8b5cf6'
-              name='Margin %'
-            />
-          </LineChart>
+          <div className='space-y-4'>
+            <div className='grid grid-cols-4 gap-4'>
+              <div>
+                <p className='text-sm font-medium'>Total Reviews</p>
+                <p className='text-2xl font-bold'>{stats.totalReviews}</p>
+              </div>
+              <div>
+                <p className='text-sm font-medium'>Average Rating</p>
+                <p className='text-2xl font-bold'>{stats.averageRating.toFixed(1)}</p>
+              </div>
+              <div>
+                <p className='text-sm font-medium'>Approved Reviews</p>
+                <p className='text-2xl font-bold text-green-600'>{stats.approvedCount}</p>
+              </div>
+              <div>
+                <p className='text-sm font-medium'>Pending Reviews</p>
+                <p className='text-2xl font-bold text-yellow-600'>{stats.submittedCount}</p>
+              </div>
+            </div>
+
+            <div>
+              <p className='mb-2 text-sm font-medium'>Review Completion Rate</p>
+              <Progress value={stats.completionRate} className='w-full' />
+              <p className='mt-1 text-sm text-gray-500'>{stats.completionRate.toFixed(1)}%</p>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Recent Performance</CardTitle>
-          <CardDescription>Latest financial metrics</CardDescription>
+          <CardTitle>Recent Reviews</CardTitle>
+          <CardDescription>Latest performance reviews</CardDescription>
         </CardHeader>
         <CardContent>
           <div className='space-y-4'>
-            {filteredPerformance.slice(0, 5).map((record: Performance) => (
+            {performances.slice(0, 5).map((performance: Performance) => (
               <div
-                key={record.id}
+                key={performance.id}
                 className='flex items-center justify-between rounded-lg border p-4'
               >
                 <div>
-                  <div className='font-medium'>{format(new Date(record.date), 'PPP')}</div>
-                  <div className='text-sm text-muted-foreground'>
-                    Revenue: ${record.revenue.toLocaleString()} | Expenses: $
-                    {record.expenses.toLocaleString()}
-                  </div>
+                  <h4 className='font-medium'>Performance Review</h4>
+                  <p className='text-sm text-gray-500'>Period: {performance.period}</p>
                 </div>
-                <div className='flex items-center gap-4'>
-                  <div
-                    className={`font-medium ${
-                      record.profit >= 0 ? 'text-green-600' : 'text-red-600'
-                    }`}
-                  >
-                    ${record.profit.toLocaleString()}
-                  </div>
-                  <Badge variant={record.margin >= 0 ? 'default' : 'destructive'}>
-                    {record.margin.toFixed(1)}%
-                  </Badge>
+                <div className='flex items-center space-x-4'>
+                  <p className='font-medium'>Rating: {performance.rating.toFixed(1)}</p>
+                  <Badge className={getStatusColor(performance.status)}>{performance.status}</Badge>
                 </div>
               </div>
             ))}

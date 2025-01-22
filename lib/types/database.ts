@@ -561,6 +561,77 @@ export interface Database {
           updated_at?: string
         }
       }
+      compliance_records: {
+        Row: {
+          id: string
+          employeeId: string
+          type: string
+          status: 'compliant' | 'non_compliant' | 'pending'
+          dueDate: string
+          completedDate?: string
+          notes?: string
+          createdAt: string
+          updatedAt: string
+        }
+        Insert: {
+          id?: string
+          employeeId: string
+          type: string
+          status: 'compliant' | 'non_compliant' | 'pending'
+          dueDate: string
+          completedDate?: string
+          notes?: string
+          createdAt?: string
+          updatedAt?: string
+        }
+        Update: {
+          id?: string
+          employeeId?: string
+          type?: string
+          status?: 'compliant' | 'non_compliant' | 'pending'
+          dueDate?: string
+          completedDate?: string
+          notes?: string
+          updatedAt?: string
+        }
+      }
+      financial_transactions: {
+        Row: {
+          id: string
+          employeeId: string
+          type: 'salary' | 'bonus' | 'reimbursement' | 'deduction'
+          amount: number
+          currency: string
+          status: 'pending' | 'completed' | 'failed'
+          date: string
+          description?: string
+          createdAt: string
+          updatedAt: string
+        }
+        Insert: {
+          id?: string
+          employeeId: string
+          type: 'salary' | 'bonus' | 'reimbursement' | 'deduction'
+          amount: number
+          currency: string
+          status?: 'pending' | 'completed' | 'failed'
+          date: string
+          description?: string
+          createdAt?: string
+          updatedAt?: string
+        }
+        Update: {
+          id?: string
+          employeeId?: string
+          type?: 'salary' | 'bonus' | 'reimbursement' | 'deduction'
+          amount?: number
+          currency?: string
+          status?: 'pending' | 'completed' | 'failed'
+          date?: string
+          description?: string
+          updatedAt?: string
+        }
+      }
     }
   }
 }

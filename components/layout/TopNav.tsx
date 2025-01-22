@@ -58,7 +58,7 @@ const topNavItems = [
 ]
 
 export default function TopNav() {
-  const pathname = usePathname()
+  const pathname = usePathname() ?? '/'
 
   return (
     <div className='fixed left-0 right-0 top-0 z-50 border-b bg-white'>
