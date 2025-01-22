@@ -1,21 +1,36 @@
 import { useEffect, useState } from 'react'
-import { useSupabase } from '@/lib/supabase/supabase-provider'
+import { useSupabase } from '../supabase/supabase-provider'
 import type { User } from '@supabase/supabase-js'
+import { AuthenticationError } from '../types/errors'
 
-export const useUser = () => {
+interface UseUserReturn {
+  user: User | null
+  loading: boolean
+  error: Error | null
+}
+
+export const useUser = (): UseUserReturn => {
   const { supabase } = useSupabase()
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
     const getUser = async () => {
       try {
-        const { data: { user }, error } = await supabase.auth.getUser()
-        if (error) throw error
+        const {
+          data: { user },
+          error: supabaseError,
+        } = await supabase.auth.getUser()
+        if (supabaseError) {
+          throw new AuthenticationError('Failed to get user', supabaseError)
+        }
         setUser(user)
+        setError(null)
       } catch (error) {
         console.error('Error getting user:', error)
         setUser(null)
+        setError(error instanceof Error ? error : new Error('Unknown error occurred'))
       } finally {
         setLoading(false)
       }
@@ -27,6 +42,7 @@ export const useUser = () => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
+      setError(null)
     })
 
     return () => {
@@ -34,5 +50,5 @@ export const useUser = () => {
     }
   }, [supabase])
 
-  return { user, loading }
+  return { user, loading, error }
 }
