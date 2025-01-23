@@ -1,7 +1,5 @@
 # TypeScript Guidelines (Updated January 2025)
 
-[Previous content remains the same as it's already up to date with current best practices]
-
 ## Package Versions (January 2025)
 
 For optimal TypeScript development, ensure you're using these minimum versions:
@@ -24,97 +22,128 @@ For optimal TypeScript development, ensure you're using these minimum versions:
 }
 ```
 
-## Latest TypeScript Features (5.3+)
+## TypeScript Configuration
 
-### Using Decorators
+Our `tsconfig.json` is configured for optimal development with Next.js:
+
+```json
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}
+```
+
+## React Type Best Practices
+
+### Component Types
 
 ```typescript
-// Class decorator
-function logged(target: typeof BaseService) {
-  return class extends target {
-    constructor(...args: any[]) {
-      super(...args)
-      console.log(`Created instance of ${target.name}`)
-    }
-  }
+// Import types explicitly
+import { type ReactElement, type ReactNode } from 'react'
+
+// Use ReactElement for component return types
+export function MyComponent(): ReactElement {
+  return <div>Content</div>
 }
 
-// Property decorator
-function required(target: object, propertyKey: string) {
-  let value: any
+// Use ReactNode for children props
+interface Props {
+  children: ReactNode
+}
+```
 
-  const getter = () => value
-  const setter = (newValue: any) => {
-    if (newValue === undefined || newValue === null) {
-      throw new Error(`${propertyKey} is required`)
-    }
-    value = newValue
-  }
+### Context Pattern
 
-  Object.defineProperty(target, propertyKey, {
-    get: getter,
-    set: setter,
-    enumerable: true,
-    configurable: true,
-  })
+```typescript
+interface ContextType {
+  state: State
+  dispatch: Dispatch<Action>
 }
 
+const MyContext = createContext<ContextType | undefined>(undefined)
+
+export function useMyContext(): ContextType {
+  const context = useContext(MyContext)
+  if (!context) {
+    throw new Error('useMyContext must be used within MyProvider')
+  }
+  return context
+}
+```
+
+### Service Pattern
+
+```typescript
+interface Service {
+  getData: () => Promise<Data>
+  updateData: (id: string, data: Partial<Data>) => Promise<Data>
+}
+
+export const myService: Service = {
+  getData: async () => {
+    // Implementation
+  },
+  updateData: async (id, data) => {
+    // Implementation
+  },
+}
+```
+
+## Error Handling
+
+```typescript
+try {
+  await operation()
+} catch (error) {
+  logger.error('Operation failed', { error, context: 'operationName' })
+  throw new CustomError('Operation failed', { cause: error })
+}
+```
+
+## Performance Optimization
+
+```typescript
+// Use type imports for better tree-shaking
+import type { MyType } from './types'
+
+// Use const assertions for literal types
+const VALID_STATUSES = ['active', 'inactive'] as const
+type Status = (typeof VALID_STATUSES)[number]
+
+// Use Pick and Omit for derived types
+type CreateUserDTO = Omit<User, 'id' | 'createdAt'>
+type UserSummary = Pick<User, 'id' | 'name' | 'email'>
+```
+
+## Latest TypeScript Features
+
+### Using Decorators (Stage 3)
+
+```typescript
 @logged
-class BaseService {
+class Service {
   @required
   name: string
 
-  constructor(name: string) {
-    this.name = name
+  @validate
+  async process(@format('json') data: unknown) {
+    // Implementation
   }
 }
 ```
 
-### Using 'using' Declarations
+### Satisfies Operator
 
 ```typescript
-class Resource {
-  [Symbol.dispose]() {
-    // Cleanup logic
-  }
-}
-
-function processResource() {
-  using resource = new Resource()
-  // Resource will be automatically disposed
-}
-```
-
-### Improved Type Inference
-
-```typescript
-// Better inference for array methods
-const numbers = [1, 2, 3] as const
-const doubled = numbers.map((n) => n * 2)
-// Type is: number[]
-
-// Improved tuple types
-function tuple<T extends unknown[]>(...args: T): T {
-  return args
-}
-const t = tuple(1, 'hello', true)
-// Type is: [number, string, boolean]
-```
-
-### Enhanced Type Narrowing
-
-```typescript
-function processValue(value: string | number) {
-  if (typeof value === 'string') {
-    // TypeScript knows value is string here
-    console.log(value.toUpperCase())
-  } else {
-    // TypeScript knows value is number here
-    console.log(value.toFixed(2))
-  }
-}
-
-// Discriminated unions with 'satisfies'
 const config = {
   api: {
     endpoint: 'https://api.example.com',
@@ -122,12 +151,54 @@ const config = {
   },
   features: {
     darkMode: true,
-    analytics: false,
   },
-} satisfies {
-  api: Record<string, string>
-  features: Record<string, boolean>
-}
+} satisfies Config
 ```
 
-[Rest of the document remains the same]
+### Template Literal Types
+
+```typescript
+type Route = `/api/${string}`
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
+type Endpoint = `${HttpMethod} ${Route}`
+```
+
+## Code Organization
+
+- Group imports by type (React, third-party, local)
+- Use barrel exports for related functionality
+- Keep type definitions close to their usage
+- Use type-only imports when possible
+
+## Testing
+
+```typescript
+import { type ReactElement } from 'react'
+import { render, screen } from '@testing-library/react'
+
+describe('Component', () => {
+  it('renders correctly', () => {
+    render(<Component />)
+    expect(screen.getByRole('button')).toBeInTheDocument()
+  })
+})
+```
+
+## Documentation
+
+- Use JSDoc for public APIs
+- Include type information in comments
+- Document complex type relationships
+- Keep examples up to date
+
+```typescript
+/**
+ * Processes user data with validation
+ * @param data - The user data to process
+ * @returns Processed user data
+ * @throws {ValidationError} If data is invalid
+ */
+async function processUser(data: UserInput): Promise<User> {
+  // Implementation
+}
+```

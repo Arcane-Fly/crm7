@@ -20,7 +20,7 @@ export function RatesClient() {
           <TabsTrigger value='templates'>Rate Templates</TabsTrigger>
         </TabsList>
         <TabsContent value='calculator' className='space-y-4'>
-          <RateCalculator orgId={user.org_id} />
+          <RateCalculator org_id={user.org_id} />
         </TabsContent>
         <TabsContent value='templates' className='space-y-4'>
           <RateTemplateBuilder />

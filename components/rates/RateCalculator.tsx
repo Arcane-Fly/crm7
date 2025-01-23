@@ -1,27 +1,34 @@
 import { useState, useEffect } from 'react'
 import { useSupabase } from '@/lib/supabase/supabase-provider'
 import { RateTemplate } from '@/lib/types/rates'
-import { Select } from '@/components/ui/select'
-import { ErrorBoundary } from '@/components/ui/error-boundary'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { ErrorBoundary } from 'react-error-boundary'
+import { ErrorFallback } from '@/components/error/ErrorFallback'
 import { useToast } from '@/components/ui/use-toast'
 
 interface RateCalculatorProps {
-  org_id: string
+  orgId: string
   onCalculate?: (rate: number) => void
 }
 
 interface CalculationResult {
-  base_amount: number
-  super_amount: number
-  leave_amount: number
-  workers_comp_amount: number
-  payroll_tax_amount: number
-  training_amount: number
-  other_amount: number
-  total_amount: number
+  baseAmount: number
+  superAmount: number
+  leaveAmount: number
+  workersCompAmount: number
+  payrollTaxAmount: number
+  trainingAmount: number
+  otherAmount: number
+  totalAmount: number
 }
 
-export default function RateCalculator({ org_id, onCalculate }: RateCalculatorProps) {
+export function RateCalculator({ orgId, onCalculate }: RateCalculatorProps) {
   const { supabase } = useSupabase()
   const { toast } = useToast()
   const [templates, setTemplates] = useState<RateTemplate[]>([])
@@ -36,8 +43,8 @@ export default function RateCalculator({ org_id, onCalculate }: RateCalculatorPr
         const { data, error } = await supabase
           .from('rate_templates')
           .select('*')
-          .eq('org_id', org_id)
-          .order('created_at', { ascending: false })
+          .eq('orgId', orgId)
+          .order('createdAt', { ascending: false })
 
         if (error) throw error
 
@@ -56,37 +63,39 @@ export default function RateCalculator({ org_id, onCalculate }: RateCalculatorPr
     }
 
     fetchTemplates()
-  }, [org_id, supabase, toast])
+  }, [orgId, supabase, toast])
 
   const calculateRate = async (template: RateTemplate) => {
-    const baseAmount = template.base_rate * (1 + template.base_margin / 100)
-    const superAmount = baseAmount * (template.super_rate / 100)
-    const leaveAmount = baseAmount * (template.leave_loading / 100)
-    const workersCompAmount = baseAmount * (template.workers_comp_rate / 100)
-    const payrollTaxAmount = baseAmount * (template.payroll_tax_rate / 100)
-    const trainingAmount = baseAmount * (template.training_cost_rate / 100)
-    const otherAmount = baseAmount * (template.other_costs_rate / 100)
+    const baseAmount = template.baseRate * (1 + template.baseMargin / 100)
+    const superAmount = baseAmount * (template.superRate / 100)
+    const leaveAmount = baseAmount * (template.leaveLoading / 100)
+    const workersCompAmount = baseAmount * (template.workersCompRate / 100)
+    const payrollTaxAmount = baseAmount * (template.payrollTaxRate / 100)
+    const trainingAmount = baseAmount * (template.trainingCostRate / 100)
+    const otherAmount = baseAmount * (template.otherCostsRate / 100)
 
-    const totalAmount = Number((
-      baseAmount +
-      superAmount +
-      leaveAmount +
-      workersCompAmount +
-      payrollTaxAmount +
-      trainingAmount +
-      otherAmount -
-      template.funding_offset
-    ).toFixed(2))
+    const totalAmount = Number(
+      (
+        baseAmount +
+        superAmount +
+        leaveAmount +
+        workersCompAmount +
+        payrollTaxAmount +
+        trainingAmount +
+        otherAmount -
+        template.fundingOffset
+      ).toFixed(2)
+    )
 
     const result: CalculationResult = {
-      base_amount: Number(baseAmount.toFixed(2)),
-      super_amount: Number(superAmount.toFixed(2)),
-      leave_amount: Number(leaveAmount.toFixed(2)),
-      workers_comp_amount: Number(workersCompAmount.toFixed(2)),
-      payroll_tax_amount: Number(payrollTaxAmount.toFixed(2)),
-      training_amount: Number(trainingAmount.toFixed(2)),
-      other_amount: Number(otherAmount.toFixed(2)),
-      total_amount: totalAmount,
+      baseAmount: Number(baseAmount.toFixed(2)),
+      superAmount: Number(superAmount.toFixed(2)),
+      leaveAmount: Number(leaveAmount.toFixed(2)),
+      workersCompAmount: Number(workersCompAmount.toFixed(2)),
+      payrollTaxAmount: Number(payrollTaxAmount.toFixed(2)),
+      trainingAmount: Number(trainingAmount.toFixed(2)),
+      otherAmount: Number(otherAmount.toFixed(2)),
+      totalAmount: totalAmount,
     }
 
     setResult(result)
@@ -95,26 +104,26 @@ export default function RateCalculator({ org_id, onCalculate }: RateCalculatorPr
 
   const handleTemplateChange = (value: string) => {
     setSelectedTemplate(value)
-    const template = templates.find(t => t.id === value)
+    const template = templates.find((t) => t.id === value)
     if (template) {
       calculateRate(template)
     }
   }
 
   if (loading) return <div>Loading templates...</div>
-  if (error) return <div className="text-red-500">{error}</div>
+  if (error) return <div className='text-red-500'>{error}</div>
 
   return (
-    <ErrorBoundary>
-      <div className="space-y-6">
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="template" className="text-sm font-medium">
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <div className='space-y-6'>
+        <div className='space-y-4'>
+          <div className='space-y-2'>
+            <label htmlFor='template' className='text-sm font-medium'>
               Select Rate Template
             </label>
-            <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
+            <Select value={selectedTemplate} onValueChange={handleTemplateChange}>
               <SelectTrigger>
-                <SelectValue placeholder="Choose a template" />
+                <SelectValue placeholder='Choose a template' />
               </SelectTrigger>
               <SelectContent>
                 {templates.map((template) => (
@@ -128,40 +137,40 @@ export default function RateCalculator({ org_id, onCalculate }: RateCalculatorPr
         </div>
 
         {result && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Calculation Result</h3>
-            <div className="grid grid-cols-2 gap-4">
+          <div className='space-y-4'>
+            <h3 className='text-lg font-medium'>Calculation Result</h3>
+            <div className='grid grid-cols-2 gap-4'>
               <div>
-                <span className="text-sm text-gray-500">Base Amount</span>
-                <p className="text-lg font-medium">${result.base_amount}</p>
+                <span className='text-sm text-gray-500'>Base Amount</span>
+                <p className='text-lg font-medium'>${result.baseAmount}</p>
               </div>
               <div>
-                <span className="text-sm text-gray-500">Super</span>
-                <p className="text-lg font-medium">${result.super_amount}</p>
+                <span className='text-sm text-gray-500'>Super</span>
+                <p className='text-lg font-medium'>${result.superAmount}</p>
               </div>
               <div>
-                <span className="text-sm text-gray-500">Leave Loading</span>
-                <p className="text-lg font-medium">${result.leave_amount}</p>
+                <span className='text-sm text-gray-500'>Leave Loading</span>
+                <p className='text-lg font-medium'>${result.leaveAmount}</p>
               </div>
               <div>
-                <span className="text-sm text-gray-500">Workers Comp</span>
-                <p className="text-lg font-medium">${result.workers_comp_amount}</p>
+                <span className='text-sm text-gray-500'>Workers Comp</span>
+                <p className='text-lg font-medium'>${result.workersCompAmount}</p>
               </div>
               <div>
-                <span className="text-sm text-gray-500">Payroll Tax</span>
-                <p className="text-lg font-medium">${result.payroll_tax_amount}</p>
+                <span className='text-sm text-gray-500'>Payroll Tax</span>
+                <p className='text-lg font-medium'>${result.payrollTaxAmount}</p>
               </div>
               <div>
-                <span className="text-sm text-gray-500">Training</span>
-                <p className="text-lg font-medium">${result.training_amount}</p>
+                <span className='text-sm text-gray-500'>Training</span>
+                <p className='text-lg font-medium'>${result.trainingAmount}</p>
               </div>
               <div>
-                <span className="text-sm text-gray-500">Other Costs</span>
-                <p className="text-lg font-medium">${result.other_amount}</p>
+                <span className='text-sm text-gray-500'>Other Costs</span>
+                <p className='text-lg font-medium'>${result.otherAmount}</p>
               </div>
               <div>
-                <span className="text-sm text-gray-500 font-bold">Total Amount</span>
-                <p className="text-lg font-bold">${result.total_amount}</p>
+                <span className='text-sm font-bold text-gray-500'>Total Amount</span>
+                <p className='text-lg font-bold'>${result.totalAmount}</p>
               </div>
             </div>
           </div>

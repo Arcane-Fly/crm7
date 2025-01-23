@@ -1,31 +1,35 @@
-export enum RateTemplateStatus {
-  Draft = 'draft',
-  Pending = 'pending',
-  Active = 'active',
-  Inactive = 'inactive'
-}
+export type RateTemplateStatus = 'draft' | 'active' | 'archived' | 'deleted'
 
 export interface RateTemplate {
   id: string
-  org_id: string
   name: string
-  description: string
-  template_type: 'hourly' | 'daily' | 'fixed'
-  base_rate: number
-  base_margin: number
-  super_rate: number
-  leave_loading: number
-  workers_comp_rate: number
-  payroll_tax_rate: number
-  training_cost_rate: number
-  other_costs_rate: number
-  funding_offset: number
-  effective_from: string | null
-  effective_to: string | null
+  description?: string
+  orgId: string
+  templateType: 'hourly' | 'daily' | 'fixed'
+
+  // Base rates and margins
+  baseRate: number
+  baseMargin: number
+  superRate: number
+  leaveLoading: number
+  workersCompRate: number
+  payrollTaxRate: number
+  trainingCostRate: number
+  otherCostsRate: number
+  fundingOffset: number
+  casualLoading: number
+
+  // Effective dates
+  effectiveFrom: string | null
+  effectiveTo: string | null
+
+  // Metadata
   status: RateTemplateStatus
-  updated_by: string
-  created_at: string
-  updated_at: string
+  createdAt: string
+  updatedAt: string
+  createdBy: string
+  updatedBy: string
+  version: number
 }
 
 export interface RateCalculation {
@@ -57,58 +61,85 @@ export interface RateTemplateHistory {
 export interface RateAnalyticsData {
   totalTemplates: number
   activeTemplates: number
-  averageMargin: number
-  templatesByStatus: Record<RateTemplateStatus, number>
-  recentCalculations: RateCalculation[]
+  averageRate: number
+  recentChanges: Array<{
+    id: string
+    date: string
+    type: string
+    details: string
+  }>
+}
+
+export interface RatesService {
+  // Template Management
+  getTemplates: (params: { orgId: string }) => Promise<{ data: RateTemplate[] }>
+  getRateTemplateById: (id: string) => Promise<RateTemplate>
+  createRateTemplate: (template: Partial<RateTemplate>) => Promise<RateTemplate>
+  updateRateTemplate: (id: string, template: Partial<RateTemplate>) => Promise<RateTemplate>
+  updateRateTemplateStatus: (
+    id: string,
+    status: RateTemplateStatus,
+    updatedBy: string
+  ) => Promise<void>
+  deleteRateTemplate: (id: string) => Promise<void>
+  getRateTemplateHistory: (id: string) => Promise<{ data: RateTemplateHistory[] }>
+  getRateCalculations: (id: string) => Promise<{ data: RateCalculation[] }>
+
+  // Rate Calculations
+  validateRateTemplate: (template: RateTemplate) => Promise<boolean>
+  calculateRate: (template: RateTemplate) => Promise<number>
+  generateQuote: () => Promise<{ data: Record<string, unknown> }>
+
+  // Bulk Operations
+  getBulkCalculations: (orgId: string) => Promise<{ data: BulkCalculation[] }>
+  createBulkCalculation: (params: BulkCalculationParams) => Promise<{ data: BulkCalculation }>
+
+  // Analytics and Employee Management
+  getAnalytics: (params: { orgId: string }) => Promise<{ data: RateAnalytics }>
+  getEmployees: () => Promise<{ data: Employee[] }>
 }
 
 export interface BulkCalculation {
   id: string
-  name: string
+  orgId: string
   status: 'pending' | 'processing' | 'completed' | 'failed'
-  created_at: string
-  updated_at: string
-  org_id: string
-  error_log?: string
-  is_active?: boolean
+  results: Array<{
+    templateId: string
+    rate: number
+    error?: string
+  }>
+  createdAt: string
+  updatedAt: string
 }
 
-export interface RateAnalyticsData {
+export interface BulkCalculationParams {
+  orgId: string
+  templateIds: string[]
+}
+
+export interface RateAnalytics {
   totalTemplates: number
   activeTemplates: number
   averageRate: number
-  recentChanges: Array<{
-    id: string
-    date: string
-    type: string
-    details: string
-  }>
+  recentChanges: {
+    templateId: string
+    action: 'created' | 'updated' | 'deleted'
+    timestamp: string
+  }[]
 }
 
-export interface RatesService {
-  getAnalytics: (orgId: string) => Promise<{ data: RateAnalyticsData }>
-  getEmployees: (orgId: string) => Promise<{ data: any[] }>
-  getBulkCalculations: (orgId: string) => Promise<{ data: BulkCalculation[] }>
-  createBulkCalculation: (params: { org_id: string; is_active?: boolean }) => Promise<{ data: BulkCalculation }>
-  generateQuote: (templateId: string) => Promise<any>
+export interface Employee {
+  id: string
+  name: string
+  role: string
+  department: string
 }
 
-export interface RateAnalyticsData {
-  totalTemplates: number
-  activeTemplates: number
-  averageRate: number
-  recentChanges: Array<{
-    id: string
-    date: string
-    type: string
-    details: string
-  }>
-}
-
-export interface RatesService {
-  getAnalytics: (orgId: string) => Promise<{ data: RateAnalyticsData }>
-  getEmployees: (orgId: string) => Promise<{ data: any[] }>
-  getBulkCalculations: (orgId: string) => Promise<{ data: BulkCalculation[] }>
-  createBulkCalculation: (params: { org_id: string; is_active?: boolean }) => Promise<{ data: BulkCalculation }>
-  generateQuote: (templateId: string) => Promise<any>
+export interface RateCalculation {
+  id: string
+  templateId: string
+  rate: number
+  effectiveDate: string
+  createdAt: string
+  updatedAt: string
 }

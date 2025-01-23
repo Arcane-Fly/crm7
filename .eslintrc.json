@@ -1,6 +1,21 @@
 {
-  "extends": ["next/core-web-vitals", "plugin:@typescript-eslint/recommended", "prettier"],
-  "plugins": ["@typescript-eslint", "testing-library", "jest-dom"],
+  "extends": [
+    "next/core-web-vitals",
+    "plugin:@typescript-eslint/strict",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended",
+    "plugin:jsx-a11y/recommended",
+    "prettier"
+  ],
+  "plugins": [
+    "@typescript-eslint",
+    "testing-library",
+    "jest-dom",
+    "jsx-a11y",
+    "react-hooks",
+    "import"
+  ],
   "rules": {
     "@typescript-eslint/no-unused-vars": [
       "error",
@@ -11,19 +26,59 @@
         "ignoreRestSiblings": true
       }
     ],
-    "@typescript-eslint/consistent-type-imports": "off",
-    "@typescript-eslint/no-explicit-any": "off",
-    "no-console": ["warn", { "allow": ["warn", "error", "info", "debug"] }],
-    "react-hooks/exhaustive-deps": "warn",
-    "react/no-unescaped-entities": "off",
-    "testing-library/no-wait-for-multiple-assertions": "off",
-    "@typescript-eslint/no-var-requires": "off",
-    "prefer-const": "warn"
+    "@typescript-eslint/consistent-type-imports": ["error", {
+      "prefer": "type-imports",
+      "fixStyle": "inline-type-imports"
+    }],
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/explicit-module-boundary-types": "error",
+    "@typescript-eslint/no-non-null-assertion": "error",
+    "@typescript-eslint/no-unnecessary-condition": "error",
+    "no-console": ["error", { "allow": ["warn", "error", "info", "debug"] }],
+    "react-hooks/exhaustive-deps": "error",
+    "react/react-in-jsx-scope": "off",
+    "react/prop-types": "off",
+    "react/jsx-curly-brace-presence": ["error", "never"],
+    "import/order": [
+      "error",
+      {
+        "groups": ["builtin", "external", "internal", "parent", "sibling", "index"],
+        "newlines-between": "always",
+        "alphabetize": { "order": "asc" }
+      }
+    ],
+    "import/no-duplicates": "error",
+    "prefer-const": "error",
+    "no-nested-ternary": "error",
+    "eqeqeq": ["error", "always"],
+    "no-var": "error",
+    "no-param-reassign": "error"
   },
   "overrides": [
     {
       "files": ["**/__tests__/**/*.[jt]s?(x)", "**/?(*.)+(spec|test).[jt]s?(x)"],
-      "extends": ["plugin:testing-library/react"]
+      "extends": ["plugin:testing-library/react"],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-non-null-assertion": "off"
+      }
     }
-  ]
+  ],
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
+  "ignorePatterns": [
+    "node_modules/",
+    ".next/",
+    "out/",
+    "public/",
+    "coverage/",
+    "*.config.js",
+    "*.config.mjs"
+  ],
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  }
 }

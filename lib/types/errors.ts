@@ -1,10 +1,24 @@
-export class SupabaseError extends Error {
+export class BaseError extends Error {
+  constructor(
+    message: string,
+    public readonly code?: string,
+    public readonly context?: string,
+    public readonly details?: Record<string, unknown>
+  ) {
+    super(message)
+    this.name = this.constructor.name
+    Object.setPrototypeOf(this, new.target.prototype)
+  }
+}
+
+export class SupabaseError extends BaseError {
   constructor(
     message: string,
     public readonly cause?: unknown,
-    public readonly context?: Record<string, unknown>
+    public readonly context?: string,
+    public readonly details?: Record<string, unknown>
   ) {
-    super(message)
+    super(message, undefined, context, details)
     this.name = 'SupabaseError'
   }
 }

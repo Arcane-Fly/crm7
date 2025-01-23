@@ -1,8 +1,17 @@
-import { createClient } from '@supabase/supabase-js'
-import type { SupabaseClient, Database } from '@supabase/supabase-js'
-import { RateTemplate, RateTemplateStatus, BulkCalculation } from '@/lib/types/rates'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import type { Database } from '@/types/supabase-generated'
+
+import {
+  RateTemplate,
+  RateTemplateStatus,
+  BulkCalculation,
+  RateTemplateHistory,
+  RateCalculation,
+  RateAnalytics,
+} from '@/lib/types/rates'
 import { logger } from '@/lib/services/logger'
 import type { FairWorkService } from '../fairwork/fairwork-service'
+import { BaseError } from '@/lib/types/errors'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -13,21 +22,28 @@ export enum RateManagementErrorCode {
   DATABASE_ERROR = 'DATABASE_ERROR',
   VALIDATION_ERROR = 'VALIDATION_ERROR',
   UNAUTHORIZED = 'UNAUTHORIZED',
-  RATE_LIMIT_EXCEEDED = 'RATE_LIMIT_EXCEEDED'
+  RATE_LIMIT_EXCEEDED = 'RATE_LIMIT_EXCEEDED',
 }
 
-export class RateManagementError extends Error {
-  constructor(message: string, public readonly code: RateManagementErrorCode, public readonly context: string, public readonly details?: Record<string, unknown>) {
-    super(message)
+export class RateManagementError extends BaseError {
+  constructor(
+    message: string,
+    code: RateManagementErrorCode,
+    context: string,
+    details?: Record<string, unknown>
+  ) {
+    super(message, code, context, details)
     this.name = 'RateManagementError'
-    
+
     // Log error with context
-    logger.error('Rate management error:', {
-      code: this.code,
-      context: this.context,
-      details: this.details,
-      message: this.message
-    })
+    const errorContext: Record<string, unknown> = {
+      name: this.name,
+      stack: this.stack,
+      errorCode: code,
+      errorContext: context,
+      errorDetails: details,
+    }
+    logger.error(this.message, errorContext)
   }
 }
 
@@ -236,10 +252,7 @@ export class RateManagementService {
 
   async deleteRateTemplate(id: string): Promise<void> {
     try {
-      const { error } = await this.client
-        .from('rate_templates')
-        .delete()
-        .eq('id', id)
+      const { error } = await this.client.from('rate_templates').delete().eq('id', id)
 
       if (error) {
         throw new RateManagementError(
@@ -262,8 +275,8 @@ export class RateManagementService {
     }
   }
 
-  async validateRateTemplate(template: RateTemplate): Promise<boolean> {
-    if (!template.template_type || !['hourly', 'daily', 'fixed'].includes(template.template_type)) {
+  async validateRateTemplate(template: Partial<RateTemplate>): Promise<boolean> {
+    if (template.templateType && !['hourly', 'daily', 'fixed'].includes(template.templateType)) {
       throw new RateManagementError(
         'Invalid template type',
         RateManagementErrorCode.VALIDATION_ERROR,
@@ -271,7 +284,7 @@ export class RateManagementService {
       )
     }
 
-    if (template.base_rate < 0) {
+    if (typeof template.baseRate === 'number' && template.baseRate < 0) {
       throw new RateManagementError(
         'Base rate must be positive',
         RateManagementErrorCode.VALIDATION_ERROR,
@@ -279,7 +292,7 @@ export class RateManagementService {
       )
     }
 
-    if (template.base_margin < 0) {
+    if (typeof template.baseMargin === 'number' && template.baseMargin < 0) {
       throw new RateManagementError(
         'Base margin must be positive',
         RateManagementErrorCode.VALIDATION_ERROR,
@@ -288,9 +301,9 @@ export class RateManagementService {
     }
 
     // Check date validity if dates are provided
-    if (template.effective_from && template.effective_to) {
-      const from = new Date(template.effective_from)
-      const to = new Date(template.effective_to)
+    if (template.effectiveFrom && template.effectiveTo) {
+      const from = new Date(template.effectiveFrom)
+      const to = new Date(template.effectiveTo)
       if (from > to) {
         throw new RateManagementError(
           'Effective from date must be before effective to date',
@@ -304,22 +317,23 @@ export class RateManagementService {
   }
 
   async calculateRate(template: RateTemplate): Promise<number> {
-    const baseAmount = template.base_rate * (1 + template.base_margin / 100)
-    const superAmount = baseAmount * (template.super_rate / 100)
-    const leaveAmount = baseAmount * (template.leave_loading / 100)
-    const workersCompAmount = baseAmount * (template.workers_comp_rate / 100)
-    const payrollTaxAmount = baseAmount * (template.payroll_tax_rate / 100)
-    const trainingAmount = baseAmount * (template.training_cost_rate / 100)
-    const otherAmount = baseAmount * (template.other_costs_rate / 100)
+    const baseAmount = template.baseRate * (1 + template.baseMargin / 100)
+    const superAmount = baseAmount * (template.superRate / 100)
+    const leaveAmount = baseAmount * (template.leaveLoading / 100)
+    const workersCompAmount = baseAmount * (template.workersCompRate / 100)
+    const payrollTaxAmount = baseAmount * (template.payrollTaxRate / 100)
+    const trainingAmount = baseAmount * (template.trainingCostRate / 100)
+    const otherAmount = baseAmount * (template.otherCostsRate / 100)
 
-    const totalAmount = baseAmount + 
-      superAmount + 
-      leaveAmount + 
-      workersCompAmount + 
-      payrollTaxAmount + 
-      trainingAmount + 
-      otherAmount - 
-      template.funding_offset
+    const totalAmount =
+      baseAmount +
+      superAmount +
+      leaveAmount +
+      workersCompAmount +
+      payrollTaxAmount +
+      trainingAmount +
+      otherAmount -
+      template.fundingOffset
 
     return Number(totalAmount.toFixed(2))
   }
@@ -386,50 +400,170 @@ export class RateManagementService {
     }
   }
 
+  async getRateTemplateHistory(id: string): Promise<RateTemplateHistory[]> {
+    try {
+      const { data, error } = await this.client
+        .from('rate_template_history')
+        .select('*')
+        .eq('template_id', id)
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        throw new RateManagementError(
+          'Failed to fetch rate template history',
+          RateManagementErrorCode.DATABASE_ERROR,
+          'getRateTemplateHistory',
+          { error }
+        )
+      }
+
+      return data as RateTemplateHistory[]
+    } catch (error) {
+      if (error instanceof RateManagementError) {
+        throw error
+      }
+      throw new RateManagementError(
+        'Unexpected error while fetching rate template history',
+        RateManagementErrorCode.DATABASE_ERROR,
+        'getRateTemplateHistory',
+        { cause: error }
+      )
+    }
+  }
+
+  async getRateCalculations(id: string): Promise<RateCalculation[]> {
+    try {
+      const { data, error } = await this.client
+        .from('rate_calculations')
+        .select('*')
+        .eq('template_id', id)
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        throw new RateManagementError(
+          'Failed to fetch rate calculations',
+          RateManagementErrorCode.DATABASE_ERROR,
+          'getRateCalculations',
+          { error }
+        )
+      }
+
+      return data as RateCalculation[]
+    } catch (error) {
+      if (error instanceof RateManagementError) {
+        throw error
+      }
+      throw new RateManagementError(
+        'Unexpected error while fetching rate calculations',
+        RateManagementErrorCode.DATABASE_ERROR,
+        'getRateCalculations',
+        { cause: error }
+      )
+    }
+  }
+
   private mapToRateTemplate(data: any): RateTemplate {
     return {
       id: data.id,
-      org_id: data.org_id,
+      orgId: data.orgId,
       name: data.name,
-      template_type: data.template_type,
+      templateType: data.templateType,
       description: data.description,
-      base_rate: data.base_rate,
-      base_margin: data.base_margin,
-      super_rate: data.super_rate,
-      leave_loading: data.leave_loading,
-      workers_comp_rate: data.workers_comp_rate,
-      payroll_tax_rate: data.payroll_tax_rate,
-      training_cost_rate: data.training_cost_rate,
-      other_costs_rate: data.other_costs_rate,
-      funding_offset: data.funding_offset,
-      effective_from: data.effective_from,
-      effective_to: data.effective_to,
+      baseRate: data.baseRate,
+      baseMargin: data.baseMargin,
+      superRate: data.superRate,
+      leaveLoading: data.leaveLoading,
+      workersCompRate: data.workersCompRate,
+      payrollTaxRate: data.payrollTaxRate,
+      trainingCostRate: data.trainingCostRate,
+      otherCostsRate: data.otherCostsRate,
+      fundingOffset: data.fundingOffset,
+      casualLoading: data.casualLoading,
+      effectiveFrom: data.effectiveFrom,
+      effectiveTo: data.effectiveTo,
       status: data.status,
-      created_at: data.created_at,
-      updated_at: data.updated_at,
-      updated_by: data.updated_by,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+      createdBy: data.createdBy,
+      updatedBy: data.updatedBy,
+      version: data.version,
+    }
+  }
+
+  async getAnalytics(orgId: string): Promise<RateAnalytics> {
+    try {
+      const [templates, activeTemplates] = await Promise.all([
+        this.getRateTemplates(orgId),
+        this.getRateTemplates(orgId).then((templates) =>
+          templates.filter((t) => t.status === 'active')
+        ),
+      ])
+
+      const averageRate =
+        activeTemplates.length > 0
+          ? activeTemplates.reduce((sum, t) => sum + t.baseRate, 0) / activeTemplates.length
+          : 0
+
+      // Get recent changes from history
+      const { data: history, error } = await this.client
+        .from('rate_template_history')
+        .select('*')
+        .eq('orgId', orgId)
+        .order('created_at', { ascending: false })
+        .limit(10)
+
+      if (error) {
+        throw new RateManagementError(
+          'Failed to fetch template history',
+          RateManagementErrorCode.DATABASE_ERROR,
+          'getAnalytics',
+          { error }
+        )
+      }
+
+      return {
+        totalTemplates: templates.length,
+        activeTemplates: activeTemplates.length,
+        averageRate,
+        recentChanges: history.map((h) => ({
+          templateId: h.templateId,
+          action: h.changes.type as 'created' | 'updated' | 'deleted',
+          timestamp: h.createdAt,
+        })),
+      }
+    } catch (error) {
+      if (error instanceof RateManagementError) {
+        throw error
+      }
+      throw new RateManagementError(
+        'Unexpected error while fetching analytics',
+        RateManagementErrorCode.DATABASE_ERROR,
+        'getAnalytics',
+        { cause: error }
+      )
     }
   }
 
   private mapFromRateTemplate(template: Partial<RateTemplate>): Record<string, any> {
     return {
-      org_id: template.org_id,
+      orgId: template.orgId,
       name: template.name,
-      template_type: template.template_type,
+      templateType: template.templateType,
       description: template.description,
-      base_rate: template.base_rate,
-      base_margin: template.base_margin,
-      super_rate: template.super_rate,
-      leave_loading: template.leave_loading,
-      workers_comp_rate: template.workers_comp_rate,
-      payroll_tax_rate: template.payroll_tax_rate,
-      training_cost_rate: template.training_cost_rate,
-      other_costs_rate: template.other_costs_rate,
-      funding_offset: template.funding_offset,
-      effective_from: template.effective_from,
-      effective_to: template.effective_to,
+      baseRate: template.baseRate,
+      baseMargin: template.baseMargin,
+      superRate: template.superRate,
+      leaveLoading: template.leaveLoading,
+      workersCompRate: template.workersCompRate,
+      payrollTaxRate: template.payrollTaxRate,
+      trainingCostRate: template.trainingCostRate,
+      otherCostsRate: template.otherCostsRate,
+      fundingOffset: template.fundingOffset,
+      casualLoading: template.casualLoading,
+      effectiveFrom: template.effectiveFrom,
+      effectiveTo: template.effectiveTo,
       status: template.status,
-      updated_by: template.updated_by,
+      updatedBy: template.updatedBy,
     }
   }
 }
