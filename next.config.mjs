@@ -31,12 +31,7 @@ const nextConfig = {
     serverActions: {
       allowedOrigins: ['localhost:3000', 'localhost:4200'],
     },
-    optimizePackageImports: [
-      '@radix-ui/react-icons',
-      'lucide-react',
-      'date-fns',
-      'recharts',
-    ],
+    optimizePackageImports: ['@radix-ui/react-icons', 'lucide-react', 'date-fns', 'recharts'],
     webpackBuildWorker: true,
     instrumentationHook: true,
     serverComponentsExternalPackages: ['sharp'],

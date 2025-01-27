@@ -245,7 +245,10 @@ The template engine uses Liquid syntax. Common operations:
    <html>
      <head>
        <meta charset="utf-8" />
-       <meta name="viewport" content="width=device-width" />
+       <meta
+         name="viewport"
+         content="width=device-width"
+       />
      </head>
      <body>
        <!-- Template content -->

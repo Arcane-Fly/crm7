@@ -65,18 +65,18 @@ interface Props {
 
 ```typescript
 interface ContextType {
-  state: State
-  dispatch: Dispatch<Action>
+  state: State;
+  dispatch: Dispatch<Action>;
 }
 
-const MyContext = createContext<ContextType | undefined>(undefined)
+const MyContext = createContext<ContextType | undefined>(undefined);
 
 export function useMyContext(): ContextType {
-  const context = useContext(MyContext)
+  const context = useContext(MyContext);
   if (!context) {
-    throw new Error('useMyContext must be used within MyProvider')
+    throw new Error('useMyContext must be used within MyProvider');
   }
-  return context
+  return context;
 }
 ```
 
@@ -84,8 +84,8 @@ export function useMyContext(): ContextType {
 
 ```typescript
 interface Service {
-  getData: () => Promise<Data>
-  updateData: (id: string, data: Partial<Data>) => Promise<Data>
+  getData: () => Promise<Data>;
+  updateData: (id: string, data: Partial<Data>) => Promise<Data>;
 }
 
 export const myService: Service = {
@@ -95,17 +95,17 @@ export const myService: Service = {
   updateData: async (id, data) => {
     // Implementation
   },
-}
+};
 ```
 
 ## Error Handling
 
 ```typescript
 try {
-  await operation()
+  await operation();
 } catch (error) {
-  logger.error('Operation failed', { error, context: 'operationName' })
-  throw new CustomError('Operation failed', { cause: error })
+  logger.error('Operation failed', { error, context: 'operationName' });
+  throw new CustomError('Operation failed', { cause: error });
 }
 ```
 
@@ -113,15 +113,15 @@ try {
 
 ```typescript
 // Use type imports for better tree-shaking
-import type { MyType } from './types'
+import type { MyType } from './types';
 
 // Use const assertions for literal types
-const VALID_STATUSES = ['active', 'inactive'] as const
-type Status = (typeof VALID_STATUSES)[number]
+const VALID_STATUSES = ['active', 'inactive'] as const;
+type Status = (typeof VALID_STATUSES)[number];
 
 // Use Pick and Omit for derived types
-type CreateUserDTO = Omit<User, 'id' | 'createdAt'>
-type UserSummary = Pick<User, 'id' | 'name' | 'email'>
+type CreateUserDTO = Omit<User, 'id' | 'createdAt'>;
+type UserSummary = Pick<User, 'id' | 'name' | 'email'>;
 ```
 
 ## Latest TypeScript Features
@@ -132,7 +132,7 @@ type UserSummary = Pick<User, 'id' | 'name' | 'email'>
 @logged
 class Service {
   @required
-  name: string
+  name: string;
 
   @validate
   async process(@format('json') data: unknown) {
@@ -152,15 +152,15 @@ const config = {
   features: {
     darkMode: true,
   },
-} satisfies Config
+} satisfies Config;
 ```
 
 ### Template Literal Types
 
 ```typescript
-type Route = `/api/${string}`
-type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
-type Endpoint = `${HttpMethod} ${Route}`
+type Route = `/api/${string}`;
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+type Endpoint = `${HttpMethod} ${Route}`;
 ```
 
 ## Code Organization

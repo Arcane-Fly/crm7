@@ -28,50 +28,50 @@ export function withErrorBoundary<P extends object>(
 ### 2. API Error Handling
 
 ```typescript
-import { useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query';
 
 export function useApiData<T>(key: string[], fetcher: () => Promise<T>) {
   return useQuery({
     queryKey: key,
     queryFn: fetcher,
     retry: (failureCount, error) => {
-      if (error instanceof AuthError) return false
-      return failureCount < 3
+      if (error instanceof AuthError) return false;
+      return failureCount < 3;
     },
     onError: (error) => {
       // Log error to monitoring service
     },
-  })
+  });
 }
 ```
 
 ### 3. Form Error Handling
 
 ```typescript
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 
 export function useFormWithValidation<T extends object>(
   schema: z.Schema<T>,
-  onSubmit: (data: T) => Promise<void>
+  onSubmit: (data: T) => Promise<void>,
 ) {
   const form = useForm<T>({
     resolver: zodResolver(schema),
-  })
+  });
 
   const handleSubmit = async (data: T) => {
     try {
-      await onSubmit(data)
+      await onSubmit(data);
     } catch (error) {
       // Handle submission errors
       form.setError('root', {
         type: 'submit',
         message: 'Submission failed',
-      })
+      });
     }
-  }
+  };
 
-  return { form, handleSubmit }
+  return { form, handleSubmit };
 }
 ```
 
@@ -137,19 +137,19 @@ describe('ErrorBoundary', () => {
 ### 2. API Error Testing
 
 ```typescript
-import { renderHook, waitFor } from '@testing-library/react'
+import { renderHook, waitFor } from '@testing-library/react';
 
 describe('useApiData', () => {
   it('handles API errors correctly', async () => {
-    const mockFetcher = jest.fn().mockRejectedValue(new Error('API Error'))
+    const mockFetcher = jest.fn().mockRejectedValue(new Error('API Error'));
 
-    const { result } = renderHook(() => useApiData(['test'], mockFetcher))
+    const { result } = renderHook(() => useApiData(['test'], mockFetcher));
 
     await waitFor(() => {
-      expect(result.current.isError).toBe(true)
-    })
-  })
-})
+      expect(result.current.isError).toBe(true);
+    });
+  });
+});
 ```
 
 ## Best Practices

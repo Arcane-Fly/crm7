@@ -49,9 +49,9 @@ const login = async (email: string, password: string) => {
       client_id: clientId,
       scope: 'openid profile email',
     }),
-  })
-  return response.json()
-}
+  });
+  return response.json();
+};
 
 // Sign up example
 const signup = async (email: string, password: string) => {
@@ -64,9 +64,9 @@ const signup = async (email: string, password: string) => {
       password,
       connection: 'Username-Password-Authentication',
     }),
-  })
-  return response.json()
-}
+  });
+  return response.json();
+};
 ```
 
 ### Authentication Endpoints
@@ -106,9 +106,9 @@ const getManagementApiToken = async () => {
       audience: `https://${domain}/api/v2/`,
       grant_type: 'client_credentials',
     }),
-  })
-  return response.json()
-}
+  });
+  return response.json();
+};
 ```
 
 ### Common Operations
@@ -121,9 +121,9 @@ const getUsers = async (accessToken: string) => {
       Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
     },
-  })
-  return response.json()
-}
+  });
+  return response.json();
+};
 
 // Create user example
 const createUser = async (accessToken: string, userData: any) => {
@@ -134,9 +134,9 @@ const createUser = async (accessToken: string, userData: any) => {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(userData),
-  })
-  return response.json()
-}
+  });
+  return response.json();
+};
 ```
 
 ## Best Practices
@@ -171,7 +171,7 @@ const handleAuth0Error = (error: any) => {
   } else {
     // Handle other errors
   }
-}
+};
 ```
 
 ## SDK Integration

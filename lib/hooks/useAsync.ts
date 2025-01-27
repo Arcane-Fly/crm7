@@ -1,22 +1,23 @@
-import { useState, useCallback, useEffect } from 'react'
-import { useToast } from '@/components/ui/use-toast'
-import { createLogger } from '@/lib/utils/logger'
+import { useState, useCallback, useEffect } from 'react';
 
-const logger = createLogger('useAsync')
+import { useToast } from '@/components/ui/use-toast';
+import { createLogger } from '@/lib/utils/logger';
+
+const logger = createLogger('useAsync');
 
 interface AsyncState<T> {
-  status: 'idle' | 'loading' | 'success' | 'error'
-  data: T | null
-  error: Error | null
+  status: 'idle' | 'loading' | 'success' | 'error';
+  data: T | null;
+  error: Error | null;
 }
 
 interface UseAsyncOptions<T> {
-  onSuccess?: (data: T) => void
-  onError?: (error: Error) => void
-  autoExecute?: boolean
-  toastOnError?: boolean
-  retryCount?: number
-  retryDelay?: number // in milliseconds
+  onSuccess?: (data: T) => void;
+  onError?: (error: Error) => void;
+  autoExecute?: boolean;
+  toastOnError?: boolean;
+  retryCount?: number;
+  retryDelay?: number; // in milliseconds
 }
 
 /**
@@ -30,53 +31,53 @@ export function useAsync<T>(asyncFn: () => Promise<T>, options: UseAsyncOptions<
     toastOnError = true,
     retryCount = 0,
     retryDelay = 1000,
-  } = options
+  } = options;
 
   const [state, setState] = useState<AsyncState<T>>({
     status: 'idle',
     data: null,
     error: null,
-  })
+  });
 
-  const { toast } = useToast()
+  const { toast } = useToast();
 
   const execute = useCallback(
     async (retries = retryCount) => {
-      setState({ status: 'loading', data: null, error: null })
+      setState({ status: 'loading', data: null, error: null });
 
       try {
-        const data = await asyncFn()
-        setState({ status: 'success', data, error: null })
-        onSuccess?.(data)
+        const data = await asyncFn();
+        setState({ status: 'success', data, error: null });
+        onSuccess?.(data);
       } catch (error) {
-        logger.error('Async operation failed:', { error })
+        logger.error('Async operation failed:', { error });
 
         if (retries > 0) {
-          setTimeout(() => execute(retries - 1), retryDelay)
-          return
+          setTimeout(() => execute(retries - 1), retryDelay);
+          return;
         }
 
-        const errorObj = error instanceof Error ? error : new Error('Unknown error')
-        setState({ status: 'error', data: null, error: errorObj })
-        onError?.(errorObj)
+        const errorObj = error instanceof Error ? error : new Error('Unknown error');
+        setState({ status: 'error', data: null, error: errorObj });
+        onError?.(errorObj);
 
         if (toastOnError) {
           toast({
             title: 'Error',
             description: errorObj.message,
             variant: 'destructive',
-          })
+          });
         }
       }
     },
-    [asyncFn, onSuccess, onError, toastOnError, retryCount, retryDelay, toast]
-  )
+    [asyncFn, onSuccess, onError, toastOnError, retryCount, retryDelay, toast],
+  );
 
   useEffect(() => {
     if (autoExecute) {
-      execute()
+      execute();
     }
-  }, [autoExecute, execute])
+  }, [autoExecute, execute]);
 
   return {
     ...state,
@@ -84,5 +85,5 @@ export function useAsync<T>(asyncFn: () => Promise<T>, options: UseAsyncOptions<
     isLoading: state.status === 'loading',
     isSuccess: state.status === 'success',
     isError: state.status === 'error',
-  }
+  };
 }

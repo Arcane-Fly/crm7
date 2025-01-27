@@ -1,15 +1,22 @@
-import { createClient } from '@/lib/supabase/client'
-import { logger } from '@/lib/logger'
-import { ApiError } from '@/lib/utils/error'
+import { type SupabaseClient } from '@supabase/supabase-js';
 
-interface FairWorkConfig {
-  apiKey?: string
-  apiUrl?: string
-  baseUrl?: string
-  environment?: 'sandbox' | 'production'
-  timeout?: number
-  retryAttempts?: number
-}
+import { logger } from '@/lib/logger';
+import { createClient } from '@/lib/supabase/client';
+import { ApiError } from '@/lib/utils/error';
+
+import type {
+  AwardRate,
+  Classification,
+  FairWorkConfig,
+  GetBaseRateParams,
+  GetClassificationsParams,
+  GetFutureRatesParams,
+  GetRateHistoryParams,
+  RateCalculationRequest,
+  RateCalculationResponse,
+  RateValidationResponse,
+  ValidateRateParams,
+} from './types';
 
 const DEFAULT_CONFIG: Required<FairWorkConfig> = {
   apiKey: process.env.FAIRWORK_API_KEY || '',
@@ -17,100 +24,25 @@ const DEFAULT_CONFIG: Required<FairWorkConfig> = {
   baseUrl: process.env.FAIRWORK_BASE_URL || 'https://fairwork.gov.au',
   environment: process.env.NODE_ENV === 'production' ? 'production' : 'sandbox',
   timeout: 30000,
-  retryAttempts: 3
-}
-
-interface AwardRate {
-  awardCode: string
-  classificationCode: string
-  baseRate: number
-  casualLoading?: number
-  penalties?: Array<{
-    code: string
-    rate: number
-    description: string
-  }>
-  allowances?: Array<{
-    code: string
-    amount: number
-    description: string
-  }>
-  effectiveFrom: Date
-  effectiveTo?: Date
-  id: string
-  rate: number
-  effectiveDate: string
-  status: 'active' | 'inactive'
-}
-
-interface Classification {
-  code: string
-  name: string
-  level: string
-  grade?: string
-  yearOfExperience?: number
-  qualifications?: string[]
-  parentCode?: string
-  validFrom: Date
-  validTo?: Date
-}
-
-interface RateCalculationRequest {
-  awardCode: string
-  classificationCode: string
-  employmentType: 'casual' | 'permanent' | 'fixed-term'
-  date: Date
-  hours?: number
-  penalties?: string[]
-  allowances?: string[]
-}
-
-interface RateCalculationResponse {
-  baseRate: number
-  casualLoading?: number
-  penalties: Array<{
-    code: string
-    rate: number
-    amount: number
-    description: string
-  }>
-  allowances: Array<{
-    code: string
-    amount: number
-    description: string
-  }>
-  total: number
-  breakdown: {
-    base: number
-    loading?: number
-    penalties: number
-    allowances: number
-  }
-  metadata: {
-    calculatedAt: Date
-    effectiveDate: Date
-    source: 'fairwork' | 'cached'
-  }
-}
+  retryAttempts: 3,
+};
 
 export class FairWorkService {
-  private readonly supabase = createClient()
-  private readonly config: Required<FairWorkConfig>
+  private readonly supabase: SupabaseClient;
+  private readonly config: Required<FairWorkConfig>;
 
-  constructor(config: FairWorkConfig = {}) {
-    this.config = { ...DEFAULT_CONFIG, ...config }
+  public constructor(config: FairWorkConfig = {}) {
+    this.supabase = createClient();
+    this.config = { ...DEFAULT_CONFIG, ...config };
     if (!this.config.baseUrl || !this.config.apiKey) {
       throw new ApiError({
         message: 'Invalid FairWork configuration',
         code: 'INVALID_CONFIG',
-      })
+      });
     }
   }
 
-  private async handleRequest<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
+  private async handleRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     try {
       const response = await fetch(`${this.config.baseUrl}${endpoint}`, {
         ...options,
@@ -119,234 +51,200 @@ export class FairWorkService {
           'X-API-Key': this.config.apiKey,
           ...options.headers,
         },
-      })
+      });
 
       if (!response.ok) {
         throw new ApiError({
           message: `FairWork API error: ${response.statusText}`,
           code: 'API_ERROR',
           statusCode: response.status,
-        })
+        });
       }
 
-      return await response.json()
+      return await response.json();
     } catch (error) {
       logger.error('FairWork API request failed:', {
         error: error instanceof Error ? error.message : 'Unknown error',
         endpoint,
-      })
+      });
       throw new ApiError({
         message: 'Failed to communicate with FairWork API',
         code: 'API_ERROR',
         cause: error instanceof Error ? error : undefined,
-      })
+      });
     }
   }
 
   /**
    * Get base rate for a classification under an award
    */
-  async getBaseRate(params: {
-    awardCode: string
-    classificationCode: string
-    date: Date
-  }): Promise<number> {
+  public async getBaseRate(params: GetBaseRateParams): Promise<number> {
     try {
-      const response = await this.handleRequest<{ baseRate: number }>(
-        '/rates/base',
-        {
-          method: 'POST',
-          body: JSON.stringify(params),
-        }
-      )
-      return response.baseRate
+      const response = await this.handleRequest<{ baseRate: number }>('/rates/base', {
+        method: 'POST',
+        body: JSON.stringify(params),
+      });
+      return response.baseRate;
     } catch (error) {
       logger.error('Error getting base rate', {
         error: error instanceof Error ? error.message : 'Unknown error',
         params,
-      })
-      throw error
+      });
+      throw error;
     }
   }
 
   /**
    * Get minimum wage
    */
-  async getMinimumWage(): Promise<number> {
+  public async getMinimumWage(): Promise<number> {
     return this.getBaseRate({
       awardCode: 'MA000001', // National Minimum Wage
       classificationCode: 'L1', // Level 1
       date: new Date(),
-    })
+    });
   }
 
   /**
    * Get full award rate details including penalties and allowances
    */
-  async getAwardRate(params: {
-    awardCode: string
-    classificationCode: string
-    date: Date
-  }): Promise<AwardRate> {
+  public async getAwardRate(params: GetBaseRateParams): Promise<AwardRate> {
     try {
-      const { data, error } = await this.supabase.rpc('get_award_rate', params)
+      const { data, error } = await this.supabase.rpc('get_award_rate', params);
 
-      if (error) throw error
-      return data
+      if (error) throw error;
+      return data;
     } catch (error) {
       logger.error('Failed to get award rate', {
         error: error instanceof Error ? error.message : 'Unknown error',
         params,
-      })
-      throw error
+      });
+      throw error;
     }
   }
 
   /**
    * Get classifications for an award
    */
-  async getClassifications(params: {
-    awardCode: string
-    searchTerm?: string
-    date?: Date
-    includeInactive?: boolean
-  }): Promise<Classification[]> {
+  public async getClassifications(params: GetClassificationsParams): Promise<Classification[]> {
     try {
-      const { data, error } = await this.supabase.rpc('get_award_classifications', params)
+      const { data, error } = await this.supabase.rpc('get_award_classifications', params);
 
-      if (error) throw error
-      return data
+      if (error) throw error;
+      return data;
     } catch (error) {
       logger.error('Failed to get classifications', {
         error: error instanceof Error ? error.message : 'Unknown error',
         params,
-      })
-      throw error
+      });
+      throw error;
     }
   }
 
   /**
    * Calculate pay rate with all applicable components
    */
-  async calculateRate(params: RateCalculationRequest): Promise<RateCalculationResponse> {
+  public async calculateRate(params: RateCalculationRequest): Promise<RateCalculationResponse> {
     try {
-      const { data, error } = await this.supabase.rpc('calculate_award_rate', params)
+      const { data, error } = await this.supabase.rpc('calculate_award_rate', params);
 
-      if (error) throw error
-      return data
+      if (error) throw error;
+      return data;
     } catch (error) {
       logger.error('Failed to calculate rate', {
         error: error instanceof Error ? error.message : 'Unknown error',
         params,
-      })
-      throw error
+      });
+      throw error;
     }
   }
 
   /**
    * Validate if a rate complies with award minimums
    */
-  async validateRate(params: {
-    awardCode: string
-    classificationCode: string
-    rate: number
-    date: Date
-  }): Promise<{
-    isValid: boolean
-    minimumRate: number
-    difference: number
-  }> {
+  public async validateRate(params: ValidateRateParams): Promise<RateValidationResponse> {
     try {
-      const { data, error } = await this.supabase.rpc('validate_award_rate', params)
+      const { data, error } = await this.supabase.rpc('validate_award_rate', params);
 
-      if (error) throw error
-      return data
+      if (error) throw error;
+      return data;
     } catch (error) {
       logger.error('Failed to validate rate', {
         error: error instanceof Error ? error.message : 'Unknown error',
         params,
-      })
-      throw error
+      });
+      throw error;
     }
   }
 
   /**
    * Get historical rates for a classification
    */
-  async getRateHistory(params: {
-    awardCode: string
-    classificationCode: string
-    startDate: Date
-    endDate: Date
-  }): Promise<AwardRate[]> {
+  public async getRateHistory(params: GetRateHistoryParams): Promise<AwardRate[]> {
     try {
-      const { data, error } = await this.supabase.rpc('get_award_rate_history', params)
+      const { data, error } = await this.supabase.rpc('get_award_rate_history', params);
 
-      if (error) throw error
-      return data
+      if (error) throw error;
+      return data;
     } catch (error) {
       logger.error('Failed to get rate history', {
         error: error instanceof Error ? error.message : 'Unknown error',
         params,
-      })
-      throw error
+      });
+      throw error;
     }
   }
 
   /**
    * Get future scheduled rate changes
    */
-  async getFutureRates(params: {
-    awardCode: string
-    classificationCode: string
-    fromDate: Date
-  }): Promise<AwardRate[]> {
+  public async getFutureRates(params: GetFutureRatesParams): Promise<AwardRate[]> {
     try {
-      const { data, error } = await this.supabase.rpc('get_future_award_rates', params)
+      const { data, error } = await this.supabase.rpc('get_future_award_rates', params);
 
-      if (error) throw error
-      return data
+      if (error) throw error;
+      return data;
     } catch (error) {
       logger.error('Failed to get future rates', {
         error: error instanceof Error ? error.message : 'Unknown error',
         params,
-      })
-      throw error
+      });
+      throw error;
     }
   }
 
   /**
-   * Get award rates
+   * Get award rates for a specific award code
    */
   public async getAwardRates(awardCode: string): Promise<AwardRate[]> {
     try {
-      const response = await this.handleRequest<AwardRate[]>(`/awards/${awardCode}/rates`)
-      return response
+      const response = await this.handleRequest<AwardRate[]>(`/awards/${awardCode}/rates`);
+      return response;
     } catch (error) {
       logger.error(`Failed to get award rates for award ${awardCode}:`, {
         error: error instanceof Error ? error.message : 'Unknown error',
         awardCode,
-      })
+      });
       throw new ApiError({
         message: 'Failed to fetch award rates',
         code: 'FETCH_ERROR',
         cause: error instanceof Error ? error : undefined,
-      })
+      });
     }
   }
 
   /**
-   * Get classification rates
+   * Get classification rates for a specific award and classification
    */
   public async getClassificationRates(
     awardCode: string,
-    classificationCode: string
+    classificationCode: string,
   ): Promise<AwardRate[]> {
     try {
       const response = await this.handleRequest<AwardRate[]>(
-        `/awards/${awardCode}/classifications/${classificationCode}/rates`
-      )
-      return response
+        `/awards/${awardCode}/classifications/${classificationCode}/rates`,
+      );
+      return response;
     } catch (error) {
       logger.error(
         `Failed to get classification rates for award ${awardCode}, classification ${classificationCode}:`,
@@ -354,13 +252,13 @@ export class FairWorkService {
           error: error instanceof Error ? error.message : 'Unknown error',
           awardCode,
           classificationCode,
-        }
-      )
+        },
+      );
       throw new ApiError({
         message: 'Failed to fetch classification rates',
         code: 'FETCH_ERROR',
         cause: error instanceof Error ? error : undefined,
-      })
+      });
     }
   }
 }

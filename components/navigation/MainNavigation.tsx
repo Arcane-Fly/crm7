@@ -1,6 +1,4 @@
-import React from 'react'
-import { useRouter } from 'next/router'
-import { motion } from 'framer-motion'
+import { motion } from 'framer-motion';
 import {
   LayoutDashboard,
   GraduationCap,
@@ -12,18 +10,21 @@ import {
   ClipboardCheck,
   BarChart2,
   ChevronDown,
-} from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { ScrollArea } from '@/components/ui/scroll-area'
+} from 'lucide-react';
+import { useRouter } from 'next/router';
+import React from 'react';
+
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 interface NavItem {
-  id: string
-  label: string
-  icon: React.ReactNode
-  href: string
-  ariaLabel: string
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  href: string;
+  ariaLabel: string;
 }
 
 const mainNavItems: NavItem[] = [
@@ -90,32 +91,38 @@ const mainNavItems: NavItem[] = [
     href: '/reports',
     ariaLabel: 'Navigate to Reports and Analytics',
   },
-]
+];
 
 export const MainNavigation: React.FC = () => {
-  const router = useRouter()
-  const [activeSection, setActiveSection] = React.useState<string | null>(null)
+  const router = useRouter();
+  const [activeSection, setActiveSection] = React.useState<string | null>(null);
 
-  const isActive = (href: string) => router.pathname.startsWith(href)
+  const isActive = (href: string) => router.pathname.startsWith(href);
 
   return (
     <TooltipProvider>
-      <nav className='h-full border-r bg-background' aria-label='Main Navigation'>
+      <nav
+        className='h-full border-r bg-background'
+        aria-label='Main Navigation'
+      >
         <ScrollArea className='h-full'>
           <div className='space-y-4 py-4'>
             {mainNavItems.map((item) => (
-              <div key={item.id} className='px-3'>
+              <div
+                key={item.id}
+                className='px-3'
+              >
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
                       variant={isActive(item.href) ? 'secondary' : 'ghost'}
                       className={cn(
                         'w-full justify-start gap-3',
-                        isActive(item.href) && 'bg-secondary'
+                        isActive(item.href) && 'bg-secondary',
                       )}
                       onClick={() => {
-                        router.push(item.href)
-                        setActiveSection(item.id)
+                        router.push(item.href);
+                        setActiveSection(item.id);
                       }}
                       aria-label={item.ariaLabel}
                       aria-current={isActive(item.href) ? 'page' : undefined}
@@ -125,7 +132,7 @@ export const MainNavigation: React.FC = () => {
                       <ChevronDown
                         className={cn(
                           'h-4 w-4 transition-transform',
-                          activeSection === item.id && 'rotate-180'
+                          activeSection === item.id && 'rotate-180',
                         )}
                       />
                     </Button>
@@ -151,7 +158,7 @@ export const MainNavigation: React.FC = () => {
         </ScrollArea>
       </nav>
     </TooltipProvider>
-  )
-}
+  );
+};
 
-export default MainNavigation
+export default MainNavigation;

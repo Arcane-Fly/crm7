@@ -1,22 +1,23 @@
-import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
-import { Badge } from '@/components/ui/badge'
-import { Performance } from '@/lib/types/hr'
-import { supabase } from '@/lib/supabase'
-import { Database } from '@/lib/types/database'
+import { type ReactElement, useState, useEffect } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { supabase } from '@/lib/supabase';
+import type { Database } from '@/lib/types/database';
+import type { Performance } from '@/lib/types/hr';
 
 interface PerformanceStats {
-  totalReviews: number
-  averageRating: number
-  draftCount: number
-  submittedCount: number
-  approvedCount: number
-  completionRate: number
+  totalReviews: number;
+  averageRating: number;
+  draftCount: number;
+  submittedCount: number;
+  approvedCount: number;
+  completionRate: number;
 }
 
-export const FinancialPerformanceDashboard = () => {
-  const [performances, setPerformances] = useState<Performance[]>([])
+export function FinancialPerformanceDashboard(): ReactElement {
+  const [performances, setPerformances] = useState<Performance[]>([]);
   const [stats, setStats] = useState<PerformanceStats>({
     totalReviews: 0,
     averageRating: 0,
@@ -24,10 +25,10 @@ export const FinancialPerformanceDashboard = () => {
     submittedCount: 0,
     approvedCount: 0,
     completionRate: 0,
-  })
+  });
 
   useEffect(() => {
-    async function fetchPerformanceData() {
+    const fetchPerformanceData = async () => {
       try {
         const { data, error } = await supabase
           .from<
@@ -35,32 +36,34 @@ export const FinancialPerformanceDashboard = () => {
             Database['public']['Tables']['financial_transactions']['Row']
           >('financial_transactions')
           .select('*')
-          .order('date', { ascending: false })
+          .order('date', { ascending: false });
 
-        if (error) throw error
+        if (error) throw error;
 
         if (data) {
-          setPerformances(data)
-          calculateStats(data)
+          setPerformances(data);
+          calculateStats(data);
         }
       } catch (error) {
-        console.error('Error fetching performance data:', error)
+        console.error('Error fetching performance data:', error);
+      } finally {
+        // setLoading(false); // You might need to add a loading state
       }
-    }
+    };
 
-    fetchPerformanceData()
-  }, [])
+    void fetchPerformanceData();
+  }, [supabase]);
 
   const calculateStats = (performances: Performance[]) => {
-    const totalReviews = performances.length
+    const totalReviews = performances.length;
     const averageRating =
       performances.length > 0
         ? performances.reduce((sum, p) => sum + p.rating, 0) / totalReviews
-        : 0
-    const draftCount = performances.filter((p) => p.status === 'draft').length
-    const submittedCount = performances.filter((p) => p.status === 'submitted').length
-    const approvedCount = performances.filter((p) => p.status === 'approved').length
-    const completionRate = totalReviews > 0 ? (approvedCount / totalReviews) * 100 : 0
+        : 0;
+    const draftCount = performances.filter((p) => p.status === 'draft').length;
+    const submittedCount = performances.filter((p) => p.status === 'submitted').length;
+    const approvedCount = performances.filter((p) => p.status === 'approved').length;
+    const completionRate = totalReviews > 0 ? (approvedCount / totalReviews) * 100 : 0;
 
     setStats({
       totalReviews,
@@ -69,21 +72,21 @@ export const FinancialPerformanceDashboard = () => {
       submittedCount,
       approvedCount,
       completionRate,
-    })
-  }
+    });
+  };
 
   const getStatusColor = (status: Performance['status']) => {
     switch (status) {
       case 'approved':
-        return 'bg-green-500'
+        return 'bg-green-500';
       case 'submitted':
-        return 'bg-yellow-500'
+        return 'bg-yellow-500';
       case 'draft':
-        return 'bg-gray-500'
+        return 'bg-gray-500';
       default:
-        return 'bg-gray-500'
+        return 'bg-gray-500';
     }
-  }
+  };
 
   return (
     <div className='space-y-4'>
@@ -115,7 +118,10 @@ export const FinancialPerformanceDashboard = () => {
 
             <div>
               <p className='mb-2 text-sm font-medium'>Review Completion Rate</p>
-              <Progress value={stats.completionRate} className='w-full' />
+              <Progress
+                value={stats.completionRate}
+                className='w-full'
+              />
               <p className='mt-1 text-sm text-gray-500'>{stats.completionRate.toFixed(1)}%</p>
             </div>
           </div>
@@ -148,5 +154,5 @@ export const FinancialPerformanceDashboard = () => {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

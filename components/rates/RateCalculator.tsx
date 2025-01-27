@@ -1,78 +1,37 @@
-import { useState, useEffect } from 'react'
-import { useSupabase } from '@/lib/supabase/supabase-provider'
-import { RateTemplate } from '@/lib/types/rates'
+import React, { useEffect, useState } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
+
+import { ErrorFallback } from '@/components/error/ErrorFallback';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { ErrorBoundary } from 'react-error-boundary'
-import { ErrorFallback } from '@/components/error/ErrorFallback'
-import { useToast } from '@/components/ui/use-toast'
+} from '@/components/ui/select';
+import { useToast } from '@/components/ui/use-toast';
+import { useSupabase } from '@/lib/supabase/supabase-provider';
+import type { RateTemplate } from '@/lib/types/rates';
 
-interface RateCalculatorProps {
-  orgId: string
-  onCalculate?: (rate: number) => void
-}
+import type { CalculationResult, RateCalculatorProps } from './types';
 
-interface CalculationResult {
-  baseAmount: number
-  superAmount: number
-  leaveAmount: number
-  workersCompAmount: number
-  payrollTaxAmount: number
-  trainingAmount: number
-  otherAmount: number
-  totalAmount: number
-}
+export function RateCalculator({ orgId, onCalculate }: RateCalculatorProps): JSX.Element {
+  const { supabase } = useSupabase();
+  const { toast } = useToast();
+  const [templates, setTemplates] = useState<RateTemplate[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<CalculationResult | null>(null);
 
-export function RateCalculator({ orgId, onCalculate }: RateCalculatorProps) {
-  const { supabase } = useSupabase()
-  const { toast } = useToast()
-  const [templates, setTemplates] = useState<RateTemplate[]>([])
-  const [selectedTemplate, setSelectedTemplate] = useState<string>('')
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [result, setResult] = useState<CalculationResult | null>(null)
-
-  useEffect(() => {
-    async function fetchTemplates() {
-      try {
-        const { data, error } = await supabase
-          .from('rate_templates')
-          .select('*')
-          .eq('orgId', orgId)
-          .order('createdAt', { ascending: false })
-
-        if (error) throw error
-
-        setTemplates(data as RateTemplate[])
-      } catch (err) {
-        console.error('Error fetching templates:', err)
-        setError('Failed to load templates')
-        toast({
-          title: 'Error',
-          description: 'Failed to load templates',
-          variant: 'destructive',
-        })
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchTemplates()
-  }, [orgId, supabase, toast])
-
-  const calculateRate = async (template: RateTemplate) => {
-    const baseAmount = template.baseRate * (1 + template.baseMargin / 100)
-    const superAmount = baseAmount * (template.superRate / 100)
-    const leaveAmount = baseAmount * (template.leaveLoading / 100)
-    const workersCompAmount = baseAmount * (template.workersCompRate / 100)
-    const payrollTaxAmount = baseAmount * (template.payrollTaxRate / 100)
-    const trainingAmount = baseAmount * (template.trainingCostRate / 100)
-    const otherAmount = baseAmount * (template.otherCostsRate / 100)
+  const calculateRate = (template: RateTemplate): void => {
+    const baseAmount = template.baseRate * (1 + template.baseMargin / 100);
+    const superAmount = baseAmount * (template.superRate / 100);
+    const leaveAmount = baseAmount * (template.leaveLoading / 100);
+    const workersCompAmount = baseAmount * (template.workersCompRate / 100);
+    const payrollTaxAmount = baseAmount * (template.payrollTaxRate / 100);
+    const trainingAmount = baseAmount * (template.trainingCostRate / 100);
+    const otherAmount = baseAmount * (template.otherCostsRate / 100);
 
     const totalAmount = Number(
       (
@@ -84,8 +43,8 @@ export function RateCalculator({ orgId, onCalculate }: RateCalculatorProps) {
         trainingAmount +
         otherAmount -
         template.fundingOffset
-      ).toFixed(2)
-    )
+      ).toFixed(2),
+    );
 
     const result: CalculationResult = {
       baseAmount: Number(baseAmount.toFixed(2)),
@@ -95,39 +54,76 @@ export function RateCalculator({ orgId, onCalculate }: RateCalculatorProps) {
       payrollTaxAmount: Number(payrollTaxAmount.toFixed(2)),
       trainingAmount: Number(trainingAmount.toFixed(2)),
       otherAmount: Number(otherAmount.toFixed(2)),
-      totalAmount: totalAmount,
-    }
+      totalAmount,
+    };
 
-    setResult(result)
-    onCalculate?.(totalAmount)
-  }
+    setResult(result);
+    onCalculate?.(totalAmount);
+  };
 
-  const handleTemplateChange = (value: string) => {
-    setSelectedTemplate(value)
-    const template = templates.find((t) => t.id === value)
+  const handleTemplateChange = (value: string): void => {
+    setSelectedTemplate(value);
+    const template = templates.find((t) => t.id === value);
     if (template) {
-      calculateRate(template)
+      calculateRate(template);
     }
-  }
+  };
 
-  if (loading) return <div>Loading templates...</div>
-  if (error) return <div className='text-red-500'>{error}</div>
+  useEffect(() => {
+    const fetchTemplates = async (): Promise<void> => {
+      try {
+        const { data, error } = await supabase
+          .from('rate_templates')
+          .select('*')
+          .eq('orgId', orgId)
+          .order('createdAt', { ascending: false });
+
+        if (error) throw error;
+
+        setTemplates(data as RateTemplate[]);
+      } catch (err) {
+        console.error('Error fetching templates:', err);
+        setError('Failed to load templates');
+        toast({
+          title: 'Error',
+          description: 'Failed to load templates',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void fetchTemplates();
+  }, [orgId, supabase, toast]);
+
+  if (loading) return <div>Loading templates...</div>;
+  if (error) return <div className='text-red-500'>{error}</div>;
 
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <div className='space-y-6'>
         <div className='space-y-4'>
           <div className='space-y-2'>
-            <label htmlFor='template' className='text-sm font-medium'>
+            <label
+              htmlFor='template'
+              className='text-sm font-medium'
+            >
               Select Rate Template
             </label>
-            <Select value={selectedTemplate} onValueChange={handleTemplateChange}>
+            <Select
+              value={selectedTemplate}
+              onValueChange={handleTemplateChange}
+            >
               <SelectTrigger>
                 <SelectValue placeholder='Choose a template' />
               </SelectTrigger>
               <SelectContent>
                 {templates.map((template) => (
-                  <SelectItem key={template.id} value={template.id}>
+                  <SelectItem
+                    key={template.id}
+                    value={template.id}
+                  >
                     {template.name}
                   </SelectItem>
                 ))}
@@ -177,5 +173,5 @@ export function RateCalculator({ orgId, onCalculate }: RateCalculatorProps) {
         )}
       </div>
     </ErrorBoundary>
-  )
+  );
 }

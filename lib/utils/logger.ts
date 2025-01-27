@@ -1,60 +1,60 @@
-import { env } from '@/env.mjs'
+import { env } from '@/env.mjs';
 
-type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 interface LogEntry {
-  level: LogLevel
-  message: string
-  timestamp: string
-  context?: Record<string, unknown>
+  level: LogLevel;
+  message: string;
+  timestamp: string;
+  context?: Record<string, unknown>;
 }
 
 interface LoggerOptions {
-  name: string
-  level?: LogLevel
-  context?: Record<string, unknown>
+  name: string;
+  level?: LogLevel;
+  context?: Record<string, unknown>;
 }
 
 class Logger {
-  private static instance: Logger
-  private logLevel: LogLevel = 'info'
-  private name: string
-  private defaultContext?: Record<string, unknown>
+  private static instance: Logger;
+  private logLevel: LogLevel = 'info';
+  private name: string;
+  private defaultContext?: Record<string, unknown>;
 
   private constructor(options: LoggerOptions) {
-    this.name = options.name
-    this.defaultContext = options.context
+    this.name = options.name;
+    this.defaultContext = options.context;
 
     if (env.NODE_ENV === 'development') {
-      this.logLevel = 'debug'
+      this.logLevel = 'debug';
     }
 
     if (options.level) {
-      this.logLevel = options.level
+      this.logLevel = options.level;
     }
   }
 
   public static getInstance(options: LoggerOptions): Logger {
     if (!Logger.instance) {
-      Logger.instance = new Logger(options)
+      Logger.instance = new Logger(options);
     }
-    return Logger.instance
+    return Logger.instance;
   }
 
   private shouldLog(level: LogLevel): boolean {
-    const levels: LogLevel[] = ['debug', 'info', 'warn', 'error']
-    return levels.indexOf(level) >= levels.indexOf(this.logLevel)
+    const levels: LogLevel[] = ['debug', 'info', 'warn', 'error'];
+    return levels.indexOf(level) >= levels.indexOf(this.logLevel);
   }
 
   private formatMessage(entry: LogEntry): string {
-    const contextStr = entry.context ? ` ${JSON.stringify(entry.context)}` : ''
-    return `[${entry.timestamp}] ${entry.level.toUpperCase()} [${this.name}]: ${entry.message}${contextStr}`
+    const contextStr = entry.context ? ` ${JSON.stringify(entry.context)}` : '';
+    return `[${entry.timestamp}] ${entry.level.toUpperCase()} [${this.name}]: ${entry.message}${contextStr}`;
   }
 
   private createLogEntry(
     level: LogLevel,
     message: string,
-    context?: Record<string, unknown>
+    context?: Record<string, unknown>,
   ): LogEntry {
     return {
       level,
@@ -64,34 +64,34 @@ class Logger {
         ...this.defaultContext,
         ...context,
       },
-    }
+    };
   }
 
   public debug(message: string, context?: Record<string, unknown>): void {
     if (this.shouldLog('debug')) {
-      const entry = this.createLogEntry('debug', message, context)
-      console.debug(this.formatMessage(entry))
+      const entry = this.createLogEntry('debug', message, context);
+      console.debug(this.formatMessage(entry));
     }
   }
 
   public info(message: string, context?: Record<string, unknown>): void {
     if (this.shouldLog('info')) {
-      const entry = this.createLogEntry('info', message, context)
-      console.info(this.formatMessage(entry))
+      const entry = this.createLogEntry('info', message, context);
+      console.info(this.formatMessage(entry));
     }
   }
 
   public warn(message: string, context?: Record<string, unknown>): void {
     if (this.shouldLog('warn')) {
-      const entry = this.createLogEntry('warn', message, context)
-      console.warn(this.formatMessage(entry))
+      const entry = this.createLogEntry('warn', message, context);
+      console.warn(this.formatMessage(entry));
     }
   }
 
   public error(message: string, context?: Record<string, unknown>): void {
     if (this.shouldLog('error')) {
-      const entry = this.createLogEntry('error', message, context)
-      console.error(this.formatMessage(entry))
+      const entry = this.createLogEntry('error', message, context);
+      console.error(this.formatMessage(entry));
 
       // Send to error reporting service in production
       if (env.NODE_ENV === 'production') {
@@ -108,7 +108,7 @@ class Logger {
         ...this.defaultContext,
         ...context,
       },
-    })
+    });
   }
 }
 
@@ -116,7 +116,7 @@ export function createLogger(name: string, options: Partial<LoggerOptions> = {})
   return Logger.getInstance({
     name,
     ...options,
-  })
+  });
 }
 
-export const logger = createLogger('app')
+export const logger = createLogger('app');

@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod';
 
 /**
  * Award schema
@@ -12,7 +12,7 @@ export const AwardSchema = z.object({
   effectiveTo: z.string().optional(),
   description: z.string().optional(),
   coverage: z.string().optional(),
-})
+});
 
 /**
  * Classification schema
@@ -27,7 +27,7 @@ export const ClassificationSchema = z.object({
   parentCode: z.string().optional(),
   validFrom: z.string(),
   validTo: z.string().optional(),
-})
+});
 
 /**
  * Pay rate schema
@@ -41,7 +41,7 @@ export const PayRateSchema = z.object({
         code: z.string(),
         rate: z.number(),
         description: z.string(),
-      })
+      }),
     )
     .optional(),
   allowances: z
@@ -50,12 +50,12 @@ export const PayRateSchema = z.object({
         code: z.string(),
         amount: z.number(),
         description: z.string(),
-      })
+      }),
     )
     .optional(),
   effectiveFrom: z.string(),
   effectiveTo: z.string().optional(),
-})
+});
 
 /**
  * Pay calculation schema
@@ -69,14 +69,14 @@ export const PayCalculationSchema = z.object({
       rate: z.number(),
       amount: z.number(),
       description: z.string(),
-    })
+    }),
   ),
   allowances: z.array(
     z.object({
       code: z.string(),
       amount: z.number(),
       description: z.string(),
-    })
+    }),
   ),
   total: z.number(),
   breakdown: z.object({
@@ -90,7 +90,7 @@ export const PayCalculationSchema = z.object({
     effectiveDate: z.string(),
     source: z.enum(['fairwork', 'cached']),
   }),
-})
+});
 
 /**
  * Penalty schema
@@ -104,7 +104,7 @@ export const PenaltySchema = z.object({
   conditions: z.string().optional(),
   effectiveFrom: z.string(),
   effectiveTo: z.string().optional(),
-})
+});
 
 /**
  * Allowance schema
@@ -118,7 +118,7 @@ export const AllowanceSchema = z.object({
   conditions: z.string().optional(),
   effectiveFrom: z.string(),
   effectiveTo: z.string().optional(),
-})
+});
 
 /**
  * Leave entitlement schema
@@ -131,7 +131,7 @@ export const LeaveEntitlementSchema = z.object({
   accrualMethod: z.string().optional(),
   effectiveFrom: z.string(),
   effectiveTo: z.string().optional(),
-})
+});
 
 /**
  * Public holiday schema
@@ -141,14 +141,14 @@ export const PublicHolidaySchema = z.object({
   name: z.string(),
   state: z.string().optional(),
   description: z.string().optional(),
-})
+});
 
 // Export types
-export type Award = z.infer<typeof AwardSchema>
-export type Classification = z.infer<typeof ClassificationSchema>
-export type PayRate = z.infer<typeof PayRateSchema>
-export type PayCalculation = z.infer<typeof PayCalculationSchema>
-export type Penalty = z.infer<typeof PenaltySchema>
-export type Allowance = z.infer<typeof AllowanceSchema>
-export type LeaveEntitlement = z.infer<typeof LeaveEntitlementSchema>
-export type PublicHoliday = z.infer<typeof PublicHolidaySchema>
+export type Award = z.infer<typeof AwardSchema>;
+export type Classification = z.infer<typeof ClassificationSchema>;
+export type PayRate = z.infer<typeof PayRateSchema>;
+export type PayCalculation = z.infer<typeof PayCalculationSchema>;
+export type Penalty = z.infer<typeof PenaltySchema>;
+export type Allowance = z.infer<typeof AllowanceSchema>;
+export type LeaveEntitlement = z.infer<typeof LeaveEntitlementSchema>;
+export type PublicHoliday = z.infer<typeof PublicHolidaySchema>;

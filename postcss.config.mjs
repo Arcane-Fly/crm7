@@ -18,17 +18,22 @@ export default {
         grid: true,
       },
     },
-    ...(process.env.NODE_ENV === 'production' ? {
-      cssnano: {
-        preset: ['default', {
-          discardComments: {
-            removeAll: true,
+    ...(process.env.NODE_ENV === 'production'
+      ? {
+          cssnano: {
+            preset: [
+              'default',
+              {
+                discardComments: {
+                  removeAll: true,
+                },
+                minifyFontValues: {
+                  removeQuotes: false,
+                },
+              },
+            ],
           },
-          minifyFontValues: {
-            removeQuotes: false,
-          },
-        }],
-      },
-    } : {}),
+        }
+      : {}),
   },
-}
+};

@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import { Bell } from 'lucide-react'
+import { Bell } from 'lucide-react';
 
 const alerts = [
   {
@@ -15,7 +15,7 @@ const alerts = [
     priority: 'MEDIUM',
     type: 'info',
   },
-]
+];
 
 export function AlertsList() {
   return (
@@ -28,7 +28,10 @@ export function AlertsList() {
       </div>
       <div className='divide-y'>
         {alerts.map((alert, index) => (
-          <div key={index} className={`p-4 ${alert.type === 'error' ? 'bg-red-50' : 'bg-blue-50'}`}>
+          <div
+            key={index}
+            className={`p-4 ${alert.type === 'error' ? 'bg-red-50' : 'bg-blue-50'}`}
+          >
             <div className='mb-1 flex items-center justify-between'>
               <h4 className='font-medium'>{alert.title}</h4>
               <span
@@ -46,5 +49,5 @@ export function AlertsList() {
         ))}
       </div>
     </div>
-  )
+  );
 }

@@ -15,7 +15,7 @@ This document outlines the shared utilities available in the application.
 Located in `lib/utils/api.ts`, these utilities provide standardized API handling:
 
 ```typescript
-import { createApiHandler } from '@/lib/utils/api'
+import { createApiHandler } from '@/lib/utils/api';
 
 export const handler = createApiHandler({
   schema: userSchema,
@@ -25,7 +25,7 @@ export const handler = createApiHandler({
   cacheControl: {
     maxAge: 3600,
   },
-})
+});
 ```
 
 Features:
@@ -45,7 +45,7 @@ const { data, isLoading, error } = useAsync(fetchData, {
   autoExecute: true,
   retryCount: 3,
   toastOnError: true,
-})
+});
 ```
 
 Features:
@@ -62,18 +62,18 @@ Located in `lib/utils/performance.ts`, these utilities help optimize performance
 
 ```typescript
 // Debounce function calls
-const debouncedSearch = debounce(searchFunction, 300)
+const debouncedSearch = debounce(searchFunction, 300);
 
 // Monitor render times
-useRenderTime('ComponentName')
+useRenderTime('ComponentName');
 
 // Detect expensive re-renders
-useRenderOptimization('ComponentName', props)
+useRenderOptimization('ComponentName', props);
 
 // Optimize for visibility
 useVisibilityOptimization(() => {
   // Suspend operations when tab is hidden
-})
+});
 ```
 
 Features:
@@ -89,13 +89,13 @@ Features:
 Located in `lib/utils/logger.ts`, provides structured logging:
 
 ```typescript
-const logger = createLogger('ComponentName')
+const logger = createLogger('ComponentName');
 
-logger.info('Operation successful', { userId: 123 })
-logger.error('Operation failed', { error })
+logger.info('Operation successful', { userId: 123 });
+logger.error('Operation failed', { error });
 
 // Create child logger
-const childLogger = logger.extend('SubComponent')
+const childLogger = logger.extend('SubComponent');
 ```
 
 Features:
@@ -111,12 +111,12 @@ Features:
 Located in `lib/utils/validation.ts`, provides common validation schemas:
 
 ```typescript
-import { emailSchema, passwordSchema, addressSchema, validateSchema } from '@/lib/utils/validation'
+import { emailSchema, passwordSchema, addressSchema, validateSchema } from '@/lib/utils/validation';
 
 // Validate data
-const result = validateSchema(emailSchema, userEmail)
+const result = validateSchema(emailSchema, userEmail);
 if (!result.success) {
-  const errors = getValidationErrors(result.errors)
+  const errors = getValidationErrors(result.errors);
 }
 ```
 
@@ -180,30 +180,30 @@ Helper Functions:
 ### Complete API Endpoint
 
 ```typescript
-import { createApiHandler } from '@/lib/utils/api'
-import { personNameSchema } from '@/lib/utils/validation'
-import { createLogger } from '@/lib/utils/logger'
+import { createApiHandler } from '@/lib/utils/api';
+import { personNameSchema } from '@/lib/utils/validation';
+import { createLogger } from '@/lib/utils/logger';
 
-const logger = createLogger('user-api')
+const logger = createLogger('user-api');
 
 export const handler = createApiHandler({
   schema: personNameSchema,
   handler: async (data) => {
-    logger.info('Creating user', { data })
+    logger.info('Creating user', { data });
 
     try {
-      const user = await createUser(data)
-      logger.info('User created', { userId: user.id })
-      return user
+      const user = await createUser(data);
+      logger.info('User created', { userId: user.id });
+      return user;
     } catch (error) {
-      logger.error('Failed to create user', { error })
-      throw error
+      logger.error('Failed to create user', { error });
+      throw error;
     }
   },
   cacheControl: {
     maxAge: 0, // Don't cache POST requests
   },
-})
+});
 ```
 
 ### Optimized Component

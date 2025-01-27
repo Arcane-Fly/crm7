@@ -1,9 +1,12 @@
-'use client'
+'use client';
 
-import * as React from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as React from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import {
   Form,
   FormControl,
@@ -11,14 +14,12 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { useAuth } from '@/lib/auth/context'
-import { useLMS } from '@/lib/hooks/use-lms'
-import { Textarea } from '@/components/ui/textarea'
-import { Card } from '@/components/ui/card'
-import { useToast } from '@/components/ui/use-toast'
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/lib/auth/context';
+import { useLMS } from '@/lib/hooks/use-lms';
 
 const courseSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -26,21 +27,21 @@ const courseSchema = z.object({
   instructor: z.string().min(1, 'Instructor is required'),
   start_date: z.string().min(1, 'Start date is required'),
   end_date: z.string().min(1, 'End date is required'),
-})
+});
 
-type CourseFormValues = z.infer<typeof courseSchema>
+type CourseFormValues = z.infer<typeof courseSchema>;
 
 interface CourseFormProps {
-  courseId?: string
-  defaultValues?: CourseFormValues
-  onSuccess?: () => void
+  courseId?: string;
+  defaultValues?: CourseFormValues;
+  onSuccess?: () => void;
 }
 
 export function CourseForm({ courseId, defaultValues, onSuccess }: CourseFormProps) {
-  const { user } = useAuth()
-  const { createCourse, updateCourse, isCreatingCourse, isUpdatingCourse } = useLMS()
-  const { toast } = useToast()
-  const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const { user } = useAuth();
+  const { createCourse, updateCourse, isCreatingCourse, isUpdatingCourse } = useLMS();
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const form = useForm<CourseFormValues>({
     resolver: zodResolver(courseSchema),
@@ -51,48 +52,51 @@ export function CourseForm({ courseId, defaultValues, onSuccess }: CourseFormPro
       start_date: '',
       end_date: '',
     },
-  })
+  });
 
   const onSubmit = async (values: CourseFormValues) => {
-    if (!user) return
+    if (!user) return;
 
     try {
-      setIsSubmitting(true)
+      setIsSubmitting(true);
       if (courseId) {
-        await updateCourse(courseId, values)
+        await updateCourse(courseId, values);
         toast({
           title: 'Course updated',
           description: 'The course has been updated successfully.',
-        })
+        });
       } else {
         await createCourse({
           ...values,
           org_id: user.org_id,
           status: 'active',
           duration: 0, // Default duration
-          level: 'beginner' // Default level
-        })
+          level: 'beginner', // Default level
+        });
         toast({
           title: 'Course created',
           description: 'The course has been created successfully.',
-        })
+        });
       }
-      onSuccess?.()
+      onSuccess?.();
     } catch (error) {
       toast({
         title: 'Error',
         description: 'Failed to save course. Please try again.',
         variant: 'destructive',
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <Card className='p-6'>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className='space-y-4'
+        >
           <FormField
             control={form.control}
             name='title'
@@ -140,7 +144,10 @@ export function CourseForm({ courseId, defaultValues, onSuccess }: CourseFormPro
                 <FormItem>
                   <FormLabel>Start Date</FormLabel>
                   <FormControl>
-                    <Input type='date' {...field} />
+                    <Input
+                      type='date'
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -153,14 +160,20 @@ export function CourseForm({ courseId, defaultValues, onSuccess }: CourseFormPro
                 <FormItem>
                   <FormLabel>End Date</FormLabel>
                   <FormControl>
-                    <Input type='date' {...field} />
+                    <Input
+                      type='date'
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </div>
-          <Button type='submit' disabled={isSubmitting || isCreatingCourse || isUpdatingCourse}>
+          <Button
+            type='submit'
+            disabled={isSubmitting || isCreatingCourse || isUpdatingCourse}
+          >
             {isSubmitting || isCreatingCourse || isUpdatingCourse
               ? courseId
                 ? 'Updating...'
@@ -172,5 +185,5 @@ export function CourseForm({ courseId, defaultValues, onSuccess }: CourseFormPro
         </form>
       </Form>
     </Card>
-  )
+  );
 }

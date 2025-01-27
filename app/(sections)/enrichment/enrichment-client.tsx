@@ -1,41 +1,42 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Alert } from '@/components/ui/alert'
-import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary'
+import { useState } from 'react';
+
+import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary';
+import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export function EnrichmentClient() {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [query, setQuery] = useState('')
-  const [results, setResults] = useState<any[] | null>(null)
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<any[] | null>(null);
 
   const handleEnrich = async () => {
     if (!query.trim()) {
-      setError('Please enter a search query')
-      return
+      setError('Please enter a search query');
+      return;
     }
 
     try {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
       // TODO: Implement enrichment API call
       const mockResults = [
         { id: 1, name: 'Result 1' },
         { id: 2, name: 'Result 2' },
-      ]
-      setResults(mockResults)
+      ];
+      setResults(mockResults);
     } catch (err) {
-      const error = err as Error
-      setError(error.message)
+      const error = err as Error;
+      setError(error.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <ErrorBoundary>
@@ -54,7 +55,10 @@ export function EnrichmentClient() {
               />
             </div>
 
-            <Button onClick={handleEnrich} disabled={loading}>
+            <Button
+              onClick={handleEnrich}
+              disabled={loading}
+            >
               {loading ? 'Searching...' : 'Search'}
             </Button>
 
@@ -65,7 +69,10 @@ export function EnrichmentClient() {
                 <h2 className='mb-4 text-lg font-semibold'>Results</h2>
                 <div className='space-y-4'>
                   {results.map((result) => (
-                    <Card key={result.id} className='p-4'>
+                    <Card
+                      key={result.id}
+                      className='p-4'
+                    >
                       <h3 className='font-medium'>{result.name}</h3>
                     </Card>
                   ))}
@@ -76,5 +83,5 @@ export function EnrichmentClient() {
         </Card>
       </div>
     </ErrorBoundary>
-  )
+  );
 }

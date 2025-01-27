@@ -1,19 +1,46 @@
 import {
   LayoutGrid,
   Users,
-  Building2,
   Briefcase,
   Clock,
   Shield,
   BarChart2,
-  Settings,
   BookOpen,
   HardHat,
   Wallet,
-  UserCog,
-  MessageSquare,
   FileText,
-} from 'lucide-react'
+  CheckCircle,
+  Target,
+  Calendar,
+  PieChart,
+  ClipboardList,
+  Folder,
+  Bell,
+  Award,
+  GraduationCap,
+  LineChart,
+  FileBarChart,
+  UserCheck,
+  DollarSign,
+  FileSearch,
+  AlertCircle,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+
+export interface NavItem {
+  label: string;
+  slug: string;
+  href: string;
+  icon: LucideIcon;
+  description: string;
+  items?: SubNavItem[];
+}
+
+export interface SubNavItem {
+  title: string;
+  href: string;
+  icon: LucideIcon;
+}
 
 export const MAIN_NAV_ITEMS = [
   {
@@ -49,129 +76,80 @@ export const MAIN_NAV_ITEMS = [
     slug: 'hr',
     href: '/hr',
     icon: Users,
-    description: 'Employee and HR management',
+    description: 'HR management and employee records',
   },
   {
-    label: 'Client Management',
-    slug: 'clients',
-    href: '/clients',
-    icon: Building2,
-    description: 'Client relationships and accounts',
-  },
-  {
-    label: 'Marketing & Sales',
-    slug: 'marketing',
-    href: '/marketing',
-    icon: BarChart2,
-    description: 'Marketing campaigns and sales',
-  },
-  {
-    label: 'Compliance & Quality',
+    label: 'Compliance',
     slug: 'compliance',
     href: '/compliance',
     icon: Shield,
-    description: 'Compliance monitoring and quality assurance',
+    description: 'Compliance and regulatory management',
   },
   {
     label: 'Reports & Analytics',
     slug: 'reports',
     href: '/reports',
-    icon: FileText,
-    description: 'Business intelligence and reporting',
+    icon: BarChart2,
+    description: 'Reports and data analytics',
   },
-] as const
+] as const satisfies readonly NavItem[];
 
-export const SECTIONS = {
+export const SECTIONS: Record<string, SubNavItem[]> = {
   dashboard: [
     { title: 'Overview', href: '/dashboard', icon: LayoutGrid },
     { title: 'Quick Actions', href: '/dashboard/actions', icon: Briefcase },
     { title: 'Recent Activities', href: '/dashboard/activities', icon: Clock },
-    { title: 'Notifications', href: '/dashboard/notifications', icon: MessageSquare },
-    { title: 'Alerts & Reminders', href: '/dashboard/alerts', icon: Shield },
-    { title: 'Key Metrics', href: '/dashboard/metrics', icon: BarChart2 },
-    { title: 'Task List', href: '/dashboard/tasks', icon: FileText },
-    { title: 'Calendar View', href: '/dashboard/calendar', icon: Clock },
+    { title: 'Notifications', href: '/dashboard/notifications', icon: Bell },
+    { title: 'Key Metrics', href: '/dashboard/metrics', icon: PieChart },
   ],
   training: [
-    { title: 'Apprentices', href: '/training/apprentices', icon: Users },
-    { title: 'Trainees', href: '/training/trainees', icon: Users },
-    { title: 'Course Catalog', href: '/training/courses', icon: BookOpen },
-    { title: 'Training Calendar', href: '/training/calendar', icon: Clock },
-    { title: 'Assessments', href: '/training/assessments', icon: FileText },
-    { title: 'Certifications', href: '/training/certifications', icon: Shield },
-    { title: 'Skills Matrix', href: '/training/skills', icon: LayoutGrid },
-    { title: 'Training Records', href: '/training/records', icon: FileText },
+    { title: 'Programs', href: '/training/programs', icon: GraduationCap },
+    { title: 'Courses', href: '/training/courses', icon: BookOpen },
+    { title: 'Progress Tracking', href: '/training/progress', icon: Target },
+    { title: 'Certifications', href: '/training/certifications', icon: Award },
+    { title: 'Calendar', href: '/training/calendar', icon: Calendar },
+    { title: 'Reports', href: '/training/reports', icon: FileBarChart },
   ],
   safety: [
-    { title: 'Incident Reports', href: '/safety/incidents', icon: Shield },
-    { title: 'Hazard Register', href: '/safety/hazards', icon: Shield },
-    { title: 'Safety Audits', href: '/safety/audits', icon: FileText },
-    { title: 'Risk Assessments', href: '/safety/risks', icon: Shield },
-    { title: 'Safety Documents', href: '/safety/documents', icon: FileText },
-    { title: 'PPE Management', href: '/safety/ppe', icon: HardHat },
-    { title: 'Safety Training', href: '/safety/training', icon: BookOpen },
-    { title: 'Emergency Procedures', href: '/safety/emergency', icon: Shield },
+    { title: 'Incidents', href: '/safety/incidents', icon: AlertCircle },
+    { title: 'Risk Assessment', href: '/safety/risk', icon: Shield },
+    { title: 'Inspections', href: '/safety/inspections', icon: ClipboardList },
+    { title: 'Equipment', href: '/safety/equipment', icon: HardHat },
+    { title: 'Training Records', href: '/safety/training', icon: FileText },
+    { title: 'Reports', href: '/safety/reports', icon: BarChart2 },
   ],
   payroll: [
-    { title: 'Payroll Processing', href: '/payroll/processing', icon: Wallet },
+    { title: 'Payrun', href: '/payroll/payrun', icon: DollarSign },
     { title: 'Timesheets', href: '/payroll/timesheets', icon: Clock },
-    { title: 'Award Rates', href: '/payroll/awards', icon: BarChart2 },
-    { title: 'Allowances', href: '/payroll/allowances', icon: Wallet },
-    { title: 'Deductions', href: '/payroll/deductions', icon: Wallet },
-    { title: 'Superannuation', href: '/payroll/super', icon: Wallet },
-    { title: 'Tax Management', href: '/payroll/tax', icon: FileText },
-    { title: 'Expense Claims', href: '/payroll/expenses', icon: Wallet },
+    { title: 'Leave Management', href: '/payroll/leave', icon: Calendar },
+    { title: 'Benefits', href: '/payroll/benefits', icon: Award },
+    { title: 'Tax', href: '/payroll/tax', icon: FileText },
+    { title: 'Reports', href: '/payroll/reports', icon: FileBarChart },
   ],
   hr: [
     { title: 'Employees', href: '/hr/employees', icon: Users },
-    { title: 'Candidates', href: '/hr/candidates', icon: Users },
-    { title: 'Job Postings', href: '/hr/jobs', icon: Briefcase },
-    { title: 'Applications', href: '/hr/applications', icon: FileText },
-    { title: 'Onboarding', href: '/hr/onboarding', icon: UserCog },
-    { title: 'Performance', href: '/hr/performance', icon: BarChart2 },
-    { title: 'Leave Management', href: '/hr/leave', icon: Clock },
-    { title: 'Documents', href: '/hr/documents', icon: FileText },
-  ],
-  clients: [
-    { title: 'Client Directory', href: '/clients/directory', icon: Building2 },
-    { title: 'Host Employers', href: '/clients/hosts', icon: Building2 },
-    { title: 'Client Contacts', href: '/clients/contacts', icon: Users },
-    { title: 'Account Management', href: '/clients/accounts', icon: Settings },
-    { title: 'Service Agreements', href: '/clients/agreements', icon: FileText },
-    { title: 'Client Communications', href: '/clients/communications', icon: MessageSquare },
-    { title: 'Visit Reports', href: '/clients/visits', icon: FileText },
-    { title: 'Client Requirements', href: '/clients/requirements', icon: Shield },
-  ],
-  marketing: [
-    { title: 'Campaigns', href: '/marketing/campaigns', icon: BarChart2 },
-    { title: 'Lead Management', href: '/marketing/leads', icon: Users },
-    { title: 'Sales Pipeline', href: '/marketing/pipeline', icon: BarChart2 },
-    { title: 'Marketing Calendar', href: '/marketing/calendar', icon: Clock },
-    { title: 'Email Marketing', href: '/marketing/email', icon: MessageSquare },
-    { title: 'Social Media', href: '/marketing/social', icon: MessageSquare },
-    { title: 'Website Analytics', href: '/marketing/analytics', icon: BarChart2 },
-    { title: 'Event Management', href: '/marketing/events', icon: Clock },
+    { title: 'Recruitment', href: '/hr/recruitment', icon: UserCheck },
+    { title: 'Performance', href: '/hr/performance', icon: Target },
+    { title: 'Training', href: '/hr/training', icon: GraduationCap },
+    { title: 'Documents', href: '/hr/documents', icon: Folder },
+    { title: 'Reports', href: '/hr/reports', icon: BarChart2 },
   ],
   compliance: [
-    { title: 'Overview', href: '/compliance', icon: Shield },
-    { title: 'Audits', href: '/compliance/audits', icon: FileText },
-    { title: 'Certifications', href: '/compliance/certifications', icon: Shield },
-    { title: 'Policies', href: '/compliance/policies', icon: FileText },
-    { title: 'Risk Assessment', href: '/compliance/risk-assessment', icon: Shield },
-    { title: 'Reports', href: '/compliance/reports', icon: FileText },
-    { title: 'Training Records', href: '/compliance/training-records', icon: BookOpen },
-    { title: 'Incidents', href: '/compliance/incidents', icon: Shield },
+    { title: 'Requirements', href: '/compliance/requirements', icon: CheckCircle },
+    { title: 'Audits', href: '/compliance/audits', icon: FileSearch },
+    { title: 'Documents', href: '/compliance/documents', icon: FileText },
+    { title: 'Training', href: '/compliance/training', icon: BookOpen },
+    { title: 'Incidents', href: '/compliance/incidents', icon: AlertCircle },
+    { title: 'Reports', href: '/compliance/reports', icon: BarChart2 },
   ],
   reports: [
     { title: 'Standard Reports', href: '/reports/standard', icon: FileText },
-    { title: 'Custom Reports', href: '/reports/custom', icon: FileText },
-    { title: 'Analytics Dashboard', href: '/reports/analytics', icon: BarChart2 },
-    { title: 'KPI Tracking', href: '/reports/kpi', icon: BarChart2 },
-    { title: 'Performance Metrics', href: '/reports/performance', icon: BarChart2 },
-    { title: 'Financial Reports', href: '/reports/financial', icon: Wallet },
-    { title: 'Training Reports', href: '/reports/training', icon: BookOpen },
-    { title: 'Safety Reports', href: '/reports/safety', icon: Shield },
+    { title: 'Custom Reports', href: '/reports/custom', icon: FileBarChart },
+    { title: 'Analytics', href: '/reports/analytics', icon: LineChart },
+    { title: 'Dashboards', href: '/reports/dashboards', icon: PieChart },
+    { title: 'Scheduled Reports', href: '/reports/scheduled', icon: Calendar },
+    { title: 'Export Center', href: '/reports/export', icon: FileText },
   ],
-} as const
+} as const;
 
-export type Section = keyof typeof SECTIONS
+export type Section = keyof typeof SECTIONS;

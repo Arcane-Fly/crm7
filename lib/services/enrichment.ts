@@ -1,31 +1,31 @@
-import { Together } from '@/lib/api/together'
-import { createClient } from '@/lib/supabase/client'
+import { Together } from '@/lib/api/together';
+import { createClient } from '@/lib/supabase/client';
 
 interface EnrichmentOptions {
-  model?: 'deepseek-ai/DeepSeek-V3' | 'pplx-7b-online'
-  temperature?: number
-  maxTokens?: number
+  model?: 'deepseek-ai/DeepSeek-V3' | 'pplx-7b-online';
+  temperature?: number;
+  maxTokens?: number;
 }
 
 export class DataEnrichmentService {
-  private together: Together
-  private supabase = createClient()
+  private together: Together;
+  private supabase = createClient();
 
   constructor() {
-    this.together = new Together(process.env.TOGETHER_API_KEY!)
+    this.together = new Together(process.env.TOGETHER_API_KEY!);
   }
 
   async enrichFromWebsite(url: string, options: EnrichmentOptions = {}) {
     try {
       // Fetch website content
-      const response = await fetch(url)
-      const html = await response.text()
+      const response = await fetch(url);
+      const html = await response.text();
 
       // Extract text content (basic implementation)
       const text = html
         .replace(/<[^>]*>/g, ' ')
         .replace(/\s+/g, ' ')
-        .trim()
+        .trim();
 
       // Use Together AI to analyze
       const enrichedData = await this.together.chat.completions.create({
@@ -43,12 +43,12 @@ export class DataEnrichmentService {
         ],
         temperature: options.temperature || 0.3,
         max_tokens: options.maxTokens || 1000,
-      })
+      });
 
-      return enrichedData
+      return enrichedData;
     } catch (error) {
-      console.error('Enrichment error:', error)
-      throw error
+      console.error('Enrichment error:', error);
+      throw error;
     }
   }
 
@@ -77,12 +77,12 @@ export class DataEnrichmentService {
           max_tokens: 1024,
           temperature: 0.1,
         }),
-      })
+      });
 
-      return await response.json()
+      return await response.json();
     } catch (error) {
-      console.error('Perplexity API error:', error)
-      throw error
+      console.error('Perplexity API error:', error);
+      throw error;
     }
   }
 
@@ -93,14 +93,14 @@ export class DataEnrichmentService {
         .from('apprentices')
         .select('*')
         .eq('id', apprenticeId)
-        .single()
+        .single();
 
-      if (error) throw error
+      if (error) throw error;
 
       // Enrich with industry insights
       const industryInsights = await this.enrichWithPerplexity(
-        `Provide insights about career progression and skill requirements for ${apprentice.qualification} in ${apprentice.industry}`
-      )
+        `Provide insights about career progression and skill requirements for ${apprentice.qualification} in ${apprentice.industry}`,
+      );
 
       // Update apprentice record with enriched data
       const { error: updateError } = await this.supabase
@@ -111,14 +111,14 @@ export class DataEnrichmentService {
             last_updated: new Date().toISOString(),
           },
         })
-        .eq('id', apprenticeId)
+        .eq('id', apprenticeId);
 
-      if (updateError) throw updateError
+      if (updateError) throw updateError;
 
-      return industryInsights
+      return industryInsights;
     } catch (error) {
-      console.error('Apprentice enrichment error:', error)
-      throw error
+      console.error('Apprentice enrichment error:', error);
+      throw error;
     }
   }
 
@@ -129,14 +129,14 @@ export class DataEnrichmentService {
         .from('qualifications')
         .select('*')
         .eq('id', qualificationId)
-        .single()
+        .single();
 
-      if (error) throw error
+      if (error) throw error;
 
       // Enrich with market data and requirements
       const marketData = await this.enrichWithPerplexity(
-        `Analyze market demand, salary ranges, and industry requirements for ${qualification.title}`
-      )
+        `Analyze market demand, salary ranges, and industry requirements for ${qualification.title}`,
+      );
 
       // Update qualification with enriched data
       const { error: updateError } = await this.supabase
@@ -147,14 +147,14 @@ export class DataEnrichmentService {
             last_updated: new Date().toISOString(),
           },
         })
-        .eq('id', qualificationId)
+        .eq('id', qualificationId);
 
-      if (updateError) throw updateError
+      if (updateError) throw updateError;
 
-      return marketData
+      return marketData;
     } catch (error) {
-      console.error('Qualification enrichment error:', error)
-      throw error
+      console.error('Qualification enrichment error:', error);
+      throw error;
     }
   }
 }

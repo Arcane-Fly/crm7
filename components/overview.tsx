@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export function Overview() {
   return (
@@ -31,5 +31,5 @@ export function Overview() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

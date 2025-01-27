@@ -1,9 +1,9 @@
-import { PerformanceDashboard } from '@/components/monitoring/PerformanceDashboard'
-import { Card } from '@/components/ui/card'
+import { PerformanceDashboard } from '@/components/monitoring/PerformanceDashboard';
+import { Card } from '@/components/ui/card';
 
 export const metadata = {
   title: 'Performance Monitoring',
-}
+};
 
 export default function MonitoringPage() {
   return (
@@ -13,5 +13,5 @@ export default function MonitoringPage() {
         <PerformanceDashboard />
       </Card>
     </div>
-  )
+  );
 }

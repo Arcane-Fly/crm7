@@ -1,14 +1,15 @@
-'use client'
+'use client';
 
-import type { ReactNode } from 'react'
-import { cn } from '@/lib/utils'
+import type { ReactNode } from 'react';
+
+import { cn } from '@/lib/utils';
 
 interface StatsCardProps {
-  title: string
-  value: string | number
-  change?: string
-  icon?: ReactNode
-  className?: string
+  title: string;
+  value: string | number;
+  change?: string;
+  icon?: ReactNode;
+  className?: string;
 }
 
 export function StatsCard({ title, value, change, icon, className }: StatsCardProps) {
@@ -23,5 +24,5 @@ export function StatsCard({ title, value, change, icon, className }: StatsCardPr
         {change && <span className='text-sm text-gray-600'>{change}</span>}
       </div>
     </div>
-  )
+  );
 }

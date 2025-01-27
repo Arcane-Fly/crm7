@@ -1,36 +1,37 @@
-import React from 'react'
-import { Search, Star, Clock, Plus, Bell } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { Search, Star, Clock, Plus, Bell } from 'lucide-react';
+import React from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Badge } from '@/components/ui/badge'
+} from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface QuickAccessItem {
-  id: string
-  label: string
-  type: 'recent' | 'favorite'
-  link: string
-  timestamp?: string
+  id: string;
+  label: string;
+  type: 'recent' | 'favorite';
+  link: string;
+  timestamp?: string;
 }
 
 export const QuickAccess: React.FC = () => {
-  const [searchQuery, setSearchQuery] = React.useState('')
-  const [recentItems, _setRecentItems] = React.useState<QuickAccessItem[]>([])
-  const [favorites, _setFavorites] = React.useState<QuickAccessItem[]>([])
-  const [notifications, _setNotifications] = React.useState<number>(0)
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [recentItems, _setRecentItems] = React.useState<QuickAccessItem[]>([]);
+  const [favorites, _setFavorites] = React.useState<QuickAccessItem[]>([]);
+  const [notifications, _setNotifications] = React.useState<number>(0);
 
   return (
     <div className='flex h-14 items-center space-x-4 border-b bg-background px-4'>
@@ -69,11 +70,18 @@ export const QuickAccess: React.FC = () => {
       {/* Recent Items */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant='ghost' size='icon' aria-label='View recent items'>
+          <Button
+            variant='ghost'
+            size='icon'
+            aria-label='View recent items'
+          >
             <Clock className='h-5 w-5' />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align='end' className='w-64'>
+        <DropdownMenuContent
+          align='end'
+          className='w-64'
+        >
           <ScrollArea className='h-[300px]'>
             {recentItems.map((item) => (
               <DropdownMenuItem key={item.id}>
@@ -88,11 +96,18 @@ export const QuickAccess: React.FC = () => {
       {/* Favorites */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant='ghost' size='icon' aria-label='View favorites'>
+          <Button
+            variant='ghost'
+            size='icon'
+            aria-label='View favorites'
+          >
             <Star className='h-5 w-5' />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align='end' className='w-64'>
+        <DropdownMenuContent
+          align='end'
+          className='w-64'
+        >
           <ScrollArea className='h-[300px]'>
             {favorites.map((item) => (
               <DropdownMenuItem key={item.id}>{item.label}</DropdownMenuItem>
@@ -104,11 +119,18 @@ export const QuickAccess: React.FC = () => {
       {/* Quick Create */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant='ghost' size='icon' aria-label='Quick create menu'>
+          <Button
+            variant='ghost'
+            size='icon'
+            aria-label='Quick create menu'
+          >
             <Plus className='h-5 w-5' />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align='end' className='w-56'>
+        <DropdownMenuContent
+          align='end'
+          className='w-56'
+        >
           <DropdownMenuItem>New Task</DropdownMenuItem>
           <DropdownMenuItem>New Contact</DropdownMenuItem>
           <DropdownMenuItem>New Document</DropdownMenuItem>
@@ -136,12 +158,15 @@ export const QuickAccess: React.FC = () => {
             )}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align='end' className='w-80'>
+        <DropdownMenuContent
+          align='end'
+          className='w-80'
+        >
           <ScrollArea className='h-[400px]'>{/* Notification items would go here */}</ScrollArea>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-  )
-}
+  );
+};
 
-export default QuickAccess
+export default QuickAccess;

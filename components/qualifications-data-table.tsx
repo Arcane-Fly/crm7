@@ -1,12 +1,11 @@
-'use client'
+'use client';
 
-import * as React from 'react'
 import type {
   ColumnDef,
   ColumnFiltersState,
   SortingState,
   VisibilityState,
-} from '@tanstack/react-table'
+} from '@tanstack/react-table';
 import {
   flexRender,
   getCoreRowModel,
@@ -14,10 +13,11 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from '@tanstack/react-table'
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from 'lucide-react'
+} from '@tanstack/react-table';
+import { ArrowUpDown, ChevronDown, MoreHorizontal } from 'lucide-react';
+import * as React from 'react';
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -26,8 +26,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -35,7 +35,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+} from '@/components/ui/table';
 
 const data: Qualification[] = [
   {
@@ -78,16 +78,16 @@ const data: Qualification[] = [
     sector: 'Hospitality',
     duration: '36 months',
   },
-]
+];
 
 export type Qualification = {
-  id: string
-  code: string
-  title: string
-  level: string
-  sector: string
-  duration: string
-}
+  id: string;
+  code: string;
+  title: string;
+  level: string;
+  sector: string;
+  duration: string;
+};
 
 export const columns: ColumnDef<Qualification>[] = [
   {
@@ -106,7 +106,7 @@ export const columns: ColumnDef<Qualification>[] = [
           Title
           <ArrowUpDown className='ml-2 h-4 w-4' />
         </Button>
-      )
+      );
     },
     cell: ({ row }) => <div>{row.getValue('title')}</div>,
   },
@@ -129,12 +129,15 @@ export const columns: ColumnDef<Qualification>[] = [
     id: 'actions',
     enableHiding: false,
     cell: ({ row }) => {
-      const qualification = row.original
+      const qualification = row.original;
 
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant='ghost' className='h-8 w-8 p-0'>
+            <Button
+              variant='ghost'
+              className='h-8 w-8 p-0'
+            >
               <span className='sr-only'>Open menu</span>
               <MoreHorizontal className='h-4 w-4' />
             </Button>
@@ -150,16 +153,16 @@ export const columns: ColumnDef<Qualification>[] = [
             <DropdownMenuItem>Manage units</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      )
+      );
     },
   },
-]
+];
 
 export function QualificationsDataTable() {
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({
     data,
@@ -178,7 +181,7 @@ export function QualificationsDataTable() {
       columnVisibility,
       rowSelection,
     },
-  })
+  });
 
   return (
     <div className='w-full'>
@@ -191,7 +194,10 @@ export function QualificationsDataTable() {
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant='outline' className='ml-auto'>
+            <Button
+              variant='outline'
+              className='ml-auto'
+            >
               Columns <ChevronDown className='ml-2 h-4 w-4' />
             </Button>
           </DropdownMenuTrigger>
@@ -209,7 +215,7 @@ export function QualificationsDataTable() {
                   >
                     {column.id}
                   </DropdownMenuCheckboxItem>
-                )
+                );
               })}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -226,15 +232,18 @@ export function QualificationsDataTable() {
                         ? null
                         : flexRender(header.column.columnDef.header, header.getContext())}
                     </TableHead>
-                  )
+                  );
                 })}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && 'selected'}
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -244,7 +253,10 @@ export function QualificationsDataTable() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className='h-24 text-center'>
+                <TableCell
+                  colSpan={columns.length}
+                  className='h-24 text-center'
+                >
                   No results.
                 </TableCell>
               </TableRow>
@@ -277,5 +289,5 @@ export function QualificationsDataTable() {
         </div>
       </div>
     </div>
-  )
+  );
 }

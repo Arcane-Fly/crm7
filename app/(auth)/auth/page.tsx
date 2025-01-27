@@ -1,64 +1,64 @@
-'use client'
+'use client';
 
-import { createClient } from '@/lib/supabase/client'
-import type { FormEvent } from 'react'
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
-import { useToast } from '@/components/ui/use-toast'
+import { useRouter } from 'next/navigation';
+import type { FormEvent } from 'react';
+import { useState, useEffect } from 'react';
 
-export default function AuthPage() {
-  const router = useRouter()
-  const { toast } = useToast()
-  const supabase = createClient()
-  const [isLoading, setIsLoading] = useState(false)
-  const [isSignUp, setIsSignUp] = useState(false)
+import { useToast } from '@/components/ui/use-toast';
+import { createClient } from '@/lib/supabase/client';
+
+export default function AuthPage(): React.ReactElement {
+  const router = useRouter();
+  const { toast } = useToast();
+  const supabase = createClient();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
       const {
         data: { session: currentSession },
-      } = await supabase.auth.getSession()
+      } = await supabase.auth.getSession();
       if (currentSession) {
-        router.push('/')
+        router.push('/');
       }
-    }
+    };
 
-    checkSession()
+    void checkSession();
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event) => {
       if (event === 'SIGNED_IN') {
-        router.push('/')
+        router.push('/');
       }
       if (event === 'SIGNED_OUT') {
-        router.push('/auth')
+        router.push('/auth');
       }
       if (event === 'USER_UPDATED') {
-        const { error } = await supabase.auth.getSession()
+        const { error } = await supabase.auth.getSession();
         if (error) {
           toast({
             variant: 'destructive',
             title: 'Authentication Error',
             description: error.message,
-          })
+          });
         }
       }
-    })
+    });
 
-    return () => subscription.unsubscribe()
-  }, [router, toast, supabase.auth])
+    return () => subscription.unsubscribe();
+  }, [router, toast, supabase.auth]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setIsLoading(true)
-    const formData = new FormData(event.currentTarget)
-    const email = formData.get('email') as string
-    const password = formData.get('password') as string
+    event.preventDefault();
+    setIsLoading(true);
+    const formData = new FormData(event.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
 
     try {
-      let error
+      let error;
 
       if (isSignUp) {
         const { error: signUpError } = await supabase.auth.signUp({
@@ -67,21 +67,21 @@ export default function AuthPage() {
           options: {
             emailRedirectTo: `${window.location.origin}/auth/callback`,
           },
-        })
-        error = signUpError
+        });
+        error = signUpError;
 
         if (!error) {
           toast({
             title: 'Check your email',
             description: 'We sent you a confirmation link to complete your registration.',
-          })
+          });
         }
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
-        })
-        error = signInError
+        });
+        error = signInError;
       }
 
       if (error) {
@@ -89,19 +89,24 @@ export default function AuthPage() {
           variant: 'destructive',
           title: 'Authentication Error',
           description: error.message,
-        })
+        });
       }
     } catch (error) {
-      console.error('Authentication error:', error)
+      console.error('Authentication error:', error);
       toast({
         variant: 'destructive',
         title: 'Authentication Error',
         description: 'An unexpected error occurred. Please try again.',
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
+
+  const variantMap = {
+    signUp: 'Sign Up',
+    signIn: 'Sign In',
+  } as const;
 
   return (
     <div className='container flex h-screen w-screen flex-col items-center justify-center'>
@@ -114,7 +119,10 @@ export default function AuthPage() {
             {isSignUp ? 'Enter your details to sign up' : 'Enter your credentials to continue'}
           </p>
         </div>
-        <form onSubmit={handleSubmit} className='space-y-4'>
+        <form
+          onSubmit={handleSubmit}
+          className='space-y-4'
+        >
           <div className='space-y-2'>
             <label
               htmlFor='email'
@@ -151,7 +159,7 @@ export default function AuthPage() {
             disabled={isLoading}
             className='inline-flex h-10 w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50'
           >
-            {isLoading ? 'Please wait...' : isSignUp ? 'Sign Up' : 'Sign In'}
+            {isLoading ? 'Please wait...' : variantMap[isSignUp ? 'signUp' : 'signIn']}
           </button>
         </form>
         <button
@@ -162,5 +170,5 @@ export default function AuthPage() {
         </button>
       </div>
     </div>
-  )
+  );
 }

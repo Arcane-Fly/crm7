@@ -1,107 +1,107 @@
-import { createClient } from '@/lib/supabase/client'
-import { logger } from '@/lib/services/logger'
+import { logger } from '@/lib/services/logger';
+import { createClient } from '@/lib/supabase/client';
 
 export interface Course {
-  id: string
-  org_id: string
-  title: string
-  description: string
-  instructor: string
-  start_date: string
-  end_date: string
-  status: 'active' | 'inactive'
-  difficulty?: 'beginner' | 'intermediate' | 'advanced'
-  created_at: string
-  updated_at: string
+  id: string;
+  org_id: string;
+  title: string;
+  description: string;
+  instructor: string;
+  start_date: string;
+  end_date: string;
+  status: 'active' | 'inactive';
+  difficulty?: 'beginner' | 'intermediate' | 'advanced';
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Enrollment {
-  id: string
-  org_id: string
-  course_id: string
-  student_id: string
-  status: 'active' | 'completed' | 'withdrawn'
-  progress: number
-  grade?: number
-  created_at: string
-  updated_at: string
+  id: string;
+  org_id: string;
+  course_id: string;
+  student_id: string;
+  status: 'active' | 'completed' | 'withdrawn';
+  progress: number;
+  grade?: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Assessment {
-  id: string
-  org_id: string
-  course_id: string
-  title: string
-  description: string
-  due_date: string
-  total_points: number
-  weight: number
-  status: 'draft' | 'published' | 'archived'
-  created_at: string
-  updated_at: string
+  id: string;
+  org_id: string;
+  course_id: string;
+  title: string;
+  description: string;
+  due_date: string;
+  total_points: number;
+  weight: number;
+  status: 'draft' | 'published' | 'archived';
+  created_at: string;
+  updated_at: string;
   metadata?: {
-    passing_grade: number
-  }
+    passing_grade: number;
+  };
 }
 
 export interface Unit {
-  id: string
-  org_id: string
-  course_id: string
-  title: string
-  description: string
-  order: number
-  status: 'draft' | 'published' | 'archived'
-  created_at: string
-  updated_at: string
+  id: string;
+  org_id: string;
+  course_id: string;
+  title: string;
+  description: string;
+  order: number;
+  status: 'draft' | 'published' | 'archived';
+  created_at: string;
+  updated_at: string;
 }
 
-export type CourseUpdate = Partial<Course>
-export type EnrollmentUpdate = Partial<Enrollment>
-export type AssessmentUpdate = Partial<Assessment>
-export type UnitUpdate = Partial<Unit>
+export type CourseUpdate = Partial<Course>;
+export type EnrollmentUpdate = Partial<Enrollment>;
+export type AssessmentUpdate = Partial<Assessment>;
+export type UnitUpdate = Partial<Unit>;
 
 export class LMSService {
-  private supabase = createClient()
+  private supabase = createClient();
 
   // Course Management
   async getCourses(params: {
-    category?: string
-    level?: Course['difficulty']
-    status?: Course['status']
+    category?: string;
+    level?: Course['difficulty'];
+    status?: Course['status'];
   }) {
     try {
-      let query = this.supabase.from('courses').select('*')
+      let query = this.supabase.from('courses').select('*');
 
       if (params.category) {
-        query = query.eq('category', params.category)
+        query = query.eq('category', params.category);
       }
       if (params.level) {
-        query = query.eq('level', params.level)
+        query = query.eq('level', params.level);
       }
       if (params.status) {
-        query = query.eq('status', params.status)
+        query = query.eq('status', params.status);
       }
 
-      const { data, error } = await query
+      const { data, error } = await query;
 
-      if (error) throw error
-      return { data: data as Course[] }
+      if (error) throw error;
+      return { data: data as Course[] };
     } catch (error) {
-      logger.error('Failed to fetch courses', error as Error)
-      throw error
+      logger.error('Failed to fetch courses', error as Error);
+      throw error;
     }
   }
 
   async getCourseById(id: string) {
     try {
-      const { data, error } = await this.supabase.from('courses').select('*').eq('id', id).single()
+      const { data, error } = await this.supabase.from('courses').select('*').eq('id', id).single();
 
-      if (error) throw error
-      return { data: data as Course }
+      if (error) throw error;
+      return { data: data as Course };
     } catch (error) {
-      logger.error('Failed to fetch course', error as Error, { id })
-      throw error
+      logger.error('Failed to fetch course', error as Error, { id });
+      throw error;
     }
   }
 
@@ -118,13 +118,13 @@ export class LMSService {
           start_date: new Date().toISOString(),
         })
         .select()
-        .single()
+        .single();
 
-      if (error) throw error
-      return { data: data as Enrollment }
+      if (error) throw error;
+      return { data: data as Enrollment };
     } catch (error) {
-      logger.error('Failed to enroll user', error as Error, { userId, courseId })
-      throw error
+      logger.error('Failed to enroll user', error as Error, { userId, courseId });
+      throw error;
     }
   }
 
@@ -139,13 +139,13 @@ export class LMSService {
         })
         .eq('id', enrollmentId)
         .select()
-        .single()
+        .single();
 
-      if (error) throw error
-      return { data: data as Enrollment }
+      if (error) throw error;
+      return { data: data as Enrollment };
     } catch (error) {
-      logger.error('Failed to update progress', error as Error, { enrollmentId, progress })
-      throw error
+      logger.error('Failed to update progress', error as Error, { enrollmentId, progress });
+      throw error;
     }
   }
 
@@ -155,21 +155,21 @@ export class LMSService {
       const { data, error } = await this.supabase
         .from('assessments')
         .select('*')
-        .eq('course_id', courseId)
+        .eq('course_id', courseId);
 
-      if (error) throw error
-      return { data: data as Assessment[] }
+      if (error) throw error;
+      return { data: data as Assessment[] };
     } catch (error) {
-      logger.error('Failed to fetch assessments', error as Error, { courseId })
-      throw error
+      logger.error('Failed to fetch assessments', error as Error, { courseId });
+      throw error;
     }
   }
 
   async submitAssessment(params: {
-    enrollment_id: string
-    assessment_id: string
-    answers: Record<string, any>
-    grade: number
+    enrollment_id: string;
+    assessment_id: string;
+    answers: Record<string, any>;
+    grade: number;
   }) {
     try {
       const { data, error } = await this.supabase
@@ -179,20 +179,20 @@ export class LMSService {
           submitted_at: new Date().toISOString(),
         })
         .select()
-        .single()
+        .single();
 
-      if (error) throw error
+      if (error) throw error;
 
       // Update enrollment if grade is passing
-      const assessment = await this.getAssessmentById(params.assessment_id)
+      const assessment = await this.getAssessmentById(params.assessment_id);
       if (params.grade >= (assessment.data.metadata?.passing_grade || 70)) {
-        await this.updateProgress(params.enrollment_id, 100)
+        await this.updateProgress(params.enrollment_id, 100);
       }
 
-      return { data }
+      return { data };
     } catch (error) {
-      logger.error('Failed to submit assessment', error as Error, { params })
-      throw error
+      logger.error('Failed to submit assessment', error as Error, { params });
+      throw error;
     }
   }
 
@@ -201,10 +201,10 @@ export class LMSService {
       .from('assessments')
       .select('*')
       .eq('id', id)
-      .single()
+      .single();
 
-    if (error) throw error
-    return { data: data as Assessment }
+    if (error) throw error;
+    return { data: data as Assessment };
   }
 
   // Analytics
@@ -212,13 +212,13 @@ export class LMSService {
     try {
       const { data, error } = await this.supabase.rpc('get_enrollment_stats', {
         course_id: courseId,
-      })
+      });
 
-      if (error) throw error
-      return { data }
+      if (error) throw error;
+      return { data };
     } catch (error) {
-      logger.error('Failed to fetch enrollment stats', error as Error, { courseId })
-      throw error
+      logger.error('Failed to fetch enrollment stats', error as Error, { courseId });
+      throw error;
     }
   }
 
@@ -226,15 +226,15 @@ export class LMSService {
     try {
       const { data, error } = await this.supabase.rpc('get_user_progress', {
         user_id: userId,
-      })
+      });
 
-      if (error) throw error
-      return { data }
+      if (error) throw error;
+      return { data };
     } catch (error) {
-      logger.error('Failed to fetch user progress', error as Error, { userId })
-      throw error
+      logger.error('Failed to fetch user progress', error as Error, { userId });
+      throw error;
     }
   }
 }
 
-export const lmsService = new LMSService()
+export const lmsService = new LMSService();

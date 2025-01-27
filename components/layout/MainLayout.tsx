@@ -1,12 +1,14 @@
-import { Header } from './Header'
-import { Sidebar } from './improved-sidebar'
-import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary'
-import { cn } from '@/lib/utils'
-import { HEADER_HEIGHT, SIDEBAR_WIDTH, SIDEBAR_COLLAPSED_WIDTH } from '@/config/constants'
+import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary';
+import { HEADER_HEIGHT, SIDEBAR_WIDTH, SIDEBAR_COLLAPSED_WIDTH } from '@/config/constants';
+import { cn } from '@/lib/utils';
+
+import { Header } from './Header';
+import { Sidebar } from './improved-sidebar';
+
 
 interface MainLayoutProps {
-  children: React.ReactNode
-  className?: string
+  children: React.ReactNode;
+  className?: string;
 }
 
 export function MainLayout({ children, className }: MainLayoutProps) {
@@ -18,7 +20,7 @@ export function MainLayout({ children, className }: MainLayoutProps) {
           className={cn(
             'flex flex-col transition-all duration-300 ease-in-out',
             'lg:ml-[var(--sidebar-width)]',
-            className
+            className,
           )}
           style={
             {
@@ -35,5 +37,5 @@ export function MainLayout({ children, className }: MainLayoutProps) {
         </div>
       </ErrorBoundary>
     </div>
-  )
+  );
 }

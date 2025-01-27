@@ -1,17 +1,18 @@
-'use client'
+'use client';
 
-import * as React from 'react'
-import Link from 'next/link'
-import { ChevronRight } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { ChevronRight } from 'lucide-react';
+import Link from 'next/link';
+import * as React from 'react';
+
+import { cn } from '@/lib/utils';
 
 export interface BreadcrumbProps extends React.HTMLAttributes<HTMLElement> {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export interface BreadcrumbItemProps extends React.HTMLAttributes<HTMLElement> {
-  href?: string
-  children: React.ReactNode
+  href?: string;
+  children: React.ReactNode;
 }
 
 export function Breadcrumb({ className, children, ...props }: BreadcrumbProps) {
@@ -28,7 +29,7 @@ export function Breadcrumb({ className, children, ...props }: BreadcrumbProps) {
         </>
       ))}
     </nav>
-  )
+  );
 }
 
 export function BreadcrumbItem({ href, children, className, ...props }: BreadcrumbItemProps) {
@@ -41,12 +42,15 @@ export function BreadcrumbItem({ href, children, className, ...props }: Breadcru
       >
         {children}
       </Link>
-    )
+    );
   }
 
   return (
-    <span className={cn('text-sm font-medium text-foreground', className)} {...props}>
+    <span
+      className={cn('text-sm font-medium text-foreground', className)}
+      {...props}
+    >
       {children}
     </span>
-  )
+  );
 }

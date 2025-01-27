@@ -1,6 +1,5 @@
-'use client'
+'use client';
 
-import { Line } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -13,7 +12,8 @@ import {
   Filler,
   type Scale,
   type CoreScaleOptions,
-} from 'chart.js'
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
 
 ChartJS.register(
   CategoryScale,
@@ -23,8 +23,8 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  Filler
-)
+  Filler,
+);
 
 export const options = {
   responsive: true,
@@ -47,7 +47,7 @@ export const options = {
       },
       ticks: {
         callback: function (this: Scale<CoreScaleOptions>, value: string | number) {
-          return `$${Number(value).toLocaleString()}`
+          return `$${Number(value).toLocaleString()}`;
         },
       },
     },
@@ -58,9 +58,9 @@ export const options = {
       },
     },
   },
-}
+};
 
-const labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July']
+const labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
 
 export const data = {
   labels,
@@ -73,14 +73,17 @@ export const data = {
       backgroundColor: 'rgba(53, 162, 235, 0.5)',
     },
   ],
-}
+};
 
 export function FundingChart() {
   return (
     <div className='rounded-lg bg-white p-4 shadow-sm'>
       <div className='h-[400px] w-full'>
-        <Line options={options} data={data} />
+        <Line
+          options={options}
+          data={data}
+        />
       </div>
     </div>
-  )
+  );
 }

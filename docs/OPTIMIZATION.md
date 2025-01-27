@@ -13,7 +13,7 @@ The API utilities provide a standardized way to handle API requests with built-i
 - Logging
 
 ```typescript
-import { createApiHandler } from '@/lib/utils/api'
+import { createApiHandler } from '@/lib/utils/api';
 
 export const handler = createApiHandler({
   schema: requestSchema,
@@ -24,7 +24,7 @@ export const handler = createApiHandler({
     maxAge: 3600,
     staleWhileRevalidate: 300,
   },
-})
+});
 ```
 
 ### Async Operations (`lib/hooks/useAsync.ts`)
@@ -42,7 +42,7 @@ const { data, isLoading, error, execute } = useAsync(fetchData, {
   autoExecute: true,
   retryCount: 3,
   toastOnError: true,
-})
+});
 ```
 
 ### Performance Utilities (`lib/utils/performance.ts`)
@@ -57,15 +57,15 @@ Performance utilities include:
 
 ```typescript
 // Measure component render time
-useRenderTime('ComponentName')
+useRenderTime('ComponentName');
 
 // Detect expensive re-renders
-useRenderOptimization('ComponentName', props)
+useRenderOptimization('ComponentName', props);
 
 // Optimize for tab visibility
 useVisibilityOptimization(() => {
   // Suspend expensive operations
-})
+});
 ```
 
 ## Performance Monitoring
@@ -154,20 +154,20 @@ export function PerformanceDashboard(): ReactElement {
 ### API Handler
 
 ```typescript
-import { createApiHandler } from '@/lib/utils/api'
-import { z } from 'zod'
+import { createApiHandler } from '@/lib/utils/api';
+import { z } from 'zod';
 
 const userSchema = z.object({
   name: z.string(),
   email: z.string().email(),
-})
+});
 
 export const handler = createApiHandler({
   schema: userSchema,
   handler: async (data) => {
-    return await createUser(data)
+    return await createUser(data);
   },
-})
+});
 ```
 
 ### Async Component
@@ -213,20 +213,20 @@ function SearchInput({ onSearch }) {
 
 ```typescript
 // Use memo for expensive computations
-const memoizedValue = useMemo(() => computeExpensiveValue(a, b), [a, b])
+const memoizedValue = useMemo(() => computeExpensiveValue(a, b), [a, b]);
 
 // Use callback for stable function references
-const memoizedCallback = useCallback((param) => doSomething(param), [])
+const memoizedCallback = useCallback((param) => doSomething(param), []);
 
 // Use lazy loading for large components
-const HeavyComponent = lazy(() => import('./HeavyComponent'))
+const HeavyComponent = lazy(() => import('./HeavyComponent'));
 ```
 
 ### 2. Data Fetching
 
 ```typescript
 // Use React Query for efficient data fetching
-const { data, isLoading } = useQuery(['key', id], fetchData)
+const { data, isLoading } = useQuery(['key', id], fetchData);
 
 // Implement proper caching strategies
 const queryClient = new QueryClient({
@@ -236,7 +236,7 @@ const queryClient = new QueryClient({
       cacheTime: 30 * 60 * 1000,
     },
   },
-})
+});
 ```
 
 ### 3. Bundle Optimization
@@ -250,9 +250,9 @@ const queryClient = new QueryClient({
 
 ```typescript
 // Use appropriate state management based on scope
-const localState = useState(initial)
-const globalState = useAtom(globalAtom)
-const queryState = useQuery(['key'], fetchData)
+const localState = useState(initial);
+const globalState = useAtom(globalAtom);
+const queryState = useQuery(['key'], fetchData);
 ```
 
 ## Performance Metrics

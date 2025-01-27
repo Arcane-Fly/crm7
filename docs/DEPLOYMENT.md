@@ -179,13 +179,13 @@ pnpm start
 Monitor application errors:
 
 ```typescript
-import * as Sentry from '@sentry/nextjs'
+import * as Sentry from '@sentry/nextjs';
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
   environment: process.env.NEXT_PUBLIC_ENV,
   tracesSampleRate: 1.0,
-})
+});
 ```
 
 ### 2. Performance Monitoring
@@ -221,7 +221,7 @@ const securityHeaders = [
     key: 'Strict-Transport-Security',
     value: 'max-age=63072000',
   },
-]
+];
 ```
 
 ### 3. Authentication
@@ -270,9 +270,9 @@ module.exports = {
           },
         ],
       },
-    ]
+    ];
   },
-}
+};
 ```
 
 ## Performance Optimization

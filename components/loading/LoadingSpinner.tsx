@@ -1,19 +1,23 @@
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils';
 
 type LoadingSpinnerProps = {
-  size?: 'sm' | 'md' | 'lg'
-  className?: string
-}
+  size?: 'sm' | 'md' | 'lg';
+  className?: string;
+};
 
 const sizeClasses = {
   sm: 'h-4 w-4',
   md: 'h-6 w-6',
   lg: 'h-8 w-8',
-}
+};
 
 export function LoadingSpinner({ size = 'md', className }: LoadingSpinnerProps) {
   return (
-    <div role='status' aria-label='Loading' className='flex items-center justify-center'>
+    <div
+      role='status'
+      aria-label='Loading'
+      className='flex items-center justify-center'
+    >
       <svg
         className={cn('animate-spin text-muted-foreground', sizeClasses[size], className)}
         xmlns='http://www.w3.org/2000/svg'
@@ -36,5 +40,5 @@ export function LoadingSpinner({ size = 'md', className }: LoadingSpinnerProps) 
       </svg>
       <span className='sr-only'>Loading...</span>
     </div>
-  )
+  );
 }

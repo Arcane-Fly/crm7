@@ -51,7 +51,7 @@
 | Llama-3.3-70b-versatile | Groq | 128K | Versatile large language model |
 | grok-2-latest | xAI | 131K | Large context window for text generation |
 | Deepseek Chat V3 (deepseek-chat) | Deepseek | 60K | High intelligence for lightweight tasks |
-
+<!--  -->
 ## 4. Development Process
 
 ### Planning

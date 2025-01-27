@@ -31,7 +31,7 @@ const userData: UserProfile = await fetchUserData();
 const userName = user?.profile?.name ?? 'Anonymous';
 
 // ❌ DON'T: Use nested ternaries
-const userName = user ? user.profile ? user.profile.name : 'Anonymous' : 'Anonymous';
+const userName = user ? (user.profile ? user.profile.name : 'Anonymous') : 'Anonymous';
 ```
 
 ### Type Assertions
@@ -45,12 +45,7 @@ const userData = someData as UserProfile;
 
 // ✅ DO: Validate before assertion
 const isUserProfile = (data: unknown): data is UserProfile => {
-  return (
-    typeof data === 'object' &&
-    data !== null &&
-    'id' in data &&
-    'name' in data
-  );
+  return typeof data === 'object' && data !== null && 'id' in data && 'name' in data;
 };
 ```
 
@@ -66,10 +61,10 @@ interface ButtonProps {
   variant?: 'primary' | 'secondary';
 }
 
-const Button: React.FC<ButtonProps> = ({ 
-  label, 
-  onClick, 
-  variant = 'primary' 
+const Button: React.FC<ButtonProps> = ({
+  label,
+  onClick,
+  variant = 'primary'
 }) => {
   return (
     <button
@@ -93,9 +88,7 @@ class Button extends React.Component {
 ```typescript
 // ✅ DO: Use custom hooks for reusable logic
 const useUser = (userId: string) => {
-  const { data, error } = useQuery(['user', userId], () => 
-    fetchUser(userId)
-  );
+  const { data, error } = useQuery(['user', userId], () => fetchUser(userId));
 
   return {
     user: data,
@@ -108,11 +101,9 @@ const useUser = (userId: string) => {
 function Component() {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
-  
+
   useEffect(() => {
-    fetchUser(userId)
-      .then(setData)
-      .catch(setError);
+    fetchUser(userId).then(setData).catch(setError);
   }, [userId]);
 }
 ```
@@ -161,7 +152,7 @@ import { fetchUserData } from './api';    // Local utilities
 // Component definition
 export const UserCard: React.FC<UserProfile> = ({ name, role }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  
+
   return (
     <motion.div>
       <h2>{name}</h2>
@@ -197,9 +188,9 @@ const Card: React.FC = ({ children }) => (
 
 // ❌ DON'T: Use inline styles
 const Card: React.FC = ({ children }) => (
-  <div style={{ 
-    borderRadius: '8px', 
-    padding: '16px' 
+  <div style={{
+    borderRadius: '8px',
+    padding: '16px'
   }}>
     {children}
   </div>
@@ -252,11 +243,11 @@ describe('LoginForm integration', () => {
     );
 
     await userEvent.type(
-      getByLabelText('Email'), 
+      getByLabelText('Email'),
       'user@example.com'
     );
     await userEvent.type(
-      getByLabelText('Password'), 
+      getByLabelText('Password'),
       'password123'
     );
     await userEvent.click(getByRole('button', { name: 'Login' }));
@@ -327,7 +318,7 @@ add feature
 
 ```typescript
 // ✅ DO: Use dynamic imports for large components
-const DashboardChart = dynamic(() => 
+const DashboardChart = dynamic(() =>
   import('./DashboardChart'), {
     loading: () => <LoadingSpinner />,
   }
@@ -341,16 +332,10 @@ import { Chart } from 'heavy-chart-library';
 
 ```typescript
 // ✅ DO: Memoize expensive calculations
-const memoizedValue = useMemo(
-  () => expensiveCalculation(props.data),
-  [props.data]
-);
+const memoizedValue = useMemo(() => expensiveCalculation(props.data), [props.data]);
 
 // ✅ DO: Memoize callback functions
-const memoizedCallback = useCallback(
-  () => handleChange(props.value),
-  [props.value]
-);
+const memoizedCallback = useCallback(() => handleChange(props.value), [props.value]);
 ```
 
 ## Accessibility

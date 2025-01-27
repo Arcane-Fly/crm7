@@ -1,7 +1,8 @@
-'use client'
+'use client';
 
-import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
+import { Plus } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
 
 export default function PayRatesPage() {
   return (
@@ -9,7 +10,10 @@ export default function PayRatesPage() {
       <div className='flex items-center justify-between'>
         <h1 className='text-2xl font-semibold'>Pay Rates &amp; Allowances</h1>
         <div className='flex gap-3'>
-          <Button variant='outline' className='flex items-center gap-2'>
+          <Button
+            variant='outline'
+            className='flex items-center gap-2'
+          >
             <Plus className='h-4 w-4' />
             Add Allowance
           </Button>
@@ -86,5 +90,5 @@ export default function PayRatesPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

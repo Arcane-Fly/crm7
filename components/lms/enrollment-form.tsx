@@ -1,9 +1,12 @@
-'use client'
+'use client';
 
-import * as React from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as React from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import {
   Form,
   FormControl,
@@ -11,13 +14,11 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { useAuth } from '@/lib/auth/context'
-import { useLMS } from '@/lib/hooks/use-lms'
-import { useToast } from '@/components/ui/use-toast'
-import { Card } from '@/components/ui/card'
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/lib/auth/context';
+import { useLMS } from '@/lib/hooks/use-lms';
 
 const enrollmentSchema = z.object({
   student_id: z.string().min(1, 'Student ID is required'),
@@ -25,22 +26,22 @@ const enrollmentSchema = z.object({
   status: z.enum(['active', 'completed', 'withdrawn']),
   progress: z.number().min(0).max(100),
   grade: z.number().min(0).max(100).optional(),
-})
+});
 
-type EnrollmentFormValues = z.infer<typeof enrollmentSchema>
+type EnrollmentFormValues = z.infer<typeof enrollmentSchema>;
 
 interface EnrollmentFormProps {
-  enrollmentId?: string
-  defaultValues?: EnrollmentFormValues
-  onSuccess?: () => void
+  enrollmentId?: string;
+  defaultValues?: EnrollmentFormValues;
+  onSuccess?: () => void;
 }
 
 export function EnrollmentForm({ enrollmentId, defaultValues, onSuccess }: EnrollmentFormProps) {
-  const { user } = useAuth()
+  const { user } = useAuth();
   const { createEnrollment, updateEnrollment, isCreatingEnrollment, isUpdatingEnrollment } =
-    useLMS()
-  const { toast } = useToast()
-  const [isSubmitting, setIsSubmitting] = React.useState(false)
+    useLMS();
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const form = useForm<EnrollmentFormValues>({
     resolver: zodResolver(enrollmentSchema),
@@ -51,47 +52,50 @@ export function EnrollmentForm({ enrollmentId, defaultValues, onSuccess }: Enrol
       progress: 0,
       grade: undefined,
     },
-  })
+  });
 
   const onSubmit = async (values: EnrollmentFormValues) => {
-    if (!user) return
+    if (!user) return;
 
     try {
-      setIsSubmitting(true)
+      setIsSubmitting(true);
       if (enrollmentId) {
-        await updateEnrollment(enrollmentId, values)
+        await updateEnrollment(enrollmentId, values);
         toast({
           title: 'Enrollment updated',
           description: 'The enrollment has been updated successfully.',
-        })
+        });
       } else {
         await createEnrollment({
           ...values,
           org_id: user.org_id,
           user_id: user.id,
-          start_date: new Date().toISOString()
-        })
+          start_date: new Date().toISOString(),
+        });
         toast({
           title: 'Enrollment created',
           description: 'The enrollment has been created successfully.',
-        })
+        });
       }
-      onSuccess?.()
+      onSuccess?.();
     } catch (error) {
       toast({
         title: 'Error',
         description: 'Failed to save enrollment. Please try again.',
         variant: 'destructive',
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <Card className='p-6'>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className='space-y-4'
+        >
           <FormField
             control={form.control}
             name='student_id'
@@ -189,5 +193,5 @@ export function EnrollmentForm({ enrollmentId, defaultValues, onSuccess }: Enrol
         </form>
       </Form>
     </Card>
-  )
+  );
 }

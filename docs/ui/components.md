@@ -8,16 +8,16 @@
 
 ```typescript
 interface DataTableProps<T> {
-  data: T[]
-  columns: Column<T>[]
-  searchFields: (keyof T)[]
-  filterOptions: Record<string, { value: string; label: string }[]>
-  initialFilters: Record<string, string>
-  filterFn: (item: T, filters: Record<string, string>) => boolean
-  onRowClick?: (item: T) => void
-  isLoading?: boolean
-  error?: string
-  searchPlaceholder?: string
+  data: T[];
+  columns: Column<T>[];
+  searchFields: (keyof T)[];
+  filterOptions: Record<string, { value: string; label: string }[]>;
+  initialFilters: Record<string, string>;
+  filterFn: (item: T, filters: Record<string, string>) => boolean;
+  onRowClick?: (item: T) => void;
+  isLoading?: boolean;
+  error?: string;
+  searchPlaceholder?: string;
 }
 ```
 
@@ -27,9 +27,9 @@ Source: crm3, enhanced with features from crm4
 
 ```typescript
 interface ColumnCustomizerProps<T> {
-  columns: Column<T>[]
-  visibleColumns: string[]
-  onColumnChange: (columns: string[]) => void
+  columns: Column<T>[];
+  visibleColumns: string[];
+  onColumnChange: (columns: string[]) => void;
 }
 ```
 
@@ -41,17 +41,17 @@ Source: crm4, with enhanced UI from crm7
 
 ```typescript
 interface CompetencyUnit {
-  code: string
-  title: string
-  status: 'completed' | 'in_progress' | 'not_started'
-  dueDate?: string
-  completionDate?: string
+  code: string;
+  title: string;
+  status: 'completed' | 'in_progress' | 'not_started';
+  dueDate?: string;
+  completionDate?: string;
 }
 
 interface CompetencyMatrixProps {
-  apprenticeId: string
-  units: CompetencyUnit[]
-  onStatusChange: (unitCode: string, status: string) => void
+  apprenticeId: string;
+  units: CompetencyUnit[];
+  onStatusChange: (unitCode: string, status: string) => void;
 }
 ```
 
@@ -63,10 +63,10 @@ Source: crm4, with real-time updates from crm7
 
 ```typescript
 interface DocumentUploadProps {
-  onUpload: (file: File) => Promise<void>
-  allowedTypes: string[]
-  maxSize: number
-  multiple?: boolean
+  onUpload: (file: File) => Promise<void>;
+  allowedTypes: string[];
+  maxSize: number;
+  multiple?: boolean;
 }
 ```
 
@@ -112,17 +112,17 @@ Source: crm7, with enhanced validation from crm3
 
 ```typescript
 interface PayRateChatState {
-  messages: ChatMessage[]
-  isLoading: boolean
-  selectedAward?: Award
-  selectedClassification?: Classification
-  error?: string
+  messages: ChatMessage[];
+  isLoading: boolean;
+  selectedAward?: Award;
+  selectedClassification?: Classification;
+  error?: string;
 }
 
 interface PayRateChatContext {
-  state: PayRateChatState
-  sendMessage: (content: string) => Promise<void>
-  clearChat: () => void
+  state: PayRateChatState;
+  sendMessage: (content: string) => Promise<void>;
+  clearChat: () => void;
 }
 ```
 
@@ -132,16 +132,16 @@ Source: crm4, enhanced with features from crm3
 
 ```typescript
 interface Toast {
-  id: string
-  title: string
-  description?: string
-  variant?: 'success' | 'error' | 'warning' | 'info'
+  id: string;
+  title: string;
+  description?: string;
+  variant?: 'success' | 'error' | 'warning' | 'info';
 }
 
 interface ToastContext {
-  toasts: Toast[]
-  showToast: (toast: Omit<Toast, 'id'>) => void
-  dismissToast: (id: string) => void
+  toasts: Toast[];
+  showToast: (toast: Omit<Toast, 'id'>) => void;
+  dismissToast: (id: string) => void;
 }
 ```
 

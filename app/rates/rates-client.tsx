@@ -1,31 +1,42 @@
-'use client'
+'use client';
 
-import { useUser } from '@/lib/hooks/use-user'
-import { RateCalculator } from '@/components/rates/RateCalculator'
-import { RateTemplateBuilder } from '@/components/rates/RateTemplateBuilder'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { type ReactElement } from 'react';
 
-export function RatesClient() {
-  const { user } = useUser()
+import { RateCalculator } from '@/components/rates/RateCalculator';
+import { RateTemplateBuilder } from '@/components/rates/RateTemplateBuilder';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useUser } from '@/lib/hooks/use-user';
+
+export default function RatesClient(): ReactElement {
+  const { user } = useUser();
 
   if (!user) {
-    return null
+    return null;
   }
 
   return (
     <div className='container mx-auto py-10'>
-      <Tabs defaultValue='calculator' className='space-y-4'>
+      <Tabs
+        defaultValue='calculator'
+        className='space-y-4'
+      >
         <TabsList>
           <TabsTrigger value='calculator'>Rate Calculator</TabsTrigger>
           <TabsTrigger value='templates'>Rate Templates</TabsTrigger>
         </TabsList>
-        <TabsContent value='calculator' className='space-y-4'>
-          <RateCalculator org_id={user.org_id} />
+        <TabsContent
+          value='calculator'
+          className='space-y-4'
+        >
+          <RateCalculator orgId={user.org_id} />
         </TabsContent>
-        <TabsContent value='templates' className='space-y-4'>
+        <TabsContent
+          value='templates'
+          className='space-y-4'
+        >
           <RateTemplateBuilder />
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

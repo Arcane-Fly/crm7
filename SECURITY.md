@@ -45,11 +45,11 @@
 ```typescript
 // Example of secure authentication implementation
 interface AuthConfig {
-  passwordMinLength: number
-  requireSpecialChars: boolean
-  requireNumbers: boolean
-  mfaEnabled: boolean
-  sessionTimeout: number
+  passwordMinLength: number;
+  requireSpecialChars: boolean;
+  requireNumbers: boolean;
+  mfaEnabled: boolean;
+  sessionTimeout: number;
 }
 
 const authConfig: AuthConfig = {
@@ -58,7 +58,7 @@ const authConfig: AuthConfig = {
   requireNumbers: true,
   mfaEnabled: true,
   sessionTimeout: 3600, // 1 hour
-}
+};
 ```
 
 ### 3. API Endpoints

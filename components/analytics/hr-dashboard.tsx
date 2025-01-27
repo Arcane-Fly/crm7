@@ -1,47 +1,48 @@
-import { useState, useEffect } from 'react'
-import { createClient } from '@supabase/supabase-js'
-import type { Employee, Attendance, AttendanceStats } from '../../lib/types/hr'
+import { createClient } from '@supabase/supabase-js';
+import { useState, useEffect } from 'react';
+
+import type { Employee, Attendance, AttendanceStats } from '../../lib/types/hr';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+);
 
 interface HRDashboardProps {
-  orgId: string
+  orgId: string;
 }
 
 export default function HRDashboard({ orgId }: HRDashboardProps) {
-  const [employees, setEmployees] = useState<Employee[]>([])
-  const [attendance, setAttendance] = useState<Attendance[]>([])
-  const [stats, setStats] = useState<AttendanceStats | null>(null)
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [attendance, setAttendance] = useState<Attendance[]>([]);
+  const [stats, setStats] = useState<AttendanceStats | null>(null);
 
   useEffect(() => {
     async function fetchEmployees() {
-      const { data, error } = await supabase.from('employees').select('*').eq('org_id', orgId)
+      const { data, error } = await supabase.from('employees').select('*').eq('org_id', orgId);
 
       if (error) {
-        console.error('Error fetching employees:', error)
-        return
+        console.error('Error fetching employees:', error);
+        return;
       }
 
-      setEmployees(data || [])
+      setEmployees(data || []);
     }
 
     async function fetchAttendance() {
-      const { data, error } = await supabase.from('attendance').select('*').eq('org_id', orgId)
+      const { data, error } = await supabase.from('attendance').select('*').eq('org_id', orgId);
 
       if (error) {
-        console.error('Error fetching attendance:', error)
-        return
+        console.error('Error fetching attendance:', error);
+        return;
       }
 
-      setAttendance(data || [])
+      setAttendance(data || []);
     }
 
-    fetchEmployees()
-    fetchAttendance()
-  }, [orgId])
+    fetchEmployees();
+    fetchAttendance();
+  }, [orgId]);
 
   useEffect(() => {
     if (attendance.length > 0) {
@@ -51,10 +52,10 @@ export default function HRDashboard({ orgId }: HRDashboardProps) {
           (record.clockOut
             ? new Date(record.clockOut).getHours() - new Date(record.clockIn).getHours()
             : 0),
-        0
-      )
-      const presentCount = attendance.filter((a) => a.status === 'present').length
-      const absentCount = attendance.filter((a) => a.status === 'absent').length
+        0,
+      );
+      const presentCount = attendance.filter((a) => a.status === 'present').length;
+      const absentCount = attendance.filter((a) => a.status === 'absent').length;
 
       setStats({
         totalDays: attendance.length,
@@ -62,15 +63,15 @@ export default function HRDashboard({ orgId }: HRDashboardProps) {
         absentDays: absentCount,
         lateDays: attendance.filter((a) => a.status === 'late').length,
         attendanceRate: (presentCount / attendance.length) * 100,
-      })
+      });
     }
-  }, [attendance])
+  }, [attendance]);
 
   const sortEmployeesByAttendance = (a: Employee, b: Employee) => {
-    const aAttendance = attendance.filter((att) => att.employeeId === a.id)
-    const bAttendance = attendance.filter((att) => att.employeeId === b.id)
-    return bAttendance.length - aAttendance.length
-  }
+    const aAttendance = attendance.filter((att) => att.employeeId === a.id);
+    const bAttendance = attendance.filter((att) => att.employeeId === b.id);
+    return bAttendance.length - aAttendance.length;
+  };
 
   return (
     <div className='space-y-6'>
@@ -89,7 +90,7 @@ export default function HRDashboard({ orgId }: HRDashboardProps) {
         </div>
         <div className='rounded-lg bg-white p-6 shadow'>
           <h3 className='text-lg font-medium text-gray-900'>Attendance Rate</h3>
-          <p className='text-2xl'>{stats?.attendanceRate?.toFixed(1) || 0}%</p>
+          <p className='text-2xl'>{stats?.attendanceRate.toFixed(1) || 0}%</p>
         </div>
       </div>
 
@@ -115,13 +116,13 @@ export default function HRDashboard({ orgId }: HRDashboardProps) {
             </thead>
             <tbody className='divide-y divide-gray-200 bg-white'>
               {employees.sort(sortEmployeesByAttendance).map((employee) => {
-                const employeeAttendance = attendance.filter((a) => a.employeeId === employee.id)
-                const presentDays = employeeAttendance.filter((a) => a.status === 'present').length
-                const absentDays = employeeAttendance.filter((a) => a.status === 'absent').length
+                const employeeAttendance = attendance.filter((a) => a.employeeId === employee.id);
+                const presentDays = employeeAttendance.filter((a) => a.status === 'present').length;
+                const absentDays = employeeAttendance.filter((a) => a.status === 'absent').length;
                 const attendanceRate =
                   employeeAttendance.length > 0
                     ? (presentDays / employeeAttendance.length) * 100
-                    : 0
+                    : 0;
 
                 return (
                   <tr key={employee.id}>
@@ -140,12 +141,12 @@ export default function HRDashboard({ orgId }: HRDashboardProps) {
                       {attendanceRate.toFixed(1)}%
                     </td>
                   </tr>
-                )
+                );
               })}
             </tbody>
           </table>
         </div>
       </div>
     </div>
-  )
+  );
 }

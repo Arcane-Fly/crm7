@@ -1,33 +1,34 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { invoiceService } from '@/lib/services/invoice'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Calendar } from '@/components/ui/calendar'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { format } from 'date-fns'
-import { Calendar as CalendarIcon, Plus, Trash } from 'lucide-react'
-import { useToast } from '@/components/ui/use-toast'
+import { format } from 'date-fns';
+import { Calendar as CalendarIcon, Plus, Trash } from 'lucide-react';
+import { useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useToast } from '@/components/ui/use-toast';
+import { invoiceService } from '@/lib/services/invoice';
 
 interface InvoiceFormProps {
-  hostEmployerId: string
-  onSuccess?: () => void
+  hostEmployerId: string;
+  onSuccess?: () => void;
 }
 
 interface InvoiceLineItem {
-  description: string
-  quantity: number
-  unit_price: number
-  tax_rate: number
-  total: number
+  description: string;
+  quantity: number;
+  unit_price: number;
+  tax_rate: number;
+  total: number;
 }
 
 export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps) {
-  const [dueDate, setDueDate] = useState<Date>()
-  const [reference, setReference] = useState('')
-  const [notes, setNotes] = useState('')
+  const [dueDate, setDueDate] = useState<Date>();
+  const [reference, setReference] = useState('');
+  const [notes, setNotes] = useState('');
   const [lineItems, setLineItems] = useState<InvoiceLineItem[]>([
     {
       description: '',
@@ -36,9 +37,9 @@ export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps) {
       tax_rate: 10,
       total: 0,
     },
-  ])
-  const [isLoading, setIsLoading] = useState(false)
-  const { toast } = useToast()
+  ]);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const addLineItem = () => {
     setLineItems([
@@ -50,35 +51,35 @@ export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps) {
         tax_rate: 10,
         total: 0,
       },
-    ])
-  }
+    ]);
+  };
 
   const removeLineItem = (index: number) => {
-    setLineItems(lineItems.filter((_, i) => i !== index))
-  }
+    setLineItems(lineItems.filter((_, i) => i !== index));
+  };
 
   const updateLineItem = (index: number, field: string, value: string | number) => {
-    const newItems = [...lineItems]
+    const newItems = [...lineItems];
     newItems[index] = {
       ...newItems[index],
       [field]: value,
-    }
-    setLineItems(newItems)
-  }
+    };
+    setLineItems(newItems);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!dueDate) {
       toast({
         title: 'Error',
         description: 'Please select a due date',
         variant: 'destructive',
-      })
-      return
+      });
+      return;
     }
 
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       await invoiceService.createInvoice({
         org_id: '', // TODO: Get from context
         host_employer_id: hostEmployerId,
@@ -86,40 +87,51 @@ export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps) {
         due_date: dueDate,
         issue_date: new Date(),
         line_items: lineItems,
-      })
+      });
 
       toast({
         title: 'Success',
         description: 'Invoice created successfully',
-      })
+      });
 
-      onSuccess?.()
+      onSuccess?.();
     } catch (error) {
-      console.error('Error creating invoice:', error)
+      console.error('Error creating invoice:', error);
       toast({
         title: 'Error',
         description: 'Failed to create invoice',
         variant: 'destructive',
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
-    <form onSubmit={handleSubmit} className='space-y-6'>
+    <form
+      onSubmit={handleSubmit}
+      className='space-y-6'
+    >
       <div className='grid grid-cols-2 gap-4'>
         <div className='space-y-2'>
           <Label>Due Date</Label>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant='outline' className={!dueDate ? 'text-muted-foreground' : ''}>
+              <Button
+                variant='outline'
+                className={!dueDate ? 'text-muted-foreground' : ''}
+              >
                 <CalendarIcon className='mr-2 h-4 w-4' />
                 {dueDate ? format(dueDate, 'PPP') : 'Select date'}
               </Button>
             </PopoverTrigger>
             <PopoverContent className='w-auto p-0'>
-              <Calendar mode='single' selected={dueDate} onSelect={setDueDate} initialFocus />
+              <Calendar
+                mode='single'
+                selected={dueDate}
+                onSelect={setDueDate}
+                initialFocus
+              />
             </PopoverContent>
           </Popover>
         </div>
@@ -146,14 +158,21 @@ export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps) {
       <div className='space-y-4'>
         <div className='flex items-center justify-between'>
           <h3 className='text-lg font-medium'>Line Items</h3>
-          <Button type='button' onClick={addLineItem} variant='outline'>
+          <Button
+            type='button'
+            onClick={addLineItem}
+            variant='outline'
+          >
             <Plus className='mr-2 h-4 w-4' />
             Add Item
           </Button>
         </div>
 
         {lineItems.map((item, index) => (
-          <div key={index} className='grid grid-cols-12 items-end gap-4'>
+          <div
+            key={index}
+            className='grid grid-cols-12 items-end gap-4'
+          >
             <div className='col-span-5 space-y-2'>
               <Label>Description</Label>
               <Input
@@ -207,9 +226,12 @@ export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps) {
         ))}
       </div>
 
-      <Button type='submit' disabled={isLoading}>
+      <Button
+        type='submit'
+        disabled={isLoading}
+      >
         Create Invoice
       </Button>
     </form>
-  )
+  );
 }

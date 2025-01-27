@@ -1,12 +1,5 @@
-'use client'
+'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Card } from '@/components/ui/card'
-import { DatePickerWithRange } from '@/components/ui/date-range-picker'
-import { ratesService } from '@/lib/services/rates'
-import { logger } from '@/lib/services/logger'
-import { subDays, format, isValid } from 'date-fns'
-import { Line, Bar } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -18,11 +11,20 @@ import {
   Tooltip,
   Legend,
   type ChartOptions,
-} from 'chart.js'
-import type { RateForecast, RateReport } from '@/types/rates'
-import { Alert } from '@/components/ui/alert'
-import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary'
-import { Skeleton } from '@/components/ui/skeleton'
+} from 'chart.js';
+import { subDays, format, isValid } from 'date-fns';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Line, Bar } from 'react-chartjs-2';
+import type { DateRange as DayPickerDateRange } from 'react-day-picker';
+
+import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary';
+import { Alert } from '@/components/ui/alert';
+import { Card } from '@/components/ui/card';
+import { DatePickerWithRange } from '@/components/ui/date-range-picker';
+import { Skeleton } from '@/components/ui/skeleton';
+import { logger } from '@/lib/services/logger';
+import { ratesService } from '@/lib/services/rates';
+import type { RateForecast, RateReport } from '@/types/rates';
 
 ChartJS.register(
   CategoryScale,
@@ -32,8 +34,8 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend
-)
+  Legend,
+);
 
 /**
  * Props for the RateDashboard component
@@ -41,16 +43,15 @@ ChartJS.register(
  */
 interface RateDashboardProps {
   /** Organization ID for rate analytics */
-  orgId: string
+  orgId: string;
 }
 
-import type { DateRange as DayPickerDateRange } from 'react-day-picker'
 
 /**
  * Date range selection interface
  * @interface DateRange
  */
-type DateRange = DayPickerDateRange
+type DateRange = DayPickerDateRange;
 
 /**
  * Chart data point structure
@@ -58,9 +59,9 @@ type DateRange = DayPickerDateRange
  */
 interface ChartDataPoint {
   /** X-axis value (typically date) */
-  x: string
+  x: string;
   /** Y-axis value (typically rate amount) */
-  y: number
+  y: number;
 }
 
 /**
@@ -69,15 +70,15 @@ interface ChartDataPoint {
  */
 interface ChartDataset {
   /** Dataset label */
-  label: string
+  label: string;
   /** Array of data points */
-  data: ChartDataPoint[]
+  data: ChartDataPoint[];
   /** Line color for line charts */
-  borderColor?: string
+  borderColor?: string;
   /** Fill color for bar charts */
-  backgroundColor?: string
+  backgroundColor?: string;
   /** Line tension for smooth curves */
-  tension?: number
+  tension?: number;
 }
 
 /**
@@ -86,7 +87,7 @@ interface ChartDataset {
  */
 interface ChartData {
   /** Array of datasets to display */
-  datasets: ChartDataset[]
+  datasets: ChartDataset[];
 }
 
 /**
@@ -96,9 +97,9 @@ interface ChartData {
  */
 interface DashboardError extends Error {
   /** Error code for specific error types */
-  code?: string
+  code?: string;
   /** Additional error details */
-  details?: Record<string, unknown>
+  details?: Record<string, unknown>;
 }
 
 /**
@@ -111,16 +112,16 @@ interface DashboardError extends Error {
  * @param {RateDashboardProps} props - Component props
  * @returns {JSX.Element} Rendered component
  */
-export function RateDashboard({ orgId }: RateDashboardProps) {
+export function RateDashboard({ orgId }: RateDashboardProps): JSX.Element {
   // State management
-  const [forecasts, setForecasts] = useState<RateForecast[]>([])
-  const [reports, setReports] = useState<RateReport[]>([])
-  const [error, setError] = useState<DashboardError | null>(null)
-  const [loading, setLoading] = useState<boolean>(false)
+  const [forecasts, setForecasts] = useState<RateForecast[]>([]);
+  const [reports, setReports] = useState<RateReport[]>([]);
+  const [error, setError] = useState<DashboardError | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
   const [dateRange, setDateRange] = useState<DateRange>({
     from: subDays(new Date(), 30),
     to: new Date(),
-  })
+  });
 
   /**
    * Validates date range input
@@ -129,9 +130,9 @@ export function RateDashboard({ orgId }: RateDashboardProps) {
    */
   const isValidDateRange = useCallback((range: DateRange): boolean => {
     return Boolean(
-      range.from && range.to && isValid(range.from) && isValid(range.to) && range.from <= range.to
-    )
-  }, [])
+      range.from && range.to && isValid(range.from) && isValid(range.to) && range.from <= range.to,
+    );
+  }, []);
 
   /**
    * Formats dates for API requests
@@ -139,15 +140,15 @@ export function RateDashboard({ orgId }: RateDashboardProps) {
    * @returns {string} Formatted date string
    */
   const formatDate = useCallback((date: Date | undefined): string => {
-    return date ? format(date, 'yyyy-MM-dd') : ''
-  }, [])
+    return date ? format(date, 'yyyy-MM-dd') : '';
+  }, []);
 
   /**
    * Loads dashboard data from the API
    */
   const loadData = useCallback(async () => {
     if (!isValidDateRange(dateRange)) {
-      const message = 'Invalid date range selected'
+      const message = 'Invalid date range selected';
       logger.warn(
         message,
         {
@@ -155,19 +156,19 @@ export function RateDashboard({ orgId }: RateDashboardProps) {
           to: dateRange.to,
           orgId,
         },
-        'RateDashboard'
-      )
+        'RateDashboard',
+      );
       setError({
         name: 'ValidationError',
         message: 'Please select a valid date range',
         code: 'INVALID_DATE_RANGE',
-      })
-      return
+      });
+      return;
     }
 
     try {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
 
       logger.info(
         'Loading dashboard data',
@@ -178,8 +179,8 @@ export function RateDashboard({ orgId }: RateDashboardProps) {
             to: formatDate(dateRange.to),
           },
         },
-        'RateDashboard'
-      )
+        'RateDashboard',
+      );
 
       const [forecastsResponse, reportsResponse] = await Promise.all([
         ratesService.getForecastsByDateRange({
@@ -192,12 +193,12 @@ export function RateDashboard({ orgId }: RateDashboardProps) {
           start_date: formatDate(dateRange.from),
           end_date: formatDate(dateRange.to),
         }),
-      ])
+      ]);
 
-      setForecasts(forecastsResponse?.data || [])
-      setReports(reportsResponse?.data || [])
+      setForecasts((forecastsResponse as { data: RateForecast[] }).data || []);
+      setReports((reportsResponse as { data: RateReport[] }).data || []);
     } catch (err) {
-      const error = err as DashboardError
+      const error = err as DashboardError;
       logger.error(
         'Failed to load dashboard data',
         error,
@@ -208,23 +209,33 @@ export function RateDashboard({ orgId }: RateDashboardProps) {
             to: formatDate(dateRange.to),
           },
         },
-        'RateDashboard'
-      )
+        'RateDashboard',
+      );
       setError({
         name: 'LoadDataError',
         message: 'Failed to load dashboard data',
         code: error.code,
         details: error.details,
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [orgId, dateRange, formatDate, isValidDateRange])
+  }, [orgId, dateRange, formatDate, isValidDateRange]);
 
   // Load data when component mounts or date range changes
   useEffect(() => {
-    loadData()
-  }, [loadData])
+    const fetchData = async () => {
+      try {
+        await loadData();
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void fetchData();
+  }, [loadData]);
 
   // Memoized chart data
   const forecastData: ChartData = useMemo(
@@ -241,8 +252,8 @@ export function RateDashboard({ orgId }: RateDashboardProps) {
         },
       ],
     }),
-    [forecasts, formatDate]
-  )
+    [forecasts, formatDate],
+  );
 
   const reportData: ChartData = useMemo(
     () => ({
@@ -252,7 +263,7 @@ export function RateDashboard({ orgId }: RateDashboardProps) {
           data: reports
             .filter(
               (report): report is RateReport & { data: { actual_rate: number } } =>
-                typeof report.data.actual_rate === 'number' && !isNaN(report.data.actual_rate)
+                typeof report.data.actual_rate === 'number' && !isNaN(report.data.actual_rate),
             )
             .map((report) => ({
               x: formatDate(new Date(report.report_date)),
@@ -262,8 +273,8 @@ export function RateDashboard({ orgId }: RateDashboardProps) {
         },
       ],
     }),
-    [reports, formatDate]
-  )
+    [reports, formatDate],
+  );
 
   // Chart options
   const chartOptions: ChartOptions<'line' | 'bar'> = {
@@ -299,7 +310,7 @@ export function RateDashboard({ orgId }: RateDashboardProps) {
         },
       },
     },
-  }
+  };
 
   /**
    * Handles date range changes
@@ -315,10 +326,10 @@ export function RateDashboard({ orgId }: RateDashboardProps) {
             to: formatDate(range.to),
             orgId,
           },
-          'RateDashboard'
-        )
-        setDateRange(range)
-        setError(null)
+          'RateDashboard',
+        );
+        setDateRange(range);
+        setError(null);
       } else {
         logger.warn(
           'Invalid date range selected',
@@ -327,25 +338,25 @@ export function RateDashboard({ orgId }: RateDashboardProps) {
             to: formatDate(range.to),
             orgId,
           },
-          'RateDashboard'
-        )
+          'RateDashboard',
+        );
         setError({
           name: 'ValidationError',
           message: 'Please select a valid date range',
           code: 'INVALID_DATE_RANGE',
-        })
+        });
       }
     },
-    [isValidDateRange, formatDate, orgId]
-  )
+    [isValidDateRange, formatDate, orgId],
+  );
 
-  if (loading && !forecasts.length && !reports.length) {
+  if (loading) {
     return (
       <div className='space-y-4'>
         <Skeleton className='h-8 w-48' />
         <Skeleton className='h-[400px]' />
       </div>
-    )
+    );
   }
 
   return (
@@ -353,7 +364,10 @@ export function RateDashboard({ orgId }: RateDashboardProps) {
       <div className='space-y-6'>
         <div className='flex items-center justify-between'>
           <h2 className='text-2xl font-bold'>Rate Analytics</h2>
-          <DatePickerWithRange date={dateRange} onDateChange={handleDateRangeChange} />
+          <DatePickerWithRange
+            date={dateRange}
+            onDateChange={handleDateRangeChange}
+          />
         </div>
 
         {error && (
@@ -366,21 +380,27 @@ export function RateDashboard({ orgId }: RateDashboardProps) {
         <div className='grid gap-6 md:grid-cols-2'>
           <Card className='p-4'>
             <h3 className='mb-4 text-lg font-semibold'>Rate Forecasts</h3>
-            <Line data={forecastData} options={chartOptions} />
+            <Line
+              data={forecastData}
+              options={chartOptions}
+            />
           </Card>
 
           <Card className='p-4'>
             <h3 className='mb-4 text-lg font-semibold'>Actual Rates</h3>
-            <Bar data={reportData} options={chartOptions} />
+            <Bar
+              data={reportData}
+              options={chartOptions}
+            />
           </Card>
         </div>
 
-        {(!forecasts.length || !reports.length) && !loading && (
+        {(!forecasts.length || !reports.length) && (
           <Alert>
             <p className='text-sm'>No data available for the selected date range</p>
           </Alert>
         )}
       </div>
     </ErrorBoundary>
-  )
+  );
 }

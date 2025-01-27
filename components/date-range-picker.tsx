@@ -1,19 +1,19 @@
-'use client'
+'use client';
 
-import * as React from 'react'
-import { CalendarIcon } from 'lucide-react'
-import type { DateRange } from 'react-day-picker'
+import { CalendarIcon } from 'lucide-react';
+import * as React from 'react';
+import type { DateRange } from 'react-day-picker';
 
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { Calendar } from '@/components/ui/calendar'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 export function CalendarDateRangePicker({ className }: React.HTMLAttributes<HTMLDivElement>) {
   const [date, setDate] = React.useState<DateRange | undefined>({
     from: new Date(2023, 0, 20),
     to: new Date(2023, 0, 25),
-  })
+  });
 
   return (
     <div className={cn('grid gap-2', className)}>
@@ -21,10 +21,10 @@ export function CalendarDateRangePicker({ className }: React.HTMLAttributes<HTML
         <PopoverTrigger asChild>
           <Button
             id='date'
-            variant={'outline'}
+            variant="outline"
             className={cn(
               'w-[260px] justify-start text-left font-normal',
-              !date && 'text-muted-foreground'
+              !date && 'text-muted-foreground',
             )}
           >
             <CalendarIcon className='mr-2 h-4 w-4' />
@@ -41,7 +41,10 @@ export function CalendarDateRangePicker({ className }: React.HTMLAttributes<HTML
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className='w-auto p-0' align='start'>
+        <PopoverContent
+          className='w-auto p-0'
+          align='start'
+        >
           <Calendar
             initialFocus
             mode='range'
@@ -53,5 +56,5 @@ export function CalendarDateRangePicker({ className }: React.HTMLAttributes<HTML
         </PopoverContent>
       </Popover>
     </div>
-  )
+  );
 }

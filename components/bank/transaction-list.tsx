@@ -1,36 +1,38 @@
-'use client'
+'use client';
 
-import * as React from 'react'
-import { useBankIntegration } from '@/lib/hooks/use-bank-integration'
-import { DataTable } from '@/components/ui/data-table'
-import { Badge } from '@/components/ui/badge'
-import { formatDate, formatCurrency } from '@/lib/utils'
+import type { ColumnDef } from '@tanstack/react-table';
+import { Loader2 } from 'lucide-react';
+import * as React from 'react';
+import type { DateRange } from 'react-day-picker';
+
+import { Badge } from '@/components/ui/badge';
+import { DataTable } from '@/components/ui/data-table';
+import { DatePickerWithRange } from '@/components/ui/date-range-picker';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { DatePickerWithRange } from '@/components/ui/date-range-picker'
-import type { DateRange } from 'react-day-picker'
-import type { BankTransaction } from '@/lib/services/bank-integration'
-import type { ColumnDef } from '@tanstack/react-table'
-import { Loader2 } from 'lucide-react'
+} from '@/components/ui/select';
+import { useBankIntegration } from '@/lib/hooks/use-bank-integration';
+import type { BankTransaction } from '@/lib/services/bank-integration';
+import { formatDate, formatCurrency } from '@/lib/utils';
+
 
 interface DataTableRowProps {
   row: {
-    original: BankTransaction
-  }
+    original: BankTransaction;
+  };
 }
 
 export function TransactionList() {
-  const { transactions: transactionResult } = useBankIntegration()
-  const { transactions } = useBankIntegration()
-  const transactionList = transactions?.data || []
-  const [dateRange, setDateRange] = React.useState<DateRange | undefined>()
-  const [accountFilter, _setAccountFilter] = React.useState<string>('')
-  const [typeFilter, setTypeFilter] = React.useState<'credit' | 'debit' | ''>('')
+  const { transactions: transactionResult } = useBankIntegration();
+  const { transactions } = useBankIntegration();
+  const transactionList = transactions?.data || [];
+  const [dateRange, setDateRange] = React.useState<DateRange | undefined>();
+  const [accountFilter, _setAccountFilter] = React.useState<string>('');
+  const [typeFilter, setTypeFilter] = React.useState<'credit' | 'debit' | ''>('');
 
   const columns: ColumnDef<BankTransaction, any>[] = [
     {
@@ -46,14 +48,14 @@ export function TransactionList() {
       accessorKey: 'amount',
       header: 'Amount',
       cell: ({ row }: DataTableRowProps) => {
-        const amount = row.original.amount
-        const type = row.original.type
+        const amount = row.original.amount;
+        const type = row.original.type;
         return (
           <span className={type === 'credit' ? 'text-green-600' : 'text-red-600'}>
             {type === 'credit' ? '+' : '-'}
             {formatCurrency(amount)}
           </span>
-        )
+        );
       },
     },
     {
@@ -86,28 +88,28 @@ export function TransactionList() {
       accessorKey: 'reference',
       header: 'Reference',
     },
-  ]
+  ];
 
   const filteredData = React.useMemo(() => {
     return transactionList.filter((transaction: BankTransaction) => {
-      const matchesAccount = !accountFilter || transaction.account_id === accountFilter
-      const matchesType = !typeFilter || transaction.type === typeFilter
+      const matchesAccount = !accountFilter || transaction.account_id === accountFilter;
+      const matchesType = !typeFilter || transaction.type === typeFilter;
       const matchesDate =
         !dateRange?.from ||
-        !dateRange?.to ||
+        !dateRange.to ||
         (new Date(transaction.transaction_date) >= dateRange.from &&
-          new Date(transaction.transaction_date) <= dateRange.to)
+          new Date(transaction.transaction_date) <= dateRange.to);
 
-      return matchesAccount && matchesType && matchesDate
-    })
-  }, [transactions, accountFilter, typeFilter, dateRange])
+      return matchesAccount && matchesType && matchesDate;
+    });
+  }, [transactions, accountFilter, typeFilter, dateRange]);
 
   if (transactionResult.isLoading) {
     return (
       <div className='flex h-[400px] items-center justify-center'>
         <Loader2 className='h-8 w-8 animate-spin' />
       </div>
-    )
+    );
   }
 
   if (transactionResult.error) {
@@ -115,7 +117,7 @@ export function TransactionList() {
       <div className='flex h-[400px] items-center justify-center'>
         <p className='text-destructive'>Failed to load transactions</p>
       </div>
-    )
+    );
   }
 
   return (
@@ -135,7 +137,10 @@ export function TransactionList() {
           </SelectContent>
         </Select>
 
-        <DatePickerWithRange date={dateRange} onDateChange={setDateRange} />
+        <DatePickerWithRange
+          date={dateRange}
+          onDateChange={setDateRange}
+        />
       </div>
 
       <DataTable
@@ -145,5 +150,5 @@ export function TransactionList() {
         enableColumnVisibility
       />
     </div>
-  )
+  );
 }

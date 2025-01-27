@@ -1,15 +1,15 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface OverviewCardProps {
-  title: string
-  value: string
-  icon: React.ReactNode
-  description?: string
+  title: string;
+  value: string;
+  icon: React.ReactNode;
+  description?: string;
   trend?: {
-    value: number
-    label: string
-    positive?: boolean
-  }
+    value: number;
+    label: string;
+    positive?: boolean;
+  };
 }
 
 export function OverviewCard({ title, value, icon, description, trend }: OverviewCardProps) {
@@ -33,5 +33,5 @@ export function OverviewCard({ title, value, icon, description, trend }: Overvie
         {description && <p className='mt-1 text-xs text-muted-foreground'>{description}</p>}
       </CardContent>
     </Card>
-  )
+  );
 }

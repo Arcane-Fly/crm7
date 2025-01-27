@@ -1,9 +1,14 @@
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils';
 
 interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function Skeleton({ className, ...props }: SkeletonProps) {
-  return <div className={cn('animate-pulse rounded-md bg-muted', className)} {...props} />
+  return (
+    <div
+      className={cn('animate-pulse rounded-md bg-muted', className)}
+      {...props}
+    />
+  );
 }
 
 export function SidebarSkeleton() {
@@ -12,11 +17,14 @@ export function SidebarSkeleton() {
       <Skeleton className='mx-4 h-4 w-32' />
       <div className='space-y-2 px-3'>
         {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={i} className='h-8 w-full' />
+          <Skeleton
+            key={i}
+            className='h-8 w-full'
+          />
         ))}
       </div>
     </div>
-  )
+  );
 }
 
 export function CardSkeleton() {
@@ -28,7 +36,7 @@ export function CardSkeleton() {
         <Skeleton className='h-4 w-[160px]' />
       </div>
     </div>
-  )
+  );
 }
 
 export function RateCalculatorSkeleton() {
@@ -42,5 +50,5 @@ export function RateCalculatorSkeleton() {
       </div>
       <Skeleton className='h-[200px] w-full' />
     </div>
-  )
+  );
 }

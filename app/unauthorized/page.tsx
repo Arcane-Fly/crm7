@@ -1,6 +1,7 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
+import Link from 'next/link';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function UnauthorizedPage() {
   return (
@@ -15,7 +16,10 @@ export default function UnauthorizedPage() {
             Please contact your administrator if you believe this is a mistake.
           </p>
           <div className='flex justify-end gap-4'>
-            <Button variant='outline' asChild>
+            <Button
+              variant='outline'
+              asChild
+            >
               <Link href='/login'>Login</Link>
             </Button>
             <Button asChild>
@@ -25,5 +29,5 @@ export default function UnauthorizedPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

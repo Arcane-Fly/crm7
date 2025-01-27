@@ -7,4 +7,4 @@ await waitFor(() => {
 await waitFor(() => {
   expect(screen.getByText('$100.00')).toBeInTheDocument()
 })
-```
+```;

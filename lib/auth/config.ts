@@ -1,28 +1,29 @@
-import { createClient } from '@supabase/supabase-js'
-import type { Database } from '@/types/database'
+import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+import type { Database } from '@/types/database';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl) {
-  throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_URL')
+  throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_URL');
 }
 if (!supabaseAnonKey) {
-  throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_ANON_KEY')
+  throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_ANON_KEY');
 }
 
 // Create a singleton instance for the browser
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
 // Create a new client for server-side usage
 export const createServerSupabaseClient = () => {
-  return createClient<Database>(supabaseUrl, supabaseAnonKey)
-}
+  return createClient<Database>(supabaseUrl, supabaseAnonKey);
+};
 
 // Create a new client for browser usage when needed
 export const createBrowserSupabaseClient = () => {
-  return createClient<Database>(supabaseUrl, supabaseAnonKey)
-}
+  return createClient<Database>(supabaseUrl, supabaseAnonKey);
+};
 
 export const authConfig = {
   auth0: {
@@ -35,4 +36,4 @@ export const authConfig = {
     name: 'sb-auth',
     lifetime: 60 * 60 * 24 * 7, // 7 days
   },
-}
+};

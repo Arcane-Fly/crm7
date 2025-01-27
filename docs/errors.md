@@ -6,10 +6,10 @@
 
 ```typescript
 export type AppError = {
-  code: string
-  message: string
-  details?: Record<string, unknown>
-}
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+};
 ```
 
 ### Common Error Codes

@@ -1,6 +1,3 @@
-import React from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/router'
 import {
   Users,
   Calendar,
@@ -12,13 +9,16 @@ import {
   Mail,
   Phone,
   MessageSquare,
-} from 'lucide-react'
+} from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import React from 'react';
 
 interface NavItem {
-  label: string
-  href: string
-  icon: React.ReactNode
-  subItems?: NavItem[]
+  label: string;
+  href: string;
+  icon: React.ReactNode;
+  subItems?: NavItem[];
 }
 
 const mainNavItems: NavItem[] = [
@@ -102,22 +102,25 @@ const mainNavItems: NavItem[] = [
       },
     ],
   },
-]
+];
 
 export const Navigation: React.FC = () => {
-  const router = useRouter()
-  const [activeItem, setActiveItem] = React.useState<string | null>(null)
+  const router = useRouter();
+  const [activeItem, setActiveItem] = React.useState<string | null>(null);
 
-  const isActive = (href: string) => router.pathname === href
+  const isActive = (href: string) => router.pathname === href;
   const isActiveParent = (item: NavItem) =>
-    item.subItems?.some((subItem) => router.pathname.startsWith(subItem.href))
+    item.subItems?.some((subItem) => router.pathname.startsWith(subItem.href));
 
   return (
     <nav className='flex h-full flex-col border-r bg-background'>
       {/* Top Navigation */}
       <div className='flex-none'>
         <div className='flex h-16 items-center px-4'>
-          <Link href='/dashboard' className='flex items-center space-x-2'>
+          <Link
+            href='/dashboard'
+            className='flex items-center space-x-2'
+          >
             <span className='text-xl font-bold'>CRM7</span>
           </Link>
         </div>
@@ -164,7 +167,7 @@ export const Navigation: React.FC = () => {
         </ul>
       </div>
     </nav>
-  )
-}
+  );
+};
 
-export default Navigation
+export default Navigation;

@@ -1,27 +1,28 @@
-import * as React from 'react'
-import { Check, ChevronsUpDown } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
+import { Check, ChevronsUpDown } from 'lucide-react';
+import * as React from 'react';
+
+import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
-} from '@/components/ui/command'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+} from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 interface ComboboxOption {
-  label: string
-  value: string
+  label: string;
+  value: string;
 }
 
 interface ComboboxProps {
-  options: ComboboxOption[]
-  value?: string | string[]
-  onChange: (value: string) => void
-  placeholder?: string
-  multiple?: boolean
+  options: ComboboxOption[];
+  value?: string | string[];
+  onChange: (value: string) => void;
+  placeholder?: string;
+  multiple?: boolean;
 }
 
 export function Combobox({
@@ -31,36 +32,39 @@ export function Combobox({
   placeholder = 'Select option...',
   multiple = false,
 }: ComboboxProps) {
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = React.useState(false);
   const [selected, setSelected] = React.useState<string[]>(
-    Array.isArray(value) ? value : value ? [value] : []
-  )
+    Array.isArray(value) ? value : value ? [value] : [],
+  );
 
   React.useEffect(() => {
-    setSelected(Array.isArray(value) ? value : value ? [value] : [])
-  }, [value])
+    setSelected(Array.isArray(value) ? value : value ? [value] : []);
+  }, [value]);
 
   const handleSelect = (currentValue: string) => {
     if (multiple) {
       const newSelected = selected.includes(currentValue)
         ? selected.filter((item) => item !== currentValue)
-        : [...selected, currentValue]
-      setSelected(newSelected)
-      onChange(currentValue)
+        : [...selected, currentValue];
+      setSelected(newSelected);
+      onChange(currentValue);
     } else {
-      setSelected([currentValue])
-      onChange(currentValue)
-      setOpen(false)
+      setSelected([currentValue]);
+      onChange(currentValue);
+      setOpen(false);
     }
-  }
+  };
 
   const selectedLabels = selected
     .map((s) => options.find((option) => option.value === s)?.label)
     .filter(Boolean)
-    .join(', ')
+    .join(', ');
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={setOpen}
+    >
       <PopoverTrigger asChild>
         <Button
           variant='outline'
@@ -78,11 +82,15 @@ export function Combobox({
           <CommandEmpty>No option found.</CommandEmpty>
           <CommandGroup>
             {options.map((option) => (
-              <CommandItem key={option.value} value={option.value} onSelect={handleSelect}>
+              <CommandItem
+                key={option.value}
+                value={option.value}
+                onSelect={handleSelect}
+              >
                 <Check
                   className={cn(
                     'mr-2 h-4 w-4',
-                    selected.includes(option.value) ? 'opacity-100' : 'opacity-0'
+                    selected.includes(option.value) ? 'opacity-100' : 'opacity-0',
                   )}
                 />
                 {option.label}
@@ -92,5 +100,5 @@ export function Combobox({
         </Command>
       </PopoverContent>
     </Popover>
-  )
+  );
 }

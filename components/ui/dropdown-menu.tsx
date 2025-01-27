@@ -1,15 +1,17 @@
-'use client'
+'use client';
 
-import * as React from 'react'
-import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu'
-import { cn } from '@/lib/utils'
-import { DropdownMenuCheckboxItem } from './dropdown-menu-checkbox-item'
+import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
+import * as React from 'react';
 
-const DropdownMenu = DropdownMenuPrimitive.Root
+import { cn } from '@/lib/utils';
 
-const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger
+import { DropdownMenuCheckboxItem } from './dropdown-menu-checkbox-item';
 
-const DropdownMenuGroup = DropdownMenuPrimitive.Group
+const DropdownMenu = DropdownMenuPrimitive.Root;
+
+const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
+
+const DropdownMenuGroup = DropdownMenuPrimitive.Group;
 
 const DropdownMenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,
@@ -20,13 +22,13 @@ const DropdownMenuContent = React.forwardRef<
       ref={ref}
       className={cn(
         'z-50 min-w-[8rem] overflow-hidden rounded-md border bg-white p-1 shadow-md',
-        className
+        className,
       )}
       {...props}
     />
   </DropdownMenuPrimitive.Portal>
-))
-DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName
+));
+DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName;
 
 const DropdownMenuItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Item>,
@@ -36,12 +38,12 @@ const DropdownMenuItem = React.forwardRef<
     ref={ref}
     className={cn(
       'relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-gray-100',
-      className
+      className,
     )}
     {...props}
   />
-))
-DropdownMenuItem.displayName = DropdownMenuPrimitive.Item.displayName
+));
+DropdownMenuItem.displayName = DropdownMenuPrimitive.Item.displayName;
 
 const DropdownMenuLabel = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Label>,
@@ -52,8 +54,8 @@ const DropdownMenuLabel = React.forwardRef<
     className={cn('px-2 py-1.5 text-sm font-semibold', className)}
     {...props}
   />
-))
-DropdownMenuLabel.displayName = DropdownMenuPrimitive.Label.displayName
+));
+DropdownMenuLabel.displayName = DropdownMenuPrimitive.Label.displayName;
 
 const DropdownMenuSeparator = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Separator>,
@@ -64,8 +66,8 @@ const DropdownMenuSeparator = React.forwardRef<
     className={cn('-mx-1 my-1 h-px bg-gray-200', className)}
     {...props}
   />
-))
-DropdownMenuSeparator.displayName = DropdownMenuPrimitive.Separator.displayName
+));
+DropdownMenuSeparator.displayName = DropdownMenuPrimitive.Separator.displayName;
 
 export {
   DropdownMenu,
@@ -76,4 +78,4 @@ export {
   DropdownMenuSeparator,
   DropdownMenuGroup,
   DropdownMenuCheckboxItem,
-}
+};

@@ -103,13 +103,13 @@ The wage calculation system provides accurate apprentice wage determination and 
 
 ```typescript
 interface WageTemplate {
-  name: string
-  employmentType: 'full_time' | 'part_time' | 'casual'
-  defaultHours: number
-  gtoMargin: number
-  adminFee: number
-  allowances: AllowanceConfig[]
-  deductions: DeductionConfig[]
+  name: string;
+  employmentType: 'full_time' | 'part_time' | 'casual';
+  defaultHours: number;
+  gtoMargin: number;
+  adminFee: number;
+  allowances: AllowanceConfig[];
+  deductions: DeductionConfig[];
 }
 ```
 

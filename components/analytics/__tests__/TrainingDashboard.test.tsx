@@ -1,14 +1,15 @@
-import { render, screen, waitFor } from '@testing-library/react'
-import { vi } from 'vitest'
-import { PostgrestErrorType } from '@/types/test-utils'
-import { fireEvent } from '@testing-library/react'
-import { TrainingDashboard } from '../training-dashboard'
-import { useLMS } from '@/lib/hooks/use-lms'
-import { createMockQueryResult } from '@/types/test-utils'
-import type { Course, Enrollment } from '@/lib/types/lms'
+import { render, screen, waitFor , fireEvent } from '@testing-library/react';
+import { vi } from 'vitest';
+
+import { useLMS } from '@/lib/hooks/use-lms';
+import type { Course, Enrollment } from '@/lib/types/lms';
+import { PostgrestErrorType , createMockQueryResult } from '@/types/test-utils';
+
+import { TrainingDashboard } from '../training-dashboard';
+
 
 // Mock the hooks
-vi.mock('@/lib/hooks/use-lms')
+vi.mock('@/lib/hooks/use-lms');
 
 const mockCourses: Course[] = [
   {
@@ -23,9 +24,9 @@ const mockCourses: Course[] = [
     start_date: '2025-01-01',
     end_date: '2025-12-31',
     created_at: '2025-01-01',
-    updated_at: '2025-01-01'
-  }
-]
+    updated_at: '2025-01-01',
+  },
+];
 
 const mockEnrollments: Enrollment[] = [
   {
@@ -38,9 +39,9 @@ const mockEnrollments: Enrollment[] = [
     progress: 50,
     start_date: '2025-01-01',
     created_at: '2025-01-01',
-    updated_at: '2025-01-01'
-  }
-]
+    updated_at: '2025-01-01',
+  },
+];
 
 describe('TrainingDashboard', () => {
   beforeEach(() => {
@@ -55,26 +56,29 @@ describe('TrainingDashboard', () => {
         isLoading: false,
         error: null,
       }),
-      actions: {
-        enrollInCourse: vi.fn(),
-        updateProgress: vi.fn(),
-        getAssessments: vi.fn(),
-      }
-    })
-  })
+      createCourse: vi.fn(),
+      updateCourse: vi.fn(),
+      createEnrollment: vi.fn(),
+      updateEnrollment: vi.fn(),
+      isCreatingCourse: false,
+      isUpdatingCourse: false,
+      isCreatingEnrollment: false,
+      isUpdatingEnrollment: false,
+    });
+  });
 
   it('renders without crashing', () => {
-    render(<TrainingDashboard />)
-    expect(screen.getByText('Training Analytics')).toBeInTheDocument()
-  })
+    render(<TrainingDashboard />);
+    expect(screen.getByText('Training Analytics')).toBeInTheDocument();
+  });
 
   it('displays correct statistics', () => {
-    render(<TrainingDashboard />)
-    expect(screen.getByText('2')).toBeInTheDocument() // Total Enrollments
-    expect(screen.getByText('1')).toBeInTheDocument() // Completed
-    expect(screen.getByText('1')).toBeInTheDocument() // In Progress
-    expect(screen.getByText('50.0%')).toBeInTheDocument() // Completion Rate
-  })
+    render(<TrainingDashboard />);
+    expect(screen.getByText('2')).toBeInTheDocument(); // Total Enrollments
+    expect(screen.getByText('1')).toBeInTheDocument(); // Completed
+    expect(screen.getByText('1')).toBeInTheDocument(); // In Progress
+    expect(screen.getByText('50.0%')).toBeInTheDocument(); // Completion Rate
+  });
 
   it('shows loading state', () => {
     vi.mocked(useLMS).mockReturnValue({
@@ -88,33 +92,52 @@ describe('TrainingDashboard', () => {
         isLoading: true,
         error: null,
       }),
-      actions: {
-        enrollInCourse: vi.fn(),
-        updateProgress: vi.fn(),
-        getAssessments: vi.fn(),
-      },
-    })
+      createCourse: vi.fn(),
+      updateCourse: vi.fn(),
+      createEnrollment: vi.fn(),
+      updateEnrollment: vi.fn(),
+      isCreatingCourse: false,
+      isUpdatingCourse: false,
+      isCreatingEnrollment: false,
+      isUpdatingEnrollment: false,
+    });
 
-    render(<TrainingDashboard />)
-    expect(screen.getByTestId('loading-skeleton')).toBeInTheDocument()
-  })
+    render(<TrainingDashboard />);
+    expect(screen.getByTestId('loading-skeleton')).toBeInTheDocument();
+  });
 
   it('shows error state', () => {
-    const mockError = new Error('Failed to load courses')
-    
     vi.mocked(useLMS).mockReturnValue({
       courses: createMockQueryResult<Course[]>({
         data: [],
         isLoading: false,
         error: new PostgrestErrorType('Failed to load courses'),
+        isError: true,
+        isPending: false,
+        isLoadingError: true,
+        isRefetchError: false,
+        isSuccess: false,
+        status: 'error',
+        refetch: vi.fn(),
+        remove: vi.fn(),
+        fetchStatus: 'idle',
       }),
       enrollments: createMockQueryResult<Enrollment[]>({
         data: [],
         isLoading: false,
         error: null,
+        isError: false,
+        isPending: false,
+        isLoadingError: false,
+        isRefetchError: false,
+        isSuccess: true,
+        status: 'success',
+        refetch: vi.fn(),
+        remove: vi.fn(),
+        fetchStatus: 'idle',
       }),
       createCourse: vi.fn(),
-      updateCourse: vi.fn(), 
+      updateCourse: vi.fn(),
       deleteCourse: vi.fn(),
       createEnrollment: vi.fn(),
       updateEnrollment: vi.fn(),
@@ -123,26 +146,26 @@ describe('TrainingDashboard', () => {
       isUpdatingCourse: false,
       isDeletingCourse: false,
       isCreatingEnrollment: false,
-      isUpdatingEnrollment: false
-    })
+      isUpdatingEnrollment: false,
+    });
 
-    render(<TrainingDashboard />)
-    expect(screen.getByText(/Failed to load courses/i)).toBeInTheDocument()
-  })
+    render(<TrainingDashboard />);
+    expect(screen.getByText(/Failed to load courses/i)).toBeInTheDocument();
+  });
 
   it('filters data by date range', async () => {
-    render(<TrainingDashboard />)
+    render(<TrainingDashboard />);
 
     // Open date picker
-    const dateRangePicker = screen.getByRole('button', { name: /Date Range/i })
-    fireEvent.click(dateRangePicker)
+    const dateRangePicker = screen.getByRole('button', { name: /Date Range/i });
+    fireEvent.click(dateRangePicker);
 
     // Select date range
     // Note: Actual date selection would depend on your date picker component
     // This is just a simplified example
 
     await waitFor(() => {
-      expect(screen.getByText('2')).toBeInTheDocument()
-    })
-  })
-})
+      expect(screen.getByText('2')).toBeInTheDocument();
+    });
+  });
+});

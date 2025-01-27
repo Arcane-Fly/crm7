@@ -1,8 +1,10 @@
-import { FallbackProps } from 'react-error-boundary'
-import { Button } from '@/components/ui/button'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle } from 'lucide-react';
+import { type ReactElement } from 'react';
+import type { FallbackProps } from 'react-error-boundary';
 
-export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
+import { Button } from '@/components/ui/button';
+
+export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps): ReactElement {
   return (
     <div
       role='alert'
@@ -14,12 +16,16 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
       </div>
 
       <p className='max-w-[400px] text-center text-sm text-muted-foreground'>
-        {error.message || 'An unexpected error occurred. Please try again.'}
+        {error instanceof Error ? error.message : 'An unknown error occurred'}
       </p>
 
-      <Button variant='outline' onClick={resetErrorBoundary} className='mt-2'>
+      <Button
+        variant='outline'
+        onClick={resetErrorBoundary}
+        className='mt-2'
+      >
         Try again
       </Button>
     </div>
-  )
+  );
 }

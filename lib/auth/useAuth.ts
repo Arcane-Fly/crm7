@@ -1,168 +1,94 @@
-import { useEffect, useState, useCallback } from 'react'
-import { useRouter } from 'next/router'
-import { auth0, supabase } from './auth.config'
-import { User } from '@supabase/supabase-js'
+import { type User } from '@auth0/auth0-react';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
 
-interface AuthUser {
-  id: string
-  email?: string
-  name?: string
-  image?: string
-  role?: string
+interface Auth0User extends User {
+  sub: string;
+  email: string;
+  name: string;
+  picture: string;
+  ['https://your-namespace/roles']: string[];
 }
 
-export function useAuth() {
-  const [user, setUser] = useState<AuthUser | null>(null)
-  const [loading, setLoading] = useState(true)
-  const router = useRouter()
+interface AuthHook {
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  user: Auth0User | null;
+  login: () => Promise<void>;
+  logout: () => Promise<void>;
+  getAccessToken: () => Promise<string>;
+}
 
-  // Initialize auth state
+export function useAuth(): AuthHook {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<Auth0User | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const router = useRouter();
+
+  const login = useCallback(async (): Promise<void> => {
+    try {
+      setIsLoading(true);
+      // Add your login logic here
+      void router.push('/dashboard');
+    } catch (error) {
+      console.error('Login failed:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [router]);
+
+  const logout = useCallback(async (): Promise<void> => {
+    try {
+      setIsLoading(true);
+      setUser(null);
+      setAccessToken(null);
+      setIsAuthenticated(false);
+      void router.push('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [router]);
+
+  const getAccessToken = useCallback(async (): Promise<string> => {
+    if (!accessToken) {
+      throw new Error('No access token available');
+    }
+    return accessToken;
+  }, [accessToken]);
+
   useEffect(() => {
-    const initAuth = async () => {
+    const checkAuth = async (): Promise<void> => {
       try {
-        // Check Supabase session
-        const {
-          data: { session },
-        } = await supabase.auth.getSession()
-
-        if (session?.user) {
-          const { user: supabaseUser } = session
-          setUser(mapSupabaseUser(supabaseUser))
-        } else {
-          // Check Auth0
-          const auth0User = await auth0.getUser()
-          if (auth0User) {
-            setUser(mapAuth0User(auth0User))
-          }
+        // Add your auth check logic here
+        const response = await fetch('/api/auth/me');
+        if (!response.ok) {
+          throw new Error('Auth check failed');
         }
+
+        const userData: Auth0User = await response.json();
+        setUser(userData);
+        setIsAuthenticated(true);
       } catch (error) {
-        console.error('Auth initialization error:', error)
+        console.error('Auth check failed:', error);
+        setUser(null);
+        setIsAuthenticated(false);
       } finally {
-        setLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    initAuth()
-  }, [])
-
-  // Sign in with email/password (Supabase)
-  const signInWithEmail = async (email: string, password: string) => {
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
-      if (error) throw error
-      if (data.user) {
-        setUser(mapSupabaseUser(data.user))
-        router.push('/dashboard')
-      }
-    } catch (error) {
-      console.error('Sign in error:', error)
-      throw error
-    }
-  }
-
-  // Sign in with Auth0
-  const signInWithAuth0 = async () => {
-    try {
-      await auth0.loginWithRedirect()
-    } catch (error) {
-      console.error('Auth0 sign in error:', error)
-      throw error
-    }
-  }
-
-  // Sign up with email/password (Supabase)
-  const signUpWithEmail = async (email: string, password: string) => {
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      })
-
-      if (error) throw error
-      if (data.user) {
-        setUser(mapSupabaseUser(data.user))
-        router.push('/dashboard')
-      }
-    } catch (error) {
-      console.error('Sign up error:', error)
-      throw error
-    }
-  }
-
-  // Sign out
-  const signOut = useCallback(async () => {
-    try {
-      // Sign out from Supabase
-      await supabase.auth.signOut()
-
-      // Sign out from Auth0
-      await auth0.logout({
-        logoutParams: {
-          returnTo: window.location.origin,
-        },
-      })
-
-      setUser(null)
-      router.push('/')
-    } catch (error) {
-      console.error('Sign out error:', error)
-      throw error
-    }
-  }, [router])
-
-  // Reset password
-  const resetPassword = async (email: string) => {
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email)
-      if (error) throw error
-    } catch (error) {
-      console.error('Password reset error:', error)
-      throw error
-    }
-  }
-
-  // Update password
-  const updatePassword = async (newPassword: string) => {
-    try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword,
-      })
-      if (error) throw error
-    } catch (error) {
-      console.error('Password update error:', error)
-      throw error
-    }
-  }
-
-  // Helper functions to map users
-  const mapSupabaseUser = (supabaseUser: User): AuthUser => ({
-    id: supabaseUser.id,
-    email: supabaseUser.email,
-    name: supabaseUser.user_metadata?.full_name,
-    image: supabaseUser.user_metadata?.avatar_url,
-    role: supabaseUser.user_metadata?.role,
-  })
-
-  const mapAuth0User = (auth0User: any): AuthUser => ({
-    id: auth0User.sub,
-    email: auth0User.email,
-    name: auth0User.name,
-    image: auth0User.picture,
-    role: auth0User['https://your-namespace/roles']?.[0],
-  })
+    void checkAuth();
+  }, []);
 
   return {
+    isAuthenticated,
+    isLoading,
     user,
-    loading,
-    signInWithEmail,
-    signInWithAuth0,
-    signUpWithEmail,
-    signOut,
-    resetPassword,
-    updatePassword,
-  }
+    login,
+    logout,
+    getAccessToken,
+  };
 }

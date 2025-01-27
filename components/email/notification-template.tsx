@@ -1,12 +1,12 @@
-import * as React from 'react'
-import './notification-template.css'
+import * as React from 'react';
+import './notification-template.css';
 
 interface NotificationTemplateProps {
-  title: string
-  message: string
-  actionUrl?: string
-  actionText?: string
-  recipientName: string
+  title: string;
+  message: string;
+  actionUrl?: string;
+  actionText?: string;
+  recipientName: string;
 }
 
 export const NotificationTemplate: React.FC<Readonly<NotificationTemplateProps>> = ({
@@ -21,7 +21,10 @@ export const NotificationTemplate: React.FC<Readonly<NotificationTemplateProps>>
     <p className='email-text'>Dear {recipientName},</p>
     <p className='email-text'>{message}</p>
     {actionUrl && actionText && (
-      <a href={actionUrl} className='email-button'>
+      <a
+        href={actionUrl}
+        className='email-button'
+      >
         {actionText}
       </a>
     )}
@@ -31,7 +34,7 @@ export const NotificationTemplate: React.FC<Readonly<NotificationTemplateProps>>
       The CRM7R Team
     </p>
   </div>
-)
+);
 
 // Styles
 // const container = {

@@ -1,12 +1,11 @@
-'use client'
+'use client';
 
-import * as React from 'react'
 import type {
   ColumnDef,
   ColumnFiltersState,
   SortingState,
   VisibilityState,
-} from '@tanstack/react-table'
+} from '@tanstack/react-table';
 import {
   flexRender,
   getCoreRowModel,
@@ -14,10 +13,11 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from '@tanstack/react-table'
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from 'lucide-react'
+} from '@tanstack/react-table';
+import { ArrowUpDown, ChevronDown, MoreHorizontal } from 'lucide-react';
+import * as React from 'react';
 
-import { Button } from './ui/button'
+import { Button } from './ui/button';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -26,9 +26,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from './ui/dropdown-menu'
-import { Input } from './ui/input'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table'
+} from './ui/dropdown-menu';
+import { Input } from './ui/input';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 
 const data: Apprentice[] = [
   {
@@ -71,16 +71,16 @@ const data: Apprentice[] = [
     progress: 'Year 2',
     status: 'Active',
   },
-]
+];
 
 export type Apprentice = {
-  id: string
-  name: string
-  email: string
-  qualification: string
-  progress: string
-  status: 'Active' | 'Completed' | 'Probation' | 'Withdrawn'
-}
+  id: string;
+  name: string;
+  email: string;
+  qualification: string;
+  progress: string;
+  status: 'Active' | 'Completed' | 'Probation' | 'Withdrawn';
+};
 
 export const columns: ColumnDef<Apprentice>[] = [
   {
@@ -99,7 +99,7 @@ export const columns: ColumnDef<Apprentice>[] = [
           Email
           <ArrowUpDown className='ml-2 h-4 w-4' />
         </Button>
-      )
+      );
     },
     cell: ({ row }) => <div>{row.getValue('email')}</div>,
   },
@@ -122,12 +122,15 @@ export const columns: ColumnDef<Apprentice>[] = [
     id: 'actions',
     enableHiding: false,
     cell: ({ row }) => {
-      const apprentice = row.original
+      const apprentice = row.original;
 
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant='ghost' className='h-8 w-8 p-0'>
+            <Button
+              variant='ghost'
+              className='h-8 w-8 p-0'
+            >
               <span className='sr-only'>Open menu</span>
               <MoreHorizontal className='h-4 w-4' />
             </Button>
@@ -143,16 +146,16 @@ export const columns: ColumnDef<Apprentice>[] = [
             <DropdownMenuItem>Manage compliance</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      )
+      );
     },
   },
-]
+];
 
 export function ApprenticesDataTable() {
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({
     data,
@@ -171,7 +174,7 @@ export function ApprenticesDataTable() {
       columnVisibility,
       rowSelection,
     },
-  })
+  });
 
   return (
     <div className='w-full'>
@@ -186,7 +189,10 @@ export function ApprenticesDataTable() {
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant='outline' className='ml-auto'>
+            <Button
+              variant='outline'
+              className='ml-auto'
+            >
               Columns <ChevronDown className='ml-2 h-4 w-4' />
             </Button>
           </DropdownMenuTrigger>
@@ -204,7 +210,7 @@ export function ApprenticesDataTable() {
                   >
                     {column.id}
                   </DropdownMenuCheckboxItem>
-                )
+                );
               })}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -221,15 +227,18 @@ export function ApprenticesDataTable() {
                         ? null
                         : flexRender(header.column.columnDef.header, header.getContext())}
                     </TableHead>
-                  )
+                  );
                 })}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && 'selected'}
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -239,7 +248,10 @@ export function ApprenticesDataTable() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className='h-24 text-center'>
+                <TableCell
+                  colSpan={columns.length}
+                  className='h-24 text-center'
+                >
                   No results.
                 </TableCell>
               </TableRow>
@@ -272,5 +284,5 @@ export function ApprenticesDataTable() {
         </div>
       </div>
     </div>
-  )
+  );
 }

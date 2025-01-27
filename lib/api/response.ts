@@ -1,5 +1,5 @@
-import { z } from 'zod'
-import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
 
 // API response schema
 export const ApiResponse = z.object({
@@ -15,8 +15,8 @@ export const ApiResponse = z.object({
     timestamp: z.date(),
     requestId: z.string().optional(),
   }),
-})
-export type ApiResponse = z.infer<typeof ApiResponse>
+});
+export type ApiResponse = z.infer<typeof ApiResponse>;
 
 /**
  * Create a standardized API response
@@ -24,7 +24,7 @@ export type ApiResponse = z.infer<typeof ApiResponse>
 export function createApiResponse<T>(
   data?: T,
   error?: { code: string; message: string; details?: unknown },
-  status = 200
+  status = 200,
 ): NextResponse {
   const response = ApiResponse.parse({
     data,
@@ -33,9 +33,9 @@ export function createApiResponse<T>(
       timestamp: new Date(),
       requestId: crypto.randomUUID(),
     },
-  })
+  });
 
-  return NextResponse.json(response, { status })
+  return NextResponse.json(response, { status });
 }
 
 /**
@@ -45,14 +45,14 @@ export function createErrorResponse(
   code: string,
   message: string,
   details?: unknown,
-  status = 400
+  status = 400,
 ): NextResponse {
-  return createApiResponse(undefined, { code, message, details }, status)
+  return createApiResponse(undefined, { code, message, details }, status);
 }
 
 /**
  * Create a success response
  */
 export function createSuccessResponse<T>(data: T, status = 200): NextResponse {
-  return createApiResponse(data, undefined, status)
+  return createApiResponse(data, undefined, status);
 }

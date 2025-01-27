@@ -1,6 +1,6 @@
-const AUTH0_DOMAIN = 'dev-rkchrceel6xwqe2g.us.auth0.com'
-const AUTH0_API = 'https://dev-rkchrceel6xwqe2g.us.auth0.com/api/v2'
-const BASE_URL = 'http://localhost:4200'
+const AUTH0_DOMAIN = 'dev-rkchrceel6xwqe2g.us.auth0.com';
+const AUTH0_API = 'https://dev-rkchrceel6xwqe2g.us.auth0.com/api/v2';
+const BASE_URL = 'http://localhost:4200';
 
 export const auth0Config = {
   domain: AUTH0_DOMAIN,
@@ -21,4 +21,4 @@ export const auth0Config = {
     audience: AUTH0_API,
     scope: 'openid profile email',
   },
-}
+};

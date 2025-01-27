@@ -85,9 +85,9 @@ PAYROLL_API_ENDPOINT=
 3. Enable Prerender:
 
    ```typescript
-   export const runtime = 'edge'
-   export const preferredRegion = ['syd1', 'sin1']
-   export const dynamic = 'force-static'
+   export const runtime = 'edge';
+   export const preferredRegion = ['syd1', 'sin1'];
+   export const dynamic = 'force-static';
    ```
 
 ### Monitoring Setup

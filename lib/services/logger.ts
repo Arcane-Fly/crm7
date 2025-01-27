@@ -1,32 +1,32 @@
-type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 interface LogEntry {
-  timestamp: string
-  level: LogLevel
-  message: string
-  context?: Record<string, unknown>
-  component?: string
-  error?: Error
+  timestamp: string;
+  level: LogLevel;
+  message: string;
+  context?: Record<string, unknown>;
+  component?: string;
+  error?: Error;
 }
 
 export class Logger {
-  private static instance: Logger
-  private logLevel: LogLevel = 'info'
-  private shouldLog = process.env.NODE_ENV !== 'test'
+  private static instance: Logger;
+  private logLevel: LogLevel = 'info';
+  private shouldLog = process.env.NODE_ENV !== 'test';
 
   private constructor() {}
 
   static getInstance(): Logger {
     if (!Logger.instance) {
-      Logger.instance = new Logger()
+      Logger.instance = new Logger();
     }
-    return Logger.instance
+    return Logger.instance;
   }
 
   private formatMessage(entry: LogEntry): string {
-    const context = entry.context ? ` | ${JSON.stringify(entry.context)}` : ''
-    const component = entry.component ? ` | ${entry.component}` : ''
-    return `[${entry.timestamp}] ${entry.level.toUpperCase()}: ${entry.message}${component}${context}`
+    const context = entry.context ? ` | ${JSON.stringify(entry.context)}` : '';
+    const component = entry.component ? ` | ${entry.component}` : '';
+    return `[${entry.timestamp}] ${entry.level.toUpperCase()}: ${entry.message}${component}${context}`;
   }
 
   private createLogEntry(
@@ -34,7 +34,7 @@ export class Logger {
     message: string,
     context?: Record<string, unknown>,
     component?: string,
-    error?: Error
+    error?: Error,
   ): LogEntry {
     return {
       timestamp: new Date().toISOString(),
@@ -43,35 +43,35 @@ export class Logger {
       context,
       component,
       error,
-    }
+    };
   }
 
   private logToConsole(entry: LogEntry) {
-    const formattedMessage = this.formatMessage(entry)
+    const formattedMessage = this.formatMessage(entry);
     // Only log errors and warnings in production
     if (process.env.NODE_ENV === 'production') {
       switch (entry.level) {
         case 'warn':
-          console.warn(formattedMessage)
-          break
+          console.warn(formattedMessage);
+          break;
         case 'error':
-          console.error(formattedMessage, entry.error)
-          break
+          console.error(formattedMessage, entry.error);
+          break;
       }
     } else {
       switch (entry.level) {
         case 'debug':
-          console.debug(formattedMessage)
-          break
+          console.debug(formattedMessage);
+          break;
         case 'info':
-          console.info(formattedMessage)
-          break
+          console.info(formattedMessage);
+          break;
         case 'warn':
-          console.warn(formattedMessage)
-          break
+          console.warn(formattedMessage);
+          break;
         case 'error':
-          console.error(formattedMessage, entry.error)
-          break
+          console.error(formattedMessage, entry.error);
+          break;
       }
     }
   }
@@ -89,34 +89,34 @@ export class Logger {
     message: string,
     context?: Record<string, unknown>,
     component?: string,
-    error?: Error
+    error?: Error,
   ) {
-    if (!this.shouldLog) return
+    if (!this.shouldLog) return;
 
-    const entry = this.createLogEntry(level, message, context, component, error)
-    this.logToConsole(entry)
-    this.logToExternalService(entry)
+    const entry = this.createLogEntry(level, message, context, component, error);
+    this.logToConsole(entry);
+    this.logToExternalService(entry);
   }
 
   debug(message: string, context?: Record<string, unknown>, component?: string) {
-    this.log('debug', message, context, component)
+    this.log('debug', message, context, component);
   }
 
   info(message: string, context?: Record<string, unknown>, component?: string) {
-    this.log('info', message, context, component)
+    this.log('info', message, context, component);
   }
 
   warn(message: string, context?: Record<string, unknown>, component?: string) {
-    this.log('warn', message, context, component)
+    this.log('warn', message, context, component);
   }
 
   error(message: string, error: Error, context?: Record<string, unknown>, component?: string) {
-    this.log('error', message, context, component, error)
+    this.log('error', message, context, component, error);
   }
 
   setLogLevel(level: LogLevel) {
-    this.logLevel = level
+    this.logLevel = level;
   }
 }
 
-export const logger = Logger.getInstance()
+export const logger = Logger.getInstance();

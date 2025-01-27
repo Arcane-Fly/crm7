@@ -1,16 +1,19 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { DataTable } from '@/components/ui/data-table'
-import { columns } from './columns'
-import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { Breadcrumb, BreadcrumbItem } from '@/components/ui/breadcrumb'
+import { Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+
+import { Breadcrumb, BreadcrumbItem } from '@/components/ui/breadcrumb';
+import { Button } from '@/components/ui/button';
+import { DataTable } from '@/components/ui/data-table';
+
+import { columns } from './columns';
+
 
 export default function HostEmployersPage() {
-  const router = useRouter()
-  const [data] = useState([])
+  const router = useRouter();
+  const [data] = useState([]);
 
   return (
     <div className='space-y-6'>
@@ -23,7 +26,12 @@ export default function HostEmployersPage() {
           <Plus className='mr-2 h-4 w-4' /> Add Host Employer
         </Button>
       </div>
-      <DataTable columns={columns} data={data} filterColumn='name' enableColumnVisibility={true} />
+      <DataTable
+        columns={columns}
+        data={data}
+        filterColumn='name'
+        enableColumnVisibility={true}
+      />
     </div>
-  )
+  );
 }

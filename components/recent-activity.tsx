@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const activities = [
   {
@@ -26,7 +26,7 @@ const activities = [
     description: 'New training plans uploaded for mechanical trades',
     time: '1 day ago',
   },
-]
+];
 
 export function RecentActivity() {
   return (
@@ -37,7 +37,10 @@ export function RecentActivity() {
       <CardContent>
         <div className='space-y-4'>
           {activities.map((activity, index) => (
-            <div key={index} className='flex items-start gap-4'>
+            <div
+              key={index}
+              className='flex items-start gap-4'
+            >
               <div className='rounded-full bg-gray-100 p-2'>
                 <div className='h-2 w-2 rounded-full bg-gray-600' />
               </div>
@@ -50,5 +53,5 @@ export function RecentActivity() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

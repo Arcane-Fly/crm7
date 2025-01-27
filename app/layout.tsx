@@ -1,15 +1,16 @@
-import '@/styles/globals.css'
+import '@/styles/globals.css';
 
-import { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-import { PerformanceProvider } from '@/components/providers/PerformanceProvider'
-import { Providers } from '@/components/providers'
-import { Navbar } from '@/components/ui/navbar'
-import { Sidebar } from '@/components/ui/sidebar'
-import { PerformanceMonitor } from '@/components/monitoring/PerformanceMonitor'
-import { cn } from '@/lib/utils'
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
 
-const inter = Inter({ subsets: ['latin'] })
+import { PerformanceMonitor } from '@/components/monitoring/PerformanceMonitor';
+import { Providers } from '@/components/providers';
+import { PerformanceProvider } from '@/components/providers/PerformanceProvider';
+import { Navbar } from '@/components/ui/navbar';
+import { Sidebar } from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils';
+
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'CRM System',
@@ -44,9 +45,13 @@ export const metadata: Metadata = {
       },
     ],
   },
-}
+};
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}): React.ReactElement {
   return (
     <html lang='en'>
       <body className={cn('min-h-screen bg-background antialiased', inter.className)}>
@@ -68,5 +73,5 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </PerformanceProvider>
       </body>
     </html>
-  )
+  );
 }

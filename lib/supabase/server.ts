@@ -1,7 +1,9 @@
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
-import type { Database } from '../types/database'
-import { logger } from '@/lib/logger'
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
+
+import { logger } from '@/lib/logger';
+
+import type { Database } from '../types/database';
 
 /**
  * Creates a Supabase client for use on the server.
@@ -11,7 +13,7 @@ import { logger } from '@/lib/logger'
  * - Server-side data fetching
  */
 export const createClient = () => {
-  const cookieStore = cookies()
+  const cookieStore = cookies();
 
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -19,20 +21,20 @@ export const createClient = () => {
     {
       cookies: {
         get(name: string) {
-          return cookieStore.get(name)?.value
+          return cookieStore.get(name)?.value;
         },
         set(name: string, value: string, options: any) {
           try {
-            cookieStore.set({ name, value, ...options })
+            cookieStore.set({ name, value, ...options });
           } catch (error) {
-            logger.error('Failed to set cookie', { error, name })
+            logger.error('Failed to set cookie', { error, name });
           }
         },
         remove(name: string, options: any) {
           try {
-            cookieStore.delete({ name, ...options })
+            cookieStore.delete({ name, ...options });
           } catch (error) {
-            logger.error('Failed to remove cookie', { error, name })
+            logger.error('Failed to remove cookie', { error, name });
           }
         },
       },
@@ -42,9 +44,9 @@ export const createClient = () => {
         detectSessionInUrl: true,
         persistSession: true,
       },
-    }
-  )
-}
+    },
+  );
+};
 
 /**
  * Creates a Supabase admin client with full database access.
@@ -52,10 +54,10 @@ export const createClient = () => {
  */
 export const createAdminClient = () => {
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error('SUPABASE_SERVICE_ROLE_KEY is not set')
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY is not set');
   }
 
-  const cookieStore = cookies()
+  const cookieStore = cookies();
 
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -63,20 +65,20 @@ export const createAdminClient = () => {
     {
       cookies: {
         get(name: string) {
-          return cookieStore.get(name)?.value
+          return cookieStore.get(name)?.value;
         },
         set(name: string, value: string, options: any) {
           try {
-            cookieStore.set({ name, value, ...options })
+            cookieStore.set({ name, value, ...options });
           } catch (error) {
-            logger.error('Failed to set cookie in admin client', { error, name })
+            logger.error('Failed to set cookie in admin client', { error, name });
           }
         },
         remove(name: string, options: any) {
           try {
-            cookieStore.delete({ name, ...options })
+            cookieStore.delete({ name, ...options });
           } catch (error) {
-            logger.error('Failed to remove cookie in admin client', { error, name })
+            logger.error('Failed to remove cookie in admin client', { error, name });
           }
         },
       },
@@ -84,6 +86,6 @@ export const createAdminClient = () => {
         autoRefreshToken: false,
         persistSession: false,
       },
-    }
-  )
-}
+    },
+  );
+};

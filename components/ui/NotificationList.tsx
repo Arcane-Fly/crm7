@@ -1,13 +1,13 @@
-'use client'
+'use client';
 
-import { Clock, FileWarning, AlertTriangle, Award } from 'lucide-react'
+import { Clock, FileWarning, AlertTriangle, Award } from 'lucide-react';
 
 interface Notification {
-  id: string
-  title: string
-  description: string
-  type: 'warning' | 'error' | 'info' | 'success'
-  timeLeft?: string
+  id: string;
+  title: string;
+  description: string;
+  type: 'warning' | 'error' | 'info' | 'success';
+  timeLeft?: string;
 }
 
 const notifications: Notification[] = [
@@ -31,20 +31,20 @@ const notifications: Notification[] = [
     type: 'warning',
     timeLeft: '5 days overdue',
   },
-]
+];
 
 const icons = {
   warning: Clock,
   error: FileWarning,
   info: AlertTriangle,
   success: Award,
-}
+};
 
 export function NotificationList() {
   return (
     <div className='space-y-4'>
       {notifications.map((notification) => {
-        const Icon = icons[notification.type]
+        const Icon = icons[notification.type];
 
         return (
           <div
@@ -62,8 +62,8 @@ export function NotificationList() {
               <span className='text-sm text-gray-500'>{notification.timeLeft}</span>
             )}
           </div>
-        )
+        );
       })}
     </div>
-  )
+  );
 }

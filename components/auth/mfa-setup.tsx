@@ -1,52 +1,53 @@
-'use client'
+'use client';
 
-import * as React from 'react'
-import { useMFA } from '@/lib/auth/mfa-provider'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Loader2 } from 'lucide-react'
-import Image from 'next/image'
+import { Loader2 } from 'lucide-react';
+import Image from 'next/image';
+import * as React from 'react';
+
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useMFA } from '@/lib/auth/mfa-provider';
 
 export function MFASetup() {
-  const { isEnabled, isEnrolling, setupMFA, verifyMFA, disableMFA } = useMFA()
-  const [qrCode, setQrCode] = React.useState<string>('')
-  const [secret, setSecret] = React.useState<string>('')
-  const [token, setToken] = React.useState('')
-  const [isVerifying, setIsVerifying] = React.useState(false)
-  const [error, setError] = React.useState<string>('')
+  const { isEnabled, isEnrolling, setupMFA, verifyMFA, disableMFA } = useMFA();
+  const [qrCode, setQrCode] = React.useState<string>('');
+  const [secret, setSecret] = React.useState<string>('');
+  const [token, setToken] = React.useState('');
+  const [isVerifying, setIsVerifying] = React.useState(false);
+  const [error, setError] = React.useState<string>('');
 
   const handleSetup = async () => {
     try {
-      const { qrCode, secret } = await setupMFA()
-      setQrCode(qrCode)
-      setSecret(secret)
-      setError('')
+      const { qrCode, secret } = await setupMFA();
+      setQrCode(qrCode);
+      setSecret(secret);
+      setError('');
     } catch (err) {
-      setError('Failed to set up MFA. Please try again.')
+      setError('Failed to set up MFA. Please try again.');
     }
-  }
+  };
 
   const handleVerify = async () => {
     if (!token) {
-      setError('Please enter a verification code')
-      return
+      setError('Please enter a verification code');
+      return;
     }
 
     try {
-      setIsVerifying(true)
-      const success = await verifyMFA(token)
+      setIsVerifying(true);
+      const success = await verifyMFA(token);
       if (!success) {
-        setError('Invalid verification code')
+        setError('Invalid verification code');
       }
     } catch (err) {
-      setError('Failed to verify code. Please try again.')
+      setError('Failed to verify code. Please try again.');
     } finally {
-      setIsVerifying(false)
+      setIsVerifying(false);
     }
-  }
+  };
 
   if (isEnabled) {
     return (
@@ -56,12 +57,15 @@ export function MFASetup() {
           <p className='text-sm text-muted-foreground'>
             MFA is currently enabled for your account.
           </p>
-          <Button variant='destructive' onClick={disableMFA}>
+          <Button
+            variant='destructive'
+            onClick={disableMFA}
+          >
             Disable MFA
           </Button>
         </div>
       </Card>
-    )
+    );
   }
 
   return (
@@ -82,7 +86,10 @@ export function MFASetup() {
         )}
 
         {!qrCode ? (
-          <Button onClick={handleSetup} disabled={isEnrolling}>
+          <Button
+            onClick={handleSetup}
+            disabled={isEnrolling}
+          >
             {isEnrolling && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
             Set up MFA
           </Button>
@@ -91,7 +98,12 @@ export function MFASetup() {
             <div className='space-y-2'>
               <Label>Scan QR Code</Label>
               <div className='relative h-64 w-64'>
-                <Image src={qrCode} alt='QR Code' fill className='object-contain' />
+                <Image
+                  src={qrCode}
+                  alt='QR Code'
+                  fill
+                  className='object-contain'
+                />
               </div>
               <p className='text-sm text-muted-foreground'>
                 Scan this QR code with your authenticator app.
@@ -117,7 +129,10 @@ export function MFASetup() {
               />
             </div>
 
-            <Button onClick={handleVerify} disabled={isVerifying || !token}>
+            <Button
+              onClick={handleVerify}
+              disabled={isVerifying || !token}
+            >
               {isVerifying && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
               Verify and Enable
             </Button>
@@ -125,5 +140,5 @@ export function MFASetup() {
         )}
       </div>
     </Card>
-  )
+  );
 }

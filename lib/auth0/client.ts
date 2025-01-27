@@ -1,5 +1,6 @@
-import { ManagementClient } from 'auth0'
-import { logger } from '@/lib/logger'
+import { ManagementClient } from 'auth0';
+
+import { logger } from '@/lib/logger';
 
 /**
  * Creates an Auth0 Management API client.
@@ -10,19 +11,19 @@ import { logger } from '@/lib/logger'
  */
 export const createManagementClient = () => {
   if (!process.env.AUTH0_ADMIN_API_KEY || !process.env.AUTH0_API_TOKEN) {
-    throw new Error('Missing required Auth0 environment variables')
+    throw new Error('Missing required Auth0 environment variables');
   }
 
   try {
     return new ManagementClient({
       domain: 'dev-rkchrceel6xwqe2g.us.auth0.com',
       token: process.env.AUTH0_API_TOKEN,
-    })
+    });
   } catch (error) {
-    logger.error('Failed to create Auth0 Management client', { error })
-    throw error
+    logger.error('Failed to create Auth0 Management client', { error });
+    throw error;
   }
-}
+};
 
 /**
  * Auth0 API endpoints for client-side operations.
@@ -33,7 +34,7 @@ export const AUTH0_ENDPOINTS = {
   LOGOUT: '/api/auth/logout',
   CALLBACK: '/api/auth/callback',
   ME: '/api/auth/me',
-} as const
+} as const;
 
 /**
  * Auth0 configuration for the application.
@@ -54,4 +55,4 @@ export const AUTH0_CONFIG = {
     rolling: true,
     rollingDuration: 1 * 60 * 60, // 1 hour
   },
-} as const
+} as const;

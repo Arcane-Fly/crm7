@@ -234,15 +234,15 @@ Response:
 
 ## Error Codes
 
-| Code | Description |
-|------|-------------|
-| `AUTH_REQUIRED` | Authentication required |
-| `AUTH_INVALID` | Invalid authentication credentials |
-| `RATE_LIMIT` | Rate limit exceeded |
-| `INVALID_INPUT` | Invalid input parameters |
-| `NOT_FOUND` | Resource not found |
-| `FORBIDDEN` | Insufficient permissions |
-| `INTERNAL_ERROR` | Internal server error |
+| Code             | Description                        |
+| ---------------- | ---------------------------------- |
+| `AUTH_REQUIRED`  | Authentication required            |
+| `AUTH_INVALID`   | Invalid authentication credentials |
+| `RATE_LIMIT`     | Rate limit exceeded                |
+| `INVALID_INPUT`  | Invalid input parameters           |
+| `NOT_FOUND`      | Resource not found                 |
+| `FORBIDDEN`      | Insufficient permissions           |
+| `INTERNAL_ERROR` | Internal server error              |
 
 ## Versioning
 
@@ -300,12 +300,12 @@ import { createClient } from '@/lib/api-client';
 
 const client = createClient({
   baseURL: '/api',
-  token: 'your_access_token'
+  token: 'your_access_token',
 });
 
 // Example usage
 const rates = await client.rates.getTemplates({
-  org_id: 'org_123'
+  org_id: 'org_123',
 });
 ```
 
@@ -330,14 +330,17 @@ Payload:
 ## Best Practices
 
 1. **Rate Limiting**
+
    - Implement exponential backoff
    - Cache responses when possible
 
 2. **Error Handling**
+
    - Always check for error responses
    - Implement proper retry logic
 
 3. **Security**
+
    - Never expose tokens in client-side code
    - Validate all input parameters
 

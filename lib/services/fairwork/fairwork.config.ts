@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod';
 
 /**
  * Fair Work API configuration schema
@@ -31,9 +31,9 @@ export const FairWorkConfigSchema = z.object({
 
   // Logging
   logLevel: z.enum(['error', 'warn', 'info', 'debug']).default('info'),
-})
+});
 
-export type FairWorkConfig = z.infer<typeof FairWorkConfigSchema>
+export type FairWorkConfig = z.infer<typeof FairWorkConfigSchema>;
 
 /**
  * Default configuration values
@@ -52,4 +52,4 @@ export const defaultConfig: FairWorkConfig = {
     windowMs: 60000,
   },
   logLevel: 'info',
-}
+};

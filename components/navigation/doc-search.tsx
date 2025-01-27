@@ -1,7 +1,9 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Search } from 'lucide-react'
+import { Search } from 'lucide-react';
+import { useState } from 'react';
+
+import { Button } from '@/components/ui/button';
 import {
   CommandDialog,
   CommandEmpty,
@@ -9,11 +11,10 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command'
-import { Button } from '@/components/ui/button'
+} from '@/components/ui/command';
 
 export function DocSearch() {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(false);
 
   return (
     <>
@@ -29,7 +30,10 @@ export function DocSearch() {
           <span className='text-xs'>⌘</span>K
         </kbd>
       </Button>
-      <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandDialog
+        open={open}
+        onOpenChange={setOpen}
+      >
         <CommandInput placeholder='Type to search...' />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
@@ -46,5 +50,5 @@ export function DocSearch() {
         </CommandList>
       </CommandDialog>
     </>
-  )
+  );
 }

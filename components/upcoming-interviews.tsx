@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const interviews = [
   {
@@ -25,7 +25,7 @@ const interviews = [
     company: 'Tech Solutions',
     date: 'Thu, 9:00 AM',
   },
-]
+];
 
 export function UpcomingInterviews() {
   return (
@@ -36,7 +36,10 @@ export function UpcomingInterviews() {
       <CardContent>
         <div className='space-y-4'>
           {interviews.map((interview, index) => (
-            <div key={index} className='space-y-2'>
+            <div
+              key={index}
+              className='space-y-2'
+            >
               <div className='flex items-center justify-between'>
                 <div className='text-sm font-medium'>{interview.candidate}</div>
                 <div className='text-xs text-gray-500'>{interview.date}</div>
@@ -51,5 +54,5 @@ export function UpcomingInterviews() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

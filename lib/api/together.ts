@@ -1,19 +1,19 @@
 export class Together {
-  private apiKey: string
-  private baseUrl = 'https://api.together.xyz/v1'
+  private apiKey: string;
+  private baseUrl = 'https://api.together.xyz/v1';
 
   constructor(apiKey: string) {
-    this.apiKey = apiKey
+    this.apiKey = apiKey;
   }
 
   chat = {
     completions: {
       create: async (params: {
-        model: string
-        messages: Array<{ role: string; content: string }>
-        temperature?: number
-        max_tokens?: number
-        stream?: boolean
+        model: string;
+        messages: Array<{ role: string; content: string }>;
+        temperature?: number;
+        max_tokens?: number;
+        stream?: boolean;
       }) => {
         const response = await fetch(`${this.baseUrl}/chat/completions`, {
           method: 'POST',
@@ -28,14 +28,14 @@ export class Together {
             max_tokens: params.max_tokens,
             stream: params.stream ?? false,
           }),
-        })
+        });
 
         if (!response.ok) {
-          throw new Error(`Together API error: ${response.statusText}`)
+          throw new Error(`Together API error: ${response.statusText}`);
         }
 
-        return await response.json()
+        return await response.json();
       },
     },
-  }
+  };
 }

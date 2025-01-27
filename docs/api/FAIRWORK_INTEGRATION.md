@@ -14,16 +14,16 @@ Provide real-time access to Fair Work award rates, conditions, and compliance ru
 
 ```typescript
 interface FairWorkCredentials {
-  apiKey: string
-  clientId: string
-  clientSecret: string
-  environment: 'sandbox' | 'production'
+  apiKey: string;
+  clientId: string;
+  clientSecret: string;
+  environment: 'sandbox' | 'production';
 }
 
 interface AuthToken {
-  accessToken: string
-  refreshToken: string
-  expiresAt: Date
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: Date;
 }
 ```
 
@@ -31,24 +31,24 @@ interface AuthToken {
 
 ```typescript
 interface AwardRate {
-  awardCode: string
-  classificationCode: string
-  baseRate: number
-  casualLoading: number
-  penalties: Penalty[]
-  allowances: Allowance[]
-  effectiveFrom: Date
-  effectiveTo?: Date
+  awardCode: string;
+  classificationCode: string;
+  baseRate: number;
+  casualLoading: number;
+  penalties: Penalty[];
+  allowances: Allowance[];
+  effectiveFrom: Date;
+  effectiveTo?: Date;
 }
 
 interface RateQuery {
-  awardCode: string
-  classificationCode: string
-  employmentType: 'casual' | 'permanent' | 'fixed-term'
-  date: Date
-  includeLoadings: boolean
-  includePenalties: boolean
-  includeAllowances: boolean
+  awardCode: string;
+  classificationCode: string;
+  employmentType: 'casual' | 'permanent' | 'fixed-term';
+  date: Date;
+  includeLoadings: boolean;
+  includePenalties: boolean;
+  includeAllowances: boolean;
 }
 ```
 
@@ -56,22 +56,22 @@ interface RateQuery {
 
 ```typescript
 interface Classification {
-  code: string
-  level: string
-  description: string
-  parentCode?: string
-  validFrom: Date
-  validTo?: Date
-  attributes: Record<string, any>
+  code: string;
+  level: string;
+  description: string;
+  parentCode?: string;
+  validFrom: Date;
+  validTo?: Date;
+  attributes: Record<string, any>;
 }
 
 interface ClassificationQuery {
-  awardCode: string
-  searchTerm?: string
-  effectiveDate?: Date
-  includeInactive?: boolean
-  page?: number
-  pageSize?: number
+  awardCode: string;
+  searchTerm?: string;
+  effectiveDate?: Date;
+  includeInactive?: boolean;
+  page?: number;
+  pageSize?: number;
 }
 ```
 
@@ -81,16 +81,16 @@ interface ClassificationQuery {
 
 ```typescript
 interface CacheConfig {
-  ttl: number
-  maxSize: number
-  updateStrategy: 'lazy' | 'eager'
+  ttl: number;
+  maxSize: number;
+  updateStrategy: 'lazy' | 'eager';
 }
 
 interface CacheEntry<T> {
-  data: T
-  fetchedAt: Date
-  expiresAt: Date
-  version: number
+  data: T;
+  fetchedAt: Date;
+  expiresAt: Date;
+  version: number;
 }
 ```
 
@@ -98,20 +98,20 @@ interface CacheEntry<T> {
 
 ```typescript
 interface SyncJob {
-  id: string
-  type: 'award' | 'classification' | 'rate'
-  status: 'pending' | 'running' | 'completed' | 'failed'
-  startedAt?: Date
-  completedAt?: Date
-  error?: string
-  metadata: Record<string, any>
+  id: string;
+  type: 'award' | 'classification' | 'rate';
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  startedAt?: Date;
+  completedAt?: Date;
+  error?: string;
+  metadata: Record<string, any>;
 }
 
 interface SyncConfig {
-  frequency: 'hourly' | 'daily' | 'weekly'
-  startTime: string
-  retryAttempts: number
-  notifyOnFailure: boolean
+  frequency: 'hourly' | 'daily' | 'weekly';
+  startTime: string;
+  retryAttempts: number;
+  notifyOnFailure: boolean;
 }
 ```
 
@@ -121,32 +121,32 @@ interface SyncConfig {
 
 ```typescript
 interface RateCalculation {
-  baseRate: number
-  casualLoading?: number
+  baseRate: number;
+  casualLoading?: number;
   penalties: {
-    code: string
-    description: string
-    amount: number
-  }[]
+    code: string;
+    description: string;
+    amount: number;
+  }[];
   allowances: {
-    code: string
-    description: string
-    amount: number
-  }[]
-  total: number
-  breakdown: Record<string, number>
+    code: string;
+    description: string;
+    amount: number;
+  }[];
+  total: number;
+  breakdown: Record<string, number>;
   metadata: {
-    effectiveDate: Date
-    calculatedAt: Date
-    source: 'fairwork' | 'cached'
-  }
+    effectiveDate: Date;
+    calculatedAt: Date;
+    source: 'fairwork' | 'cached';
+  };
 }
 
 interface CalculationOptions {
-  includeLoadings: boolean
-  includePenalties: boolean
-  includeAllowances: boolean
-  roundingPrecision: number
+  includeLoadings: boolean;
+  includePenalties: boolean;
+  includeAllowances: boolean;
+  roundingPrecision: number;
 }
 ```
 
@@ -154,24 +154,24 @@ interface CalculationOptions {
 
 ```typescript
 interface ValidationRule {
-  field: string
-  type: 'required' | 'range' | 'enum' | 'custom'
-  params?: Record<string, any>
-  message: string
+  field: string;
+  type: 'required' | 'range' | 'enum' | 'custom';
+  params?: Record<string, any>;
+  message: string;
 }
 
 interface ValidationResult {
-  isValid: boolean
+  isValid: boolean;
   errors: {
-    field: string
-    message: string
-    code: string
-  }[]
+    field: string;
+    message: string;
+    code: string;
+  }[];
   warnings: {
-    field: string
-    message: string
-    code: string
-  }[]
+    field: string;
+    message: string;
+    code: string;
+  }[];
 }
 ```
 
@@ -181,12 +181,12 @@ interface ValidationResult {
 
 ```typescript
 class FairWorkClient {
-  constructor(credentials: FairWorkCredentials)
+  constructor(credentials: FairWorkCredentials);
 
-  async getAwardRate(query: RateQuery): Promise<AwardRate>
-  async getClassifications(query: ClassificationQuery): Promise<Classification[]>
-  async validateRate(rate: AwardRate): Promise<ValidationResult>
-  async syncAwardData(): Promise<SyncJob>
+  async getAwardRate(query: RateQuery): Promise<AwardRate>;
+  async getClassifications(query: ClassificationQuery): Promise<Classification[]>;
+  async validateRate(rate: AwardRate): Promise<ValidationResult>;
+  async syncAwardData(): Promise<SyncJob>;
 }
 ```
 
@@ -194,12 +194,12 @@ class FairWorkClient {
 
 ```typescript
 class RateCache {
-  constructor(config: CacheConfig)
+  constructor(config: CacheConfig);
 
-  async get(key: string): Promise<CacheEntry<AwardRate> | null>
-  async set(key: string, data: AwardRate): Promise<void>
-  async invalidate(pattern: string): Promise<void>
-  async cleanup(): Promise<void>
+  async get(key: string): Promise<CacheEntry<AwardRate> | null>;
+  async set(key: string, data: AwardRate): Promise<void>;
+  async invalidate(pattern: string): Promise<void>;
+  async cleanup(): Promise<void>;
 }
 ```
 
@@ -207,12 +207,12 @@ class RateCache {
 
 ```typescript
 class SyncManager {
-  constructor(config: SyncConfig)
+  constructor(config: SyncConfig);
 
-  async scheduleSyncJob(type: string): Promise<SyncJob>
-  async runSync(job: SyncJob): Promise<void>
-  async getStatus(jobId: string): Promise<SyncJob>
-  async handleFailure(job: SyncJob, error: Error): Promise<void>
+  async scheduleSyncJob(type: string): Promise<SyncJob>;
+  async runSync(job: SyncJob): Promise<void>;
+  async getStatus(jobId: string): Promise<SyncJob>;
+  async handleFailure(job: SyncJob, error: Error): Promise<void>;
 }
 ```
 
@@ -223,16 +223,16 @@ class SyncManager {
 ```typescript
 // GET /api/rates
 interface GetRateParams {
-  award: string
-  classification: string
-  date: string
-  type: string
+  award: string;
+  classification: string;
+  date: string;
+  type: string;
 }
 
 // POST /api/rates/validate
 interface ValidateRateParams {
-  rate: AwardRate
-  options?: ValidationOptions
+  rate: AwardRate;
+  options?: ValidationOptions;
 }
 ```
 
@@ -241,16 +241,16 @@ interface ValidateRateParams {
 ```typescript
 // GET /api/classifications
 interface GetClassificationsParams {
-  award: string
-  search?: string
-  date?: string
-  page?: number
+  award: string;
+  search?: string;
+  date?: string;
+  page?: number;
 }
 
 // GET /api/classifications/{code}
 interface GetClassificationDetailParams {
-  code: string
-  date?: string
+  code: string;
+  date?: string;
 }
 ```
 
@@ -259,13 +259,13 @@ interface GetClassificationDetailParams {
 ```typescript
 // POST /api/sync
 interface CreateSyncJobParams {
-  type: string
-  options?: Record<string, any>
+  type: string;
+  options?: Record<string, any>;
 }
 
 // GET /api/sync/{jobId}
 interface GetSyncStatusParams {
-  jobId: string
+  jobId: string;
 }
 ```
 
@@ -283,10 +283,10 @@ enum ErrorType {
 }
 
 interface ServiceError {
-  type: ErrorType
-  message: string
-  code: string
-  details?: Record<string, any>
+  type: ErrorType;
+  message: string;
+  code: string;
+  details?: Record<string, any>;
 }
 ```
 
@@ -294,9 +294,9 @@ interface ServiceError {
 
 ```typescript
 interface ErrorResponse {
-  error: ServiceError
-  requestId: string
-  timestamp: string
+  error: ServiceError;
+  requestId: string;
+  timestamp: string;
 }
 ```
 
@@ -306,12 +306,12 @@ interface ErrorResponse {
 
 ```typescript
 interface ServiceMetrics {
-  apiCalls: number
-  cacheHits: number
-  cacheMisses: number
-  syncJobs: number
-  errors: number
-  latency: number
+  apiCalls: number;
+  cacheHits: number;
+  cacheMisses: number;
+  syncJobs: number;
+  errors: number;
+  latency: number;
 }
 ```
 
@@ -319,11 +319,11 @@ interface ServiceMetrics {
 
 ```typescript
 interface LogEntry {
-  level: 'debug' | 'info' | 'warn' | 'error'
-  message: string
-  timestamp: string
-  context: Record<string, any>
-  trace?: string
+  level: 'debug' | 'info' | 'warn' | 'error';
+  message: string;
+  timestamp: string;
+  context: Record<string, any>;
+  trace?: string;
 }
 ```
 
@@ -334,16 +334,16 @@ interface LogEntry {
 ```typescript
 interface ServiceConfig {
   api: {
-    baseUrl: string
-    timeout: number
-    retries: number
-  }
-  cache: CacheConfig
-  sync: SyncConfig
+    baseUrl: string;
+    timeout: number;
+    retries: number;
+  };
+  cache: CacheConfig;
+  sync: SyncConfig;
   monitoring: {
-    enabled: boolean
-    interval: number
-  }
+    enabled: boolean;
+    interval: number;
+  };
 }
 ```
 

@@ -4,8 +4,8 @@ A modern, comprehensive CRM system built with Next.js, focusing on training, saf
 
 ## Project Status
 
- **Current Status**: Beta Development (75% Complete)
- [View Full Technical Assessment](docs/TECHNICAL_ASSESSMENT.md)
+**Current Status**: Beta Development (75% Complete)
+[View Full Technical Assessment](docs/TECHNICAL_ASSESSMENT.md)
 
 ## Project Overview
 
@@ -14,12 +14,14 @@ CRM7 is a unified platform that combines the best features from multiple CRM sys
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js ^18.17.0
 - PNPM ^9.0.0
 - Supabase Account
 - Auth0 Account
 
 ### Installation
+
 ```bash
 # Clone the repository
 git clone https://github.com/Arcane-Fly/crm7.git
@@ -68,12 +70,14 @@ crm7/
 ## Documentation
 
 ### Development
+
 - [Getting Started Guide](docs/GETTING_STARTED.md)
 - [Contributing Guidelines](docs/CONTRIBUTING.md)
 - [Code Style Guide](docs/CODE_STYLE.md)
 - [Testing Guide](docs/TESTING.md)
 
 ### Architecture & Design
+
 - [Technical Assessment](docs/TECHNICAL_ASSESSMENT.md)
 - [Architecture Overview](docs/ARCHITECTURE.md)
 - [UI/UX Guidelines](docs/UI_UX_GUIDELINES.md)
@@ -81,6 +85,7 @@ crm7/
 - [API Documentation](docs/API.md)
 
 ### Deployment
+
 - [Deployment Guide](docs/DEPLOYMENT.md)
 - [Environment Setup](docs/ENVIRONMENT.md)
 - [Production Checklist](docs/PRODUCTION_CHECKLIST.md)
@@ -112,9 +117,11 @@ This project is private and confidential. All rights reserved.
 ## Support
 
 For support, please:
+
 1. Check our [Documentation](docs/)
 2. Open an issue
 3. Contact the development team
 
 ---
+
 Built with ❤️ by the CRM7 Team

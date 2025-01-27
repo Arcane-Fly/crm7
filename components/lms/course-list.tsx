@@ -1,8 +1,11 @@
-'use client'
+'use client';
 
-import { useLMS } from '@/lib/hooks/use-lms'
-import { useToast } from '@/components/ui/use-toast'
-import { Button } from '@/components/ui/button'
+import { format } from 'date-fns';
+import { Loader2, MoreVertical } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -10,57 +13,59 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
+} from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Badge } from '@/components/ui/badge'
-import { Loader2, MoreVertical } from 'lucide-react'
-import { format } from 'date-fns'
-import { useRouter } from 'next/navigation'
-import type { Course } from '@/lib/types/lms'
+} from '@/components/ui/dropdown-menu';
+import { useToast } from '@/components/ui/use-toast';
+import { useLMS } from '@/lib/hooks/use-lms';
+import type { Course } from '@/lib/types/lms';
 
 export function CourseList() {
-  const router = useRouter()
-  const { courses, updateCourse, isUpdatingCourse } = useLMS()
-  const { toast } = useToast()
+  const router = useRouter();
+  const { courses, updateCourse, isUpdatingCourse } = useLMS();
+  const { toast } = useToast();
 
   const onArchive = async (courseId: string) => {
     try {
-      await updateCourse(courseId, { status: 'inactive' })
+      await updateCourse(courseId, { status: 'inactive' });
       toast({
         title: 'Course archived',
         description: 'The course has been archived successfully.',
-      })
+      });
     } catch (error) {
       toast({
         title: 'Error',
         description: 'Failed to archive course. Please try again.',
         variant: 'destructive',
-      })
+      });
     }
-  }
+  };
 
   if (courses.isLoading) {
     return (
       <div className='flex items-center justify-center p-8'>
         <Loader2 className='h-8 w-8 animate-spin' />
       </div>
-    )
+    );
   }
 
   if (courses.isError) {
     return (
       <div className='flex flex-col items-center justify-center p-8'>
         <p className='text-sm text-muted-foreground'>Failed to load courses</p>
-        <Button variant='outline' onClick={() => courses.refetch()} className='mt-4'>
+        <Button
+          variant='outline'
+          onClick={() => courses.refetch()}
+          className='mt-4'
+        >
           Retry
         </Button>
       </div>
-    )
+    );
   }
 
   return (
@@ -77,7 +82,11 @@ export function CourseList() {
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant='ghost' size='icon' disabled={isUpdatingCourse}>
+                    <Button
+                      variant='ghost'
+                      size='icon'
+                      disabled={isUpdatingCourse}
+                    >
                       <MoreVertical className='h-4 w-4' />
                     </Button>
                   </DropdownMenuTrigger>
@@ -112,8 +121,8 @@ export function CourseList() {
               </div>
             </CardFooter>
           </Card>
-        )
+        );
       })}
     </div>
-  )
+  );
 }

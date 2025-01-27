@@ -11,9 +11,7 @@
   "endOfLine": "lf",
   "embeddedLanguageFormatting": "auto",
   "singleAttributePerLine": true,
-  "plugins": [
-    "prettier-plugin-tailwindcss"
-  ],
+  "plugins": ["prettier-plugin-tailwindcss"],
   "tailwindConfig": "./tailwind.config.ts",
   "tailwindFunctions": ["cn", "cva"]
 }

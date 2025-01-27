@@ -158,15 +158,15 @@ GET /templates/{id}/calculate
 
 ```typescript
 interface Employee {
-  id: string
-  firstName: string
-  lastName: string
-  email: string
-  role: string
-  department: string
-  status: 'active' | 'inactive'
-  hireDate: string
-  permissions: string[]
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
+  department: string;
+  status: 'active' | 'inactive';
+  hireDate: string;
+  permissions: string[];
 }
 ```
 
@@ -174,14 +174,14 @@ interface Employee {
 
 ```typescript
 interface TrainingRecord {
-  id: string
-  employeeId: string
-  courseId: string
-  status: 'enrolled' | 'in_progress' | 'completed'
-  startDate: string
-  completionDate?: string
-  score?: number
-  certificationId?: string
+  id: string;
+  employeeId: string;
+  courseId: string;
+  status: 'enrolled' | 'in_progress' | 'completed';
+  startDate: string;
+  completionDate?: string;
+  score?: number;
+  certificationId?: string;
 }
 ```
 
@@ -189,15 +189,15 @@ interface TrainingRecord {
 
 ```typescript
 interface IncidentReport {
-  id: string
-  reporterId: string
-  type: string
-  severity: 'low' | 'medium' | 'high' | 'critical'
-  description: string
-  location: string
-  dateTime: string
-  status: 'reported' | 'investigating' | 'resolved'
-  resolution?: string
+  id: string;
+  reporterId: string;
+  type: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  description: string;
+  location: string;
+  dateTime: string;
+  status: 'reported' | 'investigating' | 'resolved';
+  resolution?: string;
 }
 ```
 
@@ -212,12 +212,12 @@ interface IncidentReport {
 ```typescript
 interface ErrorResponse {
   error: {
-    code: string
-    message: string
-    details?: any
-  }
-  status: number
-  timestamp: string
+    code: string;
+    message: string;
+    details?: any;
+  };
+  status: number;
+  timestamp: string;
 }
 ```
 

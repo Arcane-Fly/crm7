@@ -1,46 +1,47 @@
-'use client'
+'use client';
 
-import { usePathname } from 'next/navigation'
-import { Breadcrumb, BreadcrumbItem } from '@/components/ui/breadcrumb'
-import { MAIN_NAV_ITEMS, SECTIONS } from '@/config/navigation'
-import { useMounted } from '@/lib/hooks/use-mounted'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Suspense } from 'react'
+import { usePathname } from 'next/navigation';
+import { Suspense } from 'react';
+
+import { Breadcrumb, BreadcrumbItem } from '@/components/ui/breadcrumb';
+import { Skeleton } from '@/components/ui/skeleton';
+import { MAIN_NAV_ITEMS, SECTIONS } from '@/config/navigation';
+import { useMounted } from '@/lib/hooks/use-mounted';
 
 function getBreadcrumbSegments(pathname: string | null) {
-  if (!pathname) return []
+  if (!pathname) return [];
 
-  const segments = pathname.split('/').filter(Boolean)
-  const breadcrumbs = []
+  const segments = pathname.split('/').filter(Boolean);
+  const breadcrumbs = [];
 
-  let currentPath = ''
+  let currentPath = '';
   for (const segment of segments) {
-    currentPath += `/${segment}`
+    currentPath += `/${segment}`;
 
     // Find main nav item
     if (segments.indexOf(segment) === 0) {
-      const mainItem = MAIN_NAV_ITEMS.find((item) => item.slug === segment)
+      const mainItem = MAIN_NAV_ITEMS.find((item) => item.slug === segment);
       if (mainItem) {
         breadcrumbs.push({
           title: mainItem.label,
           href: mainItem.href,
-        })
-        continue
+        });
+        continue;
       }
     }
 
     // Find section item
-    const sectionItems = SECTIONS[segments[0] as keyof typeof SECTIONS] || []
-    const sectionItem = sectionItems.find((item) => item.href === currentPath)
+    const sectionItems = SECTIONS[segments[0]] || [];
+    const sectionItem = sectionItems.find((item) => item.href === currentPath);
     if (sectionItem) {
       breadcrumbs.push({
         title: sectionItem.title,
         href: sectionItem.href,
-      })
+      });
     }
   }
 
-  return breadcrumbs
+  return breadcrumbs;
 }
 
 function LoadingSkeleton() {
@@ -51,22 +52,25 @@ function LoadingSkeleton() {
         <Skeleton className='h-[200px] w-full' />
         <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className='h-[100px] w-full' />
+            <Skeleton
+              key={i}
+              className='h-[100px] w-full'
+            />
           ))}
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default function SectionsLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname()
-  const mounted = useMounted()
-  const segments = getBreadcrumbSegments(pathname)
+  const pathname = usePathname();
+  const mounted = useMounted();
+  const segments = getBreadcrumbSegments(pathname);
 
   // Prevent hydration mismatch
   if (!mounted) {
-    return null
+    return null;
   }
 
   return (
@@ -75,7 +79,10 @@ export default function SectionsLayout({ children }: { children: React.ReactNode
         <Breadcrumb>
           <BreadcrumbItem href='/'>Home</BreadcrumbItem>
           {segments.map((segment, i) => (
-            <BreadcrumbItem key={i} href={segment.href}>
+            <BreadcrumbItem
+              key={i}
+              href={segment.href}
+            >
               {segment.title}
             </BreadcrumbItem>
           ))}
@@ -84,5 +91,5 @@ export default function SectionsLayout({ children }: { children: React.ReactNode
         <Suspense fallback={<LoadingSkeleton />}>{children}</Suspense>
       </div>
     </div>
-  )
+  );
 }

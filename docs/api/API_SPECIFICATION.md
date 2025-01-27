@@ -6,17 +6,17 @@
 
 ```typescript
 interface OAuth2Config {
-  clientId: string
-  clientSecret: string
-  redirectUri: string
-  scope: string[]
+  clientId: string;
+  clientSecret: string;
+  redirectUri: string;
+  scope: string[];
 }
 
 interface TokenResponse {
-  accessToken: string
-  refreshToken: string
-  expiresIn: number
-  tokenType: string
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  tokenType: string;
 }
 ```
 
@@ -26,29 +26,29 @@ interface TokenResponse {
 
 ```typescript
 interface Employee {
-  id: string
-  firstName: string
-  lastName: string
-  email: string
-  role: string
-  jobTitle: string
-  department: string
-  startDate: string
-  employmentType: 'permanent' | 'casual' | 'contractor'
-  status: 'active' | 'terminated' | 'on_leave'
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
+  jobTitle: string;
+  department: string;
+  startDate: string;
+  employmentType: 'permanent' | 'casual' | 'contractor';
+  status: 'active' | 'terminated' | 'on_leave';
   personalDetails: {
-    dateOfBirth: string
-    gender?: string
-    address: Address
-    contact: ContactInfo
-  }
+    dateOfBirth: string;
+    gender?: string;
+    address: Address;
+    contact: ContactInfo;
+  };
   employmentDetails: {
-    baseRate: number
-    rateUnit: 'hourly' | 'annually'
-    costCenter: string
-    manager: string
-    location: string
-  }
+    baseRate: number;
+    rateUnit: 'hourly' | 'annually';
+    costCenter: string;
+    manager: string;
+    location: string;
+  };
 }
 ```
 
@@ -56,25 +56,25 @@ interface Employee {
 
 ```typescript
 interface TrainingPlan {
-  id: string
-  employeeId: string
-  qualificationCode: string
-  startDate: string
-  expectedEndDate: string
-  status: 'planned' | 'in_progress' | 'completed'
+  id: string;
+  employeeId: string;
+  qualificationCode: string;
+  startDate: string;
+  expectedEndDate: string;
+  status: 'planned' | 'in_progress' | 'completed';
   units: Array<{
-    code: string
-    name: string
-    status: 'not_started' | 'in_progress' | 'completed'
-    completionDate?: string
-  }>
+    code: string;
+    name: string;
+    status: 'not_started' | 'in_progress' | 'completed';
+    completionDate?: string;
+  }>;
   assessments: Array<{
-    id: string
-    type: 'practical' | 'theory' | 'workplace'
-    status: 'scheduled' | 'completed' | 'failed'
-    date?: string
-    assessor?: string
-  }>
+    id: string;
+    type: 'practical' | 'theory' | 'workplace';
+    status: 'scheduled' | 'completed' | 'failed';
+    date?: string;
+    assessor?: string;
+  }>;
 }
 ```
 
@@ -82,32 +82,32 @@ interface TrainingPlan {
 
 ```typescript
 interface PayrollData {
-  employeeId: string
+  employeeId: string;
   payPeriod: {
-    startDate: string
-    endDate: string
-    processDate: string
-  }
+    startDate: string;
+    endDate: string;
+    processDate: string;
+  };
   earnings: Array<{
-    type: string
-    amount: number
-    hours?: number
-    rate?: number
-  }>
+    type: string;
+    amount: number;
+    hours?: number;
+    rate?: number;
+  }>;
   deductions: Array<{
-    type: string
-    amount: number
-    preTax: boolean
-  }>
+    type: string;
+    amount: number;
+    preTax: boolean;
+  }>;
   tax: {
-    amount: number
-    taxScale: string
-  }
+    amount: number;
+    taxScale: string;
+  };
   superannuation: {
-    amount: number
-    fund: string
-    memberNumber: string
-  }
+    amount: number;
+    fund: string;
+    memberNumber: string;
+  };
 }
 ```
 
@@ -115,20 +115,20 @@ interface PayrollData {
 
 ```typescript
 interface LeaveRequest {
-  id: string
-  employeeId: string
-  type: 'annual' | 'sick' | 'long_service' | 'unpaid'
-  startDate: string
-  endDate: string
-  status: 'pending' | 'approved' | 'rejected'
-  hours: number
+  id: string;
+  employeeId: string;
+  type: 'annual' | 'sick' | 'long_service' | 'unpaid';
+  startDate: string;
+  endDate: string;
+  status: 'pending' | 'approved' | 'rejected';
+  hours: number;
   attachments?: Array<{
-    id: string
-    type: string
-    url: string
-  }>
-  approver?: string
-  comments?: string[]
+    id: string;
+    type: string;
+    url: string;
+  }>;
+  approver?: string;
+  comments?: string[];
 }
 ```
 
@@ -136,26 +136,26 @@ interface LeaveRequest {
 
 ```typescript
 interface Document {
-  id: string
-  type: 'contract' | 'policy' | 'certificate' | 'other'
-  title: string
-  version: string
-  status: 'draft' | 'active' | 'archived'
+  id: string;
+  type: 'contract' | 'policy' | 'certificate' | 'other';
+  title: string;
+  version: string;
+  status: 'draft' | 'active' | 'archived';
   content: {
-    url: string
-    mimeType: string
-    size: number
-  }
+    url: string;
+    mimeType: string;
+    size: number;
+  };
   metadata: {
-    createdAt: string
-    createdBy: string
-    tags: string[]
-    expiryDate?: string
-  }
+    createdAt: string;
+    createdBy: string;
+    tags: string[];
+    expiryDate?: string;
+  };
   permissions: Array<{
-    role: string
-    access: 'read' | 'write' | 'admin'
-  }>
+    role: string;
+    access: 'read' | 'write' | 'admin';
+  }>;
 }
 ```
 
@@ -165,24 +165,24 @@ interface Document {
 
 ```typescript
 interface AwardInterpretation {
-  awardCode: string
-  classification: string
-  employmentType: string
-  date: string
+  awardCode: string;
+  classification: string;
+  employmentType: string;
+  date: string;
   calculation: {
-    baseRate: number
-    casualLoading?: number
+    baseRate: number;
+    casualLoading?: number;
     penalties: Array<{
-      type: string
-      rate: number
-      amount: number
-    }>
+      type: string;
+      rate: number;
+      amount: number;
+    }>;
     allowances: Array<{
-      type: string
-      amount: number
-    }>
-    total: number
-  }
+      type: string;
+      amount: number;
+    }>;
+    total: number;
+  };
 }
 ```
 
@@ -190,22 +190,22 @@ interface AwardInterpretation {
 
 ```typescript
 interface ComplianceReport {
-  type: 'award' | 'superannuation' | 'tax' | 'training'
+  type: 'award' | 'superannuation' | 'tax' | 'training';
   period: {
-    start: string
-    end: string
-  }
-  status: 'compliant' | 'non_compliant' | 'review_required'
+    start: string;
+    end: string;
+  };
+  status: 'compliant' | 'non_compliant' | 'review_required';
   issues: Array<{
-    severity: 'high' | 'medium' | 'low'
-    description: string
-    remediation: string
-  }>
+    severity: 'high' | 'medium' | 'low';
+    description: string;
+    remediation: string;
+  }>;
   metrics: {
-    totalChecked: number
-    issuesFound: number
-    complianceRate: number
-  }
+    totalChecked: number;
+    issuesFound: number;
+    complianceRate: number;
+  };
 }
 ```
 
@@ -221,13 +221,13 @@ type WebhookEvent =
   | 'leave.approved'
   | 'training.completed'
   | 'document.uploaded'
-  | 'compliance.alert'
+  | 'compliance.alert';
 
 interface WebhookPayload<T> {
-  eventId: string
-  eventType: WebhookEvent
-  timestamp: string
-  data: T
+  eventId: string;
+  eventType: WebhookEvent;
+  timestamp: string;
+  data: T;
 }
 ```
 
@@ -237,11 +237,11 @@ interface WebhookPayload<T> {
 
 ```typescript
 interface ApiError {
-  code: string
-  message: string
-  details?: Record<string, any>
-  timestamp: string
-  requestId: string
+  code: string;
+  message: string;
+  details?: Record<string, any>;
+  timestamp: string;
+  requestId: string;
 }
 
 enum ErrorCode {
@@ -260,12 +260,12 @@ enum ErrorCode {
 
 ```typescript
 interface RateLimit {
-  endpoint: string
-  method: string
-  limit: number
-  window: number
-  remaining: number
-  reset: number
+  endpoint: string;
+  method: string;
+  limit: number;
+  window: number;
+  remaining: number;
+  reset: number;
 }
 ```
 
@@ -275,7 +275,7 @@ interface RateLimit {
 
 ```typescript
 interface VersionHeader {
-  'API-Version': string
-  'Accept-Version': string
+  'API-Version': string;
+  'Accept-Version': string;
 }
 ```

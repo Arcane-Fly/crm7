@@ -11,6 +11,7 @@ By participating in this project, you agree to abide by our Code of Conduct. Ple
 1. Fork the repository
 
 2. Clone your fork:
+
    ```bash
    git clone https://github.com/your-username/crm7.git
    ```
@@ -93,23 +94,28 @@ git checkout -b hotfix/critical-fix main
 
 ```markdown
 ## Description
+
 Brief description of changes
 
 ## Type of Change
+
 - [ ] Bug fix
 - [ ] New feature
 - [ ] Breaking change
 - [ ] Documentation update
 
 ## Testing
+
 - [ ] Unit tests added/updated
 - [ ] Integration tests added/updated
 - [ ] Manual testing completed
 
 ## Screenshots
+
 (if applicable)
 
 ## Checklist
+
 - [ ] Code follows style guidelines
 - [ ] Tests pass locally
 - [ ] Documentation updated
@@ -141,11 +147,13 @@ Brief description of changes
 ### Documentation Standards
 
 1. **Code Comments**
+
    - Use JSDoc for functions/methods
    - Explain complex logic
    - Document type definitions
 
 2. **README Updates**
+
    - Keep installation steps current
    - Update feature list
    - Maintain troubleshooting guide
@@ -181,10 +189,10 @@ describe('Feature', () => {
   it('should work end-to-end', async () => {
     // Setup
     const { getByText, findByRole } = render(<Feature />);
-    
+
     // Interaction
     await userEvent.click(getByText('Submit'));
-    
+
     // Assertion
     expect(await findByRole('alert')).toBeInTheDocument();
   });
@@ -204,6 +212,7 @@ footer
 ```
 
 ### Types
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation
@@ -257,6 +266,7 @@ Closes #123
 ## Recognition
 
 Contributors will be:
+
 - Added to CONTRIBUTORS.md
 - Mentioned in release notes
 - Recognized in project documentation

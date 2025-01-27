@@ -1,5 +1,4 @@
-import React from 'react'
-import type { ChartData, ChartOptions } from 'chart.js'
+import type { ChartData, ChartOptions } from 'chart.js';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,8 +10,9 @@ import {
   Title,
   Tooltip,
   Legend,
-} from 'chart.js'
-import { Bar, Line, Pie } from 'react-chartjs-2'
+} from 'chart.js';
+import React from 'react';
+import { Bar, Line, Pie } from 'react-chartjs-2';
 
 ChartJS.register(
   CategoryScale,
@@ -23,16 +23,16 @@ ChartJS.register(
   ArcElement,
   Title,
   Tooltip,
-  Legend
-)
+  Legend,
+);
 
 export interface ChartProps {
-  data: ChartData<any>
-  options?: ChartOptions<any>
-  height?: number
-  width?: number
-  className?: string
-  containerClassName?: string
+  data: ChartData<any>;
+  options?: ChartOptions<any>;
+  height?: number;
+  width?: number;
+  className?: string;
+  containerClassName?: string;
 }
 
 const defaultOptions: ChartOptions<any> = {
@@ -66,7 +66,7 @@ const defaultOptions: ChartOptions<any> = {
       },
     },
   },
-}
+};
 
 function ChartContainer({
   children,
@@ -74,34 +74,51 @@ function ChartContainer({
   containerClassName,
   height = 300,
 }: {
-  children: React.ReactNode
-  className?: string
-  containerClassName?: string
-  height?: number
+  children: React.ReactNode;
+  className?: string;
+  containerClassName?: string;
+  height?: number;
 }) {
   return (
     <div className={containerClassName}>
-      <div className={className} style={{ height: height }}>
+      <div
+        className={className}
+        style={{ height: height }}
+      >
         {children}
       </div>
     </div>
-  )
+  );
 }
 
 export function BarChart({ data, options, height, className, containerClassName }: ChartProps) {
   return (
-    <ChartContainer height={height} className={className} containerClassName={containerClassName}>
-      <Bar data={data} options={{ ...defaultOptions, ...options }} />
+    <ChartContainer
+      height={height}
+      className={className}
+      containerClassName={containerClassName}
+    >
+      <Bar
+        data={data}
+        options={{ ...defaultOptions, ...options }}
+      />
     </ChartContainer>
-  )
+  );
 }
 
 export function LineChart({ data, options, height, className, containerClassName }: ChartProps) {
   return (
-    <ChartContainer height={height} className={className} containerClassName={containerClassName}>
-      <Line data={data} options={{ ...defaultOptions, ...options }} />
+    <ChartContainer
+      height={height}
+      className={className}
+      containerClassName={containerClassName}
+    >
+      <Line
+        data={data}
+        options={{ ...defaultOptions, ...options }}
+      />
     </ChartContainer>
-  )
+  );
 }
 
 export function PieChart({ data, options, height, className, containerClassName }: ChartProps) {
@@ -115,13 +132,20 @@ export function PieChart({ data, options, height, className, containerClassName 
         position: 'right' as const,
       },
     },
-  }
+  };
 
   return (
-    <ChartContainer height={height} className={className} containerClassName={containerClassName}>
-      <Pie data={data} options={{ ...pieOptions, ...options }} />
+    <ChartContainer
+      height={height}
+      className={className}
+      containerClassName={containerClassName}
+    >
+      <Pie
+        data={data}
+        options={{ ...pieOptions, ...options }}
+      />
     </ChartContainer>
-  )
+  );
 }
 
 // Export chart colors for consistent styling
@@ -132,19 +156,19 @@ export const chartColors = {
   warning: 'rgb(234, 179, 8)',
   error: 'rgb(239, 68, 68)',
   gray: 'rgb(156, 163, 175)',
-} as const
+} as const;
 
 // Export chart gradients for consistent styling
 export function getChartGradient(ctx: CanvasRenderingContext2D, color: string) {
-  const gradient = ctx.createLinearGradient(0, 0, 0, 400)
-  gradient.addColorStop(0, color)
-  gradient.addColorStop(1, 'rgba(255, 255, 255, 0)')
-  return gradient
+  const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+  gradient.addColorStop(0, color);
+  gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  return gradient;
 }
 
 // Export helper for responsive font sizes
 export function getResponsiveFontSize(width: number): number {
-  if (width < 400) return 10
-  if (width < 600) return 12
-  return 14
+  if (width < 400) return 10;
+  if (width < 600) return 12;
+  return 14;
 }

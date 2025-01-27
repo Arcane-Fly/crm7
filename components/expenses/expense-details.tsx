@@ -1,13 +1,15 @@
-'use client'
+'use client';
 
-import { type Expense } from '@/lib/services/expense'
-import { formatDate } from '@/lib/utils'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink } from 'lucide-react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { type Expense } from '@/lib/services/expense';
+import { formatDate } from '@/lib/utils';
+
 
 interface ExpenseDetailsProps {
-  expense: Expense
+  expense: Expense;
 }
 
 export function ExpenseDetails({ expense }: ExpenseDetailsProps) {
@@ -80,5 +82,5 @@ export function ExpenseDetails({ expense }: ExpenseDetailsProps) {
         </div>
       )}
     </div>
-  )
+  );
 }

@@ -1,9 +1,11 @@
-import { render, screen } from '@testing-library/react'
-import { vi } from 'vitest'
-import { useBankIntegration } from '@/lib/hooks/use-bank-integration'
-import { FinancialDashboard } from '../financial-dashboard'
-import type { PostgrestError } from '@supabase/supabase-js'
-import type { Database } from '@/types/supabase'
+import type { PostgrestError } from '@supabase/supabase-js';
+import { render, screen } from '@testing-library/react';
+import { vi } from 'vitest';
+
+import { useBankIntegration } from '@/lib/hooks/use-bank-integration';
+import type { Database } from '@/types/supabase';
+
+import { FinancialDashboard } from '../financial-dashboard';
 
 const mockTransactions: Database['public']['Tables']['bank_transactions']['Row'][] = [
   {
@@ -19,7 +21,7 @@ const mockTransactions: Database['public']['Tables']['bank_transactions']['Row']
     created_at: '2025-01-20T00:00:00Z',
     updated_at: '2025-01-20T00:00:00Z',
   },
-]
+];
 
 const mockBankAccounts: Database['public']['Tables']['bank_accounts']['Row'][] = [
   {
@@ -34,7 +36,7 @@ const mockBankAccounts: Database['public']['Tables']['bank_accounts']['Row'][] =
     created_at: '2025-01-20T00:00:00Z',
     updated_at: '2025-01-20T00:00:00Z',
   },
-]
+];
 
 vi.mock('@/lib/hooks/use-bank-integration', () => ({
   useBankIntegration: () => ({
@@ -52,13 +54,13 @@ vi.mock('@/lib/hooks/use-bank-integration', () => ({
     createPayment: vi.fn(),
     refreshData: vi.fn(),
   }),
-}))
+}));
 
 describe('FinancialDashboard', () => {
   it('renders without crashing', () => {
-    render(<FinancialDashboard />)
-    expect(screen.getByText('Financial Overview')).toBeInTheDocument()
-  })
+    render(<FinancialDashboard />);
+    expect(screen.getByText('Financial Overview')).toBeInTheDocument();
+  });
 
   it('displays error state for transactions', () => {
     vi.mocked(useBankIntegration as jest.Mock).mockReturnValueOnce({
@@ -75,11 +77,11 @@ describe('FinancialDashboard', () => {
       createBankAccount: vi.fn(),
       createPayment: vi.fn(),
       refreshData: vi.fn(),
-    })
+    });
 
-    render(<FinancialDashboard />)
-    expect(screen.getByText('Failed to load transactions')).toBeInTheDocument()
-  })
+    render(<FinancialDashboard />);
+    expect(screen.getByText('Failed to load transactions')).toBeInTheDocument();
+  });
 
   it('displays loading state', () => {
     vi.mocked(useBankIntegration).mockReturnValueOnce({
@@ -99,10 +101,10 @@ describe('FinancialDashboard', () => {
       isLoading: false,
       error: null,
       isCreatingBankAccount: false,
-      isCreatingPayment: false
-    })
+      isCreatingPayment: false,
+    });
 
-    render(<FinancialDashboard />)
-    expect(screen.getByText('Loading...')).toBeInTheDocument()
-  })
-})
+    render(<FinancialDashboard />);
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
+  });
+});

@@ -1,14 +1,16 @@
-import { useCallback, useState } from 'react'
-import { useDropzone } from 'react-dropzone'
-import { Button } from './button'
-import { cn } from '@/lib/utils'
+import { useCallback, useState } from 'react';
+import { useDropzone } from 'react-dropzone';
+
+import { cn } from '@/lib/utils';
+
+import { Button } from './button';
 
 export interface FileUploaderProps {
-  accept?: string
-  maxSize?: number
-  onFileSelect: (files: File[]) => void
-  multiple?: boolean
-  className?: string
+  accept?: string;
+  maxSize?: number;
+  onFileSelect: (files: File[]) => void;
+  multiple?: boolean;
+  className?: string;
 }
 
 export function FileUploader({
@@ -18,25 +20,25 @@ export function FileUploader({
   multiple = false,
   className,
 }: FileUploaderProps) {
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null);
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
-      setError(null)
+      setError(null);
       if (maxSize && acceptedFiles.some((file) => file.size > maxSize)) {
-        setError(`File size exceeds ${maxSize / (1024 * 1024)}MB limit`)
-        return
+        setError(`File size exceeds ${maxSize / (1024 * 1024)}MB limit`);
+        return;
       }
-      onFileSelect(acceptedFiles)
+      onFileSelect(acceptedFiles);
     },
-    [maxSize, onFileSelect]
-  )
+    [maxSize, onFileSelect],
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: accept ? { [accept]: [] } : undefined,
     multiple,
-  })
+  });
 
   return (
     <div className='space-y-2'>
@@ -45,7 +47,7 @@ export function FileUploader({
         className={cn(
           'cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors hover:border-primary',
           isDragActive && 'border-primary bg-primary/10',
-          className
+          className,
         )}
       >
         <input {...getInputProps()} />
@@ -54,11 +56,15 @@ export function FileUploader({
             ? 'Drop the files here...'
             : 'Drag and drop files here, or click to select files'}
         </p>
-        <Button type='button' variant='outline' className='mt-2'>
+        <Button
+          type='button'
+          variant='outline'
+          className='mt-2'
+        >
           Select Files
         </Button>
       </div>
       {error && <p className='text-sm text-red-500'>{error}</p>}
     </div>
-  )
+  );
 }

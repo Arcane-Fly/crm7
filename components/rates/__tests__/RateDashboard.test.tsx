@@ -1,10 +1,13 @@
-import { render, screen, fireEvent } from '@testing-library/react'
-import { vi } from 'vitest'
-import { RateDashboard } from '../RateDashboard'
-import { useRates } from '@/lib/hooks/use-rates'
-import '@testing-library/jest-dom'
+import { render, screen, fireEvent } from '@testing-library/react';
+import { vi } from 'vitest';
 
-vi.mock('@/lib/hooks/use-rates')
+import { useRates } from '@/lib/hooks/use-rates';
+import { createMockQueryResult } from '@/types/test-utils';
+
+import { RateDashboard } from '../RateDashboard';
+import '@testing-library/jest-dom';
+
+vi.mock('@/lib/hooks/use-rates');
 
 describe('RateDashboard', () => {
   it('renders without crashing', async () => {
@@ -19,16 +22,16 @@ describe('RateDashboard', () => {
       ],
       isLoading: false,
       error: null,
-    })
+    });
 
-    render(<RateDashboard orgId='test-org' />)
+    render(<RateDashboard orgId='test-org' />);
 
     // Get initial elements
-    const rateManagementElement = screen.getByText('Rate Management')
+    const rateManagementElement = screen.getByText('Rate Management');
 
     // Verify
-    expect(rateManagementElement).toBeInTheDocument()
-  })
+    expect(rateManagementElement).toBeInTheDocument();
+  });
 
   it('displays rates data', async () => {
     vi.mocked(useRates).mockReturnValueOnce({
@@ -42,53 +45,57 @@ describe('RateDashboard', () => {
       ],
       isLoading: false,
       error: null,
-    })
+    });
 
-    render(<RateDashboard orgId='test-org' />)
+    render(<RateDashboard orgId='test-org' />);
 
     // Get initial elements
-    const rateElement = screen.getByText('$25.00')
+    const rateElement = screen.getByText('$25.00');
 
     // Verify
-    expect(rateElement).toBeInTheDocument()
-  })
+    expect(rateElement).toBeInTheDocument();
+  });
 
   it('shows loading state', async () => {
-    vi.mocked(useRates).mockReturnValueOnce({
-      data: undefined,
-      isLoading: true,
-      error: null,
-    })
+    vi.mocked(useRates).mockReturnValueOnce(
+      createMockQueryResult({
+        data: undefined,
+        isLoading: true,
+        error: null,
+      }),
+    );
 
-    render(<RateDashboard orgId='test-org' />)
+    render(<RateDashboard orgId='test-org' />);
 
     // Get initial elements
-    const loadingElement = screen.queryByText('Loading...')
+    const loadingElement = screen.queryByText('Loading...');
 
     // Verify
-    expect(loadingElement).not.toBeInTheDocument()
-  })
+    expect(loadingElement).not.toBeInTheDocument();
+  });
 
   it('shows error state', async () => {
-    vi.mocked(useRates).mockReturnValueOnce({
-      data: undefined,
-      isLoading: false,
-      error: new Error('Failed to load rates'),
-    })
+    vi.mocked(useRates).mockReturnValueOnce(
+      createMockQueryResult({
+        data: undefined,
+        isLoading: false,
+        error: new Error('Failed to load rates'),
+      }),
+    );
 
-    render(<RateDashboard orgId='test-org' />)
+    render(<RateDashboard orgId='test-org' />);
 
     // Get initial elements
-    const errorElement = screen.queryByText('Error: Failed to load rates')
+    const errorElement = screen.queryByText('Error: Failed to load rates');
 
     // Verify
-    expect(errorElement).toBeInTheDocument()
-  })
+    expect(errorElement).toBeInTheDocument();
+  });
 
   it('filters rates by date range', async () => {
-    render(<RateDashboard orgId='test-org' />)
-    const dateRangeButton = screen.getByRole('button', { name: /Select Date Range/i })
-    fireEvent.click(dateRangeButton)
+    render(<RateDashboard orgId='test-org' />);
+    const dateRangeButton = screen.getByRole('button', { name: /Select Date Range/i });
+    fireEvent.click(dateRangeButton);
     // Add more specific date range selection tests based on your date picker implementation
-  })
-})
+  });
+});

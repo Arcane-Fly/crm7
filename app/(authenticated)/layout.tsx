@@ -1,22 +1,41 @@
-'use client'
+// Core imports
+import { type ReactNode, type ReactElement } from 'react';
 
-import { SidebarProvider } from '@/components/layout/improved-sidebar'
-import { AppSidebar } from '@/components/layout/app-sidebar'
-import { Header } from '@/components/layout/Header'
-import { HEADER_HEIGHT } from '@/config/constants'
+// Next imports
+import { redirect } from 'next/navigation';
 
-export default function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
+// Components
+import { Toaster } from 'react-hot-toast';
+
+// App imports
+import { Providers } from '@/app/providers';
+
+// Utils
+import { getSession } from '@/lib/supabase/utils';
+
+/**
+ * Interface for the AuthenticatedLayout component props.
+ */
+interface AuthenticatedLayoutProps {
+  children: ReactNode;
+}
+
+/**
+ * Renders an authenticated layout, providing a sidebar and header using the Supabase session.
+ */
+export default async function AuthenticatedLayout({ children }: AuthenticatedLayoutProps): Promise<ReactElement> {
+  const session = await getSession();
+
+  if (!session) {
+    redirect('/login');
+  }
+
   return (
-    <SidebarProvider>
-      <div className='relative flex min-h-screen flex-col'>
-        <Header />
-        <div className='flex flex-1' style={{ height: `calc(100vh - ${HEADER_HEIGHT}px)` }}>
-          <AppSidebar isOpen={true} />
-          <main className='flex-1 overflow-y-auto'>
-            <div className='container mx-auto py-6'>{children}</div>
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
-  )
+    <>
+      <Providers>
+        {children}
+        <Toaster />
+      </Providers>
+    </>
+  );
 }

@@ -1,15 +1,15 @@
-'use client'
+'use client';
 
-import { useRealtimeData } from '@/lib/hooks/useRealtimeData'
-import { createTimeEntry } from '@/lib/supabase/utils'
+import { useRealtimeData } from '@/lib/hooks/useRealtimeData';
+import { createTimeEntry } from '@/lib/supabase/utils';
 
 interface TimeEntry {
-  id: string
-  employee_id: string
-  start_time: string
-  end_time: string
-  break_duration: number
-  status: 'pending' | 'approved' | 'rejected'
+  id: string;
+  employee_id: string;
+  start_time: string;
+  end_time: string;
+  break_duration: number;
+  status: 'pending' | 'approved' | 'rejected';
 }
 
 export function TimeEntriesList({ employeeId }: { employeeId: string }) {
@@ -17,10 +17,10 @@ export function TimeEntriesList({ employeeId }: { employeeId: string }) {
     data: timeEntries,
     isLoading,
     error,
-  } = useRealtimeData<TimeEntry>('time_entries', [], { column: 'employee_id', value: employeeId })
+  } = useRealtimeData<TimeEntry>('time_entries', [], { column: 'employee_id', value: employeeId });
 
-  if (isLoading) return <div>Loading...</div>
-  if (error) return <div>Error: {error.message}</div>
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
 
   const handleAddEntry = async () => {
     try {
@@ -30,11 +30,11 @@ export function TimeEntriesList({ employeeId }: { employeeId: string }) {
         end_time: new Date().toISOString(),
         break_duration: 0,
         status: 'pending',
-      })
+      });
     } catch (err) {
-      console.error('Error adding time entry:', err)
+      console.error('Error adding time entry:', err);
     }
-  }
+  };
 
   return (
     <div>
@@ -50,5 +50,5 @@ export function TimeEntriesList({ employeeId }: { employeeId: string }) {
         ))}
       </ul>
     </div>
-  )
+  );
 }

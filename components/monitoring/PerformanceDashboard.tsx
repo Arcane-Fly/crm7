@@ -1,58 +1,59 @@
-import { type ReactElement } from 'react'
-import { Card } from '@/components/ui/card'
-import { LineChart } from '@/components/ui/line-chart'
-import { usePerformance } from '@/components/providers/PerformanceProvider'
-import type { ChartData, ChartDataset } from 'chart.js'
+import type { ChartData, ChartDataset } from 'chart.js';
+import { type ReactElement } from 'react';
+
+import { usePerformance } from '@/components/providers/PerformanceProvider';
+import { Card } from '@/components/ui/card';
+import { LineChart } from '@/components/ui/line-chart';
 
 interface MetricData {
-  timestamp: number
-  value: number
-  type: 'pageLoad' | 'memory' | 'networkRequest'
+  timestamp: number;
+  value: number;
+  type: 'pageLoad' | 'memory' | 'networkRequest';
 }
 
 function calculateStats(values: number[]) {
-  if (values.length === 0) return { avg: 0, min: 0, max: 0, p95: 0 }
+  if (values.length === 0) return { avg: 0, min: 0, max: 0, p95: 0 };
 
-  const sorted = [...values].sort((a, b) => a - b)
-  const sum = sorted.reduce((a, b) => a + b, 0)
+  const sorted = [...values].sort((a, b) => a - b);
+  const sum = sorted.reduce((a, b) => a + b, 0);
 
   return {
     avg: sum / values.length,
     min: sorted[0],
     max: sorted[sorted.length - 1],
     p95: sorted[Math.floor(sorted.length * 0.95)],
-  }
+  };
 }
 
 function formatChartData(metrics: MetricData[]): ChartData<'line'> {
-  const sortedMetrics = [...metrics].sort((a, b) => a.timestamp - b.timestamp)
+  const sortedMetrics = [...metrics].sort((a, b) => a.timestamp - b.timestamp);
   const dataset: ChartDataset<'line'> = {
     label: 'Response Time (ms)',
     data: sortedMetrics.map((m) => m.value),
     borderColor: 'rgb(75, 192, 192)',
     backgroundColor: 'rgba(75, 192, 192, 0.5)',
     tension: 0.4,
-  }
+  };
 
   return {
     labels: sortedMetrics.map((m) => new Date(m.timestamp).toLocaleTimeString()),
     datasets: [dataset],
-  }
+  };
 }
 
 export function PerformanceDashboard(): ReactElement {
-  const { state } = usePerformance()
-  const { metrics } = state
+  const { state } = usePerformance();
+  const { metrics } = state;
 
-  const pageLoadMetrics = metrics.filter((m) => m.type === 'pageLoad')
-  const memoryMetrics = metrics.filter((m) => m.type === 'memory')
-  const networkRequestMetrics = metrics.filter((m) => m.type === 'networkRequest')
+  const pageLoadMetrics = metrics.filter((m) => m.type === 'pageLoad');
+  const memoryMetrics = metrics.filter((m) => m.type === 'memory');
+  const networkRequestMetrics = metrics.filter((m) => m.type === 'networkRequest');
 
-  const pageLoadStats = calculateStats(pageLoadMetrics.map((m) => m.value))
-  const memoryStats = calculateStats(memoryMetrics.map((m) => m.value))
-  const networkRequestStats = calculateStats(networkRequestMetrics.map((m) => m.value))
+  const pageLoadStats = calculateStats(pageLoadMetrics.map((m) => m.value));
+  const memoryStats = calculateStats(memoryMetrics.map((m) => m.value));
+  const networkRequestStats = calculateStats(networkRequestMetrics.map((m) => m.value));
 
-  const chartData = formatChartData(metrics)
+  const chartData = formatChartData(metrics);
 
   return (
     <div className='space-y-4 p-4'>
@@ -97,5 +98,5 @@ export function PerformanceDashboard(): ReactElement {
         </div>
       </Card>
     </div>
-  )
+  );
 }

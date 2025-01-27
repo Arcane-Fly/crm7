@@ -1,13 +1,13 @@
-'use client'
+'use client';
 
-import * as React from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
-import { useAuth } from '@/lib/auth/context'
-import { expenseService } from '@/lib/services/expense'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2, Upload } from 'lucide-react';
+import * as React from 'react';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
+
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import {
   Form,
   FormControl,
@@ -15,18 +15,20 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { toast } from '@/components/ui/use-toast'
-import { Loader2, Upload } from 'lucide-react'
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from '@/components/ui/use-toast';
+import { useAuth } from '@/lib/auth/context';
+import { expenseService } from '@/lib/services/expense';
+
 
 const expenseSchema = z.object({
   amount: z.number().min(0.01, 'Amount must be greater than 0'),
@@ -34,17 +36,17 @@ const expenseSchema = z.object({
   category: z.enum(['travel', 'meals', 'supplies', 'training', 'equipment', 'other']),
   receipt: z.instanceof(File).optional(),
   notes: z.string().optional(),
-})
+});
 
-type ExpenseFormValues = z.infer<typeof expenseSchema>
+type ExpenseFormValues = z.infer<typeof expenseSchema>;
 
 interface ExpenseFormProps {
-  onSuccess?: () => void
+  onSuccess?: () => void;
 }
 
 export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
-  const { user } = useAuth()
-  const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const { user } = useAuth();
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const form = useForm<ExpenseFormValues>({
     resolver: zodResolver(expenseSchema),
@@ -54,18 +56,18 @@ export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
       category: 'other',
       notes: '',
     },
-  })
+  });
 
   const onSubmit = async (values: ExpenseFormValues) => {
-    if (!user) return
+    if (!user) return;
 
     try {
-      setIsSubmitting(true)
+      setIsSubmitting(true);
 
-      let receipt_url
+      let receipt_url;
       if (values.receipt) {
-        const { data } = await expenseService.uploadReceipt(values.receipt)
-        receipt_url = data.path
+        const { data } = await expenseService.uploadReceipt(values.receipt);
+        receipt_url = data.path;
       }
 
       await expenseService.createExpense({
@@ -77,30 +79,33 @@ export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
         receipt_url,
         notes: values.notes,
         status: 'draft',
-      })
+      });
 
       toast({
         title: 'Expense submitted',
         description: 'Your expense has been submitted for approval.',
-      })
+      });
 
-      form.reset()
-      onSuccess?.()
+      form.reset();
+      onSuccess?.();
     } catch (error) {
       toast({
         title: 'Error',
         description: 'Failed to submit expense. Please try again.',
         variant: 'destructive',
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <Card className='p-6'>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className='space-y-6'
+        >
           <FormField
             control={form.control}
             name='amount'
@@ -141,7 +146,10 @@ export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Category</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder='Select a category' />
@@ -173,8 +181,8 @@ export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
                       type='file'
                       accept='image/*,.pdf'
                       onChange={(e) => {
-                        const file = e.target.files?.[0]
-                        if (file) onChange(file)
+                        const file = e.target.files?.[0];
+                        if (file) onChange(file);
                       }}
                       {...field}
                     />
@@ -209,12 +217,15 @@ export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
             )}
           />
 
-          <Button type='submit' disabled={isSubmitting}>
+          <Button
+            type='submit'
+            disabled={isSubmitting}
+          >
             {isSubmitting && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
             Submit Expense
           </Button>
         </form>
       </Form>
     </Card>
-  )
+  );
 }

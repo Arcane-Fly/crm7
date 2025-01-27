@@ -16,9 +16,6 @@ const logoPath = path.join(publicDir, 'logo.svg');
 // Create all versions
 Promise.all(
   sizes.map(({ width, height, name }) =>
-    sharp(logoPath)
-      .resize(width, height)
-      .png()
-      .toFile(path.join(publicDir, name))
-  )
+    sharp(logoPath).resize(width, height).png().toFile(path.join(publicDir, name)),
+  ),
 ).catch(console.error);

@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod';
 
 /**
  * Environment variable schema validation
@@ -42,7 +42,7 @@ const envSchema = z.object({
   // Application
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(3001),
-})
+});
 
 /**
  * Validate and export environment configuration
@@ -67,4 +67,4 @@ export const env = envSchema.parse({
   CORS_ORIGINS: process.env.CORS_ORIGINS || '',
   NODE_ENV: process.env.NODE_ENV as any,
   PORT: Number(process.env.PORT),
-})
+});

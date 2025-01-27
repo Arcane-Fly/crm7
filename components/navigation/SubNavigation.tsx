@@ -1,33 +1,34 @@
-import React from 'react'
-import { useRouter } from 'next/router'
-import { motion } from 'framer-motion'
-import { ChevronRight } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { motion } from 'framer-motion';
+import { ChevronRight } from 'lucide-react';
+import { useRouter } from 'next/router';
+import React from 'react';
+
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion/index'
+} from '@/components/ui/accordion/index';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 interface SubNavItem {
-  id: string
-  label: string
-  href: string
-  ariaLabel: string
-  icon?: React.ReactNode
+  id: string;
+  label: string;
+  href: string;
+  ariaLabel: string;
+  icon?: React.ReactNode;
 }
 
 interface SubNavSection {
-  id: string
-  label: string
-  items: SubNavItem[]
+  id: string;
+  label: string;
+  items: SubNavItem[];
 }
 
 interface SubNavigationProps {
-  section: string
+  section: string;
 }
 
 const subNavSections: Record<string, SubNavSection[]> = {
@@ -120,18 +121,21 @@ const subNavSections: Record<string, SubNavSection[]> = {
     },
   ],
   // Add other sections as needed
-}
+};
 
 export const SubNavigation: React.FC<SubNavigationProps> = ({ section }) => {
-  const router = useRouter()
-  const [openSections, setOpenSections] = React.useState<string[]>([])
+  const router = useRouter();
+  const [openSections, setOpenSections] = React.useState<string[]>([]);
 
-  const isActive = (href: string) => router.pathname === href
+  const isActive = (href: string) => router.pathname === href;
 
-  const sections = subNavSections[section] || []
+  const sections = subNavSections[section] || [];
 
   return (
-    <nav className='h-full w-64 border-r bg-background' aria-label={`${section} Navigation`}>
+    <nav
+      className='h-full w-64 border-r bg-background'
+      aria-label={`${section} Navigation`}
+    >
       <ScrollArea className='h-full'>
         <div className='p-4'>
           <Accordion
@@ -141,7 +145,11 @@ export const SubNavigation: React.FC<SubNavigationProps> = ({ section }) => {
             className='space-y-4'
           >
             {sections.map((section) => (
-              <AccordionItem key={section.id} value={section.id} className='border-none'>
+              <AccordionItem
+                key={section.id}
+                value={section.id}
+                className='border-none'
+              >
                 <AccordionTrigger className='rounded-md px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground'>
                   {section.label}
                 </AccordionTrigger>
@@ -158,7 +166,7 @@ export const SubNavigation: React.FC<SubNavigationProps> = ({ section }) => {
                         variant='ghost'
                         className={cn(
                           'w-full justify-start gap-2 text-sm',
-                          isActive(item.href) && 'bg-accent text-accent-foreground'
+                          isActive(item.href) && 'bg-accent text-accent-foreground',
                         )}
                         onClick={() => router.push(item.href)}
                         aria-label={item.ariaLabel}
@@ -176,7 +184,7 @@ export const SubNavigation: React.FC<SubNavigationProps> = ({ section }) => {
         </div>
       </ScrollArea>
     </nav>
-  )
-}
+  );
+};
 
-export default SubNavigation
+export default SubNavigation;
