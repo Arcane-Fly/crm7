@@ -1,3 +1,5 @@
+'use client';
+
 import { createContext, useContext, useReducer, type ReactNode, type ReactElement } from 'react';
 
 import { logger } from '@/lib/utils/logger';

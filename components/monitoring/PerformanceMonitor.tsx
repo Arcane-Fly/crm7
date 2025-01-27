@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, type ReactElement } from 'react';
 
 import { usePerformance } from '@/components/providers/PerformanceProvider';
