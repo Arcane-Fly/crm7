@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-
 import { z } from 'zod';
+
 import { sendNotificationEmail } from '@/lib/email/service';
 import { logger } from '@/lib/logger';
 
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const body = await request.json() as unknown;
+    const body = (await request.json()) as unknown;
     const validatedData = notificationEmailSchema.parse(body);
 
     const emailData: NotificationEmailRequest = {
@@ -47,21 +47,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     await sendNotificationEmail(emailData);
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    logger.error('Failed to send email', { 
-      error: error instanceof Error ? error.message : 'Unknown error' 
+  } catch (error: unknown) {
+    logger.error('Failed to send email', {
+      error: error instanceof Error ? error.message : 'Unknown error',
     });
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Invalid request data', details: error.errors },
-        { status: 400 }
-      );
+        { status: 400 },
+      ) as NextResponse;
     }
 
-    return NextResponse.json(
-      { error: 'Failed to send email' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to send email' }, { status: 500 }) as NextResponse;
   }
 }
