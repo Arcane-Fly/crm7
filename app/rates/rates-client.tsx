@@ -7,7 +7,7 @@ import { RateTemplateBuilder } from '@/components/rates/RateTemplateBuilder';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useUser } from '@/lib/hooks/use-user';
 
-export default function RatesClient(): ReactElement {
+export function RatesClient(): ReactElement {
   const { user } = useUser();
 
   if (!user) {

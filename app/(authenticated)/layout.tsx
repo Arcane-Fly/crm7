@@ -1,17 +1,12 @@
 // Core imports
-import { type ReactNode, type ReactElement } from 'react';
-
-// Next imports
 import { redirect } from 'next/navigation';
-
+import type { ReactNode, ReactElement } from 'react';
 // Components
 import { Toaster } from 'react-hot-toast';
 
-// App imports
-import { Providers } from '@/app/providers';
-
+import { Providers } from '@/components/providers';
 // Utils
-import { getSession } from '@/lib/supabase/utils';
+import { getServerSession } from '@/lib/supabase/utils';
 
 /**
  * Interface for the AuthenticatedLayout component props.
@@ -23,8 +18,10 @@ interface AuthenticatedLayoutProps {
 /**
  * Renders an authenticated layout, providing a sidebar and header using the Supabase session.
  */
-export default async function AuthenticatedLayout({ children }: AuthenticatedLayoutProps): Promise<ReactElement> {
-  const session = await getSession();
+export default async function AuthenticatedLayout({
+  children,
+}: AuthenticatedLayoutProps): Promise<ReactElement> {
+  const session = await getServerSession();
 
   if (!session) {
     redirect('/login');

@@ -3,6 +3,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
 
+import { Badge } from '@/components/ui/badge'; // Import Badge component
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -10,7 +11,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge'; // Import Badge component
 import { logger } from '@/lib/services/logger';
 
 import styles from './styles.module.css';
@@ -40,7 +40,7 @@ export const columns: ColumnDef<ProgressReview>[] = [
     accessorKey: 'reviewType',
     header: 'Type',
     cell: ({ row }) => {
-      const type = row.getValue('reviewType');
+      const type = row.getValue('reviewType') as string;
       return <div className='capitalize'>{type}</div>;
     },
   },
@@ -88,14 +88,10 @@ export const columns: ColumnDef<ProgressReview>[] = [
       const variantMap = {
         scheduled: 'default',
         completed: 'success',
-        cancelled: 'destructive' // Map 'cancelled' to 'destructive'
+        cancelled: 'destructive', // Map 'cancelled' to 'destructive'
       } as const;
-      
-      return (
-        <Badge variant={variantMap[status as keyof typeof variantMap]}>
-          {status}
-        </Badge>
-      );
+
+      return <Badge variant={variantMap[status as keyof typeof variantMap]}>{status}</Badge>;
     },
   },
   {

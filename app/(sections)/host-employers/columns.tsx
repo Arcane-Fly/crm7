@@ -1,7 +1,8 @@
 'use client';
 
-import type { ColumnDef } from '@tanstack/react-table';
+import type { ColumnDef, Row } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
+import { type ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -46,8 +47,8 @@ export const columns: ColumnDef<HostEmployer>[] = [
   {
     accessorKey: 'status',
     header: 'Status',
-    cell: ({ row }) => {
-      const status = row.getValue('status');
+    cell: ({ row }: { row: Row<HostEmployer> }): ReactNode => {
+      const status = row.getValue('status') as HostEmployer['status'];
       return (
         <div className={`capitalize ${status === 'active' ? 'text-green-600' : 'text-red-600'}`}>
           {status}
@@ -57,8 +58,16 @@ export const columns: ColumnDef<HostEmployer>[] = [
   },
   {
     id: 'actions',
-    cell: ({ row }) => {
+    cell: ({ row }: { row: Row<HostEmployer> }): ReactNode => {
       const employer = row.original;
+
+      const handleCopyId = async (): Promise<void> => {
+        try {
+          await navigator.clipboard.writeText(employer.id);
+        } catch (error) {
+          console.error('Failed to copy ID to clipboard:', error);
+        }
+      };
 
       return (
         <DropdownMenu>
@@ -71,9 +80,7 @@ export const columns: ColumnDef<HostEmployer>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align='end'>
-            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(employer.id)}>
-              Copy ID
-            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleCopyId}>Copy ID</DropdownMenuItem>
             <DropdownMenuItem>View Details</DropdownMenuItem>
             <DropdownMenuItem>Edit</DropdownMenuItem>
           </DropdownMenuContent>
