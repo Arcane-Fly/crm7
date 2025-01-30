@@ -45,6 +45,12 @@
    - Cast unknown API responses to defined interfaces
    - Keep response types close to where they're used
    - Use Promise<SpecificType> for async function returns
+   - When validating request bodies:
+     - Use unknown type for initial body parameter
+     - Validate required fields before type casting
+     - Convert field values explicitly (String(), Number())
+     - Set default values for optional fields
+     - Include user context fields (createdBy, updatedBy)
    - When using Supabase:
      - Add table names to TableName type in use-supabase-query.ts
      - Use Database type to infer row types
