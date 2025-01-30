@@ -100,6 +100,7 @@ A successful deletion returns a 204 No Content status with no response body.
 ## Provider Types
 
 Available provider types:
+
 - `smtp`: Custom SMTP server
 - `mandrill`: Mandrill (by Mailchimp)
 - `sendgrid`: SendGrid
@@ -110,6 +111,7 @@ Available provider types:
 ## Error Responses
 
 ### 400 Bad Request
+
 ```json
 {
   "error": "bad_request",
@@ -119,6 +121,7 @@ Available provider types:
 ```
 
 ### 401 Unauthorized
+
 ```json
 {
   "error": "unauthorized",
@@ -128,6 +131,7 @@ Available provider types:
 ```
 
 ### 403 Forbidden
+
 ```json
 {
   "error": "forbidden",
@@ -137,6 +141,7 @@ Available provider types:
 ```
 
 ### 404 Not Found
+
 ```json
 {
   "error": "not_found",
@@ -146,6 +151,7 @@ Available provider types:
 ```
 
 ### 429 Too Many Requests
+
 ```json
 {
   "error": "too_many_requests",
@@ -157,12 +163,14 @@ Available provider types:
 ## Best Practices
 
 1. **Security**
+
    - Use secure SMTP ports (587 or 465)
    - Enable TLS/SSL encryption
    - Rotate SMTP credentials regularly
    - Use strong passwords
 
 2. **Configuration**
+
    - Test provider settings before enabling
    - Configure SPF and DKIM records
    - Set appropriate sending limits
@@ -177,6 +185,7 @@ Available provider types:
 ## Provider-Specific Settings
 
 ### SMTP
+
 ```json
 {
   "name": "smtp",
@@ -190,6 +199,7 @@ Available provider types:
 ```
 
 ### SendGrid
+
 ```json
 {
   "name": "sendgrid",
@@ -200,6 +210,7 @@ Available provider types:
 ```
 
 ### Amazon SES
+
 ```json
 {
   "name": "ses",
@@ -219,6 +230,7 @@ The Email Provider API endpoints are subject to rate limiting:
 - Enterprise: 100 requests per minute
 
 Rate limit information is included in the response headers:
+
 - `X-RateLimit-Limit`
 - `X-RateLimit-Remaining`
 - `X-RateLimit-Reset`
@@ -228,12 +240,14 @@ Rate limit information is included in the response headers:
 ### Testing Configuration
 
 1. **SMTP Test**
+
    - Verify server connection
    - Test authentication
    - Send test email
    - Check delivery status
 
 2. **DNS Setup**
+
    - Configure SPF records
    - Set up DKIM signing
    - Add DMARC policy

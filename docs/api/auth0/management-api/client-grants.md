@@ -12,12 +12,12 @@ Retrieves all client grants.
 
 ### Query Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| page | number | Page number, zero based |
-| per_page | number | Number of results per page |
-| client_id | string | Filter by client ID |
-| audience | string | Filter by audience |
+| Parameter | Type   | Description                |
+| --------- | ------ | -------------------------- |
+| page      | number | Page number, zero based    |
+| per_page  | number | Number of results per page |
+| client_id | string | Filter by client ID        |
+| audience  | string | Filter by audience         |
 
 ### Response
 
@@ -27,10 +27,7 @@ Retrieves all client grants.
     "id": "cgr_123",
     "client_id": "client_123",
     "audience": "https://api.example.com",
-    "scope": [
-      "read:users",
-      "update:users"
-    ]
+    "scope": ["read:users", "update:users"]
   }
 ]
 ```
@@ -49,10 +46,7 @@ Creates a new client grant.
 {
   "client_id": "client_123",
   "audience": "https://api.example.com",
-  "scope": [
-    "read:users",
-    "update:users"
-  ]
+  "scope": ["read:users", "update:users"]
 }
 ```
 
@@ -63,10 +57,7 @@ Creates a new client grant.
   "id": "cgr_123",
   "client_id": "client_123",
   "audience": "https://api.example.com",
-  "scope": [
-    "read:users",
-    "update:users"
-  ]
+  "scope": ["read:users", "update:users"]
 }
 ```
 
@@ -80,9 +71,9 @@ Deletes a client grant.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the client grant to delete |
+| Parameter | Type   | Description                          |
+| --------- | ------ | ------------------------------------ |
+| id        | string | The ID of the client grant to delete |
 
 ### Response
 
@@ -98,19 +89,15 @@ Updates a client grant.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the client grant to update |
+| Parameter | Type   | Description                          |
+| --------- | ------ | ------------------------------------ |
+| id        | string | The ID of the client grant to update |
 
 ### Request Body
 
 ```json
 {
-  "scope": [
-    "read:users",
-    "update:users",
-    "delete:users"
-  ]
+  "scope": ["read:users", "update:users", "delete:users"]
 }
 ```
 
@@ -121,11 +108,7 @@ Updates a client grant.
   "id": "cgr_123",
   "client_id": "client_123",
   "audience": "https://api.example.com",
-  "scope": [
-    "read:users",
-    "update:users",
-    "delete:users"
-  ]
+  "scope": ["read:users", "update:users", "delete:users"]
 }
 ```
 
@@ -184,11 +167,13 @@ Updates a client grant.
 ## Best Practices
 
 1. **Scope Management**
+
    - Follow the principle of least privilege
    - Regularly audit granted scopes
    - Document scope requirements for each client
 
 2. **Security**
+
    - Rotate client secrets regularly
    - Monitor client grant usage
    - Remove unused client grants

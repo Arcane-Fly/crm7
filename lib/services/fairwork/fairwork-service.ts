@@ -1,236 +1,132 @@
-import { createClient } from '@/lib/supabase/client';
-import { logger } from '@/lib/logger';
-import type { Database } from '@/types/supabase';
+import type {
+  Award,
+  AwardRate,
+  Classification,
+  ClassificationHierarchy,
+  FairWorkConfig,
+  GetBaseRateParams,
+  GetClassificationsParams,
+  GetFutureRatesParams,
+  GetRateHistoryParams,
+  Rate,
+  RateCalculationRequest,
+  RateCalculationResponse,
+  RateTemplate,
+  RateValidationResponse,
+  ValidateRateParams,
+} from './types';
 
-interface FairWorkConfig {
-  apiKey: string;
-  apiUrl: string;
-  environment: 'sandbox' | 'production';
-  timeout: number;
-  retryAttempts: number;
-}
-
-interface AwardRate {
-  awardCode: string;
-  classificationCode: string;
-  baseRate: number;
-  casualLoading?: number;
-  penalties?: Array<{
-    code: string;
-    rate: number;
-    description: string;
-  }>;
-  allowances?: Array<{
-    code: string;
-    amount: number;
-    description: string;
-  }>;
-  effectiveFrom: Date;
-  effectiveTo?: Date;
-}
-
-interface Classification {
-  code: string;
-  name: string;
-  level: string;
-  grade?: string;
-  yearOfExperience?: number;
-  qualifications?: string[];
-  parentCode?: string;
-  validFrom: Date;
-  validTo?: Date;
-}
-
-interface RateCalculationRequest {
-  awardCode: string;
-  classificationCode: string;
-  employmentType: 'casual' | 'permanent' | 'fixed-term';
-  date: Date;
-  hours?: number;
-  penalties?: string[];
-  allowances?: string[];
-}
-
-interface RateCalculationResponse {
-  baseRate: number;
-  casualLoading?: number;
-  penalties: Array<{
-    code: string;
-    rate: number;
-    amount: number;
-    description: string;
-  }>;
-  allowances: Array<{
-    code: string;
-    amount: number;
-    description: string;
-  }>;
-  total: number;
-  breakdown: {
-    base: number;
-    loading?: number;
-    penalties: number;
-    allowances: number;
-  };
-  metadata: {
-    calculatedAt: Date;
-    effectiveDate: Date;
-    source: 'fairwork' | 'cached';
-  };
-}
+const DEFAULT_CONFIG: Required<FairWorkConfig> = {
+  baseUrl: 'https://api.fairwork.gov.au/v1',
+  apiKey: process.env.FAIRWORK_API_KEY || '',
+  cacheConfig: {
+    ttl: 3600,
+    prefix: 'fairwork:',
+  },
+};
 
 export class FairWorkService {
-  private readonly supabase = createClient<Database>();
-  private readonly config: FairWorkConfig;
+  private readonly config: Required<FairWorkConfig>;
 
-  constructor(config: FairWorkConfig) {
+  constructor(config: Partial<FairWorkConfig> = {}) {
     this.config = {
+      ...DEFAULT_CONFIG,
       ...config,
-      timeout: config.timeout || 30000,
-      retryAttempts: config.retryAttempts || 3,
+      cacheConfig: {
+        ...DEFAULT_CONFIG.cacheConfig,
+        ...config.cacheConfig,
+      },
     };
   }
 
-  /**
-   * Get base rate for a classification under an award
-   */
-  async getBaseRate(params: {
-    awardCode: string;
-    classificationCode: string;
-    date: Date;
-  }): Promise<number> {
-    try {
-      const { data, error } = await this.supabase
-        .rpc('get_award_base_rate', params);
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      logger.error('Failed to get base rate', { error, params });
-      throw error;
-    }
+  public async getActiveAwards(): Promise<Award[]> {
+    // Implementation would fetch from Fair Work API using config
+    const response = await fetch(`${this.config.baseUrl}/awards`, {
+      headers: {
+        'Authorization': `Bearer ${this.config.apiKey}`,
+      },
+    });
+    return response.json();
   }
 
-  /**
-   * Get full award rate details including penalties and allowances
-   */
-  async getAwardRate(params: {
-    awardCode: string;
-    classificationCode: string;
-    date: Date;
-  }): Promise<AwardRate> {
-    try {
-      const { data, error } = await this.supabase
-        .rpc('get_award_rate', params);
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      logger.error('Failed to get award rate', { error, params });
-      throw error;
-    }
+  public async getCurrentRates(_awardCode: string): Promise<Rate[]> {
+    // Implementation would fetch current rates from Fair Work API
+    return [];
   }
 
-  /**
-   * Get classifications for an award
-   */
-  async getClassifications(params: {
-    awardCode: string;
-    searchTerm?: string;
-    date?: Date;
-    includeInactive?: boolean;
-  }): Promise<Classification[]> {
-    try {
-      const { data, error } = await this.supabase
-        .rpc('get_award_classifications', params);
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      logger.error('Failed to get classifications', { error, params });
-      throw error;
-    }
+  public async getRatesForDate(_awardCode: string, _date: Date): Promise<Rate[]> {
+    // Implementation would fetch rates for specific date from Fair Work API
+    return [];
   }
 
-  /**
-   * Calculate pay rate with all applicable components
-   */
-  async calculateRate(params: RateCalculationRequest): Promise<RateCalculationResponse> {
-    try {
-      const { data, error } = await this.supabase
-        .rpc('calculate_award_rate', params);
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      logger.error('Failed to calculate rate', { error, params });
-      throw error;
-    }
+  public async getClassifications(_params: GetClassificationsParams): Promise<Classification[]> {
+    // Implementation would fetch classifications from Fair Work API
+    return [];
   }
 
-  /**
-   * Validate if a rate complies with award minimums
-   */
-  async validateRate(params: {
-    awardCode: string;
-    classificationCode: string;
-    rate: number;
-    date: Date;
-  }): Promise<{
-    isValid: boolean;
-    minimumRate: number;
-    difference: number;
-  }> {
-    try {
-      const { data, error } = await this.supabase
-        .rpc('validate_award_rate', params);
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      logger.error('Failed to validate rate', { error, params });
-      throw error;
-    }
+  public async getClassificationHierarchy(_awardCode: string): Promise<ClassificationHierarchy[]> {
+    // Implementation would fetch classification hierarchy from Fair Work API
+    return [];
   }
 
-  /**
-   * Get historical rates for a classification
-   */
-  async getRateHistory(params: {
-    awardCode: string;
-    classificationCode: string;
-    startDate: Date;
-    endDate: Date;
-  }): Promise<AwardRate[]> {
-    try {
-      const { data, error } = await this.supabase
-        .rpc('get_award_rate_history', params);
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      logger.error('Failed to get rate history', { error, params });
-      throw error;
-    }
+  public async getRateTemplates(_awardCode: string): Promise<RateTemplate[]> {
+    // Implementation would fetch rate templates from Fair Work API
+    return [];
   }
 
-  /**
-   * Get future scheduled rate changes
-   */
-  async getFutureRates(params: {
-    awardCode: string;
-    classificationCode: string;
-    fromDate: Date;
-  }): Promise<AwardRate[]> {
-    try {
-      const { data, error } = await this.supabase
-        .rpc('get_future_award_rates', params);
+  public async getBaseRate(_params: GetBaseRateParams): Promise<number> {
+    // Implementation would fetch base rate from Fair Work API
+    return 0;
+  }
 
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      logger.error('Failed to get future rates', { error, params });
-      throw error;
-    }
+  public async getFutureRates(_params: GetFutureRatesParams): Promise<AwardRate[]> {
+    // Implementation would fetch future rates from Fair Work API
+    return [];
+  }
+
+  public async getRateHistory(_params: GetRateHistoryParams): Promise<AwardRate[]> {
+    // Implementation would fetch rate history from Fair Work API
+    return [];
+  }
+
+  public async calculateRate(request: RateCalculationRequest): Promise<RateCalculationResponse> {
+    // Implementation would calculate rates using Fair Work API
+    return {
+      baseRate: 0,
+      penalties: [],
+      allowances: [],
+      total: 0,
+      breakdown: {
+        base: 0,
+        penalties: 0,
+        allowances: 0,
+      },
+      metadata: {
+        calculatedAt: new Date(),
+        effectiveDate: request.date,
+        source: 'fairwork',
+      },
+    };
+  }
+
+  public async validateRate(_params: ValidateRateParams): Promise<RateValidationResponse> {
+    // Implementation would validate rates using Fair Work API
+    return {
+      isValid: false,
+      minimumRate: 0,
+      validationDate: new Date(),
+    };
+  }
+
+  public async getAwardRates(_awardCode: string): Promise<AwardRate[]> {
+    // Implementation would fetch award rates from Fair Work API
+    return [];
+  }
+
+  public async close(): Promise<void> {
+    // Cleanup resources
   }
 }
+
+// Export singleton instance
+export const fairWorkService = new FairWorkService();

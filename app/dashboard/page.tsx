@@ -1,8 +1,9 @@
-import { Card, CardContent } from '@/components/ui/card'
-import { Users, Briefcase, Building2, AlertCircle } from 'lucide-react'
-import { PlacementsChart } from '@/components/dashboard/PlacementsChart'
-import { FundingChart } from '@/components/dashboard/FundingChart'
-import { AlertsList } from '@/components/dashboard/AlertsList'
+import { Users, Briefcase, Building2, AlertCircle } from 'lucide-react';
+
+import { AlertsList } from '@/components/dashboard/AlertsList';
+import { FundingChart } from '@/components/dashboard/FundingChart';
+import { PlacementsChart } from '@/components/dashboard/PlacementsChart';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default function DashboardPage() {
   return (
@@ -78,5 +79,5 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

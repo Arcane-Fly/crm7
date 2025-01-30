@@ -1,13 +1,13 @@
-'use client'
+'use client';
 
-import { Breadcrumb } from '@/components/navigation/breadcrumb'
-import { DocSearch } from '@/components/navigation/doc-search'
-import { SectionSidebar, sections } from '@/components/navigation/section-sidebar'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { Breadcrumb } from '@/components/navigation/breadcrumb';
+import { DocSearch } from '@/components/navigation/doc-search';
+import { SectionSidebar, type sections } from '@/components/navigation/section-sidebar';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface DocLayoutProps {
-  children: React.ReactNode
-  section?: keyof typeof sections
+  children: React.ReactNode;
+  section?: keyof typeof sections;
 }
 
 export function DocLayout({ children, section }: DocLayoutProps) {
@@ -34,5 +34,5 @@ export function DocLayout({ children, section }: DocLayoutProps) {
         <main className='container py-6 lg:py-8'>{children}</main>
       </div>
     </div>
-  )
+  );
 }

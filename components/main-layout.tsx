@@ -1,13 +1,15 @@
-'use client'
+'use client';
 
-import { UserNav } from './dashboard/user-nav'
-import { SearchBar } from './dashboard/search'
-import { Sidebar } from './ui/sidebar'
-import { Button } from './ui/button'
-import { Menu } from 'lucide-react'
+import { Menu } from 'lucide-react';
+
+import { SearchBar } from './dashboard/search';
+import { UserNav } from './dashboard/user-nav';
+import { Button } from './ui/button';
+import { Sidebar } from './ui/sidebar';
+
 
 interface MainLayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export function MainLayout({ children }: MainLayoutProps) {
@@ -17,7 +19,11 @@ export function MainLayout({ children }: MainLayoutProps) {
       <div className='flex-1'>
         <header className='sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
           <div className='container flex h-14 items-center'>
-            <Button variant='ghost' size='icon' className='md:hidden'>
+            <Button
+              variant='ghost'
+              size='icon'
+              className='md:hidden'
+            >
               <Menu className='h-5 w-5' />
               <span className='sr-only'>Toggle menu</span>
             </Button>
@@ -32,5 +38,5 @@ export function MainLayout({ children }: MainLayoutProps) {
         <main className='flex-1 space-y-4 p-8 pt-6'>{children}</main>
       </div>
     </div>
-  )
+  );
 }

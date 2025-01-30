@@ -261,11 +261,13 @@ Deletes a theme.
 ## Best Practices
 
 1. **Theme Management**
+
    - Test themes in a development environment first
    - Keep a backup of working themes
    - Document theme changes and versioning
 
 2. **Asset Management**
+
    - Use CDN-hosted assets for better performance
    - Optimize image sizes
    - Ensure font files are properly licensed

@@ -1,48 +1,48 @@
-import { createClient } from '@/lib/supabase/client'
-import { logger } from '@/lib/services/logger'
+import { logger } from '@/lib/services/logger';
+import { createClient } from '@/lib/supabase/client';
 
 export interface BankAccount {
-  id: string
-  org_id: string
-  bank_name: string
-  account_name: string
-  account_number: string
-  bsb: string
-  status: 'active' | 'inactive' | 'pending_verification'
-  is_default: boolean
-  metadata?: Record<string, any>
+  id: string;
+  org_id: string;
+  bank_name: string;
+  account_name: string;
+  account_number: string;
+  bsb: string;
+  status: 'active' | 'inactive' | 'pending_verification';
+  is_default: boolean;
+  metadata?: Record<string, any>;
 }
 
 export interface BankTransaction {
-  id: string
-  org_id: string
-  account_id: string
-  type: 'credit' | 'debit'
-  amount: number
-  description: string
-  reference: string
-  status: 'pending' | 'completed' | 'failed'
-  transaction_date: string
-  metadata?: Record<string, any>
+  id: string;
+  org_id: string;
+  account_id: string;
+  type: 'credit' | 'debit';
+  amount: number;
+  description: string;
+  reference: string;
+  status: 'pending' | 'completed' | 'failed';
+  transaction_date: string;
+  metadata?: Record<string, any>;
 }
 
 export interface PaymentRequest {
-  id: string
-  org_id: string
-  account_id: string
-  recipient_name: string
-  recipient_account: string
-  recipient_bsb: string
-  amount: number
-  description: string
-  status: 'pending' | 'approved' | 'processed' | 'failed'
-  due_date?: string
-  processed_date?: string
-  metadata?: Record<string, any>
+  id: string;
+  org_id: string;
+  account_id: string;
+  recipient_name: string;
+  recipient_account: string;
+  recipient_bsb: string;
+  amount: number;
+  description: string;
+  status: 'pending' | 'approved' | 'processed' | 'failed';
+  due_date?: string;
+  processed_date?: string;
+  metadata?: Record<string, any>;
 }
 
 export class BankIntegrationService {
-  private supabase = createClient()
+  private supabase = createClient();
 
   // Account Management
   async getBankAccounts(orgId: string) {
@@ -51,13 +51,13 @@ export class BankIntegrationService {
         .from('bank_accounts')
         .select('*')
         .eq('org_id', orgId)
-        .order('is_default', { ascending: false })
+        .order('is_default', { ascending: false });
 
-      if (error) throw error
-      return { data: data as BankAccount[] }
+      if (error) throw error;
+      return { data: data as BankAccount[] };
     } catch (error) {
-      logger.error('Failed to fetch bank accounts', error as Error, { orgId })
-      throw error
+      logger.error('Failed to fetch bank accounts', error as Error, { orgId });
+      throw error;
     }
   }
 
@@ -70,13 +70,13 @@ export class BankIntegrationService {
           status: 'pending_verification',
         })
         .select()
-        .single()
+        .single();
 
-      if (error) throw error
-      return { data: data as BankAccount }
+      if (error) throw error;
+      return { data: data as BankAccount };
     } catch (error) {
-      logger.error('Failed to add bank account', error as Error, { account })
-      throw error
+      logger.error('Failed to add bank account', error as Error, { account });
+      throw error;
     }
   }
 
@@ -87,51 +87,51 @@ export class BankIntegrationService {
         .update({ status: 'active' })
         .eq('id', id)
         .select()
-        .single()
+        .single();
 
-      if (error) throw error
-      return { data: data as BankAccount }
+      if (error) throw error;
+      return { data: data as BankAccount };
     } catch (error) {
-      logger.error('Failed to verify bank account', error as Error, { id })
-      throw error
+      logger.error('Failed to verify bank account', error as Error, { id });
+      throw error;
     }
   }
 
   // Transaction Management
   async getTransactions(params: {
-    org_id: string
-    account_id?: string
-    start_date?: string
-    end_date?: string
-    type?: BankTransaction['type']
+    org_id: string;
+    account_id?: string;
+    start_date?: string;
+    end_date?: string;
+    type?: BankTransaction['type'];
   }) {
     try {
       let query = this.supabase
         .from('bank_transactions')
         .select('*')
         .eq('org_id', params.org_id)
-        .order('transaction_date', { ascending: false })
+        .order('transaction_date', { ascending: false });
 
       if (params.account_id) {
-        query = query.eq('account_id', params.account_id)
+        query = query.eq('account_id', params.account_id);
       }
       if (params.type) {
-        query = query.eq('type', params.type)
+        query = query.eq('type', params.type);
       }
       if (params.start_date) {
-        query = query.gte('transaction_date', params.start_date)
+        query = query.gte('transaction_date', params.start_date);
       }
       if (params.end_date) {
-        query = query.lte('transaction_date', params.end_date)
+        query = query.lte('transaction_date', params.end_date);
       }
 
-      const { data, error } = await query
+      const { data, error } = await query;
 
-      if (error) throw error
-      return { data: data as BankTransaction[] }
+      if (error) throw error;
+      return { data: data as BankTransaction[] };
     } catch (error) {
-      logger.error('Failed to fetch transactions', error as Error, { params })
-      throw error
+      logger.error('Failed to fetch transactions', error as Error, { params });
+      throw error;
     }
   }
 
@@ -145,13 +145,13 @@ export class BankIntegrationService {
           status: 'pending',
         })
         .select()
-        .single()
+        .single();
 
-      if (error) throw error
-      return { data: data as PaymentRequest }
+      if (error) throw error;
+      return { data: data as PaymentRequest };
     } catch (error) {
-      logger.error('Failed to create payment request', error as Error, { payment })
-      throw error
+      logger.error('Failed to create payment request', error as Error, { payment });
+      throw error;
     }
   }
 
@@ -165,13 +165,13 @@ export class BankIntegrationService {
         })
         .eq('id', id)
         .select()
-        .single()
+        .single();
 
-      if (error) throw error
-      return { data: data as PaymentRequest }
+      if (error) throw error;
+      return { data: data as PaymentRequest };
     } catch (error) {
-      logger.error('Failed to approve payment request', error as Error, { id })
-      throw error
+      logger.error('Failed to approve payment request', error as Error, { id });
+      throw error;
     }
   }
 
@@ -183,9 +183,9 @@ export class BankIntegrationService {
         .from('payment_requests')
         .select()
         .eq('id', paymentId)
-        .single()
+        .single();
 
-      if (!payment) throw new Error('Payment request not found')
+      if (!payment) throw new Error('Payment request not found');
 
       // Create transaction record
       const { data: transaction, error } = await this.supabase
@@ -201,9 +201,9 @@ export class BankIntegrationService {
           transaction_date: new Date().toISOString(),
         })
         .select()
-        .single()
+        .single();
 
-      if (error) throw error
+      if (error) throw error;
 
       // Update payment request status
       await this.supabase
@@ -212,12 +212,12 @@ export class BankIntegrationService {
           status: 'processed',
           processed_date: new Date().toISOString(),
         })
-        .eq('id', paymentId)
+        .eq('id', paymentId);
 
-      return { data: transaction as BankTransaction }
+      return { data: transaction as BankTransaction };
     } catch (error) {
-      logger.error('Failed to process payment', error as Error, { paymentId })
-      throw error
+      logger.error('Failed to process payment', error as Error, { paymentId });
+      throw error;
     }
   }
 
@@ -226,15 +226,15 @@ export class BankIntegrationService {
     try {
       const { data, error } = await this.supabase.rpc('get_transaction_stats', {
         org_id: orgId,
-      })
+      });
 
-      if (error) throw error
-      return { data }
+      if (error) throw error;
+      return { data };
     } catch (error) {
-      logger.error('Failed to fetch transaction stats', error as Error, { orgId })
-      throw error
+      logger.error('Failed to fetch transaction stats', error as Error, { orgId });
+      throw error;
     }
   }
 }
 
-export const bankIntegrationService = new BankIntegrationService()
+export const bankIntegrationService = new BankIntegrationService();

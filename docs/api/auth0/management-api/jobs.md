@@ -12,9 +12,9 @@ Retrieves a job by ID.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the job to retrieve |
+| Parameter | Type   | Description                   |
+| --------- | ------ | ----------------------------- |
+| id        | string | The ID of the job to retrieve |
 
 ### Response
 
@@ -38,9 +38,9 @@ Retrieves error details for a failed job.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the failed job |
+| Parameter | Type   | Description              |
+| --------- | ------ | ------------------------ |
+| id        | string | The ID of the failed job |
 
 ### Response
 
@@ -109,11 +109,11 @@ Creates a job to import users from a file.
 
 ### Request Body (multipart/form-data)
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| users | file | JSON/CSV file containing user data |
-| connection_id | string | Connection ID to import users to |
-| upsert | boolean | Whether to update existing users |
+| Parameter     | Type    | Description                        |
+| ------------- | ------- | ---------------------------------- |
+| users         | file    | JSON/CSV file containing user data |
+| connection_id | string  | Connection ID to import users to   |
+| upsert        | boolean | Whether to update existing users   |
 
 ### Response
 
@@ -158,6 +158,7 @@ Creates a job to send verification emails.
 ## Job Types
 
 Available job types:
+
 - `verification_email`: Send verification emails
 - `users_export`: Export users to file
 - `users_import`: Import users from file
@@ -167,6 +168,7 @@ Available job types:
 ## Job Statuses
 
 Possible job statuses:
+
 - `pending`: Job is queued
 - `processing`: Job is running
 - `completed`: Job completed successfully
@@ -176,6 +178,7 @@ Possible job statuses:
 ## Error Responses
 
 ### 400 Bad Request
+
 ```json
 {
   "error": "bad_request",
@@ -185,6 +188,7 @@ Possible job statuses:
 ```
 
 ### 401 Unauthorized
+
 ```json
 {
   "error": "unauthorized",
@@ -194,6 +198,7 @@ Possible job statuses:
 ```
 
 ### 403 Forbidden
+
 ```json
 {
   "error": "forbidden",
@@ -203,6 +208,7 @@ Possible job statuses:
 ```
 
 ### 404 Not Found
+
 ```json
 {
   "error": "not_found",
@@ -212,6 +218,7 @@ Possible job statuses:
 ```
 
 ### 429 Too Many Requests
+
 ```json
 {
   "error": "too_many_requests",
@@ -223,12 +230,14 @@ Possible job statuses:
 ## Best Practices
 
 1. **Job Management**
+
    - Monitor job status
    - Handle failures gracefully
    - Implement retries
    - Archive job results
 
 2. **Performance**
+
    - Use appropriate limits
    - Schedule large jobs
    - Monitor resource usage
@@ -248,6 +257,7 @@ The Jobs API endpoints are subject to rate limiting:
 - Enterprise: 100 requests per minute
 
 Rate limit information is included in the response headers:
+
 - `X-RateLimit-Limit`
 - `X-RateLimit-Remaining`
 - `X-RateLimit-Reset`
@@ -257,6 +267,7 @@ Rate limit information is included in the response headers:
 ### Export Format
 
 Example JSON export format:
+
 ```json
 {
   "users": [
@@ -279,6 +290,7 @@ Example JSON export format:
 ### Import Format
 
 Example JSON import format:
+
 ```json
 {
   "users": [
@@ -301,6 +313,7 @@ Example JSON import format:
 ### Job Monitoring
 
 Best practices for monitoring jobs:
+
 1. Poll job status periodically
 2. Implement exponential backoff
 3. Set appropriate timeouts

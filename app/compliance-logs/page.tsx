@@ -1,14 +1,18 @@
-'use client'
+'use client';
 
-import { Button } from '@/components/ui/button'
-import { AlertTriangle, CheckCircle2, Download } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Download } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
 
 export default function ComplianceLogsPage() {
   return (
     <div className='flex flex-col gap-6 p-6'>
       <div className='flex items-center justify-between'>
         <h1 className='text-2xl font-semibold'>Compliance Logs</h1>
-        <Button variant='outline' className='flex items-center gap-2'>
+        <Button
+          variant='outline'
+          className='flex items-center gap-2'
+        >
           <Download className='h-4 w-4' />
           Export Logs
         </Button>
@@ -90,5 +94,5 @@ export default function ComplianceLogsPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

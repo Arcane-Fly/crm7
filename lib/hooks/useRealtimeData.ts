@@ -1,35 +1,36 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import { createClient } from '../supabase/client'
-import type { RealtimeChannel } from '@supabase/supabase-js'
+import type { RealtimeChannel } from '@supabase/supabase-js';
+import { useEffect, useState } from 'react';
+
+import { createClient } from '../supabase/client';
 
 export function useRealtimeData<T>(
   table: string,
   initialData: T[] = [],
-  filter?: { column: string; value: any }
+  filter?: { column: string; value: any },
 ) {
-  const [data, setData] = useState<T[]>(initialData)
-  const [error, setError] = useState<Error | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [data, setData] = useState<T[]>(initialData);
+  const [error, setError] = useState<Error | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const supabase = createClient()
-    let channel: RealtimeChannel | null = null
+    const supabase = createClient();
+    let channel: RealtimeChannel | null = null;
 
     async function fetchData() {
       try {
-        let query = supabase.from(table).select('*')
+        let query = supabase.from(table).select('*');
         if (filter) {
-          query = query.eq(filter.column, filter.value)
+          query = query.eq(filter.column, filter.value);
         }
-        const { data: initialData, error } = await query
-        if (error) throw error
-        setData(initialData || [])
+        const { data: initialData, error } = await query;
+        if (error) throw error;
+        setData(initialData || []);
       } catch (error) {
-        setError(error as Error)
+        setError(error as Error);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
     }
 
@@ -45,28 +46,28 @@ export function useRealtimeData<T>(
           },
           (payload: any) => {
             if (payload.eventType === 'INSERT') {
-              setData((current) => [...current, payload.new])
+              setData((current) => [...current, payload.new]);
             } else if (payload.eventType === 'DELETE') {
-              setData((current) => current.filter((item: any) => item.id !== payload.old.id))
+              setData((current) => current.filter((item: any) => item.id !== payload.old.id));
             } else if (payload.eventType === 'UPDATE') {
               setData((current) =>
-                current.map((item: any) => (item.id === payload.new.id ? payload.new : item))
-              )
+                current.map((item: any) => (item.id === payload.new.id ? payload.new : item)),
+              );
             }
-          }
+          },
         )
-        .subscribe()
+        .subscribe();
     }
 
-    fetchData()
-    setupRealtimeSubscription()
+    fetchData();
+    setupRealtimeSubscription();
 
     return () => {
       if (channel) {
-        channel.unsubscribe()
+        channel.unsubscribe();
       }
-    }
-  }, [table, filter])
+    };
+  }, [table, filter]);
 
-  return { data, error, isLoading }
+  return { data, error, isLoading };
 }

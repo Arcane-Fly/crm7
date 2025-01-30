@@ -1,63 +1,63 @@
-import type { FC } from 'react'
-import { useEffect, useRef } from 'react'
-import * as d3 from 'd3'
+// Types and dependencies
+import type { ChartData, ChartOptions } from 'chart.js';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import React from 'react';
+import { Line } from 'react-chartjs-2';
+
+// Local imports
+import { cn } from '@/lib/utils';
+
+// Styles
+import '../styles/line-chart.css';
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 interface LineChartProps {
-  data: { date: Date; value: number }[]
-  width?: number
-  height?: number
-  margin?: { top: number; right: number; bottom: number; left: number }
+  data: ChartData<'line'>;
+  options?: ChartOptions<'line'>;
+  className?: string;
 }
 
-export const LineChart: FC<LineChartProps> = ({
-  data,
-  width = 600,
-  height = 400,
-  margin = { top: 20, right: 20, bottom: 30, left: 40 },
-}) => {
-  const svgRef = useRef<SVGSVGElement>(null)
+export function LineChart({ data, options, className }: LineChartProps): React.ReactElement {
+  const defaultOptions: ChartOptions<'line'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom' as const,
+      },
+      tooltip: {
+        mode: 'index' as const,
+        intersect: false,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+      },
+    },
+    interaction: {
+      mode: 'nearest' as const,
+      axis: 'x' as const,
+      intersect: false,
+    },
+  };
 
-  useEffect(() => {
-    if (!svgRef.current || !data.length) return
-
-    const svg = d3.select(svgRef.current)
-    svg.selectAll('*').remove()
-
-    const x = d3
-      .scaleTime()
-      .domain(d3.extent(data, (d) => d.date) as [Date, Date])
-      .range([margin.left, width - margin.right])
-
-    const y = d3
-      .scaleLinear()
-      .domain([0, d3.max(data, (d) => d.value) || 0])
-      .nice()
-      .range([height - margin.bottom, margin.top])
-
-    const line = d3
-      .line<{ date: Date; value: number }>()
-      .x((d) => x(d.date))
-      .y((d) => y(d.value))
-
-    const xAxis = (g: d3.Selection<SVGGElement, unknown, null, undefined>) =>
-      g.attr('transform', `translate(0,${height - margin.bottom})`).call(d3.axisBottom(x))
-
-    const yAxis = (g: d3.Selection<SVGGElement, unknown, null, undefined>) =>
-      g.attr('transform', `translate(${margin.left},0)`).call(d3.axisLeft(y))
-
-    svg.append('g').call(xAxis)
-    svg.append('g').call(yAxis)
-
-    svg
-      .append('path')
-      .datum(data)
-      .attr('fill', 'none')
-      .attr('stroke', 'steelblue')
-      .attr('stroke-width', 1.5)
-      .attr('d', line)
-  }, [data, width, height, margin])
-
-  return <svg ref={svgRef} width={width} height={height} />
+  return (
+    <div className={cn('line-chart-container', className)}>
+      <Line
+        data={data}
+        options={options || defaultOptions}
+      />
+    </div>
+  );
 }
-
-export default LineChart

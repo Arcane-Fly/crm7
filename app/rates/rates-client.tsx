@@ -1,15 +1,19 @@
-'use client'
+'use client';
 
-import { useUser } from '@/lib/hooks/use-user'
-import { RateCalculator } from '@/components/rates/RateCalculator'
-import { RateTemplateBuilder } from '@/components/rates/RateTemplateBuilder'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { type ReactElement } from 'react';
 
-export function RatesClient() {
-  const { user } = useUser()
+import { RateCalculator } from '@/components/rates/RateCalculator';
+import { RateTemplateBuilder } from '@/components/rates/RateTemplateBuilder';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useUser } from '@/lib/hooks/use-user';
+import { createClient } from '@/lib/supabase/client';
+
+export function RatesClient(): ReactElement {
+  const { user } = useUser();
+  const supabase = createClient();
 
   if (!user) {
-    return null
+    return <div>Please log in to access rates</div>;
   }
 
   return (
@@ -23,9 +27,9 @@ export function RatesClient() {
           <RateCalculator orgId={user.org_id} />
         </TabsContent>
         <TabsContent value='templates' className='space-y-4'>
-          <RateTemplateBuilder />
+          <RateTemplateBuilder supabase={supabase} />
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

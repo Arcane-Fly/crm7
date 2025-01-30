@@ -1,15 +1,15 @@
-import { Card } from './card'
+import { Card } from './card';
 
 export interface Activity {
-  title: string
-  description: string
-  date?: string
+  title: string;
+  description: string;
+  date?: string;
 }
 
 export interface ActivityListProps {
-  title: string
-  activities: Activity[]
-  className?: string
+  title: string;
+  activities: Activity[];
+  className?: string;
 }
 
 export function ActivityList({ title, activities, className = '' }: ActivityListProps) {
@@ -18,7 +18,10 @@ export function ActivityList({ title, activities, className = '' }: ActivityList
       <h2 className='mb-4 text-xl font-semibold'>{title}</h2>
       <div className='space-y-4'>
         {activities.map((activity, index) => (
-          <div key={index} className='border-b pb-2 last:border-0'>
+          <div
+            key={index}
+            className='border-b pb-2 last:border-0'
+          >
             <p className='font-medium'>{activity.title}</p>
             <p className='text-sm text-muted-foreground'>{activity.description}</p>
             {activity.date && <p className='mt-1 text-sm text-muted-foreground'>{activity.date}</p>}
@@ -26,5 +29,5 @@ export function ActivityList({ title, activities, className = '' }: ActivityList
         ))}
       </div>
     </Card>
-  )
+  );
 }

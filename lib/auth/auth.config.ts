@@ -25,9 +25,9 @@ export const supabase = createClient(
     auth: {
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: true
-    }
-  }
+      detectSessionInUrl: true,
+    },
+  },
 );
 
 // Auth0 client
@@ -37,8 +37,8 @@ export const auth0 = new Auth0Client({
   authorizationParams: {
     redirect_uri: typeof window !== 'undefined' ? window.location.origin : '',
     audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-    scope: 'openid profile email'
+    scope: 'openid profile email',
   },
   cacheLocation: 'localstorage',
-  useRefreshTokens: true
+  useRefreshTokens: true,
 });

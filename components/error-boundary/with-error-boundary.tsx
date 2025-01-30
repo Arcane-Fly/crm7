@@ -1,15 +1,17 @@
-import * as React from 'react'
-import { ErrorBoundary } from './ErrorBoundary'
-import { logger } from '@/lib/services/logger'
+import * as React from 'react';
+
+import { logger } from '@/lib/services/logger';
+
+import { ErrorBoundary } from './ErrorBoundary';
 
 export function withErrorBoundary<P extends object>(
   Component: React.ComponentType<P>,
   options: {
-    fallback?: React.ReactNode
-    onError?: (error: Error, errorInfo: React.ErrorInfo) => void
-  } = {}
+    fallback?: React.ReactNode;
+    onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
+  } = {},
 ) {
-  const displayName = Component.displayName || Component.name || 'Component'
+  const displayName = Component.displayName || Component.name || 'Component';
 
   function WithErrorBoundary(props: P) {
     return (
@@ -18,15 +20,15 @@ export function withErrorBoundary<P extends object>(
         onError={(error, errorInfo) => {
           logger.error(`Error in ${displayName}:`, error, {
             componentStack: errorInfo.componentStack,
-          })
-          options.onError?.(error, errorInfo)
+          });
+          options.onError?.(error, errorInfo);
         }}
       >
         <Component {...props} />
       </ErrorBoundary>
-    )
+    );
   }
 
-  WithErrorBoundary.displayName = `withErrorBoundary(${displayName})`
-  return WithErrorBoundary
+  WithErrorBoundary.displayName = `withErrorBoundary(${displayName})`;
+  return WithErrorBoundary;
 }

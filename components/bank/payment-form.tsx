@@ -1,9 +1,11 @@
-'use client'
+'use client';
 
-import * as React from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as React from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -11,19 +13,20 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { useAuth } from '@/lib/auth/context'
-import { useBankIntegration } from '@/lib/hooks/use-bank-integration'
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { useAuth } from '@/lib/auth/context';
+import { useBankIntegration } from '@/lib/hooks/use-bank-integration';
+import type { BankAccount } from '@/lib/types/bank';
+import type { QueryResult } from '@/types/test-utils';
 
 const paymentSchema = z.object({
   account_id: z.string().min(1, 'Account is required'),
@@ -32,17 +35,19 @@ const paymentSchema = z.object({
   recipient_name: z.string().min(1, 'Recipient name is required'),
   recipient_account: z.string().min(1, 'Recipient account is required'),
   recipient_bank: z.string().min(1, 'Recipient bank is required'),
-})
+});
 
-type PaymentFormValues = z.infer<typeof paymentSchema>
+type PaymentFormValues = z.infer<typeof paymentSchema>;
 
 interface PaymentFormProps {
-  onSuccess?: () => void
+  onSuccess?: () => void;
 }
 
-export function PaymentForm({ onSuccess }: PaymentFormProps) {
-  const { user } = useAuth()
-  const { accounts, createPayment, isCreatingPayment } = useBankIntegration()
+export function PaymentForm({ onSuccess }: PaymentFormProps): React.ReactElement {
+  const { user } = useAuth();
+  const { accounts, createPayment, isCreatingPayment } = useBankIntegration();
+  const accountsResult = accounts as QueryResult<BankAccount[]>;
+  const accountsData = accountsResult?.data ?? [];
 
   const form = useForm<PaymentFormValues>({
     resolver: zodResolver(paymentSchema),
@@ -54,40 +59,52 @@ export function PaymentForm({ onSuccess }: PaymentFormProps) {
       recipient_account: '',
       recipient_bank: '',
     },
-  })
+  });
 
-  const onSubmit = async (values: PaymentFormValues) => {
-    if (!user) return
+  const onSubmit = async (values: PaymentFormValues): Promise<void> => {
+    if (!user) return;
 
-    createPayment({
-      data: {
+    try {
+      await createPayment({
         ...values,
         org_id: user.org_id,
         status: 'pending',
-      },
-    })
+        due_date: new Date().toISOString(),
+      });
 
-    onSuccess?.()
-  }
+      onSuccess?.();
+    } catch (error) {
+      console.error('Error creating payment:', error);
+    }
+  };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-4"
+      >
         <FormField
           control={form.control}
           name="account_id"
           render={({ field }) => (
             <FormItem>
               <FormLabel>From Account</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select
+                onValueChange={field.onChange}
+                value={field.value}
+              >
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select an account" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {accounts.data?.map((account) => (
-                    <SelectItem key={account.id} value={account.id}>
+                  {accountsData.map((account) => (
+                    <SelectItem
+                      key={account.id}
+                      value={account.id}
+                    >
                       {account.account_name} - {account.bank_name}
                     </SelectItem>
                   ))}
@@ -100,15 +117,16 @@ export function PaymentForm({ onSuccess }: PaymentFormProps) {
         <FormField
           control={form.control}
           name="amount"
-          render={({ field: { onChange, ...field } }) => (
+          render={({ field }) => (
             <FormItem>
               <FormLabel>Amount</FormLabel>
               <FormControl>
                 <Input
-                  {...field}
                   type="number"
                   step="0.01"
-                  onChange={(e) => onChange(parseFloat(e.target.value))}
+                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                  value={field.value}
+                  name={field.name}
                 />
               </FormControl>
               <FormMessage />
@@ -167,10 +185,13 @@ export function PaymentForm({ onSuccess }: PaymentFormProps) {
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={isCreatingPayment}>
+        <Button
+          type="submit"
+          disabled={isCreatingPayment}
+        >
           {isCreatingPayment ? 'Creating...' : 'Create Payment'}
         </Button>
       </form>
     </Form>
-  )
+  );
 }

@@ -1,114 +1,92 @@
-import {
-  useQuery,
-  useInfiniteQuery,
-  UseQueryOptions,
-  UseInfiniteQueryOptions,
-} from '@tanstack/react-query'
-import { useSupabase } from '@/lib/hooks/use-supabase'
-import { logger } from '@/lib/services/logger'
+import { createClient } from '@supabase/supabase-js';
+import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 
-interface QueryConfig<T>
-  extends Omit<UseQueryOptions<T[], Error, T[], readonly unknown[]>, 'queryKey' | 'queryFn'> {
-  queryKey: string[]
-  table: string
-  columns?: string
-  filter?: { column: string; value: any }[]
-  enabled?: boolean
-}
+import { type Database } from '@/lib/types/supabase';
 
-interface InfiniteQueryConfig<T>
-  extends Omit<UseInfiniteQueryOptions<T[], Error, T[], T[], string[]>, 'queryKey' | 'queryFn'> {
-  queryKey: string[]
-  table: string
-  columns?: string
-  filter?: { column: string; value: any }[]
-  pageSize?: number
-  enabled?: boolean
-}
+const supabase = createClient<Database>(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+);
 
-export function useQueryWithSupabase<T>({
-  queryKey,
-  table,
-  columns = '*',
-  filter,
-  enabled = true,
-  ...options
-}: QueryConfig<T>) {
-  const { supabase } = useSupabase()
+type TableNames = keyof Database['public']['Tables'];
 
-  return useQuery<T[], Error>({
+export function useQueryWithSupabase<T extends TableNames>(
+  queryKey: string[],
+  options?: {
+    select?: (data: Database['public']['Tables'][T]['Row'][]) => any;
+    enabled?: boolean;
+    staleTime?: number;
+  },
+) {
+  return useQuery({
     queryKey,
     queryFn: async () => {
       try {
-        let query = supabase.from(table).select(columns)
-
-        if (filter) {
-          filter.forEach(({ column, value }) => {
-            query = query.eq(column, value)
-          })
-        }
-
-        const { data, error } = await query
-
+        const { data, error } = await supabase.from(queryKey[0] as T).select('*');
         if (error) {
-          logger.error('Error in useQueryWithSupabase:', { error, table })
-          throw error
+          throw {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code,
+          };
         }
-
-        return data as T[]
+        return options?.select ? options.select(data) : data;
       } catch (error) {
-        logger.error('Error in useQueryWithSupabase:', { error, table })
-        throw error
+        if (error instanceof Error) {
+          throw error;
+        }
+        throw new Error('Unknown error occurred');
       }
     },
-    enabled,
-    ...options,
-  })
+    enabled: options?.enabled,
+    staleTime: options?.staleTime,
+  });
 }
 
-export function useInfiniteSupabaseQuery<T>({
-  queryKey,
-  table,
-  columns = '*',
-  filter,
-  pageSize = 10,
-  enabled = true,
-  ...options
-}: InfiniteQueryConfig<T>) {
-  const { supabase } = useSupabase()
-
-  return useInfiniteQuery<T[], Error>({
+export function useInfiniteQueryWithSupabase<T extends TableNames>(
+  queryKey: string[],
+  options?: {
+    select?: (data: Database['public']['Tables'][T]['Row'][]) => any;
+    enabled?: boolean;
+    staleTime?: number;
+    pageSize?: number;
+  },
+) {
+  return useInfiniteQuery({
     queryKey,
     queryFn: async ({ pageParam = 0 }) => {
       try {
-        let query = supabase
-          .from(table)
-          .select(columns)
-          .range(pageParam * pageSize, (pageParam + 1) * pageSize - 1)
-
-        if (filter) {
-          filter.forEach(({ column, value }) => {
-            query = query.eq(column, value)
-          })
-        }
-
-        const { data, error } = await query
+        const { data, error } = await supabase
+          .from(queryKey[0] as T)
+          .select('*')
+          .range(
+            Number(pageParam) * (options?.pageSize || 10),
+            (Number(pageParam) + 1) * (options?.pageSize || 10) - 1,
+          );
 
         if (error) {
-          logger.error('Error in useInfiniteSupabaseQuery:', { error, table })
-          throw error
+          throw {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code,
+          };
         }
-
-        return data as T[]
+        return options?.select ? options.select(data) : data;
       } catch (error) {
-        logger.error('Error in useInfiniteSupabaseQuery:', { error, table })
-        throw error
+        if (error instanceof Error) {
+          throw error;
+        }
+        throw new Error('Unknown error occurred');
       }
     },
-    getNextPageParam: (lastPage, allPages) => {
-      return lastPage.length === pageSize ? allPages.length : undefined
+    enabled: options?.enabled,
+    staleTime: options?.staleTime,
+    getNextPageParam: (lastPage: any[], pages) => {
+      if (!lastPage || lastPage.length < (options?.pageSize || 10)) return undefined;
+      return pages.length;
     },
-    enabled,
-    ...options,
-  })
+    initialPageParam: 0,
+  });
 }

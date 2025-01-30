@@ -1,64 +1,66 @@
-'use client'
+'use client';
 
-import * as React from 'react'
-import { useAuth } from '@/lib/auth/context'
-import { type Expense } from '@/lib/services/expense'
-import { DataTable } from '@/components/ui/data-table'
-import { useSupabaseQuery, useSupabaseMutation } from '@/lib/hooks/use-supabase-query'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { formatDate } from '@/lib/utils'
-import { Eye, Check, X } from 'lucide-react'
-import { useToast } from '@/components/ui/use-toast'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { ExpenseDetails } from './expense-details'
+import { Eye, Check, X } from 'lucide-react';
+import * as React from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { DataTable } from '@/components/ui/data-table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/lib/auth/context';
+import { useSupabaseQuery, useSupabaseMutation } from '@/lib/hooks/use-supabase-query';
+import { type Expense } from '@/lib/services/expense';
+import { formatDate } from '@/lib/utils';
+
+import { ExpenseDetails } from './expense-details';
 
 export function ExpenseList() {
-  const { user } = useAuth()
-  const { toast } = useToast()
-  const [selectedExpense, setSelectedExpense] = React.useState<Expense | null>(null)
-  const { data: expenses, error } = useSupabaseQuery<Expense>({
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [selectedExpense, setSelectedExpense] = React.useState<Expense | null>(null);
+  const { data: expenses, error } = useSupabaseQuery<'expenses'>({
     queryKey: ['expenses', user?.org_id || ''],
     table: 'expenses',
     filter: user ? [{ column: 'org_id', value: user.org_id }] : undefined,
     enabled: !!user,
-  })
+  });
 
-  const { mutate: approveExpense, isPending: _isApproving } = useSupabaseMutation<Expense>({
+  const { mutate: approveExpense, isPending: _isApproving } = useSupabaseMutation<'expenses'>({
     table: 'expenses',
     onSuccess: () => {
       toast({
         title: 'Expense approved',
         description: 'The expense has been approved successfully.',
-      })
+      });
     },
     onError: () => {
       toast({
         title: 'Error',
         description: 'Failed to approve expense',
         variant: 'destructive',
-      })
+      });
     },
     invalidateQueries: [['expenses', user?.org_id || '']],
-  })
+  });
 
-  const { mutate: rejectExpense, isPending: _isRejecting } = useSupabaseMutation<Expense>({
+  const { mutate: rejectExpense, isPending: _isRejecting } = useSupabaseMutation<'expenses'>({
     table: 'expenses',
     onSuccess: () => {
       toast({
         title: 'Expense rejected',
         description: 'The expense has been rejected successfully.',
-      })
+      });
     },
     onError: () => {
       toast({
         title: 'Error',
         description: 'Failed to reject expense',
         variant: 'destructive',
-      })
+      });
     },
     invalidateQueries: [['expenses', user?.org_id || '']],
-  })
+  });
 
   const columns = [
     {
@@ -70,12 +72,8 @@ export function ExpenseList() {
       accessorKey: 'amount',
       header: 'Amount',
       cell: ({ row }: { row: any }) => {
-        const amount = row.original.amount
-        return (
-          <span>
-            ${amount.toFixed(2)}
-          </span>
-        )
+        const amount = row.original.amount;
+        return <span>${amount.toFixed(2)}</span>;
       },
     },
     {
@@ -102,21 +100,21 @@ export function ExpenseList() {
     {
       id: 'actions',
       cell: ({ row }: { row: any }) => {
-        const expense = row.original
+        const expense = row.original;
         return (
-          <div className="flex items-center gap-2">
+          <div className='flex items-center gap-2'>
             <Button
-              variant="ghost"
-              size="icon"
+              variant='ghost'
+              size='icon'
               onClick={() => setSelectedExpense(expense)}
             >
-              <Eye className="h-4 w-4" />
+              <Eye className='h-4 w-4' />
             </Button>
             {expense.status === 'pending' && (
               <>
                 <Button
-                  variant="ghost"
-                  size="icon"
+                  variant='ghost'
+                  size='icon'
                   onClick={() =>
                     approveExpense({
                       match: { id: expense.id },
@@ -124,11 +122,11 @@ export function ExpenseList() {
                     })
                   }
                 >
-                  <Check className="h-4 w-4" />
+                  <Check className='h-4 w-4' />
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="icon"
+                  variant='ghost'
+                  size='icon'
                   onClick={() =>
                     rejectExpense({
                       match: { id: expense.id },
@@ -136,33 +134,36 @@ export function ExpenseList() {
                     })
                   }
                 >
-                  <X className="h-4 w-4" />
+                  <X className='h-4 w-4' />
                 </Button>
               </>
             )}
           </div>
-        )
+        );
       },
     },
-  ]
+  ];
 
   if (error) {
     return (
-      <div className="flex h-[400px] items-center justify-center">
-        <p className="text-destructive">Failed to load expenses</p>
+      <div className='flex h-[400px] items-center justify-center'>
+        <p className='text-destructive'>Failed to load expenses</p>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       <DataTable
         columns={columns}
         data={expenses || []}
-        filterColumn="description"
+        filterColumn='description'
         enableColumnVisibility
       />
-      <Dialog open={!!selectedExpense} onOpenChange={() => setSelectedExpense(null)}>
+      <Dialog
+        open={!!selectedExpense}
+        onOpenChange={() => setSelectedExpense(null)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Expense Details</DialogTitle>
@@ -171,5 +172,5 @@ export function ExpenseList() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

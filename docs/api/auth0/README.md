@@ -5,11 +5,13 @@ Auth0 provides several APIs that enable you to manage users, applications, and y
 ## Available APIs
 
 1. **Authentication API**
+
    - User authentication and authorization
    - Token management
    - Multi-factor authentication operations
 
 2. **Management API**
+
    - Tenant configuration
    - User management
    - Application management
@@ -45,8 +47,8 @@ const login = async (email: string, password: string) => {
       username: email,
       password,
       client_id: clientId,
-      scope: 'openid profile email'
-    })
+      scope: 'openid profile email',
+    }),
   });
   return response.json();
 };
@@ -60,8 +62,8 @@ const signup = async (email: string, password: string) => {
       client_id: clientId,
       email,
       password,
-      connection: 'Username-Password-Authentication'
-    })
+      connection: 'Username-Password-Authentication',
+    }),
   });
   return response.json();
 };
@@ -69,13 +71,13 @@ const signup = async (email: string, password: string) => {
 
 ### Authentication Endpoints
 
-| Endpoint | Description |
-|----------|-------------|
-| `/oauth/token` | Get tokens |
-| `/oauth/revoke` | Revoke refresh tokens |
-| `/userinfo` | Get user profile |
-| `/dbconnections/signup` | User signup |
-| `/dbconnections/change_password` | Password reset |
+| Endpoint                         | Description           |
+| -------------------------------- | --------------------- |
+| `/oauth/token`                   | Get tokens            |
+| `/oauth/revoke`                  | Revoke refresh tokens |
+| `/userinfo`                      | Get user profile      |
+| `/dbconnections/signup`          | User signup           |
+| `/dbconnections/change_password` | Password reset        |
 
 ## Management API
 
@@ -102,8 +104,8 @@ const getManagementApiToken = async () => {
       client_id: clientId,
       client_secret: clientSecret,
       audience: `https://${domain}/api/v2/`,
-      grant_type: 'client_credentials'
-    })
+      grant_type: 'client_credentials',
+    }),
   });
   return response.json();
 };
@@ -117,8 +119,8 @@ const getUsers = async (accessToken: string) => {
   const response = await fetch(`https://${domain}/api/v2/users`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json'
-    }
+      'Content-Type': 'application/json',
+    },
   });
   return response.json();
 };
@@ -129,9 +131,9 @@ const createUser = async (accessToken: string, userData: any) => {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     },
-    body: JSON.stringify(userData)
+    body: JSON.stringify(userData),
   });
   return response.json();
 };
@@ -148,6 +150,7 @@ const createUser = async (accessToken: string, userData: any) => {
 ### Security
 
 1. **Token Management**
+
    - Store tokens securely
    - Implement proper token rotation
    - Use appropriate token lifetimes
@@ -204,6 +207,7 @@ This application uses Auth0 for authentication and authorization, integrated wit
 
 1. Create an Auth0 application in your [Auth0 Dashboard](https://manage.auth0.com/)
 2. Configure the following URLs in your Auth0 application settings:
+
    ```
    Allowed Callback URLs: http://localhost:4200/api/auth/callback
    Allowed Logout URLs: http://localhost:4200
@@ -222,6 +226,7 @@ This application uses Auth0 for authentication and authorization, integrated wit
 The application uses both Auth0 and Supabase for authentication:
 
 1. Auth0 handles:
+
    - Social logins
    - Enterprise SSO
    - Multi-factor authentication
@@ -236,6 +241,7 @@ The application uses both Auth0 and Supabase for authentication:
 ### Development
 
 1. Start the development server:
+
    ```bash
    pnpm dev --port 4200
    ```
@@ -253,10 +259,12 @@ The application uses both Auth0 and Supabase for authentication:
 ### Security Considerations
 
 1. **Environment Variables**
+
    - Never commit sensitive credentials to version control
    - Use different Auth0 applications for development and production
 
 2. **API Security**
+
    - All API routes are protected by authentication middleware
    - Database access is controlled by RLS policies
    - JWT tokens are validated on every request
@@ -269,11 +277,13 @@ The application uses both Auth0 and Supabase for authentication:
 ### Deployment
 
 1. Update environment variables for production:
+
    ```bash
    NEXT_PUBLIC_BASE_URL=https://your-production-domain.com
    ```
 
 2. Update Auth0 application settings:
+
    ```
    Allowed Callback URLs: https://your-production-domain.com/api/auth/callback
    Allowed Logout URLs: https://your-production-domain.com
@@ -284,6 +294,7 @@ The application uses both Auth0 and Supabase for authentication:
 ### Troubleshooting
 
 1. **Login Issues**
+
    - Check Auth0 configuration in Auth0 Dashboard
    - Verify environment variables are set correctly
    - Check browser console for errors

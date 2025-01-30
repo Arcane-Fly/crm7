@@ -52,6 +52,7 @@ Replace `{YOUR_AUTH0_DOMAIN}` with your Auth0 domain (e.g., `your-tenant.auth0.c
 ### Actions
 
 #### Get Actions
+
 ```http
 GET /api/v2/actions
 ```
@@ -59,6 +60,7 @@ GET /api/v2/actions
 Retrieves a list of all actions.
 
 **Query Parameters:**
+
 - `triggerId` (optional): Filter actions by trigger
 - `actionName` (optional): Filter actions by name
 - `page` (optional): Page number, zero based
@@ -68,6 +70,7 @@ Retrieves a list of all actions.
 **Response:** List of action objects
 
 #### Create Action
+
 ```http
 POST /api/v2/actions
 ```
@@ -75,6 +78,7 @@ POST /api/v2/actions
 Creates a new action.
 
 **Request Body:**
+
 ```json
 {
   "name": "string",
@@ -106,6 +110,7 @@ Creates a new action.
 ### Anomaly Detection
 
 #### Get Blocked IPs
+
 ```http
 GET /api/v2/anomaly/blocks/ips/{id}
 ```
@@ -113,6 +118,7 @@ GET /api/v2/anomaly/blocks/ips/{id}
 Retrieves blocked IP addresses.
 
 #### Remove IP from Blocked IPs
+
 ```http
 DELETE /api/v2/anomaly/blocks/ips/{id}
 ```
@@ -122,6 +128,7 @@ Removes an IP address from the blocked IPs list.
 ### Attack Protection
 
 #### Get Breached Password Detection
+
 ```http
 GET /api/v2/attack-protection/breached-password-detection
 ```
@@ -129,6 +136,7 @@ GET /api/v2/attack-protection/breached-password-detection
 Retrieves the breached password detection settings.
 
 #### Update Breached Password Detection
+
 ```http
 PATCH /api/v2/attack-protection/breached-password-detection
 ```
@@ -138,6 +146,7 @@ Updates the breached password detection settings.
 ### Branding
 
 #### Get Branding Settings
+
 ```http
 GET /api/v2/branding
 ```
@@ -145,6 +154,7 @@ GET /api/v2/branding
 Retrieves the branding settings for your tenant.
 
 #### Update Branding Settings
+
 ```http
 PATCH /api/v2/branding
 ```
@@ -154,6 +164,7 @@ Updates the branding settings for your tenant.
 ### Client Grants
 
 #### Get Client Grants
+
 ```http
 GET /api/v2/client-grants
 ```
@@ -161,6 +172,7 @@ GET /api/v2/client-grants
 Retrieves all client grants.
 
 #### Create Client Grant
+
 ```http
 POST /api/v2/client-grants
 ```
@@ -170,6 +182,7 @@ Creates a new client grant.
 ### Clients (Applications)
 
 #### Get Clients
+
 ```http
 GET /api/v2/clients
 ```
@@ -177,6 +190,7 @@ GET /api/v2/clients
 Retrieves a list of all registered applications (clients).
 
 #### Create Client
+
 ```http
 POST /api/v2/clients
 ```
@@ -186,6 +200,7 @@ Creates a new application (client).
 ### Connections
 
 #### Get Connections
+
 ```http
 GET /api/v2/connections
 ```
@@ -193,6 +208,7 @@ GET /api/v2/connections
 Retrieves all connections.
 
 #### Create Connection
+
 ```http
 POST /api/v2/connections
 ```
@@ -202,6 +218,7 @@ Creates a new connection.
 ### Device Credentials
 
 #### Get Device Credentials
+
 ```http
 GET /api/v2/device-credentials
 ```
@@ -211,6 +228,7 @@ Retrieves device credentials.
 ### Email Templates
 
 #### Get Email Template
+
 ```http
 GET /api/v2/email-templates/{templateName}
 ```
@@ -220,6 +238,7 @@ Retrieves an email template.
 ### Email Provider
 
 #### Get Email Provider
+
 ```http
 GET /api/v2/emails/provider
 ```
@@ -229,6 +248,7 @@ Retrieves the email provider settings.
 ### Enterprise
 
 #### Get Enterprise Connections
+
 ```http
 GET /api/v2/enterprise
 ```
@@ -238,6 +258,7 @@ Retrieves enterprise connections.
 ### Organizations
 
 #### Get Organizations
+
 ```http
 GET /api/v2/organizations
 ```
@@ -245,6 +266,7 @@ GET /api/v2/organizations
 Retrieves all organizations.
 
 #### Create Organization
+
 ```http
 POST /api/v2/organizations
 ```

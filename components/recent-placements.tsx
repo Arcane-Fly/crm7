@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const placements = [
   {
@@ -29,12 +29,12 @@ const placements = [
     startDate: 'Started 1 week ago',
     status: 'In Progress',
   },
-]
+];
 
 const statusStyles = {
   New: 'bg-green-100 text-green-700',
   'In Progress': 'bg-blue-100 text-blue-700',
-}
+};
 
 export function RecentPlacements() {
   return (
@@ -45,7 +45,10 @@ export function RecentPlacements() {
       <CardContent>
         <div className='space-y-4'>
           {placements.map((placement, index) => (
-            <div key={index} className='space-y-2'>
+            <div
+              key={index}
+              className='space-y-2'
+            >
               <div className='flex items-center justify-between'>
                 <div className='text-sm font-medium'>{placement.apprentice}</div>
                 <div
@@ -67,5 +70,5 @@ export function RecentPlacements() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

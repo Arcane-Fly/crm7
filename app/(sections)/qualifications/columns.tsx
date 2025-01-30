@@ -1,8 +1,10 @@
-'use client'
+'use client';
 
-import type { ColumnDef } from '@tanstack/react-table'
-import { Button } from '@/components/ui/button'
-import { ArrowUpDown, MoreHorizontal } from 'lucide-react'
+import type { ColumnDef } from '@tanstack/react-table';
+import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,18 +12,17 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Badge } from '@/components/ui/badge'
+} from '@/components/ui/dropdown-menu';
 
 export type Qualification = {
-  id: string
-  title: string
-  code: string
-  level: number
-  duration: number
-  status: 'active' | 'archived'
-  market_data?: Record<string, any>
-}
+  id: string;
+  title: string;
+  code: string;
+  level: number;
+  duration: number;
+  status: 'active' | 'archived';
+  market_data?: Record<string, any>;
+};
 
 export const columns: ColumnDef<Qualification>[] = [
   {
@@ -35,7 +36,7 @@ export const columns: ColumnDef<Qualification>[] = [
           Title
           <ArrowUpDown className='ml-2 h-4 w-4' />
         </Button>
-      )
+      );
     },
   },
   {
@@ -54,27 +55,30 @@ export const columns: ColumnDef<Qualification>[] = [
     accessorKey: 'status',
     header: 'Status',
     cell: ({ row }) => {
-      const status = row.getValue('status') as string
-      return <Badge variant={status === 'active' ? 'default' : 'secondary'}>{status}</Badge>
+      const status = row.getValue('status') as 'active' | 'archived';
+      return <Badge variant={status === 'active' ? 'default' : 'secondary'}>{status}</Badge>;
     },
   },
   {
     id: 'market_data',
     header: 'Market Data',
     cell: ({ row }) => {
-      const marketData = row.original.market_data
-      return marketData ? <Badge variant='outline'>Enriched</Badge> : null
+      const marketData = row.original.market_data;
+      return marketData ? <Badge variant='outline'>Enriched</Badge> : null;
     },
   },
   {
     id: 'actions',
     cell: ({ row }) => {
-      const qualification = row.original
+      const qualification = row.original;
 
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant='ghost' className='h-8 w-8 p-0'>
+            <Button
+              variant='ghost'
+              className='h-8 w-8 p-0'
+            >
               <span className='sr-only'>Open menu</span>
               <MoreHorizontal className='h-4 w-4' />
             </Button>
@@ -90,7 +94,7 @@ export const columns: ColumnDef<Qualification>[] = [
             <DropdownMenuItem>View Market Data</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      )
+      );
     },
   },
-]
+];

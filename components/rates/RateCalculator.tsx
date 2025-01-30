@@ -1,260 +1,177 @@
-'use client'
+import React, { useEffect, useState } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 
-import { useState, useEffect, useCallback } from 'react'
-import type { RateCalculation, RateTemplateStatus } from '@/types/rates'
-import type { RateTemplate } from '@/lib/services/rates'
-import { ratesService } from '@/lib/services/rates'
-import { logger } from '@/lib/services/logger'
-import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Alert } from '@/components/ui/alert'
-import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary'
-import { RateCalculatorSkeleton } from '@/components/ui/skeleton'
+import { ErrorFallback } from '@/components/error/ErrorFallback';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useToast } from '@/components/ui/use-toast';
+import { useSupabase } from '@/lib/supabase/supabase-provider';
+import type { RateTemplate } from '@/lib/types/rates';
 
-/**
- * Custom error type for RateCalculator component
- * @interface RateCalculatorError
- * @extends {Error}
- */
-interface RateCalculatorError extends Error {
-  /** Error code for specific error cases */
-  code?: string
-  /** Additional error details */
-  details?: Record<string, unknown>
-}
+import type { CalculationResult, RateCalculatorProps } from './types';
 
-/**
- * Props for the RateCalculator component
- * @interface RateCalculatorProps
- */
-interface RateCalculatorProps {
-  /** Organization ID for rate calculations */
-  orgId: string
-}
+export function RateCalculator({ orgId, onCalculate }: RateCalculatorProps): JSX.Element {
+  const { supabase } = useSupabase();
+  const { toast } = useToast();
+  const [templates, setTemplates] = useState<RateTemplate[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<CalculationResult | null>(null);
 
-/**
- * RateCalculator Component
- *
- * A component that allows users to calculate rates based on templates and base rates.
- * It provides real-time rate calculations and displays the results in a structured format.
- *
- * @component
- * @param {RateCalculatorProps} props - Component props
- * @returns {JSX.Element} Rendered component
- */
-export function RateCalculator({ orgId }: RateCalculatorProps) {
-  // State management for templates and calculations
-  const [templates, setTemplates] = useState<RateTemplate[]>([])
-  const [selectedTemplate, setSelectedTemplate] = useState<RateTemplate | null>(null)
-  const [baseRate, setBaseRate] = useState<number>(0)
-  const [calculation, setCalculation] = useState<RateCalculation | null>(null)
-  const [error, setError] = useState<RateCalculatorError | null>(null)
-  const [loading, setLoading] = useState<boolean>(false)
+  const calculateRate = (template: RateTemplate): void => {
+    const baseAmount = template.baseRate * (1 + template.baseMargin / 100);
+    const superAmount = baseAmount * (template.superRate / 100);
+    const leaveAmount = baseAmount * (template.leaveLoading / 100);
+    const workersCompAmount = baseAmount * (template.workersCompRate / 100);
+    const payrollTaxAmount = baseAmount * (template.payrollTaxRate / 100);
+    const trainingAmount = baseAmount * (template.trainingCostRate / 100);
+    const otherAmount = baseAmount * (template.otherCostsRate / 100);
 
-  /**
-   * Fetches available rate templates for the organization
-   */
-  const fetchTemplates = useCallback(async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      logger.info('Fetching rate templates', { orgId }, 'RateCalculator')
+    const totalAmount = Number(
+      (
+        baseAmount +
+        superAmount +
+        leaveAmount +
+        workersCompAmount +
+        payrollTaxAmount +
+        trainingAmount +
+        otherAmount -
+        template.fundingOffset
+      ).toFixed(2),
+    );
 
-      const response = await ratesService.getTemplates({
-        org_id: orgId,
-        is_active: true,
-        status: 'active' as RateTemplateStatus,
-      })
-      setTemplates(response.data)
+    const result: CalculationResult = {
+      baseAmount: Number(baseAmount.toFixed(2)),
+      superAmount: Number(superAmount.toFixed(2)),
+      leaveAmount: Number(leaveAmount.toFixed(2)),
+      workersCompAmount: Number(workersCompAmount.toFixed(2)),
+      payrollTaxAmount: Number(payrollTaxAmount.toFixed(2)),
+      trainingAmount: Number(trainingAmount.toFixed(2)),
+      otherAmount: Number(otherAmount.toFixed(2)),
+      totalAmount,
+    };
 
-      logger.info(
-        'Templates fetched successfully',
-        { count: response.data.length },
-        'RateCalculator'
-      )
-    } catch (err) {
-      const error = err as RateCalculatorError
-      logger.error('Failed to fetch rate templates', error, { orgId }, 'RateCalculator')
-      setError({
-        name: 'TemplateError',
-        message: 'Failed to fetch rate templates',
-        code: error.code,
-        details: error.details,
-      })
-    } finally {
-      setLoading(false)
+    setResult(result);
+    onCalculate?.(totalAmount);
+  };
+
+  const handleTemplateChange = (value: string): void => {
+    setSelectedTemplate(value);
+    const template = templates.find((t) => t.id === value);
+    if (template) {
+      calculateRate(template);
     }
-  }, [orgId])
+  };
 
-  /**
-   * Handles rate calculation based on selected template and base rate
-   */
-  const handleCalculate = useCallback(async () => {
-    if (!selectedTemplate || baseRate <= 0) {
-      const message = 'Invalid calculation parameters'
-      logger.warn(
-        message,
-        {
-          templateId: selectedTemplate?.id,
-          baseRate,
-          orgId,
-        },
-        'RateCalculator'
-      )
-      setError({
-        name: 'ValidationError',
-        message: 'Please select a template and enter a valid base rate',
-        code: 'INVALID_INPUT',
-      })
-      return
-    }
-
-    try {
-      setLoading(true)
-      setError(null)
-
-      logger.info(
-        'Calculating rate',
-        {
-          templateId: selectedTemplate.id,
-          baseRate,
-          orgId,
-        },
-        'RateCalculator'
-      )
-
-      // Ensure template has required properties
-      if (!selectedTemplate.id) {
-        throw new Error('Template ID is required for calculation')
-      }
-
-      // Update the template with the new base rate for calculation
-      const templateForCalc = {
-        ...selectedTemplate,
-        base_rate: baseRate,
-        id: selectedTemplate.id,
-      } as const // Use const assertion to ensure id is treated as required
-
-      const result = await ratesService.calculateRate(templateForCalc)
-      setCalculation(result.data)
-
-      logger.info(
-        'Rate calculated successfully',
-        {
-          templateId: selectedTemplate.id,
-          finalRate: result.data.final_rate,
-        },
-        'RateCalculator'
-      )
-    } catch (err) {
-      const error = err as RateCalculatorError
-      logger.error(
-        'Failed to calculate rate',
-        error,
-        {
-          templateId: selectedTemplate.id,
-          baseRate,
-          orgId,
-        },
-        'RateCalculator'
-      )
-      setError({
-        name: 'CalculationError',
-        message: 'Failed to calculate rate',
-        code: error.code,
-        details: error.details,
-      })
-    } finally {
-      setLoading(false)
-    }
-  }, [selectedTemplate, baseRate, orgId])
-
-  // Fetch templates on component mount
   useEffect(() => {
-    fetchTemplates()
-  }, [fetchTemplates])
+    const fetchTemplates = async (): Promise<void> => {
+      try {
+        const { data, error } = await supabase
+          .from('rate_templates')
+          .select('*')
+          .eq('orgId', orgId)
+          .order('createdAt', { ascending: false });
 
-  if (loading && !templates.length) {
-    return <RateCalculatorSkeleton />
-  }
+        if (error) throw error;
+
+        setTemplates(data as RateTemplate[]);
+      } catch (err) {
+        console.error('Error fetching templates:', err);
+        setError('Failed to load templates');
+        toast({
+          title: 'Error',
+          description: 'Failed to load templates',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void fetchTemplates();
+  }, [orgId, supabase, toast]);
+
+  if (loading) return <div>Loading templates...</div>;
+  if (error) return <div className='text-red-500'>{error}</div>;
 
   return (
-    <ErrorBoundary>
-      <Card className='p-6'>
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <div className='space-y-6'>
         <div className='space-y-4'>
-          {error && (
-            <Alert variant='destructive'>
-              <p className='text-sm font-medium'>{error.message}</p>
-              {error.details && <p className='mt-1 text-xs'>{JSON.stringify(error.details)}</p>}
-            </Alert>
-          )}
-
           <div className='space-y-2'>
-            <Label htmlFor='template'>Rate Template</Label>
-            <select
-              id='template'
-              className='w-full rounded border p-2'
-              value={selectedTemplate?.id || ''}
-              aria-label='Select rate template'
-              onChange={(e) => {
-                const template = templates.find((t) => t.id === e.target.value)
-                setSelectedTemplate(template || null)
-              }}
+            <label
+              htmlFor='template'
+              className='text-sm font-medium'
             >
-              <option value=''>Select a template</option>
-              {templates.map((template) => (
-                <option key={template.id} value={template.id}>
-                  {template.template_name} ({template.template_type})
-                </option>
-              ))}
-            </select>
+              Select Rate Template
+            </label>
+            <Select
+              value={selectedTemplate}
+              onValueChange={handleTemplateChange}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder='Choose a template' />
+              </SelectTrigger>
+              <SelectContent>
+                {templates.map((template) => (
+                  <SelectItem
+                    key={template.id}
+                    value={template.id}
+                  >
+                    {template.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+        </div>
 
-          <div className='space-y-2'>
-            <Label htmlFor='baseRate'>Base Rate</Label>
-            <Input
-              id='baseRate'
-              type='number'
-              min='0'
-              step='0.01'
-              value={baseRate}
-              onChange={(e) => setBaseRate(Number(e.target.value))}
-              placeholder='Enter base rate'
-            />
-          </div>
-
-          <Button
-            onClick={handleCalculate}
-            disabled={loading || !selectedTemplate || baseRate <= 0}
-          >
-            {loading ? 'Calculating...' : 'Calculate Rate'}
-          </Button>
-
-          {calculation && (
-            <div className='mt-4 space-y-2'>
-              <h3 className='font-semibold'>Calculation Results</h3>
-              <div className='grid grid-cols-2 gap-2 text-sm'>
-                <div>Base Rate:</div>
-                <div>${calculation.base_rate.toFixed(2)}</div>
-                <div>Super Amount:</div>
-                <div>${calculation.super_amount.toFixed(2)}</div>
-                <div>Leave Loading:</div>
-                <div>${calculation.leave_loading.toFixed(2)}</div>
-                <div>Training Costs:</div>
-                <div>${calculation.training_costs.toFixed(2)}</div>
-                <div>Insurance Costs:</div>
-                <div>${calculation.insurance_costs.toFixed(2)}</div>
-                <div>Total Cost:</div>
-                <div>${calculation.total_cost.toFixed(2)}</div>
-                <div className='font-semibold'>Final Rate:</div>
-                <div className='font-semibold'>${calculation.final_rate.toFixed(2)}</div>
+        {result && (
+          <div className='space-y-4'>
+            <h3 className='text-lg font-medium'>Calculation Result</h3>
+            <div className='grid grid-cols-2 gap-4'>
+              <div>
+                <span className='text-sm text-gray-500'>Base Amount</span>
+                <p className='text-lg font-medium'>${result.baseAmount}</p>
+              </div>
+              <div>
+                <span className='text-sm text-gray-500'>Super</span>
+                <p className='text-lg font-medium'>${result.superAmount}</p>
+              </div>
+              <div>
+                <span className='text-sm text-gray-500'>Leave Loading</span>
+                <p className='text-lg font-medium'>${result.leaveAmount}</p>
+              </div>
+              <div>
+                <span className='text-sm text-gray-500'>Workers Comp</span>
+                <p className='text-lg font-medium'>${result.workersCompAmount}</p>
+              </div>
+              <div>
+                <span className='text-sm text-gray-500'>Payroll Tax</span>
+                <p className='text-lg font-medium'>${result.payrollTaxAmount}</p>
+              </div>
+              <div>
+                <span className='text-sm text-gray-500'>Training</span>
+                <p className='text-lg font-medium'>${result.trainingAmount}</p>
+              </div>
+              <div>
+                <span className='text-sm text-gray-500'>Other Costs</span>
+                <p className='text-lg font-medium'>${result.otherAmount}</p>
+              </div>
+              <div>
+                <span className='text-sm font-bold text-gray-500'>Total Amount</span>
+                <p className='text-lg font-bold'>${result.totalAmount}</p>
               </div>
             </div>
-          )}
-        </div>
-      </Card>
+          </div>
+        )}
+      </div>
     </ErrorBoundary>
-  )
+  );
 }

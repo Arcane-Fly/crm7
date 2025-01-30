@@ -1,11 +1,12 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { usePathname } from 'next/navigation'
-import Link from 'next/link'
-import { Menu } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import { Menu } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export const sections = {
   dashboard: [
@@ -98,16 +99,16 @@ export const sections = {
     { title: 'Training Reports', href: '/reports/training' },
     { title: 'Safety Reports', href: '/reports/safety' },
   ],
-} as const
+} as const;
 
 interface SectionSidebarProps {
-  className?: string
-  section?: keyof typeof sections
+  className?: string;
+  section?: keyof typeof sections;
 }
 
 export function SectionSidebar({ className, section = 'dashboard' }: SectionSidebarProps) {
-  const pathname = usePathname()
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
     <div className={cn('relative', className)}>
@@ -120,7 +121,7 @@ export function SectionSidebar({ className, section = 'dashboard' }: SectionSide
       </Button>
       <nav className={cn('space-y-1', isMobileMenuOpen ? 'block' : 'hidden lg:block')}>
         {sections[section].map((item) => {
-          const isActive = pathname === item.href
+          const isActive = pathname === item.href;
           return (
             <Link
               key={item.href}
@@ -129,15 +130,15 @@ export function SectionSidebar({ className, section = 'dashboard' }: SectionSide
                 'flex items-center rounded-md px-3 py-2 text-sm font-medium',
                 isActive
                   ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                  : 'text-muted-foreground hover:bg-accent hover:text-foreground',
               )}
               aria-current={isActive ? 'page' : undefined}
             >
               {item.title}
             </Link>
-          )
+          );
         })}
       </nav>
     </div>
-  )
+  );
 }

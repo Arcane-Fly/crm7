@@ -1,8 +1,5 @@
-'use client'
+'use client';
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { cn } from '@/lib/utils'
 import {
   LayoutGrid,
   Users,
@@ -33,7 +30,11 @@ import {
   CheckCircle,
   Database,
   Palette,
-} from 'lucide-react'
+} from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
+import { cn } from '@/lib/utils';
 
 const iconMap = {
   LayoutGrid,
@@ -65,19 +66,19 @@ const iconMap = {
   CheckCircle,
   Database,
   Palette,
-} as const
+} as const;
 
-type IconName = keyof typeof iconMap
+type IconName = keyof typeof iconMap;
 
 interface MenuItem {
-  title: string
-  href: string
-  icon: IconName
+  title: string;
+  href: string;
+  icon: IconName;
 }
 
 interface SidebarSection {
-  title: string
-  items: MenuItem[]
+  title: string;
+  items: MenuItem[];
 }
 
 const sidebarSections: Record<string, SidebarSection> = {
@@ -200,34 +201,34 @@ const sidebarSections: Record<string, SidebarSection> = {
       { title: 'Data Management', href: '/settings/data', icon: 'Database' },
     ],
   },
-}
+};
 
 function MenuItem({ href, icon, title }: MenuItem) {
-  const pathname = usePathname()
-  const isActive = pathname === href
+  const pathname = usePathname() ?? '/';
+  const isActive = pathname === href;
 
-  const Icon = iconMap[icon]
+  const Icon = iconMap[icon];
 
   return (
     <Link
       href={href}
       className={cn(
         'flex items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground',
-        isActive ? 'bg-accent' : 'transparent'
+        isActive ? 'bg-accent' : 'transparent',
       )}
     >
       <Icon className='h-4 w-4' />
       <span>{title}</span>
     </Link>
-  )
+  );
 }
 
 export function Sidebar() {
-  const pathname = usePathname()
-  const section = Object.keys(sidebarSections).find((key) => pathname.startsWith(key))
-  const sidebarSection = section ? sidebarSections[section] : null
+  const pathname = usePathname();
+  const section = Object.keys(sidebarSections).find((key) => pathname?.startsWith(key) ?? false);
+  const sidebarSection = section ? sidebarSections[section] : null;
 
-  if (!sidebarSection) return null
+  if (!sidebarSection) return null;
 
   return (
     <div className='hidden border-r bg-background lg:block lg:w-64'>
@@ -236,7 +237,10 @@ export function Sidebar() {
           <h2 className='mb-2 px-4 text-lg font-semibold tracking-tight'>{sidebarSection.title}</h2>
           <div className='space-y-1'>
             {sidebarSection.items.map((item) => (
-              <MenuItem key={item.href} {...item} />
+              <MenuItem
+                key={item.href}
+                {...item}
+              />
             ))}
           </div>
         </div>
@@ -248,5 +252,5 @@ export function Sidebar() {
         </button>
       </div>
     </div>
-  )
+  );
 }

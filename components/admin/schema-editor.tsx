@@ -1,41 +1,42 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { useAdminAccess } from '@/lib/hooks/useAdminAccess'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { useToast } from '@/components/ui/use-toast'
+import { Settings2 } from 'lucide-react';
+import { useState } from 'react';
+
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Settings2 } from 'lucide-react'
+} from '@/components/ui/select';
+import { useToast } from '@/components/ui/use-toast';
+import { useAdminAccess } from '@/lib/hooks/useAdminAccess';
+import { createClient } from '@/lib/supabase/client';
 
 interface SchemaEditorProps {
-  table: string
-  onUpdate: () => void
+  table: string;
+  onUpdate: () => void;
 }
 
 export function SchemaEditor({ table, onUpdate }: SchemaEditorProps) {
-  const { isAdmin } = useAdminAccess()
-  const [isOpen, setIsOpen] = useState(false)
-  const [newColumn, setNewColumn] = useState({ name: '', type: 'text' })
-  const { toast } = useToast()
-  const supabase = createClient()
+  const { isAdmin } = useAdminAccess();
+  const [isOpen, setIsOpen] = useState(false);
+  const [newColumn, setNewColumn] = useState({ name: '', type: 'text' });
+  const { toast } = useToast();
+  const supabase = createClient();
 
-  if (!isAdmin) return null
+  if (!isAdmin) return null;
 
   const handleAddColumn = async () => {
     try {
@@ -44,29 +45,35 @@ export function SchemaEditor({ table, onUpdate }: SchemaEditorProps) {
         p_table_name: table,
         p_column_name: newColumn.name,
         p_column_type: newColumn.type,
-      })
+      });
 
-      if (schemaError) throw schemaError
+      if (schemaError) throw schemaError;
 
-      onUpdate()
-      setIsOpen(false)
+      onUpdate();
+      setIsOpen(false);
       toast({
         title: 'Column added',
         description: 'The new column has been added successfully.',
-      })
+      });
     } catch (error) {
       toast({
         title: 'Error',
         description: 'Failed to add column. Please try again.',
         variant: 'destructive',
-      })
+      });
     }
-  }
+  };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={setIsOpen}
+    >
       <DialogTrigger asChild>
-        <Button variant='outline' size='sm'>
+        <Button
+          variant='outline'
+          size='sm'
+        >
           <Settings2 className='mr-2 h-4 w-4' />
           Edit Schema
         </Button>
@@ -106,5 +113,5 @@ export function SchemaEditor({ table, onUpdate }: SchemaEditorProps) {
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

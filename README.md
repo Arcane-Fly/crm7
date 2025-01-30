@@ -2,9 +2,39 @@
 
 A modern, comprehensive CRM system built with Next.js, focusing on training, safety, payroll, and HR management.
 
+## Project Status
+
+**Current Status**: Beta Development (75% Complete)
+[View Full Technical Assessment](docs/TECHNICAL_ASSESSMENT.md)
+
 ## Project Overview
 
 CRM7 is a unified platform that combines the best features from multiple CRM systems into a single, cohesive application. It provides a robust solution for managing client relationships, employee training, safety compliance, and HR operations.
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js ^18.17.0
+- PNPM ^9.0.0
+- Supabase Account
+- Auth0 Account
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/Arcane-Fly/crm7.git
+
+# Install dependencies
+pnpm install
+
+# Set up environment variables
+cp .env.example .env.local
+
+# Start development server
+pnpm dev
+```
 
 ## Key Features
 
@@ -25,108 +55,60 @@ CRM7 is a unified platform that combines the best features from multiple CRM sys
 - **Testing**: Vitest, React Testing Library
 - **API**: REST with planned GraphQL support
 
-## Navigation Structure
+## Project Structure
 
-### Top-Level Sections
-
-- Dashboard
-- Training & Development
-- Safety & Compliance
-- Payroll & Benefits
-- HR Management
-- Client Management
-- Project Management
-- Reporting & Analytics
-
-Each section has its own contextual sidebar with relevant subsections. For details, see [UI/UX Guidelines](docs/UI_UX_GUIDELINES.md).
+```
+crm7/
+├── components/        # React components
+├── lib/              # Core libraries and utilities
+├── pages/            # Next.js pages
+├── public/           # Static assets
+├── styles/           # Global styles
+└── tests/            # Test suites
+```
 
 ## Documentation
 
+### Development
+
+- [Getting Started Guide](docs/GETTING_STARTED.md)
+- [Contributing Guidelines](docs/CONTRIBUTING.md)
+- [Code Style Guide](docs/CODE_STYLE.md)
+- [Testing Guide](docs/TESTING.md)
+
 ### Architecture & Design
 
+- [Technical Assessment](docs/TECHNICAL_ASSESSMENT.md)
 - [Architecture Overview](docs/ARCHITECTURE.md)
 - [UI/UX Guidelines](docs/UI_UX_GUIDELINES.md)
 - [Data Models](docs/DATA_MODELS.md)
 - [API Documentation](docs/API.md)
 
-### Project Status
+### Deployment
 
-- [Implementation Status](docs/IMPLEMENTATION_STATUS.md)
-- [Development Roadmap](docs/ROADMAP.md)
+- [Deployment Guide](docs/DEPLOYMENT.md)
+- [Environment Setup](docs/ENVIRONMENT.md)
+- [Production Checklist](docs/PRODUCTION_CHECKLIST.md)
 
-## Getting Started
+## Contributing
 
-1. **Clone the repository**
+We welcome contributions! Please see our [Contributing Guidelines](docs/CONTRIBUTING.md) for details on how to get started.
 
-   ```bash
-   git clone https://github.com/Arcane-Fly/crm7.git
-   cd crm7
-   ```
-
-2. **Install dependencies**
-
-   ```bash
-   pnpm install
-   ```
-
-3. **Set up environment variables**
-
-   ```bash
-   cp .env.example .env.local
-   ```
-
-   Edit `.env.local` with your configuration
-
-4. **Start development server**
-   ```bash
-   pnpm dev
-   ```
-   The application will be available at http://localhost:4500
-
-## Development Guidelines
-
-### Code Style
-
-- Use TypeScript strict mode
-- Follow ESLint configuration
-- Use Prettier for formatting
-- Write tests for new features
-
-### Git Workflow
-
-1. Create feature branch from `master`
-2. Make changes and commit with conventional commits
-3. Submit PR for review
-4. Merge after approval
-
-### Testing
+## Testing
 
 ```bash
 # Run unit tests
 pnpm test
 
-# Run tests in watch mode
-pnpm test:watch
+# Run tests with UI
+pnpm test:ui
 
 # Run tests with coverage
 pnpm test:coverage
+
+# Run E2E tests
+pnpm test:e2e
 ```
-
-## Deployment
-
-The application is configured for deployment on Vercel:
-
-1. Connect your Vercel account to the GitHub repository
-2. Configure environment variables
-3. Deploy with `pnpm run build`
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
 
 ## License
 
@@ -134,4 +116,12 @@ This project is private and confidential. All rights reserved.
 
 ## Support
 
-For support, please contact the development team or create an issue in the repository.
+For support, please:
+
+1. Check our [Documentation](docs/)
+2. Open an issue
+3. Contact the development team
+
+---
+
+Built with ❤️ by the CRM7 Team

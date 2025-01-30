@@ -1,48 +1,51 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { ratesService } from '@/lib/services/rates'
-import type { RateAnalyticsData } from '@/types/rates'
-import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary'
-import { Alert } from '@/components/ui/alert'
+import { useState, useEffect } from 'react';
+
+import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary';
+import { Alert } from '@/components/ui/alert';
+import type { AnalyticsData } from '@/lib/services/rates';
+import { ratesService } from '@/lib/services/rates';
+import type { RateAnalytics } from '@/lib/types/rates';
 
 interface RateAnalyticsProps {
-  orgId: string
+  orgId: string;
 }
 
-export function RateAnalytics({ orgId }: RateAnalyticsProps) {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [analytics, setAnalytics] = useState<RateAnalyticsData | null>(null)
+export function RateAnalytics({ orgId }: RateAnalyticsProps): React.ReactElement {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
 
   useEffect(() => {
-    async function loadAnalytics() {
+    const loadAnalytics = async () => {
       try {
-        setLoading(true)
-        setError(null)
-        const response = await ratesService.getAnalytics(orgId)
-        setAnalytics(response.data)
+        setLoading(true);
+        setError(null);
+        const response = await ratesService.getAnalytics({ orgId });
+        const result = response as { data: AnalyticsData };
+        setAnalytics(result.data);
       } catch (err) {
-        const error = err as Error
-        setError(error.message)
+        const error = err as Error;
+        setError(error.message);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    loadAnalytics()
-  }, [orgId])
+    void loadAnalytics();
+  }, [orgId]);
 
   if (loading) {
-    return <div>Loading analytics...</div>
+    return <div>Loading analytics...</div>;
   }
 
   if (error) {
-    return <Alert variant='destructive'>{error}</Alert>
+    return <Alert variant='destructive'>{error}</Alert>;
   }
 
   if (!analytics) {
-    return <div>No analytics data available</div>
+    return <div>No analytics data available</div>;
   }
 
   return (
@@ -52,22 +55,29 @@ export function RateAnalytics({ orgId }: RateAnalyticsProps) {
         <div className='grid grid-cols-1 gap-6 md:grid-cols-3'>
           <div className='rounded-lg bg-white p-6 shadow'>
             <h3 className='mb-2 text-lg font-semibold'>Average Rate</h3>
-            <p className='text-3xl font-bold'>${analytics.average_rate.toFixed(2)}</p>
+            <p className='text-3xl font-bold'>${analytics.averageRate.toFixed(2)}</p>
           </div>
           <div className='rounded-lg bg-white p-6 shadow'>
-            <h3 className='mb-2 text-lg font-semibold'>Rate Range</h3>
+            <h3 className='mb-2 text-lg font-semibold'>Templates</h3>
             <p className='text-sm'>
-              Min: ${analytics.min_rate.toFixed(2)} - Max: ${analytics.max_rate.toFixed(2)}
+              Active: {analytics.activeTemplates} / Total: {analytics.totalTemplates}
             </p>
           </div>
           <div className='rounded-lg bg-white p-6 shadow'>
-            <h3 className='mb-2 text-lg font-semibold'>Rate Trend</h3>
-            <p className={`text-sm ${analytics.trend > 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {analytics.trend > 0 ? '↑' : '↓'} {Math.abs(analytics.trend)}% from last period
-            </p>
+            <h3 className='mb-2 text-lg font-semibold'>Recent Changes</h3>
+            <div className='space-y-2'>
+              {analytics.recentChanges.slice(0, 3).map((change, index) => (
+                <p
+                  key={index}
+                  className='text-sm'
+                >
+                  {change.description} on {new Date(change.date).toLocaleDateString()}
+                </p>
+              ))}
+            </div>
           </div>
         </div>
       </div>
     </ErrorBoundary>
-  )
+  );
 }

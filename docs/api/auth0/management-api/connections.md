@@ -12,14 +12,14 @@ Retrieves all connections.
 
 ### Query Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| page | number | Page number, zero based |
-| per_page | number | Number of results per page |
-| strategy | string | Filter by connection strategy |
-| name | string | Filter by connection name |
-| fields | string | Comma-separated list of fields to include |
-| include_totals | boolean | Include total number of connections |
+| Parameter      | Type    | Description                               |
+| -------------- | ------- | ----------------------------------------- |
+| page           | number  | Page number, zero based                   |
+| per_page       | number  | Number of results per page                |
+| strategy       | string  | Filter by connection strategy             |
+| name           | string  | Filter by connection name                 |
+| fields         | string  | Comma-separated list of fields to include |
+| include_totals | boolean | Include total number of connections       |
 
 ### Response
 
@@ -97,9 +97,9 @@ Retrieves a connection by ID.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the connection to retrieve |
+| Parameter | Type   | Description                          |
+| --------- | ------ | ------------------------------------ |
+| id        | string | The ID of the connection to retrieve |
 
 ### Response
 
@@ -130,9 +130,9 @@ Updates a connection.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the connection to update |
+| Parameter | Type   | Description                        |
+| --------- | ------ | ---------------------------------- |
+| id        | string | The ID of the connection to update |
 
 ### Request Body
 
@@ -158,9 +158,9 @@ Deletes a connection.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the connection to delete |
+| Parameter | Type   | Description                        |
+| --------- | ------ | ---------------------------------- |
+| id        | string | The ID of the connection to delete |
 
 ### Response
 
@@ -176,9 +176,9 @@ Deletes all users that belong to a connection.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the connection |
+| Parameter | Type   | Description              |
+| --------- | ------ | ------------------------ |
+| id        | string | The ID of the connection |
 
 ### Response
 
@@ -187,6 +187,7 @@ A successful deletion returns a 204 No Content status with no response body.
 ## Connection Strategies
 
 Available connection strategies:
+
 - `ad`: Active Directory
 - `adfs`: Active Directory Federation Services
 - `amazon`: Amazon
@@ -207,6 +208,7 @@ Available connection strategies:
 ## Error Responses
 
 ### 400 Bad Request
+
 ```json
 {
   "error": "bad_request",
@@ -216,6 +218,7 @@ Available connection strategies:
 ```
 
 ### 401 Unauthorized
+
 ```json
 {
   "error": "unauthorized",
@@ -225,6 +228,7 @@ Available connection strategies:
 ```
 
 ### 403 Forbidden
+
 ```json
 {
   "error": "forbidden",
@@ -234,6 +238,7 @@ Available connection strategies:
 ```
 
 ### 404 Not Found
+
 ```json
 {
   "error": "not_found",
@@ -243,6 +248,7 @@ Available connection strategies:
 ```
 
 ### 429 Too Many Requests
+
 ```json
 {
   "error": "too_many_requests",
@@ -254,12 +260,14 @@ Available connection strategies:
 ## Best Practices
 
 1. **Security**
+
    - Use strong password policies
    - Enable password history
    - Configure appropriate connection options
    - Regularly review enabled clients
 
 2. **Configuration**
+
    - Use meaningful connection names
    - Document connection settings
    - Test connections before enabling
@@ -278,6 +286,7 @@ The Connections API endpoints are subject to rate limiting:
 - Enterprise: 100 requests per minute
 
 Rate limit information is included in the response headers:
+
 - `X-RateLimit-Limit`
 - `X-RateLimit-Remaining`
 - `X-RateLimit-Reset`

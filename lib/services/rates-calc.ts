@@ -1,62 +1,62 @@
 interface RateComponent {
-  name: string
-  rate: number
-  type: 'base' | 'loading' | 'allowance' | 'penalty'
-  description?: string
+  name: string;
+  rate: number;
+  type: 'base' | 'loading' | 'allowance' | 'penalty';
+  description?: string;
 }
 
 interface RateCalculation {
-  baseRate: number
-  components: RateComponent[]
-  total: number
+  baseRate: number;
+  components: RateComponent[];
+  total: number;
   breakdown: {
-    wages: number
-    loadings: number
-    allowances: number
-    penalties: number
-    total: number
-  }
+    wages: number;
+    loadings: number;
+    allowances: number;
+    penalties: number;
+    total: number;
+  };
 }
 
 export class RatesCalculator {
-  private readonly MARKUP_PERCENTAGE = 25 // Default markup
-  private readonly WORKERS_COMP_RATE = 0.05 // 5% for workers compensation
-  private readonly PAYROLL_TAX_RATE = 0.0485 // 4.85% payroll tax
-  private readonly SUPER_RATE = 0.11 // 11% superannuation
+  private readonly MARKUP_PERCENTAGE = 25; // Default markup
+  private readonly WORKERS_COMP_RATE = 0.05; // 5% for workers compensation
+  private readonly PAYROLL_TAX_RATE = 0.0485; // 4.85% payroll tax
+  private readonly SUPER_RATE = 0.11; // 11% superannuation
 
   calculateChargeRate(baseRate: number, components: RateComponent[]): RateCalculation {
-    const calculation = this.calculateTotalRate(baseRate, components)
-    const totalCost = this.calculateTotalCost(calculation.total)
-    const chargeRate = this.applyMarkup(totalCost)
+    const calculation = this.calculateTotalRate(baseRate, components);
+    const totalCost = this.calculateTotalCost(calculation.total);
+    const chargeRate = this.applyMarkup(totalCost);
 
     return {
       ...calculation,
       total: chargeRate,
-    }
+    };
   }
 
   private calculateTotalRate(baseRate: number, components: RateComponent[]): RateCalculation {
-    let loadings = 0
-    let allowances = 0
-    let penalties = 0
+    let loadings = 0;
+    let allowances = 0;
+    let penalties = 0;
 
     components.forEach((component) => {
-      const amount = baseRate * component.rate
+      const amount = baseRate * component.rate;
 
       switch (component.type) {
         case 'loading':
-          loadings += amount
-          break
+          loadings += amount;
+          break;
         case 'allowance':
-          allowances += amount
-          break
+          allowances += amount;
+          break;
         case 'penalty':
-          penalties += amount
-          break
+          penalties += amount;
+          break;
       }
-    })
+    });
 
-    const total = baseRate + loadings + allowances + penalties
+    const total = baseRate + loadings + allowances + penalties;
 
     return {
       baseRate,
@@ -69,19 +69,19 @@ export class RatesCalculator {
         penalties,
         total,
       },
-    }
+    };
   }
 
   private calculateTotalCost(rate: number): number {
-    const superAmount = rate * this.SUPER_RATE
-    const workersComp = rate * this.WORKERS_COMP_RATE
-    const payrollTax = rate * this.PAYROLL_TAX_RATE
+    const superAmount = rate * this.SUPER_RATE;
+    const workersComp = rate * this.WORKERS_COMP_RATE;
+    const payrollTax = rate * this.PAYROLL_TAX_RATE;
 
-    return rate + superAmount + workersComp + payrollTax
+    return rate + superAmount + workersComp + payrollTax;
   }
 
   private applyMarkup(cost: number): number {
-    return cost * (1 + this.MARKUP_PERCENTAGE / 100)
+    return cost * (1 + this.MARKUP_PERCENTAGE / 100);
   }
 
   generateQuote(calculation: RateCalculation) {
@@ -106,6 +106,6 @@ export class RatesCalculator {
         ...component,
         amount: calculation.baseRate * component.rate,
       })),
-    }
+    };
   }
 }

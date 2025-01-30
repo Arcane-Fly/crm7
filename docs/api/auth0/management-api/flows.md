@@ -12,10 +12,10 @@ Retrieves all flows.
 
 ### Query Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| page | number | Page number, zero based |
-| per_page | number | Number of results per page |
+| Parameter      | Type    | Description                   |
+| -------------- | ------- | ----------------------------- |
+| page           | number  | Page number, zero based       |
+| per_page       | number  | Number of results per page    |
 | include_totals | boolean | Include total number of flows |
 
 ### Response
@@ -120,9 +120,9 @@ Retrieves a flow by ID.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the flow to retrieve |
+| Parameter | Type   | Description                    |
+| --------- | ------ | ------------------------------ |
+| id        | string | The ID of the flow to retrieve |
 
 ### Response
 
@@ -166,9 +166,9 @@ Updates a flow.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the flow to update |
+| Parameter | Type   | Description                  |
+| --------- | ------ | ---------------------------- |
+| id        | string | The ID of the flow to update |
 
 ### Request Body
 
@@ -198,9 +198,9 @@ Deletes a flow.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the flow to delete |
+| Parameter | Type   | Description                  |
+| --------- | ------ | ---------------------------- |
+| id        | string | The ID of the flow to delete |
 
 ### Response
 
@@ -209,6 +209,7 @@ A successful deletion returns a 204 No Content status with no response body.
 ## Flow Triggers
 
 Available flow triggers:
+
 - `post-login`: After user login
 - `pre-user-registration`: Before user registration
 - `post-user-registration`: After user registration
@@ -219,6 +220,7 @@ Available flow triggers:
 ## Step Types
 
 Available step types:
+
 - `condition`: Evaluates an expression
 - `action`: Executes an action
 - `redirect`: Redirects to a URL
@@ -229,6 +231,7 @@ Available step types:
 ## Error Responses
 
 ### 400 Bad Request
+
 ```json
 {
   "error": "bad_request",
@@ -238,6 +241,7 @@ Available step types:
 ```
 
 ### 401 Unauthorized
+
 ```json
 {
   "error": "unauthorized",
@@ -247,6 +251,7 @@ Available step types:
 ```
 
 ### 403 Forbidden
+
 ```json
 {
   "error": "forbidden",
@@ -256,6 +261,7 @@ Available step types:
 ```
 
 ### 404 Not Found
+
 ```json
 {
   "error": "not_found",
@@ -265,6 +271,7 @@ Available step types:
 ```
 
 ### 429 Too Many Requests
+
 ```json
 {
   "error": "too_many_requests",
@@ -276,12 +283,14 @@ Available step types:
 ## Best Practices
 
 1. **Flow Design**
+
    - Keep flows simple and focused
    - Use meaningful names
    - Document flow purpose
    - Test flows thoroughly
 
 2. **Step Configuration**
+
    - Order steps logically
    - Handle errors gracefully
    - Use clear conditions
@@ -301,6 +310,7 @@ The Flows API endpoints are subject to rate limiting:
 - Enterprise: 100 requests per minute
 
 Rate limit information is included in the response headers:
+
 - `X-RateLimit-Limit`
 - `X-RateLimit-Remaining`
 - `X-RateLimit-Reset`
@@ -310,11 +320,13 @@ Rate limit information is included in the response headers:
 ### Flow Execution
 
 1. **Trigger**
+
    - Event occurs
    - Flow is selected
    - Context is prepared
 
 2. **Steps**
+
    - Execute in order
    - Can be conditional
    - May modify context
@@ -328,6 +340,7 @@ Rate limit information is included in the response headers:
 ### Flow Context
 
 Available context properties:
+
 - `user`: User information
 - `client`: Application information
 - `connection`: Connection information

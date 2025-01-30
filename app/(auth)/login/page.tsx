@@ -1,42 +1,42 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/auth/config'
-import { auth0Config } from '@/lib/auth/auth0.config'
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+
+import { supabase } from '@/lib/auth/config';
 
 export default function LoginPage() {
-  const router = useRouter()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleAuth0Login = () => {
-    window.location.href = `/api/auth/login?returnTo=${encodeURIComponent('/dashboard')}`
-  }
+    window.location.href = `/api/auth/login?returnTo=${encodeURIComponent('/dashboard')}`;
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
-      })
+      });
 
-      if (error) throw error
+      if (error) throw error;
       if (data.session) {
-        router.push('/dashboard')
+        router.push('/dashboard');
       }
     } catch (err: any) {
-      setError(err.message || 'An error occurred during login')
+      setError(err.message || 'An error occurred during login');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className='space-y-6'>
@@ -62,15 +62,17 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <form onSubmit={handleLogin} className='space-y-4'>
-          {error && (
-            <div className='rounded-md bg-red-50 p-4 text-sm text-red-700'>
-              {error}
-            </div>
-          )}
+        <form
+          onSubmit={handleLogin}
+          className='space-y-4'
+        >
+          {error && <div className='rounded-md bg-red-50 p-4 text-sm text-red-700'>{error}</div>}
 
           <div>
-            <label htmlFor='email' className='block text-sm font-medium text-gray-700'>
+            <label
+              htmlFor='email'
+              className='block text-sm font-medium text-gray-700'
+            >
               Email
             </label>
             <input
@@ -84,7 +86,10 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label htmlFor='password' className='block text-sm font-medium text-gray-700'>
+            <label
+              htmlFor='password'
+              className='block text-sm font-medium text-gray-700'
+            >
               Password
             </label>
             <input
@@ -108,7 +113,7 @@ export default function LoginPage() {
       </div>
 
       <p className='text-center text-sm text-gray-600'>
-        Don't have an account?{' '}
+        Don&apos;t have an account?{' '}
         <button
           onClick={() => router.push('/signup')}
           className='font-medium text-blue-600 hover:text-blue-500'
@@ -117,5 +122,5 @@ export default function LoginPage() {
         </button>
       </p>
     </div>
-  )
+  );
 }

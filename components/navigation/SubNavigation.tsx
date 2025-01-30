@@ -1,16 +1,17 @@
-import React from 'react';
-import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { useRouter } from 'next/router';
+import React from 'react';
+
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion';
+} from '@/components/ui/accordion/index';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 interface SubNavItem {
   id: string;
@@ -36,16 +37,36 @@ const subNavSections: Record<string, SubNavSection[]> = {
       id: 'overview',
       label: 'Overview',
       items: [
-        { id: 'quick-view', label: 'Quick View', href: '/dashboard/quick-view', ariaLabel: 'View dashboard overview' },
-        { id: 'metrics', label: 'Key Metrics', href: '/dashboard/metrics', ariaLabel: 'View key metrics' },
+        {
+          id: 'quick-view',
+          label: 'Quick View',
+          href: '/dashboard/quick-view',
+          ariaLabel: 'View dashboard overview',
+        },
+        {
+          id: 'metrics',
+          label: 'Key Metrics',
+          href: '/dashboard/metrics',
+          ariaLabel: 'View key metrics',
+        },
       ],
     },
     {
       id: 'activities',
       label: 'Activities',
       items: [
-        { id: 'recent', label: 'Recent Activities', href: '/dashboard/recent', ariaLabel: 'View recent activities' },
-        { id: 'notifications', label: 'Notifications', href: '/dashboard/notifications', ariaLabel: 'View notifications' },
+        {
+          id: 'recent',
+          label: 'Recent Activities',
+          href: '/dashboard/recent',
+          ariaLabel: 'View recent activities',
+        },
+        {
+          id: 'notifications',
+          label: 'Notifications',
+          href: '/dashboard/notifications',
+          ariaLabel: 'View notifications',
+        },
       ],
     },
   ],
@@ -54,18 +75,48 @@ const subNavSections: Record<string, SubNavSection[]> = {
       id: 'programs',
       label: 'Programs',
       items: [
-        { id: 'apprentices', label: 'Apprentices', href: '/training/apprentices', ariaLabel: 'Manage apprentices' },
-        { id: 'trainees', label: 'Trainees', href: '/training/trainees', ariaLabel: 'Manage trainees' },
-        { id: 'courses', label: 'Course Catalog', href: '/training/courses', ariaLabel: 'View course catalog' },
+        {
+          id: 'apprentices',
+          label: 'Apprentices',
+          href: '/training/apprentices',
+          ariaLabel: 'Manage apprentices',
+        },
+        {
+          id: 'trainees',
+          label: 'Trainees',
+          href: '/training/trainees',
+          ariaLabel: 'Manage trainees',
+        },
+        {
+          id: 'courses',
+          label: 'Course Catalog',
+          href: '/training/courses',
+          ariaLabel: 'View course catalog',
+        },
       ],
     },
     {
       id: 'tracking',
       label: 'Tracking',
       items: [
-        { id: 'assessments', label: 'Assessments', href: '/training/assessments', ariaLabel: 'View assessments' },
-        { id: 'certifications', label: 'Certifications', href: '/training/certifications', ariaLabel: 'Manage certifications' },
-        { id: 'competencies', label: 'Competency Tracking', href: '/training/competencies', ariaLabel: 'Track competencies' },
+        {
+          id: 'assessments',
+          label: 'Assessments',
+          href: '/training/assessments',
+          ariaLabel: 'View assessments',
+        },
+        {
+          id: 'certifications',
+          label: 'Certifications',
+          href: '/training/certifications',
+          ariaLabel: 'Manage certifications',
+        },
+        {
+          id: 'competencies',
+          label: 'Competency Tracking',
+          href: '/training/competencies',
+          ariaLabel: 'Track competencies',
+        },
       ],
     },
   ],
@@ -82,26 +133,24 @@ export const SubNavigation: React.FC<SubNavigationProps> = ({ section }) => {
 
   return (
     <nav
-      className="w-64 border-r bg-background h-full"
+      className='h-full w-64 border-r bg-background'
       aria-label={`${section} Navigation`}
     >
-      <ScrollArea className="h-full">
-        <div className="p-4">
+      <ScrollArea className='h-full'>
+        <div className='p-4'>
           <Accordion
-            type="multiple"
+            type='multiple'
             value={openSections}
             onValueChange={setOpenSections}
-            className="space-y-4"
+            className='space-y-4'
           >
             {sections.map((section) => (
               <AccordionItem
                 key={section.id}
                 value={section.id}
-                className="border-none"
+                className='border-none'
               >
-                <AccordionTrigger
-                  className="py-2 px-4 text-sm font-medium hover:bg-accent hover:text-accent-foreground rounded-md"
-                >
+                <AccordionTrigger className='rounded-md px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground'>
                   {section.label}
                 </AccordionTrigger>
                 <AccordionContent>
@@ -109,21 +158,21 @@ export const SubNavigation: React.FC<SubNavigationProps> = ({ section }) => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="pl-4 space-y-1"
+                    className='space-y-1 pl-4'
                   >
                     {section.items.map((item) => (
                       <Button
                         key={item.id}
-                        variant="ghost"
+                        variant='ghost'
                         className={cn(
-                          "w-full justify-start gap-2 text-sm",
-                          isActive(item.href) && "bg-accent text-accent-foreground"
+                          'w-full justify-start gap-2 text-sm',
+                          isActive(item.href) && 'bg-accent text-accent-foreground',
                         )}
                         onClick={() => router.push(item.href)}
                         aria-label={item.ariaLabel}
-                        aria-current={isActive(item.href) ? "page" : undefined}
+                        aria-current={isActive(item.href) ? 'page' : undefined}
                       >
-                        <ChevronRight className="h-4 w-4" />
+                        <ChevronRight className='h-4 w-4' />
                         {item.label}
                       </Button>
                     ))}

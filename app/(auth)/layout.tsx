@@ -1,27 +1,18 @@
-'use client'
+'use client';
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/auth/config'
+import { UserProvider } from '@auth0/nextjs-auth0/client';
+import React from 'react';
 
-export default function AuthLayout({ children }: { children: React.ReactNode }) {
-  const router = useRouter()
+interface AuthLayoutProps {
+  children: React.ReactNode;
+}
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
-        router.push('/dashboard')
-      }
-    }
-    checkAuth()
-  }, [router])
-
+export default function AuthLayout({ children }: AuthLayoutProps): React.ReactElement {
   return (
-    <div className='flex min-h-screen items-center justify-center bg-gray-50'>
-      <div className='w-full max-w-md space-y-8 rounded-lg bg-white p-8 shadow-lg'>
-        {children}
+    <div className='flex min-h-screen flex-col items-center justify-center'>
+      <div className='w-full max-w-md space-y-8 rounded-lg bg-white p-10 shadow-lg'>
+        <UserProvider>{children}</UserProvider>
       </div>
     </div>
-  )
+  );
 }

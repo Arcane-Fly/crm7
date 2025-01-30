@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const clients = [
   {
@@ -31,7 +31,7 @@ const clients = [
     satisfaction: 88,
     status: 'Active',
   },
-]
+];
 
 export function TopClients() {
   return (
@@ -42,7 +42,10 @@ export function TopClients() {
       <CardContent>
         <div className='space-y-4'>
           {clients.map((client, index) => (
-            <div key={index} className='flex items-center justify-between'>
+            <div
+              key={index}
+              className='flex items-center justify-between'
+            >
               <div className='space-y-1'>
                 <p className='text-sm font-medium'>{client.name}</p>
                 <p className='text-sm text-gray-500'>{client.apprentices} apprentices</p>
@@ -58,5 +61,5 @@ export function TopClients() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

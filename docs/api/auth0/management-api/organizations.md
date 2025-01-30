@@ -12,13 +12,13 @@ Retrieves all organizations.
 
 ### Query Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| page | number | Page number, zero based |
-| per_page | number | Number of results per page |
+| Parameter      | Type    | Description                           |
+| -------------- | ------- | ------------------------------------- |
+| page           | number  | Page number, zero based               |
+| per_page       | number  | Number of results per page            |
 | include_totals | boolean | Include total number of organizations |
-| from | string | Organization ID to start from |
-| take | number | Number of organizations to retrieve |
+| from           | string  | Organization ID to start from         |
+| take           | number  | Number of organizations to retrieve   |
 
 ### Response
 
@@ -108,9 +108,9 @@ Retrieves an organization by ID.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the organization to retrieve |
+| Parameter | Type   | Description                            |
+| --------- | ------ | -------------------------------------- |
+| id        | string | The ID of the organization to retrieve |
 
 ### Response
 
@@ -144,9 +144,9 @@ Updates an organization.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the organization to update |
+| Parameter | Type   | Description                          |
+| --------- | ------ | ------------------------------------ |
+| id        | string | The ID of the organization to update |
 
 ### Request Body
 
@@ -174,9 +174,9 @@ Deletes an organization.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the organization to delete |
+| Parameter | Type   | Description                          |
+| --------- | ------ | ------------------------------------ |
+| id        | string | The ID of the organization to delete |
 
 ### Response
 
@@ -269,6 +269,7 @@ Removes roles from a member.
 ## Error Responses
 
 ### 400 Bad Request
+
 ```json
 {
   "error": "bad_request",
@@ -278,6 +279,7 @@ Removes roles from a member.
 ```
 
 ### 401 Unauthorized
+
 ```json
 {
   "error": "unauthorized",
@@ -287,6 +289,7 @@ Removes roles from a member.
 ```
 
 ### 403 Forbidden
+
 ```json
 {
   "error": "forbidden",
@@ -296,6 +299,7 @@ Removes roles from a member.
 ```
 
 ### 404 Not Found
+
 ```json
 {
   "error": "not_found",
@@ -305,6 +309,7 @@ Removes roles from a member.
 ```
 
 ### 429 Too Many Requests
+
 ```json
 {
   "error": "too_many_requests",
@@ -316,12 +321,14 @@ Removes roles from a member.
 ## Best Practices
 
 1. **Organization Management**
+
    - Use meaningful names
    - Document organization purpose
    - Maintain member list
    - Review permissions regularly
 
 2. **Security**
+
    - Implement role-based access
    - Monitor member activity
    - Regular access reviews
@@ -341,6 +348,7 @@ The Organizations API endpoints are subject to rate limiting:
 - Enterprise: 100 requests per minute
 
 Rate limit information is included in the response headers:
+
 - `X-RateLimit-Limit`
 - `X-RateLimit-Remaining`
 - `X-RateLimit-Reset`
@@ -350,12 +358,14 @@ Rate limit information is included in the response headers:
 ### Organization Structure
 
 1. **Members**
+
    - Users belong to organization
    - Can have multiple roles
    - Access organization resources
    - Subject to organization rules
 
 2. **Roles**
+
    - Define permissions
    - Assigned to members
    - Control access levels
@@ -370,6 +380,7 @@ Rate limit information is included in the response headers:
 ### Organization Settings
 
 Example organization configuration:
+
 ```json
 {
   "settings": {
@@ -378,11 +389,8 @@ Example organization configuration:
     "enable_sso": true,
     "require_mfa": true,
     "mfa_remember_browser_lifetime": 30,
-    "allowed_logout_urls": [
-      "https://example.com/logout"
-    ],
-    "allowed_callback_urls": [
-      "https://example.com/callback"
-    ]
+    "allowed_logout_urls": ["https://example.com/logout"],
+    "allowed_callback_urls": ["https://example.com/callback"]
   }
 }
+```

@@ -1,6 +1,5 @@
-'use client'
+'use client';
 
-import { Bar } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -9,9 +8,10 @@ import {
   Title,
   Tooltip,
   Legend,
-} from 'chart.js'
+} from 'chart.js';
+import { Bar } from 'react-chartjs-2';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const options = {
   responsive: true,
@@ -35,7 +35,7 @@ const options = {
       beginAtZero: true,
     },
   },
-}
+};
 
 const data = {
   labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
@@ -46,12 +46,16 @@ const data = {
       borderRadius: 4,
     },
   ],
-}
+};
 
 export function PlacementsChart() {
   return (
     <div className='rounded-lg border bg-white p-6'>
-      <Bar options={options} data={data} height={300} />
+      <Bar
+        options={options}
+        data={data}
+        height={300}
+      />
     </div>
-  )
+  );
 }

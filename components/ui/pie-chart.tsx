@@ -1,15 +1,15 @@
-'use client'
+'use client';
 
-import React from 'react'
-import type { ChartData, ChartOptions } from 'chart.js'
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
-import { Pie } from 'react-chartjs-2'
+import type { ChartData, ChartOptions } from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import React from 'react';
+import { Pie } from 'react-chartjs-2';
 
-ChartJS.register(ArcElement, Tooltip, Legend)
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 interface PieChartProps {
-  data: ChartData<'pie'>
-  options?: ChartOptions<'pie'>
+  data: ChartData<'pie'>;
+  options?: ChartOptions<'pie'>;
 }
 
 export function PieChart({ data, options }: PieChartProps) {
@@ -24,11 +24,14 @@ export function PieChart({ data, options }: PieChartProps) {
         text: 'Distribution',
       },
     },
-  }
+  };
 
   return (
     <div className='h-full min-h-[300px] w-full p-4'>
-      <Pie data={data} options={options || defaultOptions} />
+      <Pie
+        data={data}
+        options={options || defaultOptions}
+      />
     </div>
-  )
+  );
 }

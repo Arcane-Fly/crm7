@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import { Sidebar } from '@/components/ui/sidebar'
+import { Sidebar } from '@/components/ui/sidebar';
 
 export default function ComplianceLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -8,5 +8,5 @@ export default function ComplianceLayout({ children }: { children: React.ReactNo
       <Sidebar />
       <main className='flex-1 px-4 py-8'>{children}</main>
     </div>
-  )
+  );
 }

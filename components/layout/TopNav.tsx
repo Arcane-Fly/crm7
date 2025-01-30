@@ -1,8 +1,5 @@
-'use client'
+'use client';
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { cn } from '@/lib/utils'
 import {
   LayoutGrid,
   Users,
@@ -12,7 +9,11 @@ import {
   Shield,
   BarChart2,
   Settings,
-} from 'lucide-react'
+} from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
+import { cn } from '@/lib/utils';
 
 const topNavItems = [
   {
@@ -55,10 +56,10 @@ const topNavItems = [
     href: '/settings',
     icon: Settings,
   },
-]
+];
 
 export default function TopNav() {
-  const pathname = usePathname()
+  const pathname = usePathname() ?? '/';
 
   return (
     <div className='fixed left-0 right-0 top-0 z-50 border-b bg-white'>
@@ -68,7 +69,7 @@ export default function TopNav() {
         </div>
         <nav className='flex flex-1 items-center gap-1'>
           {topNavItems.map((item) => {
-            const isActive = pathname.startsWith(item.href)
+            const isActive = pathname.startsWith(item.href);
             return (
               <Link
                 key={item.href}
@@ -77,16 +78,16 @@ export default function TopNav() {
                   'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
                   isActive
                     ? 'bg-blue-50 font-medium text-blue-600'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
                 )}
               >
                 <item.icon className='h-4 w-4' />
                 {item.title}
               </Link>
-            )
+            );
           })}
         </nav>
       </div>
     </div>
-  )
+  );
 }

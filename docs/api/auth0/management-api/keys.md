@@ -70,9 +70,9 @@ Retrieves a signing key by ID.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| kid | string | The ID of the signing key to retrieve |
+| Parameter | Type   | Description                           |
+| --------- | ------ | ------------------------------------- |
+| kid       | string | The ID of the signing key to retrieve |
 
 ### Response
 
@@ -103,9 +103,9 @@ Revokes a signing key.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| kid | string | The ID of the signing key to revoke |
+| Parameter | Type   | Description                         |
+| --------- | ------ | ----------------------------------- |
+| kid       | string | The ID of the signing key to revoke |
 
 ### Response
 
@@ -129,6 +129,7 @@ Revokes a signing key.
 ## Error Responses
 
 ### 400 Bad Request
+
 ```json
 {
   "error": "bad_request",
@@ -138,6 +139,7 @@ Revokes a signing key.
 ```
 
 ### 401 Unauthorized
+
 ```json
 {
   "error": "unauthorized",
@@ -147,6 +149,7 @@ Revokes a signing key.
 ```
 
 ### 403 Forbidden
+
 ```json
 {
   "error": "forbidden",
@@ -156,6 +159,7 @@ Revokes a signing key.
 ```
 
 ### 404 Not Found
+
 ```json
 {
   "error": "not_found",
@@ -165,6 +169,7 @@ Revokes a signing key.
 ```
 
 ### 429 Too Many Requests
+
 ```json
 {
   "error": "too_many_requests",
@@ -176,12 +181,14 @@ Revokes a signing key.
 ## Best Practices
 
 1. **Key Management**
+
    - Rotate keys regularly
    - Monitor key expiration
    - Secure key storage
    - Document key usage
 
 2. **Security**
+
    - Use strong algorithms
    - Implement key backup
    - Monitor key operations
@@ -201,6 +208,7 @@ The Keys API endpoints are subject to rate limiting:
 - Enterprise: 100 requests per minute
 
 Rate limit information is included in the response headers:
+
 - `X-RateLimit-Limit`
 - `X-RateLimit-Remaining`
 - `X-RateLimit-Reset`
@@ -210,12 +218,14 @@ Rate limit information is included in the response headers:
 ### Key States
 
 1. **Current**
+
    - Active signing key
    - Used for new tokens
    - Recently rotated
    - Not revoked
 
 2. **Previous**
+
    - Old signing key
    - Used for verification
    - Being phased out
@@ -230,12 +240,14 @@ Rate limit information is included in the response headers:
 ### Key Rotation Process
 
 1. **Preparation**
+
    - Generate new key
    - Set as next key
    - Update configuration
    - Test validation
 
 2. **Rotation**
+
    - Make next key current
    - Move current to previous
    - Update applications
@@ -250,6 +262,7 @@ Rate limit information is included in the response headers:
 ### Certificate Information
 
 Example certificate details:
+
 ```
 Subject: CN=*.auth0.com
 Issuer: CN=Auth0 Certificate Authority
@@ -258,3 +271,4 @@ Valid To: 2024-01-01T00:00:00Z
 Serial Number: 1234567890
 Key Usage: Digital Signature
 Enhanced Key Usage: Server Authentication
+```

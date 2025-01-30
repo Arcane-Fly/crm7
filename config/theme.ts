@@ -1,4 +1,4 @@
-import { type Config } from 'tailwindcss'
+import { type Config } from 'tailwindcss';
 
 export const theme = {
   extend: {
@@ -190,4 +190,4 @@ export const theme = {
       },
     },
   },
-} satisfies Config['theme']
+} satisfies Config['theme'];

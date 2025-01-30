@@ -12,14 +12,14 @@ Retrieves all clients (applications).
 
 ### Query Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| page | number | Page number, zero based |
-| per_page | number | Number of results per page |
+| Parameter      | Type    | Description                     |
+| -------------- | ------- | ------------------------------- |
+| page           | number  | Page number, zero based         |
+| per_page       | number  | Number of results per page      |
 | include_totals | boolean | Include total number of clients |
-| is_global | boolean | Filter by global status |
-| is_first_party | boolean | Filter by first party status |
-| app_type | string | Filter by application type |
+| is_global      | boolean | Filter by global status         |
+| is_first_party | boolean | Filter by first party status    |
+| app_type       | string  | Filter by application type      |
 
 ### Response
 
@@ -101,9 +101,9 @@ Retrieves a client by ID.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the client to retrieve |
+| Parameter | Type   | Description                      |
+| --------- | ------ | -------------------------------- |
+| id        | string | The ID of the client to retrieve |
 
 ### Response
 
@@ -136,9 +136,9 @@ Updates a client.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the client to update |
+| Parameter | Type   | Description                    |
+| --------- | ------ | ------------------------------ |
+| id        | string | The ID of the client to update |
 
 ### Request Body
 
@@ -146,10 +146,7 @@ Updates a client.
 {
   "name": "Updated Application Name",
   "description": "Updated Application Description",
-  "callbacks": [
-    "https://example.com/callback",
-    "https://example.com/callback2"
-  ],
+  "callbacks": ["https://example.com/callback", "https://example.com/callback2"],
   "jwt_configuration": {
     "lifetime_in_seconds": 72000
   }
@@ -166,9 +163,9 @@ Deletes a client.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the client to delete |
+| Parameter | Type   | Description                    |
+| --------- | ------ | ------------------------------ |
+| id        | string | The ID of the client to delete |
 
 ### Response
 
@@ -184,9 +181,9 @@ Rotates a client secret.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the client |
+| Parameter | Type   | Description          |
+| --------- | ------ | -------------------- |
+| id        | string | The ID of the client |
 
 ### Response
 
@@ -199,6 +196,7 @@ Rotates a client secret.
 ## Error Responses
 
 ### 400 Bad Request
+
 ```json
 {
   "error": "bad_request",
@@ -208,6 +206,7 @@ Rotates a client secret.
 ```
 
 ### 401 Unauthorized
+
 ```json
 {
   "error": "unauthorized",
@@ -217,6 +216,7 @@ Rotates a client secret.
 ```
 
 ### 403 Forbidden
+
 ```json
 {
   "error": "forbidden",
@@ -226,6 +226,7 @@ Rotates a client secret.
 ```
 
 ### 404 Not Found
+
 ```json
 {
   "error": "not_found",
@@ -235,6 +236,7 @@ Rotates a client secret.
 ```
 
 ### 429 Too Many Requests
+
 ```json
 {
   "error": "too_many_requests",
@@ -246,6 +248,7 @@ Rotates a client secret.
 ## Application Types
 
 Available application types:
+
 - `native`: Mobile or desktop app
 - `spa`: Single-page web application
 - `regular_web`: Traditional web application
@@ -255,12 +258,14 @@ Available application types:
 ## Best Practices
 
 1. **Security**
+
    - Rotate client secrets regularly
    - Use appropriate application types
    - Implement proper callback URL validation
    - Enable OIDC conformant mode
 
 2. **Configuration**
+
    - Use descriptive names and descriptions
    - Document callback URLs
    - Configure appropriate token lifetimes
@@ -279,6 +284,7 @@ The Clients API endpoints are subject to rate limiting:
 - Enterprise: 100 requests per minute
 
 Rate limit information is included in the response headers:
+
 - `X-RateLimit-Limit`
 - `X-RateLimit-Remaining`
 - `X-RateLimit-Reset`

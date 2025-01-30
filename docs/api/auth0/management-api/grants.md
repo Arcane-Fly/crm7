@@ -12,14 +12,14 @@ Retrieves all grants.
 
 ### Query Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| page | number | Page number, zero based |
-| per_page | number | Number of results per page |
+| Parameter      | Type    | Description                    |
+| -------------- | ------- | ------------------------------ |
+| page           | number  | Page number, zero based        |
+| per_page       | number  | Number of results per page     |
 | include_totals | boolean | Include total number of grants |
-| user_id | string | Filter by user ID |
-| client_id | string | Filter by client ID |
-| audience | string | Filter by audience |
+| user_id        | string  | Filter by user ID              |
+| client_id      | string  | Filter by client ID            |
+| audience       | string  | Filter by audience             |
 
 ### Response
 
@@ -30,10 +30,7 @@ Retrieves all grants.
     "clientID": "client_123",
     "user_id": "user_123",
     "audience": "https://api.example.com",
-    "scope": [
-      "read:users",
-      "update:users"
-    ],
+    "scope": ["read:users", "update:users"],
     "created_at": "2023-01-01T00:00:00.000Z"
   }
 ]
@@ -49,9 +46,9 @@ Deletes a grant.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the grant to delete |
+| Parameter | Type   | Description                   |
+| --------- | ------ | ----------------------------- |
+| id        | string | The ID of the grant to delete |
 
 ### Response
 
@@ -67,9 +64,9 @@ Deletes all grants for a user.
 
 ### Query Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| user_id | string | The ID of the user whose grants to delete |
+| Parameter | Type   | Description                               |
+| --------- | ------ | ----------------------------------------- |
+| user_id   | string | The ID of the user whose grants to delete |
 
 ### Response
 
@@ -78,6 +75,7 @@ A successful deletion returns a 204 No Content status with no response body.
 ## Error Responses
 
 ### 400 Bad Request
+
 ```json
 {
   "error": "bad_request",
@@ -87,6 +85,7 @@ A successful deletion returns a 204 No Content status with no response body.
 ```
 
 ### 401 Unauthorized
+
 ```json
 {
   "error": "unauthorized",
@@ -96,6 +95,7 @@ A successful deletion returns a 204 No Content status with no response body.
 ```
 
 ### 403 Forbidden
+
 ```json
 {
   "error": "forbidden",
@@ -105,6 +105,7 @@ A successful deletion returns a 204 No Content status with no response body.
 ```
 
 ### 404 Not Found
+
 ```json
 {
   "error": "not_found",
@@ -114,6 +115,7 @@ A successful deletion returns a 204 No Content status with no response body.
 ```
 
 ### 429 Too Many Requests
+
 ```json
 {
   "error": "too_many_requests",
@@ -125,12 +127,14 @@ A successful deletion returns a 204 No Content status with no response body.
 ## Best Practices
 
 1. **Grant Management**
+
    - Regularly audit grants
    - Remove unused grants
    - Monitor grant usage
    - Document grant purposes
 
 2. **Security**
+
    - Review grant scopes
    - Implement least privilege
    - Monitor suspicious activity
@@ -150,6 +154,7 @@ The Grants API endpoints are subject to rate limiting:
 - Enterprise: 100 requests per minute
 
 Rate limit information is included in the response headers:
+
 - `X-RateLimit-Limit`
 - `X-RateLimit-Remaining`
 - `X-RateLimit-Reset`
@@ -159,18 +164,21 @@ Rate limit information is included in the response headers:
 ### Grant Types
 
 1. **Authorization Code Grant**
+
    - Used for web applications
    - Most secure grant type
    - Supports refresh tokens
    - Requires client authentication
 
 2. **Implicit Grant**
+
    - Used for single-page applications
    - No refresh tokens
    - Tokens returned in URL fragment
    - No client authentication
 
 3. **Client Credentials Grant**
+
    - Used for machine-to-machine
    - No user interaction
    - Access token only
@@ -185,6 +193,7 @@ Rate limit information is included in the response headers:
 ### Grant Scopes
 
 Common scope patterns:
+
 ```
 read:users          # Read user information
 write:users         # Modify user information
@@ -197,12 +206,14 @@ read:stats         # Read statistics
 ### Grant Lifecycle
 
 1. **Creation**
+
    - Grant requested
    - Scopes evaluated
    - User consent obtained
    - Grant recorded
 
 2. **Usage**
+
    - Grant validated
    - Tokens issued
    - Scopes enforced

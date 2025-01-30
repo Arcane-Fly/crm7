@@ -1,9 +1,11 @@
-'use client'
+'use client';
 
-import * as React from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as React from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -11,28 +13,27 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { useAuth } from '@/lib/auth/context'
-import { useBankIntegration } from '@/lib/hooks/use-bank-integration'
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { useAuth } from '@/lib/auth/context';
+import { useBankIntegration } from '@/lib/hooks/use-bank-integration';
 
 const bankAccountSchema = z.object({
   account_name: z.string().min(1, 'Account name is required'),
   account_number: z.string().min(1, 'Account number is required'),
   routing_number: z.string().min(9, 'Routing number must be 9 digits'),
   bank_name: z.string().min(1, 'Bank name is required'),
-})
+});
 
-type BankAccountFormValues = z.infer<typeof bankAccountSchema>
+type BankAccountFormValues = z.infer<typeof bankAccountSchema>;
 
 interface BankAccountFormProps {
-  onSuccess?: () => void
+  onSuccess?: () => void;
 }
 
 export function BankAccountForm({ onSuccess }: BankAccountFormProps) {
-  const { user } = useAuth()
-  const { createBankAccount, isCreatingBankAccount } = useBankIntegration()
+  const { user } = useAuth();
+  const { createBankAccount, isCreatingBankAccount } = useBankIntegration();
 
   const form = useForm<BankAccountFormValues>({
     resolver: zodResolver(bankAccountSchema),
@@ -42,23 +43,27 @@ export function BankAccountForm({ onSuccess }: BankAccountFormProps) {
       routing_number: '',
       bank_name: '',
     },
-  })
+  });
 
   const onSubmit = async (values: BankAccountFormValues) => {
-    if (!user) return
+    if (!user) return;
 
     createBankAccount({
       ...values,
       org_id: user.org_id,
-      status: 'active',
-    })
+      is_active: true,
+      bsb: values.routing_number, // Using routing number as BSB for Australian banking
+    });
 
-    onSuccess?.()
-  }
+    onSuccess?.();
+  };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className='space-y-4'
+      >
         <FormField
           control={form.control}
           name='account_name'
@@ -79,7 +84,10 @@ export function BankAccountForm({ onSuccess }: BankAccountFormProps) {
             <FormItem>
               <FormLabel>Account Number</FormLabel>
               <FormControl>
-                <Input {...field} type='password' />
+                <Input
+                  {...field}
+                  type='password'
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -111,10 +119,13 @@ export function BankAccountForm({ onSuccess }: BankAccountFormProps) {
             </FormItem>
           )}
         />
-        <Button type='submit' disabled={isCreatingBankAccount}>
+        <Button
+          type='submit'
+          disabled={isCreatingBankAccount}
+        >
           {isCreatingBankAccount ? 'Adding...' : 'Add Bank Account'}
         </Button>
       </form>
     </Form>
-  )
+  );
 }

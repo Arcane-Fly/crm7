@@ -61,10 +61,10 @@ try {
 const schema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
-})
+});
 
 // Using form validation hook
-const { form, handleSubmit, error } = useFormValidation(schema)
+const { form, handleSubmit, error } = useFormValidation(schema);
 ```
 
 ### Error Recovery

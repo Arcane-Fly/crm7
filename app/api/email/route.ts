@@ -1,28 +1,64 @@
-import { type NextRequest } from 'next/server'
-import { sendNotificationEmail } from '@/lib/email/service'
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { z } from 'zod';
 
-export async function POST(request: NextRequest) {
+import { sendNotificationEmail } from '@/lib/email/service';
+import { logger } from '@/lib/logger';
+
+interface NotificationEmailRequest {
+  to: string;
+  subject: string;
+  title: string;
+  message: string;
+  recipientName: string;
+  actionUrl: string;
+  actionText: string;
+}
+
+const notificationEmailSchema = z.object({
+  to: z.string().email(),
+  subject: z.string().min(1),
+  title: z.string().min(1),
+  message: z.string().min(1),
+  recipientName: z.string().min(1),
+  actionUrl: z.string().url(),
+  actionText: z.string().min(1),
+});
+
+export async function POST(request: NextRequest): Promise<NextResponse> {
   if (!process.env.RESEND_API_KEY) {
-    return Response.json({ error: 'Resend API key not configured' }, { status: 500 })
+    return NextResponse.json({ error: 'Resend API key not configured' }, { status: 500 });
   }
 
   try {
-    const body = await request.json()
-    const { to, subject, title, message, recipientName, actionUrl, actionText } = body
+    const body = (await request.json()) as unknown;
+    const validatedData = notificationEmailSchema.parse(body);
 
-    const data = await sendNotificationEmail({
-      to,
-      subject,
-      title,
-      message,
-      recipientName,
-      actionUrl,
-      actionText,
-    })
+    const emailData: NotificationEmailRequest = {
+      to: validatedData.to,
+      subject: validatedData.subject,
+      title: validatedData.title,
+      message: validatedData.message,
+      recipientName: validatedData.recipientName,
+      actionUrl: validatedData.actionUrl,
+      actionText: validatedData.actionText,
+    };
 
-    return Response.json(data)
-  } catch (error) {
-    console.error('API error:', error)
-    return Response.json({ error: 'Failed to send email' }, { status: 500 })
+    await sendNotificationEmail(emailData);
+
+    return NextResponse.json({ success: true });
+  } catch (error: unknown) {
+    logger.error('Failed to send email', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request data', details: error.errors },
+        { status: 400 },
+      ) as NextResponse;
+    }
+
+    return NextResponse.json({ error: 'Failed to send email' }, { status: 500 }) as NextResponse;
   }
 }

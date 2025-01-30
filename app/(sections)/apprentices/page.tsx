@@ -1,20 +1,22 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { DataTable } from '@/components/ui/data-table'
-import { columns } from './columns'
-import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { Breadcrumb, BreadcrumbItem } from '@/components/breadcrumb'
-import { DataEnrichment } from '@/components/admin/data-enrichment'
-import { useAdminAccess } from '@/lib/hooks/useAdminAccess'
+import { Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+
+import { DataEnrichment } from '@/components/admin/data-enrichment';
+import { Breadcrumb, BreadcrumbItem } from '@/components/breadcrumb';
+import { Button } from '@/components/ui/button';
+import { DataTable } from '@/components/ui/data-table';
+import { useAdminAccess } from '@/lib/hooks/useAdminAccess';
+
+import { columns } from './columns';
 
 export default function ApprenticesPage() {
-  const router = useRouter()
-  const { isAdmin } = useAdminAccess()
-  const [selectedIds, setSelectedIds] = useState<string[]>([])
-  const [data] = useState([])
+  const router = useRouter();
+  const { isAdmin } = useAdminAccess();
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [data] = useState([]);
 
   return (
     <div className='space-y-6'>
@@ -46,5 +48,5 @@ export default function ApprenticesPage() {
         onSelectedIdsChange={setSelectedIds}
       />
     </div>
-  )
+  );
 }

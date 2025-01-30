@@ -1,5 +1,5 @@
-import { Card } from '@/components/ui/card'
-import { ActivityList, type Activity } from '@/components/ui/activity-list'
+import { ActivityList, type Activity } from '@/components/ui/activity-list';
+import { Card } from '@/components/ui/card';
 
 const recentAudits: Activity[] = [
   {
@@ -17,7 +17,7 @@ const recentAudits: Activity[] = [
     description: 'Scheduled for next week',
     date: 'Jan 10, 2024',
   },
-]
+];
 
 const upcomingDeadlines: Activity[] = [
   {
@@ -35,7 +35,7 @@ const upcomingDeadlines: Activity[] = [
     description: 'Quarterly policy review deadline',
     date: 'Jan 31, 2024',
   },
-]
+];
 
 export default function CompliancePage() {
   return (
@@ -111,10 +111,16 @@ export default function CompliancePage() {
         </Card>
 
         <div className='space-y-4'>
-          <ActivityList title='Recent Audits' activities={recentAudits} />
-          <ActivityList title='Upcoming Deadlines' activities={upcomingDeadlines} />
+          <ActivityList
+            title='Recent Audits'
+            activities={recentAudits}
+          />
+          <ActivityList
+            title='Upcoming Deadlines'
+            activities={upcomingDeadlines}
+          />
         </div>
       </div>
     </div>
-  )
+  );
 }

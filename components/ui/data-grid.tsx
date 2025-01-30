@@ -1,12 +1,11 @@
-'use client'
+'use client';
 
-import * as React from 'react'
 import type {
   ColumnDef,
   ColumnFiltersState,
   SortingState,
   VisibilityState,
-} from '@tanstack/react-table'
+} from '@tanstack/react-table';
 import {
   flexRender,
   getCoreRowModel,
@@ -16,10 +15,12 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from '@tanstack/react-table'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+} from '@tanstack/react-table';
+import * as React from 'react';
+
+import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -27,21 +28,21 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
-import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary'
+} from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 
 interface DataGridProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
-  loading?: boolean
-  error?: Error | null
-  onRowClick?: (row: TData) => void
-  enableSelection?: boolean
-  enableFiltering?: boolean
-  enableSorting?: boolean
-  enablePagination?: boolean
-  pageSize?: number
-  className?: string
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+  loading?: boolean;
+  error?: Error | null;
+  onRowClick?: (row: TData) => void;
+  enableSelection?: boolean;
+  enableFiltering?: boolean;
+  enableSorting?: boolean;
+  enablePagination?: boolean;
+  pageSize?: number;
+  className?: string;
 }
 
 export function DataGrid<TData, TValue>({
@@ -57,10 +58,10 @@ export function DataGrid<TData, TValue>({
   pageSize = 10,
   className,
 }: DataGridProps<TData, TValue>) {
-  const [rowSelection, setRowSelection] = React.useState({})
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
-  const [sorting, setSorting] = React.useState<SortingState>([])
+  const [rowSelection, setRowSelection] = React.useState({});
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+  const [sorting, setSorting] = React.useState<SortingState>([]);
 
   const table = useReactTable({
     data,
@@ -82,16 +83,16 @@ export function DataGrid<TData, TValue>({
     getSortedRowModel: enableSorting ? getSortedRowModel() : undefined,
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
-  })
+  });
 
   React.useEffect(() => {
     if (pageSize) {
-      table.setPageSize(pageSize)
+      table.setPageSize(pageSize);
     }
-  }, [pageSize, table])
+  }, [pageSize, table]);
 
   if (error) {
-    return <div className='p-4 text-red-500'>Error: {error.message}</div>
+    return <div className='p-4 text-red-500'>Error: {error.message}</div>;
   }
 
   return (
@@ -103,7 +104,10 @@ export function DataGrid<TData, TValue>({
               .getAllColumns()
               .filter((column) => column.getCanFilter())
               .map((column) => (
-                <div key={column.id} className='flex-1'>
+                <div
+                  key={column.id}
+                  className='flex-1'
+                >
                   <Input
                     placeholder={`Filter ${column.id}`}
                     value={(column.getFilterValue() as string) ?? ''}
@@ -133,11 +137,14 @@ export function DataGrid<TData, TValue>({
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className='h-24 text-center'>
+                  <TableCell
+                    colSpan={columns.length}
+                    className='h-24 text-center'
+                  >
                     Loading...
                   </TableCell>
                 </TableRow>
-              ) : table.getRowModel().rows?.length ? (
+              ) : table.getRowModel().rows.length ? (
                 table.getRowModel().rows.map((row) => (
                   <TableRow
                     key={row.id}
@@ -154,7 +161,10 @@ export function DataGrid<TData, TValue>({
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className='h-24 text-center'>
+                  <TableCell
+                    colSpan={columns.length}
+                    className='h-24 text-center'
+                  >
                     No results.
                   </TableCell>
                 </TableRow>
@@ -175,12 +185,15 @@ export function DataGrid<TData, TValue>({
                 <select
                   value={table.getState().pagination.pageSize}
                   onChange={(e) => {
-                    table.setPageSize(Number(e.target.value))
+                    table.setPageSize(Number(e.target.value));
                   }}
                   className='h-8 w-[70px] rounded-md border border-input bg-transparent'
                 >
                   {[10, 20, 30, 40, 50].map((pageSize) => (
-                    <option key={pageSize} value={pageSize}>
+                    <option
+                      key={pageSize}
+                      value={pageSize}
+                    >
                       {pageSize}
                     </option>
                   ))}
@@ -212,5 +225,5 @@ export function DataGrid<TData, TValue>({
         )}
       </div>
     </ErrorBoundary>
-  )
+  );
 }

@@ -12,12 +12,12 @@ Retrieves all enterprise connections.
 
 ### Query Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| page | number | Page number, zero based |
-| per_page | number | Number of results per page |
-| strategy | string | Filter by connection strategy |
-| name | string | Filter by connection name |
+| Parameter | Type   | Description                   |
+| --------- | ------ | ----------------------------- |
+| page      | number | Page number, zero based       |
+| per_page  | number | Number of results per page    |
+| strategy  | string | Filter by connection strategy |
+| name      | string | Filter by connection name     |
 
 ### Response
 
@@ -104,9 +104,9 @@ Retrieves an enterprise connection by ID.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the connection to retrieve |
+| Parameter | Type   | Description                          |
+| --------- | ------ | ------------------------------------ |
+| id        | string | The ID of the connection to retrieve |
 
 ### Response
 
@@ -140,9 +140,9 @@ Updates an enterprise connection.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the connection to update |
+| Parameter | Type   | Description                        |
+| --------- | ------ | ---------------------------------- |
+| id        | string | The ID of the connection to update |
 
 ### Request Body
 
@@ -166,9 +166,9 @@ Deletes an enterprise connection.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the connection to delete |
+| Parameter | Type   | Description                        |
+| --------- | ------ | ---------------------------------- |
+| id        | string | The ID of the connection to delete |
 
 ### Response
 
@@ -177,6 +177,7 @@ A successful deletion returns a 204 No Content status with no response body.
 ## Enterprise Connection Strategies
 
 Available enterprise connection strategies:
+
 - `ad`: Active Directory
 - `adfs`: Active Directory Federation Services
 - `azure-ad`: Azure Active Directory
@@ -189,6 +190,7 @@ Available enterprise connection strategies:
 ## Error Responses
 
 ### 400 Bad Request
+
 ```json
 {
   "error": "bad_request",
@@ -198,6 +200,7 @@ Available enterprise connection strategies:
 ```
 
 ### 401 Unauthorized
+
 ```json
 {
   "error": "unauthorized",
@@ -207,6 +210,7 @@ Available enterprise connection strategies:
 ```
 
 ### 403 Forbidden
+
 ```json
 {
   "error": "forbidden",
@@ -216,6 +220,7 @@ Available enterprise connection strategies:
 ```
 
 ### 404 Not Found
+
 ```json
 {
   "error": "not_found",
@@ -225,6 +230,7 @@ Available enterprise connection strategies:
 ```
 
 ### 429 Too Many Requests
+
 ```json
 {
   "error": "too_many_requests",
@@ -236,12 +242,14 @@ Available enterprise connection strategies:
 ## Best Practices
 
 1. **Security**
+
    - Use secure protocols (LDAPS, HTTPS)
    - Implement least privilege access
    - Enable certificate validation
    - Monitor access patterns
 
 2. **Configuration**
+
    - Test connections before enabling
    - Document connection settings
    - Maintain IP allowlists
@@ -261,6 +269,7 @@ The Enterprise API endpoints are subject to rate limiting:
 - Enterprise: 100 requests per minute
 
 Rate limit information is included in the response headers:
+
 - `X-RateLimit-Limit`
 - `X-RateLimit-Remaining`
 - `X-RateLimit-Reset`
@@ -311,3 +320,4 @@ Rate limit information is included in the response headers:
     }
   }
 }
+```

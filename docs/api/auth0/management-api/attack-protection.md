@@ -17,13 +17,8 @@ Retrieves the breached password detection settings.
 ```json
 {
   "enabled": true,
-  "shields": [
-    "admin_notification",
-    "block"
-  ],
-  "admin_notification_frequency": [
-    "immediately"
-  ],
+  "shields": ["admin_notification", "block"],
+  "admin_notification_frequency": ["immediately"],
   "method": "standard"
 }
 ```
@@ -41,14 +36,8 @@ Updates the breached password detection settings.
 ```json
 {
   "enabled": true,
-  "shields": [
-    "admin_notification",
-    "block"
-  ],
-  "admin_notification_frequency": [
-    "immediately",
-    "daily"
-  ],
+  "shields": ["admin_notification", "block"],
+  "admin_notification_frequency": ["immediately", "daily"],
   "method": "enhanced"
 }
 ```
@@ -68,10 +57,7 @@ Retrieves the brute force protection settings.
 ```json
 {
   "enabled": true,
-  "shields": [
-    "block",
-    "user_notification"
-  ],
+  "shields": ["block", "user_notification"],
   "mode": "count_per_identifier_and_ip",
   "allowlist": ["192.0.2.1"],
   "max_attempts": 10,
@@ -92,10 +78,7 @@ Updates the brute force protection settings.
 ```json
 {
   "enabled": true,
-  "shields": [
-    "block",
-    "user_notification"
-  ],
+  "shields": ["block", "user_notification"],
   "mode": "count_per_identifier_and_ip",
   "allowlist": ["192.0.2.1", "192.0.2.2"],
   "max_attempts": 5,
@@ -118,10 +101,7 @@ Retrieves the suspicious IP throttling settings.
 ```json
 {
   "enabled": true,
-  "shields": [
-    "admin_notification",
-    "block"
-  ],
+  "shields": ["admin_notification", "block"],
   "allowlist": ["192.0.2.1"],
   "stage": {
     "pre_login": {
@@ -149,10 +129,7 @@ Updates the suspicious IP throttling settings.
 ```json
 {
   "enabled": true,
-  "shields": [
-    "admin_notification",
-    "block"
-  ],
+  "shields": ["admin_notification", "block"],
   "allowlist": ["192.0.2.1", "192.0.2.2"],
   "stage": {
     "pre_login": {
@@ -233,11 +210,13 @@ Available shield types:
 ## Best Practices
 
 1. **Configuration Strategy**
+
    - Start with conservative settings and adjust based on actual threats
    - Maintain an up-to-date allowlist
    - Document all configuration changes
 
 2. **Monitoring**
+
    - Monitor attack patterns regularly
    - Review admin notifications promptly
    - Track false positives

@@ -1,63 +1,325 @@
-import { startTransaction } from './index'
-import { logger } from '@/lib/services/logger'
+import * as Sentry from '@sentry/nextjs';
+import { onFID, onTTFB, onLCP, onCLS, onFCP, onINP } from 'web-vitals';
 
-export interface PerformanceMetrics {
-  ttfb: number
-  fcp: number
-  lcp: number
-  fid: number
-  cls: number
+import { logger } from '@/lib/logger';
+
+import type { SentrySpan as Span } from './types';
+import { SpanStatus } from './types';
+
+type ErrorWithMetadata = {
+  name: string;
+  message: string;
+  stack?: string;
+};
+
+function toErrorMetadata(maybeError: unknown): ErrorWithMetadata {
+  if (maybeError instanceof Error) {
+    return {
+      name: maybeError.name,
+      message: maybeError.message,
+      stack: maybeError.stack,
+    };
+  }
+
+  const message = typeof maybeError === 'string' ? maybeError : JSON.stringify(maybeError);
+
+  return {
+    name: 'UnknownError',
+    message,
+    stack: new Error(message).stack,
+  };
 }
 
-export function trackWebVitals() {
-  if (typeof window !== 'undefined') {
-    try {
-      const { onFCP, onTTFB, onLCP, onFID, onCLS } = require('web-vitals')
+/**
+ * Report web vitals metrics to monitoring
+ */
+export function reportWebVitals() {
+  try {
+    onFID((metric) => reportVital('FID', metric));
+    onTTFB((metric) => reportVital('TTFB', metric));
+    onLCP((metric) => reportVital('LCP', metric));
+    onCLS((metric) => reportVital('CLS', metric));
+    onFCP((metric) => reportVital('FCP', metric));
+    onINP((metric) => reportVital('INP', metric));
+  } catch (error) {
+    logger.warn('Error setting up web vitals', {
+      error: toErrorMetadata(error),
+      component: 'Performance',
+    });
+  }
+}
 
-      onFCP((metric: any) => {
-        logger.info('FCP:', { value: metric.value })
-        setTag('fcp', String(metric.value))
-      })
+function reportVital(name: string, metric: any) {
+  const measurement: PerformanceMeasurement = {
+    name: `web_vital_${name.toLowerCase()}`,
+    value: metric.value,
+    unit: name === 'CLS' ? 'unitless' : 'ms',
+    tags: {
+      id: metric.id,
+      navigationType: metric.navigationType,
+      rating: metric.rating,
+      environment: process.env.NODE_ENV,
+      region: process.env.VERCEL_REGION,
+    },
+  };
 
-      onTTFB((metric: any) => {
-        logger.info('TTFB:', { value: metric.value })
-        setTag('ttfb', String(metric.value))
-      })
+  recordPerformanceMeasurement(measurement);
 
-      onLCP((metric: any) => {
-        logger.info('LCP:', { value: metric.value })
-        setTag('lcp', String(metric.value))
-      })
+  // Send to Sentry performance monitoring
+  Sentry.captureMessage(`Web Vital: ${name}`, {
+    level: 'info',
+    extra: {
+      ...measurement,
+      metricDetails: metric,
+    },
+  });
+}
 
-      onFID((metric: any) => {
-        logger.info('FID:', { value: metric.value })
-        setTag('fid', String(metric.value))
-      })
+/**
+ * Monitor page load performance
+ */
+export function monitorPageLoad(): void {
+  const span = startPerformanceSpan('Page Load', 'pageload');
 
-      onCLS((metric: any) => {
-        logger.info('CLS:', { value: metric.value })
-        setTag('cls', String(metric.value))
-      })
-    } catch (error) {
-      logger.error('Failed to initialize web vitals', error as Error)
+  try {
+    const navigationEntry = performance.getEntriesByType(
+      'navigation',
+    )[0];
+    if (navigationEntry) {
+      const measurements = {
+        dnsLookup: navigationEntry.domainLookupEnd - navigationEntry.domainLookupStart,
+        tcpConnection: navigationEntry.connectEnd - navigationEntry.connectStart,
+        requestStart: navigationEntry.responseStart - navigationEntry.requestStart,
+        responseTime: navigationEntry.responseEnd - navigationEntry.responseStart,
+        domInteractive: navigationEntry.domInteractive - navigationEntry.responseEnd,
+        domComplete: navigationEntry.domComplete - navigationEntry.responseEnd,
+        loadEvent: navigationEntry.loadEventEnd - navigationEntry.loadEventStart,
+        totalTime: navigationEntry.loadEventEnd - navigationEntry.startTime,
+      };
+
+      if (span) {
+        Object.entries(measurements).forEach(([key, value]) => {
+          span.setTag(key, String(value));
+        });
+        finishPerformanceSpan(span, SpanStatus.Ok);
+      }
     }
+  } catch (error) {
+    logger.error('Error monitoring page load', {
+      error: toErrorMetadata(error),
+      type: 'page_load',
+      measurements: false,
+    });
+    finishPerformanceSpan(span, SpanStatus.InternalError);
   }
 }
 
-export function trackPageLoad(pageName: string) {
-  const transaction = startTransaction(`page_load_${pageName}`, 'page-load')
+/**
+ * Monitor client-side navigation performance
+ */
+export function monitorNavigation(url: string): void {
+  const span = startPerformanceSpan(`Navigation: ${url}`, 'navigation');
+  const start = performance.now();
 
-  if (transaction) {
-    window.addEventListener('load', () => {
-      transaction.finish()
-    })
+  try {
+    setTimeout(() => {
+      if (span) {
+        span.setTag('duration', String(performance.now() - start));
+        finishPerformanceSpan(span, SpanStatus.Ok);
+      }
+    }, 0);
+  } catch (error) {
+    logger.error('Error monitoring navigation', {
+      error: toErrorMetadata(error),
+      url,
+      type: 'navigation',
+    });
+    finishPerformanceSpan(span, SpanStatus.InternalError);
   }
 }
 
-export function trackApiCall(endpoint: string) {
-  return startTransaction(`api_call_${endpoint}`, 'api')
+interface PerformanceMeasurement {
+  name: string;
+  value: number;
+  unit?: string;
+  tags?: Record<string, unknown>;
 }
 
-export function trackDatabaseQuery(query: string) {
-  return startTransaction(`db_query_${query}`, 'db')
+/**
+ * Start a performance monitoring span
+ */
+export function startPerformanceSpan(
+  name: string,
+  operation: string,
+  tags?: Record<string, unknown>,
+): Span | undefined {
+  try {
+    const span = (Sentry as any).startSpan({
+      name,
+      op: operation,
+    }) as Span;
+
+    if (span && tags) {
+      Object.entries(tags).forEach(([key, value]) => {
+        span.setTag(key, String(value));
+      });
+    }
+
+    return span;
+  } catch (err) {
+    logger.error('Error starting performance span', {
+      error: toErrorMetadata(err),
+      name,
+      operation,
+    });
+    return undefined;
+  }
+}
+
+/**
+ * Finish a performance monitoring span
+ */
+export function finishPerformanceSpan(
+  span: Span | undefined,
+  status: (typeof SpanStatus)[keyof typeof SpanStatus],
+): void {
+  if (!span) return;
+
+  try {
+    span.setStatus(status);
+    span.finish();
+  } catch (err) {
+    logger.error('Error finishing performance span', {
+      error: toErrorMetadata(err),
+      status,
+    });
+  }
+}
+
+/**
+ * Monitor an async operation with performance tracking
+ */
+export async function withPerformanceMonitoring<T>(
+  name: string,
+  operation: () => Promise<T>,
+  tags?: Record<string, unknown>,
+): Promise<T> {
+  const span = startPerformanceSpan(name, 'function', tags);
+
+  try {
+    const result = await operation();
+    finishPerformanceSpan(span, SpanStatus.Ok);
+    return result;
+  } catch (err) {
+    finishPerformanceSpan(span, SpanStatus.InternalError);
+    throw err;
+  }
+}
+
+/**
+ * Record a performance measurement
+ */
+export function recordPerformanceMeasurement(measurement: PerformanceMeasurement) {
+  const { name, value, unit, tags } = measurement;
+  const span = startPerformanceSpan(name, 'measurement', tags);
+
+  if (span) {
+    span.setTag('value', String(value));
+    if (unit) {
+      span.setTag('unit', unit);
+    }
+    finishPerformanceSpan(span, SpanStatus.Ok);
+  }
+}
+
+/**
+ * Monitor database performance with retries and circuit breaking
+ */
+export async function monitorDatabasePerformance<T>(
+  name: string,
+  operation: () => Promise<T>,
+  tags?: Record<string, unknown>,
+): Promise<T> {
+  const span = startPerformanceSpan(name, 'database', tags);
+  const startTime = performance.now();
+
+  try {
+    const result = await operation();
+    const duration = performance.now() - startTime;
+
+    recordPerformanceMeasurement({
+      name: `db_operation_${name.toLowerCase()}`,
+      value: duration,
+      unit: 'ms',
+      tags: {
+        success: true,
+        ...tags,
+      },
+    });
+
+    finishPerformanceSpan(span, SpanStatus.Ok);
+    return result;
+  } catch (error) {
+    const duration = performance.now() - startTime;
+
+    recordPerformanceMeasurement({
+      name: `db_operation_${name.toLowerCase()}`,
+      value: duration,
+      unit: 'ms',
+      tags: {
+        success: false,
+        error: toErrorMetadata(error),
+        ...tags,
+      },
+    });
+
+    finishPerformanceSpan(span, SpanStatus.InternalError);
+    throw error;
+  }
+}
+
+/**
+ * Monitor API performance with automatic retries
+ */
+export async function monitorAPIPerformance<T>(
+  name: string,
+  operation: () => Promise<T>,
+  tags?: Record<string, unknown>,
+): Promise<T> {
+  const span = startPerformanceSpan(name, 'api', tags);
+  const startTime = performance.now();
+
+  try {
+    const result = await operation();
+    const duration = performance.now() - startTime;
+
+    recordPerformanceMeasurement({
+      name: `api_operation_${name.toLowerCase()}`,
+      value: duration,
+      unit: 'ms',
+      tags: {
+        success: true,
+        ...tags,
+      },
+    });
+
+    finishPerformanceSpan(span, SpanStatus.Ok);
+    return result;
+  } catch (error) {
+    const duration = performance.now() - startTime;
+
+    recordPerformanceMeasurement({
+      name: `api_operation_${name.toLowerCase()}`,
+      value: duration,
+      unit: 'ms',
+      tags: {
+        success: false,
+        error: toErrorMetadata(error),
+        ...tags,
+      },
+    });
+
+    finishPerformanceSpan(span, SpanStatus.InternalError);
+    throw error;
+  }
 }

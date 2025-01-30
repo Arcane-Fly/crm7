@@ -1,105 +1,280 @@
-# Contributing Guide
+# Contributing to CRM7
 
-## Development Setup
+Thank you for your interest in contributing to CRM7! This document provides guidelines and instructions for contributing to the project.
 
-### Prerequisites
+## Code of Conduct
 
-- Node.js (v20.x or higher)
-- PNPM (v8.x or higher)
-- TypeScript (v5.x)
+By participating in this project, you agree to abide by our Code of Conduct. Please read [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before contributing.
 
-### Getting Started
+## Getting Started
 
-1. Clone the repository
-2. Run `pnpm install`
-3. Copy `.env.example` to `.env` and configure environment variables
-4. Run `pnpm dev` to start development server
+1. Fork the repository
 
-## Code Style & Standards
+2. Clone your fork:
+
+   ```bash
+   git clone https://github.com/your-username/crm7.git
+   ```
+
+3. Add upstream remote:
+   ```bash
+   git remote add upstream https://github.com/Arcane-Fly/crm7.git
+   ```
+
+## Development Process
+
+### 1. Branch Strategy
+
+- `main`: Production-ready code
+- `develop`: Development branch
+- `feature/*`: New features
+- `bugfix/*`: Bug fixes
+- `hotfix/*`: Critical fixes
+- `release/*`: Release preparation
+
+### 2. Creating a Branch
+
+```bash
+# For new features
+git checkout -b feature/your-feature-name develop
+
+# For bug fixes
+git checkout -b bugfix/issue-description develop
+
+# For hotfixes
+git checkout -b hotfix/critical-fix main
+```
+
+### 3. Development Workflow
+
+1. Create your branch
+
+2. Make your changes
+
+3. Write or update tests
+
+4. Update documentation
+
+5. Submit a pull request
+
+## Coding Standards
 
 ### TypeScript Guidelines
 
-- Use strict mode (`"strict": true`)
-- Prefer type inference where possible
-- Use explicit return types for public APIs
-- Follow [TypeScript's Do's and Don'ts](https://www.typescriptlang.org/docs/handbook/declaration-files/do-s-and-don-ts.html)
+- Use TypeScript strict mode
+- Follow the [Code Style Guide](CODE_STYLE.md)
+- Use proper type definitions
+- Avoid using `any`
 
 ### React Best Practices
 
-- Use functional components with hooks
+- Use functional components
 - Implement proper error boundaries
-- Follow React Query patterns for data fetching
-- Use proper ARIA attributes for accessibility
+- Follow React hooks rules
+- Maintain component purity
 
-### File Structure
+### Testing Requirements
 
-```
-src/
-  components/     # Reusable UI components
-  features/       # Feature-specific components
-  hooks/         # Custom React hooks
-  api/           # API integration
-  types/         # TypeScript types/interfaces
-  utils/         # Utility functions
-  styles/        # Global styles and themes
-```
+- Write unit tests for new features
+- Update affected tests when modifying code
+- Maintain >80% test coverage
+- Include integration tests when needed
 
-### Naming Conventions
+## Pull Request Process
 
-- Components: `PascalCase`
-- Functions/Variables: `camelCase`
-- Constants: `UPPERCASE_SNAKE_CASE`
-- Files: Match the exported component name
+### 1. Preparation
+
+- [ ] Update documentation
+- [ ] Add/update tests
+- [ ] Follow code style guidelines
+- [ ] Resolve merge conflicts
+- [ ] Run local tests
+
+### 2. Pull Request Template
+
+```markdown
+## Description
+
+Brief description of changes
+
+## Type of Change
+
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Breaking change
+- [ ] Documentation update
 
 ## Testing
 
-- Write unit tests for utility functions
-- Component testing with React Testing Library
-- Integration tests for critical user flows
-- E2E tests for core functionality
+- [ ] Unit tests added/updated
+- [ ] Integration tests added/updated
+- [ ] Manual testing completed
+
+## Screenshots
+
+(if applicable)
+
+## Checklist
+
+- [ ] Code follows style guidelines
+- [ ] Tests pass locally
+- [ ] Documentation updated
+- [ ] No new warnings generated
+```
+
+### 3. Review Process
+
+1. Submit PR to `develop` branch
+
+2. Address reviewer comments
+
+3. Maintain thread resolution
+
+4. Update based on feedback
+
+5. Obtain required approvals
 
 ## Documentation
 
-- Use TSDoc comments for components and functions
-- Keep README.md up to date
-- Document API changes
-- Include usage examples
+### When to Update Documentation
 
-## Git Workflow
+- Adding new features
+- Modifying existing functionality
+- Fixing bugs with user-facing changes
+- Updating dependencies
+- Making breaking changes
 
-1. Create feature branch from `main`
-2. Make changes and commit using conventional commits
-3. Write tests and update documentation
-4. Submit PR with description of changes
-5. Address review comments
-6. Squash and merge
+### Documentation Standards
 
-## Performance
+1. **Code Comments**
 
-- Use React.memo() for expensive computations
-- Implement code splitting with React.lazy()
-- Optimize bundle size
-- Monitor and improve Core Web Vitals
+   - Use JSDoc for functions/methods
+   - Explain complex logic
+   - Document type definitions
 
-## Accessibility
+2. **README Updates**
 
-- Follow WCAG 2.1 guidelines
-- Use semantic HTML
-- Implement keyboard navigation
-- Test with screen readers
+   - Keep installation steps current
+   - Update feature list
+   - Maintain troubleshooting guide
 
-## Security
+3. **API Documentation**
+   - Document new endpoints
+   - Update changed responses
+   - Include example requests/responses
 
-- Implement input validation
-- Use HTTPS
-- Follow OWASP guidelines
-- Regular dependency updates
+## Testing Guidelines
 
-## Deployment
+### Unit Tests
 
-- CI/CD pipeline checks
-- Staging environment testing
-- Production deployment process
-- Monitoring and logging
+```typescript
+describe('Component', () => {
+  it('should render correctly', () => {
+    const { container } = render(<Component />);
+    expect(container).toMatchSnapshot();
+  });
 
-For detailed information about specific topics, refer to the respective documentation in the `/docs` directory.
+  it('should handle user interaction', async () => {
+    const { getByRole } = render(<Component />);
+    await userEvent.click(getByRole('button'));
+    // Assert expected behavior
+  });
+});
+```
+
+### Integration Tests
+
+```typescript
+describe('Feature', () => {
+  it('should work end-to-end', async () => {
+    // Setup
+    const { getByText, findByRole } = render(<Feature />);
+
+    // Interaction
+    await userEvent.click(getByText('Submit'));
+
+    // Assertion
+    expect(await findByRole('alert')).toBeInTheDocument();
+  });
+});
+```
+
+## Commit Guidelines
+
+### Commit Message Format
+
+```
+type(scope): subject
+
+body
+
+footer
+```
+
+### Types
+
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation
+- `style`: Formatting
+- `refactor`: Code restructuring
+- `test`: Adding tests
+- `chore`: Maintenance
+
+### Example
+
+```
+feat(auth): implement OAuth2 login flow
+
+- Add OAuth2 client configuration
+- Implement login callback handler
+- Add user session management
+
+Closes #123
+```
+
+## Release Process
+
+1. Create release branch
+
+2. Update version numbers
+
+3. Generate changelog
+
+4. Create release PR
+
+5. Deploy to staging
+
+6. Verify functionality
+
+7. Merge to main
+
+8. Tag release
+
+9. Deploy to production
+
+## Getting Help
+
+- Check existing issues
+
+- Join our Discord channel
+
+- Contact maintainers
+
+- Review documentation
+
+## Recognition
+
+Contributors will be:
+
+- Added to CONTRIBUTORS.md
+- Mentioned in release notes
+- Recognized in project documentation
+
+## License
+
+By contributing, you agree that your contributions will be licensed under the project's MIT License.
+
+---
+
+Last Updated: 2025-01-22

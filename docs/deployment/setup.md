@@ -46,6 +46,7 @@ PAYROLL_API_ENDPOINT=
    ```
 
 3. Deploy:
+
    ```bash
    vercel deploy --prod
    ```
@@ -63,3 +64,50 @@ PAYROLL_API_ENDPOINT=
 - Error tracking
 - Performance monitoring
 - Usage analytics
+
+### Production Optimizations
+
+1. Enable Edge Runtime:
+
+   ```json
+   {
+     "runtime": "edge",
+     "regions": ["syd1", "sin1"]
+   }
+   ```
+
+2. Configure Build Cache:
+
+   ```bash
+   vercel deploy --prod --build-cache
+   ```
+
+3. Enable Prerender:
+
+   ```typescript
+   export const runtime = 'edge';
+   export const preferredRegion = ['syd1', 'sin1'];
+   export const dynamic = 'force-static';
+   ```
+
+### Monitoring Setup
+
+1. Configure Sentry:
+
+   ```bash
+   vercel integrations add sentry
+   ```
+
+2. Enable Performance Monitoring:
+
+   ```bash
+   vercel env add NEXT_PUBLIC_ENABLE_MONITORING production
+   ```
+
+3. Setup Status Checks:
+
+   ```bash
+   vercel status-checks add "TypeScript" "pnpm run type-check"
+   vercel status-checks add "Tests" "pnpm run test"
+   vercel status-checks add "Lint" "pnpm run lint"
+   ```

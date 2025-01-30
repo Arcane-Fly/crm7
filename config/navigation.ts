@@ -1,177 +1,127 @@
 import {
-  LayoutGrid,
-  Users,
-  Building2,
-  Briefcase,
-  Clock,
-  Shield,
-  BarChart2,
-  Settings,
-  BookOpen,
-  HardHat,
-  Wallet,
-  UserCog,
-  MessageSquare,
-  FileText,
-} from 'lucide-react'
+  BarChart3Icon,
+  BriefcaseIcon,
+  CogIcon,
+  FileTextIcon,
+  GaugeIcon,
+  HomeIcon,
+  LayersIcon,
+  LineChartIcon,
+  UsersIcon,
+} from 'lucide-react';
+// Remove unused import
+
+export interface NavItem {
+  title: string;
+  href?: string;
+  icon?: any; // Using any for now as the LucideIcon type is complex
+  slug?: string;
+  label?: string;
+  children?: NavItem[];
+}
+
+export interface Section {
+  title: string;
+  items: NavItem[];
+}
 
 export const MAIN_NAV_ITEMS = [
   {
-    label: 'Dashboard',
-    slug: 'dashboard',
+    title: 'Dashboard',
     href: '/dashboard',
-    icon: LayoutGrid,
-    description: 'Overview and key metrics',
+    icon: HomeIcon,
+    slug: 'dashboard',
+    label: 'Dashboard',
   },
   {
-    label: 'Training & Development',
-    slug: 'training',
-    href: '/training',
-    icon: BookOpen,
-    description: 'Manage training and development programs',
+    title: 'Rates',
+    href: '/rates',
+    icon: LineChartIcon,
+    slug: 'rates',
+    label: 'Rates',
+    children: [
+      {
+        title: 'Rate Calculator',
+        href: '/rates/calculator',
+        label: 'Calculator',
+      },
+      {
+        title: 'Rate Templates',
+        href: '/rates/templates',
+        label: 'Templates',
+      },
+      {
+        title: 'Bulk Operations',
+        href: '/rates/bulk',
+        label: 'Bulk',
+      },
+    ],
   },
   {
-    label: 'Safety & WHS',
-    slug: 'safety',
-    href: '/safety',
-    icon: HardHat,
-    description: 'Workplace health and safety management',
+    title: 'Awards',
+    href: '/awards',
+    icon: BriefcaseIcon,
+    slug: 'awards',
+    label: 'Awards',
   },
   {
-    label: 'Payroll & Finance',
-    slug: 'payroll',
-    href: '/payroll',
-    icon: Wallet,
-    description: 'Financial management and payroll',
-  },
-  {
-    label: 'Human Resources',
-    slug: 'hr',
-    href: '/hr',
-    icon: Users,
-    description: 'Employee and HR management',
-  },
-  {
-    label: 'Client Management',
-    slug: 'clients',
-    href: '/clients',
-    icon: Building2,
-    description: 'Client relationships and accounts',
-  },
-  {
-    label: 'Marketing & Sales',
-    slug: 'marketing',
-    href: '/marketing',
-    icon: BarChart2,
-    description: 'Marketing campaigns and sales',
-  },
-  {
-    label: 'Compliance & Quality',
+    title: 'Compliance',
+    href: '/compliance-logs',
+    icon: FileTextIcon,
     slug: 'compliance',
-    href: '/compliance',
-    icon: Shield,
-    description: 'Compliance monitoring and quality assurance',
+    label: 'Compliance',
   },
   {
-    label: 'Reports & Analytics',
-    slug: 'reports',
-    href: '/reports',
-    icon: FileText,
-    description: 'Business intelligence and reporting',
+    title: 'Analytics',
+    href: '/analytics',
+    icon: BarChart3Icon,
+    slug: 'analytics',
+    label: 'Analytics',
+    children: [
+      {
+        title: 'Training Dashboard',
+        href: '/analytics/training',
+        label: 'Training',
+      },
+      {
+        title: 'HR Dashboard',
+        href: '/analytics/hr',
+        label: 'HR',
+      },
+    ],
   },
-] as const
+  {
+    title: 'System',
+    icon: CogIcon,
+    slug: 'system',
+    label: 'System',
+    children: [
+      {
+        title: 'Monitoring',
+        href: '/monitoring',
+        icon: GaugeIcon,
+        label: 'Monitoring',
+      },
+      {
+        title: 'Enterprise Agreements',
+        href: '/enterprise-agreements',
+        icon: LayersIcon,
+        label: 'Agreements',
+      },
+      {
+        title: 'User Management',
+        href: '/users',
+        icon: UsersIcon,
+        label: 'Users',
+      },
+    ],
+  },
+];
 
-export const SECTIONS = {
-  dashboard: [
-    { title: 'Overview', href: '/dashboard', icon: LayoutGrid },
-    { title: 'Quick Actions', href: '/dashboard/actions', icon: Briefcase },
-    { title: 'Recent Activities', href: '/dashboard/activities', icon: Clock },
-    { title: 'Notifications', href: '/dashboard/notifications', icon: MessageSquare },
-    { title: 'Alerts & Reminders', href: '/dashboard/alerts', icon: Shield },
-    { title: 'Key Metrics', href: '/dashboard/metrics', icon: BarChart2 },
-    { title: 'Task List', href: '/dashboard/tasks', icon: FileText },
-    { title: 'Calendar View', href: '/dashboard/calendar', icon: Clock },
+export const SECTIONS: Record<string, NavItem[]> = {
+  rates: [
+    { title: 'Calculator', href: '/rates/calculator', label: 'Calculator' },
+    { title: 'Templates', href: '/rates/templates', label: 'Templates' },
+    { title: 'Bulk', href: '/rates/bulk', label: 'Bulk' },
   ],
-  training: [
-    { title: 'Apprentices', href: '/training/apprentices', icon: Users },
-    { title: 'Trainees', href: '/training/trainees', icon: Users },
-    { title: 'Course Catalog', href: '/training/courses', icon: BookOpen },
-    { title: 'Training Calendar', href: '/training/calendar', icon: Clock },
-    { title: 'Assessments', href: '/training/assessments', icon: FileText },
-    { title: 'Certifications', href: '/training/certifications', icon: Shield },
-    { title: 'Skills Matrix', href: '/training/skills', icon: LayoutGrid },
-    { title: 'Training Records', href: '/training/records', icon: FileText },
-  ],
-  safety: [
-    { title: 'Incident Reports', href: '/safety/incidents', icon: Shield },
-    { title: 'Hazard Register', href: '/safety/hazards', icon: Shield },
-    { title: 'Safety Audits', href: '/safety/audits', icon: FileText },
-    { title: 'Risk Assessments', href: '/safety/risks', icon: Shield },
-    { title: 'Safety Documents', href: '/safety/documents', icon: FileText },
-    { title: 'PPE Management', href: '/safety/ppe', icon: HardHat },
-    { title: 'Safety Training', href: '/safety/training', icon: BookOpen },
-    { title: 'Emergency Procedures', href: '/safety/emergency', icon: Shield },
-  ],
-  payroll: [
-    { title: 'Payroll Processing', href: '/payroll/processing', icon: Wallet },
-    { title: 'Timesheets', href: '/payroll/timesheets', icon: Clock },
-    { title: 'Award Rates', href: '/payroll/awards', icon: BarChart2 },
-    { title: 'Allowances', href: '/payroll/allowances', icon: Wallet },
-    { title: 'Deductions', href: '/payroll/deductions', icon: Wallet },
-    { title: 'Superannuation', href: '/payroll/super', icon: Wallet },
-    { title: 'Tax Management', href: '/payroll/tax', icon: FileText },
-    { title: 'Expense Claims', href: '/payroll/expenses', icon: Wallet },
-  ],
-  hr: [
-    { title: 'Employees', href: '/hr/employees', icon: Users },
-    { title: 'Candidates', href: '/hr/candidates', icon: Users },
-    { title: 'Job Postings', href: '/hr/jobs', icon: Briefcase },
-    { title: 'Applications', href: '/hr/applications', icon: FileText },
-    { title: 'Onboarding', href: '/hr/onboarding', icon: UserCog },
-    { title: 'Performance', href: '/hr/performance', icon: BarChart2 },
-    { title: 'Leave Management', href: '/hr/leave', icon: Clock },
-    { title: 'Documents', href: '/hr/documents', icon: FileText },
-  ],
-  clients: [
-    { title: 'Client Directory', href: '/clients/directory', icon: Building2 },
-    { title: 'Host Employers', href: '/clients/hosts', icon: Building2 },
-    { title: 'Client Contacts', href: '/clients/contacts', icon: Users },
-    { title: 'Account Management', href: '/clients/accounts', icon: Settings },
-    { title: 'Service Agreements', href: '/clients/agreements', icon: FileText },
-    { title: 'Client Communications', href: '/clients/communications', icon: MessageSquare },
-    { title: 'Visit Reports', href: '/clients/visits', icon: FileText },
-    { title: 'Client Requirements', href: '/clients/requirements', icon: Shield },
-  ],
-  marketing: [
-    { title: 'Campaigns', href: '/marketing/campaigns', icon: BarChart2 },
-    { title: 'Lead Management', href: '/marketing/leads', icon: Users },
-    { title: 'Sales Pipeline', href: '/marketing/pipeline', icon: BarChart2 },
-    { title: 'Marketing Calendar', href: '/marketing/calendar', icon: Clock },
-    { title: 'Email Marketing', href: '/marketing/email', icon: MessageSquare },
-    { title: 'Social Media', href: '/marketing/social', icon: MessageSquare },
-    { title: 'Website Analytics', href: '/marketing/analytics', icon: BarChart2 },
-    { title: 'Event Management', href: '/marketing/events', icon: Clock },
-  ],
-  compliance: [
-    { title: 'Overview', href: '/compliance', icon: Shield },
-    { title: 'Audits', href: '/compliance/audits', icon: FileText },
-    { title: 'Certifications', href: '/compliance/certifications', icon: Shield },
-    { title: 'Policies', href: '/compliance/policies', icon: FileText },
-    { title: 'Risk Assessment', href: '/compliance/risk-assessment', icon: Shield },
-    { title: 'Reports', href: '/compliance/reports', icon: FileText },
-    { title: 'Training Records', href: '/compliance/training-records', icon: BookOpen },
-    { title: 'Incidents', href: '/compliance/incidents', icon: Shield },
-  ],
-  reports: [
-    { title: 'Standard Reports', href: '/reports/standard', icon: FileText },
-    { title: 'Custom Reports', href: '/reports/custom', icon: FileText },
-    { title: 'Analytics Dashboard', href: '/reports/analytics', icon: BarChart2 },
-    { title: 'KPI Tracking', href: '/reports/kpi', icon: BarChart2 },
-    { title: 'Performance Metrics', href: '/reports/performance', icon: BarChart2 },
-    { title: 'Financial Reports', href: '/reports/financial', icon: Wallet },
-    { title: 'Training Reports', href: '/reports/training', icon: BookOpen },
-    { title: 'Safety Reports', href: '/reports/safety', icon: Shield },
-  ],
-} as const
-
-export type Section = keyof typeof SECTIONS
+};

@@ -12,13 +12,13 @@ Retrieves all hooks.
 
 ### Query Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| page | number | Page number, zero based |
-| per_page | number | Number of results per page |
+| Parameter      | Type    | Description                   |
+| -------------- | ------- | ----------------------------- |
+| page           | number  | Page number, zero based       |
+| per_page       | number  | Number of results per page    |
 | include_totals | boolean | Include total number of hooks |
-| enabled | boolean | Filter by enabled status |
-| trigger_id | string | Filter by trigger ID |
+| enabled        | boolean | Filter by enabled status      |
+| trigger_id     | string  | Filter by trigger ID          |
 
 ### Response
 
@@ -97,9 +97,9 @@ Retrieves a hook by ID.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the hook to retrieve |
+| Parameter | Type   | Description                    |
+| --------- | ------ | ------------------------------ |
+| id        | string | The ID of the hook to retrieve |
 
 ### Response
 
@@ -131,9 +131,9 @@ Updates a hook.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the hook to update |
+| Parameter | Type   | Description                  |
+| --------- | ------ | ---------------------------- |
+| id        | string | The ID of the hook to update |
 
 ### Request Body
 
@@ -155,9 +155,9 @@ Deletes a hook.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the hook to delete |
+| Parameter | Type   | Description                  |
+| --------- | ------ | ---------------------------- |
+| id        | string | The ID of the hook to delete |
 
 ### Response
 
@@ -173,9 +173,9 @@ Retrieves hook secrets.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the hook |
+| Parameter | Type   | Description        |
+| --------- | ------ | ------------------ |
+| id        | string | The ID of the hook |
 
 ### Response
 
@@ -196,9 +196,9 @@ Updates hook secrets.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the hook |
+| Parameter | Type   | Description        |
+| --------- | ------ | ------------------ |
+| id        | string | The ID of the hook |
 
 ### Request Body
 
@@ -219,10 +219,10 @@ Deletes hook secrets.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the hook |
-| secret_names | array | Array of secret names to delete |
+| Parameter    | Type   | Description                     |
+| ------------ | ------ | ------------------------------- |
+| id           | string | The ID of the hook              |
+| secret_names | array  | Array of secret names to delete |
 
 ### Request Body
 
@@ -235,6 +235,7 @@ Deletes hook secrets.
 ## Hook Triggers
 
 Available hook triggers:
+
 - `pre-user-registration`: Before user signup
 - `post-user-registration`: After user signup
 - `post-change-password`: After password change
@@ -246,6 +247,7 @@ Available hook triggers:
 ## Error Responses
 
 ### 400 Bad Request
+
 ```json
 {
   "error": "bad_request",
@@ -255,6 +257,7 @@ Available hook triggers:
 ```
 
 ### 401 Unauthorized
+
 ```json
 {
   "error": "unauthorized",
@@ -264,6 +267,7 @@ Available hook triggers:
 ```
 
 ### 403 Forbidden
+
 ```json
 {
   "error": "forbidden",
@@ -273,6 +277,7 @@ Available hook triggers:
 ```
 
 ### 404 Not Found
+
 ```json
 {
   "error": "not_found",
@@ -282,6 +287,7 @@ Available hook triggers:
 ```
 
 ### 429 Too Many Requests
+
 ```json
 {
   "error": "too_many_requests",
@@ -293,12 +299,14 @@ Available hook triggers:
 ## Best Practices
 
 1. **Hook Development**
+
    - Test hooks thoroughly
    - Handle errors gracefully
    - Use async/await pattern
    - Document hook purpose
 
 2. **Security**
+
    - Secure secret storage
    - Validate input data
    - Implement timeouts
@@ -318,6 +326,7 @@ The Hooks API endpoints are subject to rate limiting:
 - Enterprise: 100 requests per minute
 
 Rate limit information is included in the response headers:
+
 - `X-RateLimit-Limit`
 - `X-RateLimit-Remaining`
 - `X-RateLimit-Reset`
@@ -327,6 +336,7 @@ Rate limit information is included in the response headers:
 ### Hook Context
 
 Available context properties:
+
 ```javascript
 {
   tenant: {
@@ -353,6 +363,7 @@ Available context properties:
 ### Hook Dependencies
 
 Common dependencies:
+
 ```json
 {
   "auth0": "2.42.0",
@@ -365,12 +376,14 @@ Common dependencies:
 ### Hook Execution
 
 1. **Initialization**
+
    - Hook triggered
    - Context prepared
    - Dependencies loaded
    - Secrets injected
 
 2. **Execution**
+
    - Script runs
    - Context modified
    - External calls made

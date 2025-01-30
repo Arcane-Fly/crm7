@@ -12,13 +12,13 @@ Retrieves a list of all actions.
 
 ### Query Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| triggerId | string | Filter actions by trigger |
-| actionName | string | Filter actions by name |
-| page | number | Page number (zero based) |
-| per_page | number | Number of results per page |
-| installed | boolean | Return installed actions only |
+| Parameter  | Type    | Description                   |
+| ---------- | ------- | ----------------------------- |
+| triggerId  | string  | Filter actions by trigger     |
+| actionName | string  | Filter actions by name        |
+| page       | number  | Page number (zero based)      |
+| per_page   | number  | Number of results per page    |
+| installed  | boolean | Return installed actions only |
 
 ### Response
 
@@ -127,9 +127,9 @@ Retrieves an action by ID.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the action to retrieve |
+| Parameter | Type   | Description                      |
+| --------- | ------ | -------------------------------- |
+| id        | string | The ID of the action to retrieve |
 
 ### Response
 
@@ -163,9 +163,9 @@ Updates an existing action.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the action to update |
+| Parameter | Type   | Description                    |
+| --------- | ------ | ------------------------------ |
+| id        | string | The ID of the action to update |
 
 ### Request Body
 
@@ -230,9 +230,9 @@ Deletes an action.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the action to delete |
+| Parameter | Type   | Description                    |
+| --------- | ------ | ------------------------------ |
+| id        | string | The ID of the action to delete |
 
 ### Response
 
@@ -248,9 +248,9 @@ Deploys an action, making it available for execution.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the action to deploy |
+| Parameter | Type   | Description                    |
+| --------- | ------ | ------------------------------ |
+| id        | string | The ID of the action to deploy |
 
 ### Response
 
@@ -277,9 +277,9 @@ Tests an action with provided payload.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the action to test |
+| Parameter | Type   | Description                  |
+| --------- | ------ | ---------------------------- |
+| id        | string | The ID of the action to test |
 
 ### Request Body
 
@@ -370,3 +370,4 @@ Actions API endpoints may return the following error responses:
   "message": "Rate limit exceeded",
   "statusCode": 429
 }
+```

@@ -12,9 +12,9 @@ Retrieves information about a blocked IP address.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The IP address to retrieve information for |
+| Parameter | Type   | Description                                |
+| --------- | ------ | ------------------------------------------ |
+| id        | string | The IP address to retrieve information for |
 
 ### Response
 
@@ -41,9 +41,9 @@ Removes an IP address from the blocked IPs list.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The IP address to unblock |
+| Parameter | Type   | Description               |
+| --------- | ------ | ------------------------- |
+| id        | string | The IP address to unblock |
 
 ### Response
 
@@ -122,10 +122,12 @@ IPs can be blocked for the following reasons:
 ### Best Practices
 
 1. **Monitoring**:
+
    - Regularly monitor blocked IPs
    - Look for patterns that might indicate targeted attacks
 
 2. **Unblocking**:
+
    - Verify the legitimacy of unblock requests
    - Document reasons for manual unblocks
    - Consider implementing an approval process for unblocking

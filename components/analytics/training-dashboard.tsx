@@ -1,27 +1,28 @@
-import React from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query';
+import React from 'react';
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 
 interface Enrollment {
-  id: string
-  status: 'completed' | 'in_progress' | 'not_started'
-  completedAt?: string
+  id: string;
+  status: 'completed' | 'in_progress' | 'not_started';
+  completedAt?: string;
 }
 
 interface EnrollmentResponse {
-  data: Enrollment[]
-  count: number
+  data: Enrollment[];
+  count: number;
 }
 
 export function TrainingDashboard() {
   const { data: enrollments } = useQuery<EnrollmentResponse>({
     queryKey: ['enrollments'],
     queryFn: async () => {
-      const response = await fetch('/api/enrollments')
-      return response.json()
+      const response = await fetch('/api/enrollments');
+      return response.json();
     },
-  })
+  });
 
   const stats = React.useMemo(() => {
     if (!enrollments?.data)
@@ -31,13 +32,13 @@ export function TrainingDashboard() {
         inProgress: 0,
         notStarted: 0,
         completionRate: 0,
-      }
+      };
 
-    const total = enrollments.data.length
-    const completed = enrollments.data.filter((e) => e.status === 'completed').length
-    const inProgress = enrollments.data.filter((e) => e.status === 'in_progress').length
-    const notStarted = enrollments.data.filter((e) => e.status === 'not_started').length
-    const completionRate = (completed / total) * 100
+    const total = enrollments.data.length;
+    const completed = enrollments.data.filter((e) => e.status === 'completed').length;
+    const inProgress = enrollments.data.filter((e) => e.status === 'in_progress').length;
+    const notStarted = enrollments.data.filter((e) => e.status === 'not_started').length;
+    const completionRate = (completed / total) * 100;
 
     return {
       totalEnrollments: total,
@@ -45,8 +46,8 @@ export function TrainingDashboard() {
       inProgress,
       notStarted,
       completionRate,
-    }
-  }, [enrollments])
+    };
+  }, [enrollments]);
 
   return (
     <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
@@ -65,7 +66,10 @@ export function TrainingDashboard() {
         </CardHeader>
         <CardContent>
           <div className='text-2xl font-bold'>{stats.completionRate.toFixed(1)}%</div>
-          <Progress value={stats.completionRate} className='mt-2' />
+          <Progress
+            value={stats.completionRate}
+            className='mt-2'
+          />
         </CardContent>
       </Card>
 
@@ -87,5 +91,5 @@ export function TrainingDashboard() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

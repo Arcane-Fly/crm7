@@ -6,10 +6,10 @@
  */
 export function safeMap<T, R>(
   items: T[] | null | undefined,
-  callback: (item: T, index: number) => R
+  callback: (item: T, index: number) => R,
 ): R[] {
   if (!items || !Array.isArray(items)) {
-    return []
+    return [];
   }
-  return items.map(callback)
+  return items.map(callback);
 }

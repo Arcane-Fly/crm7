@@ -3,6 +3,7 @@
 ## Service Overview
 
 ### Purpose
+
 Provide real-time access to Fair Work award rates, conditions, and compliance rules through a dedicated microservice that handles all Fair Work API interactions and data management.
 
 ## Technical Architecture
@@ -181,7 +182,7 @@ interface ValidationResult {
 ```typescript
 class FairWorkClient {
   constructor(credentials: FairWorkCredentials);
-  
+
   async getAwardRate(query: RateQuery): Promise<AwardRate>;
   async getClassifications(query: ClassificationQuery): Promise<Classification[]>;
   async validateRate(rate: AwardRate): Promise<ValidationResult>;
@@ -194,7 +195,7 @@ class FairWorkClient {
 ```typescript
 class RateCache {
   constructor(config: CacheConfig);
-  
+
   async get(key: string): Promise<CacheEntry<AwardRate> | null>;
   async set(key: string, data: AwardRate): Promise<void>;
   async invalidate(pattern: string): Promise<void>;
@@ -207,7 +208,7 @@ class RateCache {
 ```typescript
 class SyncManager {
   constructor(config: SyncConfig);
-  
+
   async scheduleSyncJob(type: string): Promise<SyncJob>;
   async runSync(job: SyncJob): Promise<void>;
   async getStatus(jobId: string): Promise<SyncJob>;

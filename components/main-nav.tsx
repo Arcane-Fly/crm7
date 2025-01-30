@@ -1,8 +1,9 @@
-'use client'
+'use client';
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { cn } from '@/lib/utils'
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
+import { cn } from '@/lib/utils';
 
 const navItems = [
   {
@@ -41,10 +42,10 @@ const navItems = [
     title: 'Reports & Analytics',
     href: '/reports',
   },
-]
+];
 
 export function MainNav() {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   return (
     <nav className='border-b bg-background'>
@@ -55,7 +56,7 @@ export function MainNav() {
             href={item.href}
             className={cn(
               'text-sm font-medium transition-colors hover:text-primary',
-              pathname === item.href ? 'text-primary' : 'text-muted-foreground'
+              pathname === item.href ? 'text-primary' : 'text-muted-foreground',
             )}
           >
             {item.title}
@@ -63,5 +64,5 @@ export function MainNav() {
         ))}
       </div>
     </nav>
-  )
+  );
 }

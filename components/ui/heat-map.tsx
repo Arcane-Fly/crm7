@@ -1,10 +1,10 @@
-import React from 'react'
+import React from 'react';
 
 interface HeatMapProps {
-  data: { x: string; y: string; value: number }[]
-  width?: number
-  height?: number
-  colorRange?: string[]
+  data: { x: string; y: string; value: number }[];
+  width?: number;
+  height?: number;
+  colorRange?: string[];
 }
 
 export function HeatMap({
@@ -13,41 +13,44 @@ export function HeatMap({
   height = 400,
   colorRange = ['#f7fbff', '#08519c'],
 }: HeatMapProps) {
-  const xValues = [...new Set(data.map((d) => d.x))]
-  const yValues = [...new Set(data.map((d) => d.y))]
-  const cellWidth = width / xValues.length
-  const cellHeight = height / yValues.length
+  const xValues = [...new Set(data.map((d) => d.x))];
+  const yValues = [...new Set(data.map((d) => d.y))];
+  const cellWidth = width / xValues.length;
+  const cellHeight = height / yValues.length;
 
-  const minValue = Math.min(...data.map((d) => d.value))
-  const maxValue = Math.max(...data.map((d) => d.value))
+  const minValue = Math.min(...data.map((d) => d.value));
+  const maxValue = Math.max(...data.map((d) => d.value));
 
   const getColor = (value: number) => {
-    const normalizedValue = (value - minValue) / (maxValue - minValue)
-    const [startColor, endColor] = colorRange
-    return interpolateColor(startColor, endColor, normalizedValue)
-  }
+    const normalizedValue = (value - minValue) / (maxValue - minValue);
+    const [startColor, endColor] = colorRange;
+    return interpolateColor(startColor, endColor, normalizedValue);
+  };
 
   const interpolateColor = (start: string, end: string, ratio: number) => {
-    const startRGB = hexToRGB(start)
-    const endRGB = hexToRGB(end)
+    const startRGB = hexToRGB(start);
+    const endRGB = hexToRGB(end);
     const result = startRGB.map((channel, i) => {
-      return Math.round(channel + (endRGB[i] - channel) * ratio)
-    })
-    return `rgb(${result.join(',')})`
-  }
+      return Math.round(channel + (endRGB[i] - channel) * ratio);
+    });
+    return `rgb(${result.join(',')})`;
+  };
 
   const hexToRGB = (hex: string): number[] => {
-    const r = parseInt(hex.slice(1, 3), 16)
-    const g = parseInt(hex.slice(3, 5), 16)
-    const b = parseInt(hex.slice(5, 7), 16)
-    return [r, g, b]
-  }
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return [r, g, b];
+  };
 
   return (
-    <svg width={width} height={height}>
+    <svg
+      width={width}
+      height={height}
+    >
       {data.map((d, i) => {
-        const x = xValues.indexOf(d.x) * cellWidth
-        const y = yValues.indexOf(d.y) * cellHeight
+        const x = xValues.indexOf(d.x) * cellWidth;
+        const y = yValues.indexOf(d.y) * cellHeight;
         return (
           <g key={i}>
             <rect
@@ -70,7 +73,7 @@ export function HeatMap({
               {d.value}
             </text>
           </g>
-        )
+        );
       })}
       <g>
         {xValues.map((value, i) => (
@@ -98,5 +101,5 @@ export function HeatMap({
         ))}
       </g>
     </svg>
-  )
+  );
 }

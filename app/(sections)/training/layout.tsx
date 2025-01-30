@@ -1,14 +1,14 @@
-import type { Metadata } from 'next'
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Training & Development - CRM7',
   description: 'Training and development management system',
-}
+};
 
 interface SidebarItem {
-  label: string
-  href: string
-  items?: SidebarItem[]
+  label: string;
+  href: string;
+  items?: SidebarItem[];
 }
 
 const sidebarItems: SidebarItem[] = [
@@ -40,7 +40,7 @@ const sidebarItems: SidebarItem[] = [
     label: 'Assessment',
     href: '/training/assessment',
   },
-]
+];
 
 export default function TrainingLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -48,7 +48,10 @@ export default function TrainingLayout({ children }: { children: React.ReactNode
       <aside className='w-64 border-r bg-background'>
         <nav className='space-y-1 p-4'>
           {sidebarItems.map((item) => (
-            <div key={item.href} className='space-y-1'>
+            <div
+              key={item.href}
+              className='space-y-1'
+            >
               <a
                 href={item.href}
                 className='block rounded-lg px-4 py-2 text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground'
@@ -70,5 +73,5 @@ export default function TrainingLayout({ children }: { children: React.ReactNode
       </aside>
       <main className='flex-1 p-8'>{children}</main>
     </div>
-  )
+  );
 }

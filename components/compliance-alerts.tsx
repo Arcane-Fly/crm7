@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const alerts = [
   {
@@ -21,13 +21,13 @@ const alerts = [
     description: 'Workplace assessment due for Metro Engineering',
     dueDate: '1 Month',
   },
-]
+];
 
 const alertStyles = {
   High: 'bg-red-100 text-red-700',
   Medium: 'bg-yellow-100 text-yellow-700',
   Low: 'bg-blue-100 text-blue-700',
-}
+};
 
 export function ComplianceAlerts() {
   return (
@@ -38,7 +38,10 @@ export function ComplianceAlerts() {
       <CardContent>
         <div className='space-y-4'>
           {alerts.map((alert, index) => (
-            <div key={index} className='flex items-start gap-4'>
+            <div
+              key={index}
+              className='flex items-start gap-4'
+            >
               <div
                 className={`rounded-full px-2 py-1 text-xs ${alertStyles[alert.type as keyof typeof alertStyles]}`}
               >
@@ -53,5 +56,5 @@ export function ComplianceAlerts() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

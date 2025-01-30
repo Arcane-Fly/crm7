@@ -1,7 +1,8 @@
-'use client'
+'use client';
 
-import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
+import { Plus } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
 
 export default function EnterpriseAgreementsPage() {
   return (
@@ -78,5 +79,5 @@ export default function EnterpriseAgreementsPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

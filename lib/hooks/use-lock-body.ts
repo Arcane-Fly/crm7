@@ -1,14 +1,14 @@
-import { useEffect } from 'react'
+import { useEffect } from 'react';
 
 // Prevent body scroll when modal/sheet is open
 export function useLockBody(shouldLock = true) {
   useEffect(() => {
-    const originalStyle = window.getComputedStyle(document.body).overflow
+    const originalStyle = window.getComputedStyle(document.body).overflow;
     if (shouldLock) {
-      document.body.style.overflow = 'hidden'
+      document.body.style.overflow = 'hidden';
     }
     return () => {
-      document.body.style.overflow = originalStyle
-    }
-  }, [shouldLock])
+      document.body.style.overflow = originalStyle;
+    };
+  }, [shouldLock]);
 }

@@ -10,6 +10,9 @@
   - Document decision-making
   - Validate assumptions
   - Use step-by-step analysis for complex tasks
+  - Critique your approach before coding begins.
+  - your reasoning should consider the project documentation found at /docs/*
+  - Tmestamp last @web search confirmation of docs update. i.e. package, best coding practices, versioning etc...
 
 ## 2. Code Quality Standards
 
@@ -35,15 +38,20 @@
 
 ## 3. Model Selection Guidelines
 
-| Model | Use Case | Context Size |
-|-------|-----------|--------------|
-| Claude 3.5 Sonnet | Complex reasoning tasks | 200K |
-| GPT-4 | Image understanding | 128K |
-| o1 | Extended reasoning chains | 200K |
-| Qwen2.5-Coder-32B-Instruct | Programming tasks | 32.5B params |
-| Granite 3.1 Dense 2B | RAG applications, multilingual | 2.53B params |
-| Sonar Series | Real-time information retrieval | 127K |
-
+| Model Name (API Reference) | Provider | Context Size | Use Case |
+|---------------------------|----------|--------------|-----------|
+| GPT-4o (chatgpt-4o-latest) | OpenAI | 128K | Versatile flagship model with text/image input |
+| GPT-4o-mini (gpt-4o-mini) | OpenAI | 128K | Fast, affordable for focused tasks |
+| o1 (o1) | OpenAI | 200K | Complex reasoning capabilities |
+| o1-mini (o1-mini) | OpenAI | 128K | Fast reasoning for specialized tasks |
+| Claude 3.5 Sonnet (claude-3-5-sonnet-latest) | Anthropic | 200K | Most intelligent model, text/image input |
+| Qwen2.5-Coder-32B-Instruct | Qwen | 32K | Strong in math/coding tasks |
+| Sonar Pro (sonar-pro) | Perplexity | 200K | Advanced reasoning with integrated search |
+| Sonar (sonar) | Perplexity | 128K | Fast online search capabilities |
+| Llama-3.3-70b-versatile | Groq | 128K | Versatile large language model |
+| grok-2-latest | xAI | 131K | Large context window for text generation |
+| Deepseek Chat V3 (deepseek-chat) | Deepseek | 60K | High intelligence for lightweight tasks |
+<!--  -->
 ## 4. Development Process
 
 ### Planning

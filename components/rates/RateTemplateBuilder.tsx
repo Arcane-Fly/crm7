@@ -1,374 +1,416 @@
-'use client'
+import { zodResolver } from '@hookform/resolvers/zod';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { type ReactElement, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
-import { useState, useEffect, useCallback } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { useToast } from '@/components/ui/use-toast'
-import { useUser } from '@/lib/hooks/use-user'
-import { ratesService, type RateTemplate } from '@/lib/services/rates'
-import { DatePicker } from '@/components/ui/date-picker'
-import { format } from 'date-fns'
+import { useToast } from '@/components/ui/use-toast';
+import { useUser } from '@/lib/hooks/useUser';
+import type { RateTemplate } from '@/lib/types/rates';
 
-export interface RateTemplateBuilderProps {
-  templateId?: string
-  onSave?: (template: RateTemplate) => void
+const rateTemplateSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  description: z.string().optional(),
+  templateType: z.enum(['hourly', 'daily', 'fixed']),
+  baseRate: z.number().min(0),
+  baseMargin: z.number().min(0),
+  superRate: z.number().min(0),
+  leaveLoading: z.number().min(0),
+  workersCompRate: z.number().min(0),
+  payrollTaxRate: z.number().min(0),
+  trainingCostRate: z.number().min(0),
+  otherCostsRate: z.number().min(0),
+  fundingOffset: z.number().min(0),
+  effectiveFrom: z.string().optional(),
+  effectiveTo: z.string().optional(),
+});
+
+type RateTemplateFormData = z.infer<typeof rateTemplateSchema>;
+
+interface RateTemplateBuilderProps {
+  template?: RateTemplate;
+  supabase: SupabaseClient;
+  onSuccess?: () => void;
+  onCancel?: () => void;
 }
 
-export function RateTemplateBuilder({ templateId, onSave }: RateTemplateBuilderProps) {
-  const { toast } = useToast()
-  const { user } = useUser()
-  const [loading, setLoading] = useState(false)
-  const [template, setTemplate] = useState<Partial<RateTemplate>>({
-    template_type: 'apprentice' as const,
-    is_active: true,
-    rules: {},
-    leave_loading: 0,
-    training_cost_rate: 0,
-    base_rate: 0,
-  })
-  const [errors, setErrors] = useState<string[]>([])
+export function RateTemplateBuilder({
+  template,
+  supabase,
+  onSuccess,
+  onCancel,
+}: RateTemplateBuilderProps): ReactElement {
+  const { toast } = useToast();
+  const { user } = useUser();
 
-  const loadTemplate = useCallback(async () => {
-    if (!templateId || !user?.org_id) return
-    try {
-      const response = await ratesService.getTemplate(templateId)
-      if (response.data) {
-        setTemplate(response.data)
-      }
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to load template',
-        variant: 'destructive',
-      })
-    }
-  }, [templateId, toast, user])
+  const {
+    register,
+    handleSubmit: handleFormSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<RateTemplateFormData>({
+    resolver: zodResolver(rateTemplateSchema),
+    defaultValues: template
+      ? {
+          name: template.name,
+          description: template.description || '',
+          templateType: template.templateType,
+          baseRate: template.baseRate,
+          baseMargin: template.baseMargin,
+          superRate: template.superRate,
+          leaveLoading: template.leaveLoading,
+          workersCompRate: template.workersCompRate,
+          payrollTaxRate: template.payrollTaxRate,
+          trainingCostRate: template.trainingCostRate,
+          otherCostsRate: template.otherCostsRate,
+          fundingOffset: template.fundingOffset,
+          effectiveFrom: template.effectiveFrom || undefined,
+          effectiveTo: template.effectiveTo || undefined,
+        }
+      : {
+          name: '',
+          description: '',
+          templateType: 'hourly',
+          baseRate: 0,
+          baseMargin: 0,
+          superRate: 10,
+          leaveLoading: 0,
+          workersCompRate: 0,
+          payrollTaxRate: 0,
+          trainingCostRate: 0,
+          otherCostsRate: 0,
+          fundingOffset: 0,
+          effectiveFrom: undefined,
+          effectiveTo: undefined,
+        },
+  });
 
   useEffect(() => {
-    if (user?.org_id) {
-      loadTemplate()
+    if (template) {
+      const formData: RateTemplateFormData = {
+        name: template.name,
+        description: template.description || '',
+        templateType: template.templateType,
+        baseRate: template.baseRate,
+        baseMargin: template.baseMargin,
+        superRate: template.superRate,
+        leaveLoading: template.leaveLoading,
+        workersCompRate: template.workersCompRate,
+        payrollTaxRate: template.payrollTaxRate,
+        trainingCostRate: template.trainingCostRate,
+        otherCostsRate: template.otherCostsRate,
+        fundingOffset: template.fundingOffset,
+        effectiveFrom: template.effectiveFrom || undefined,
+        effectiveTo: template.effectiveTo || undefined,
+      };
+      reset(formData);
     }
-  }, [loadTemplate, user])
+  }, [template, reset]);
 
-  const handleSave = async () => {
-    if (!user?.org_id || !template.template_name) {
-      setErrors(['Required fields are missing'])
-      return
-    }
-
+  const onSubmit = async (data: RateTemplateFormData): Promise<void> => {
     try {
-      setLoading(true)
-      setErrors([])
+      const newTemplate = {
+        ...data,
+        orgId: user?.id as string,
+        status: template?.status || 'draft',
+        updatedBy: user?.id as string,
+        effectiveFrom: data.effectiveFrom || undefined,
+        effectiveTo: data.effectiveTo || undefined,
+      } satisfies Partial<RateTemplate>;
 
-      const validation = await ratesService.validateRateTemplate(template)
-      if (!validation.data.valid) {
-        setErrors(validation.data.errors || ['Validation failed'])
-        return
+      if (!template?.id) {
+        const { error } = await supabase.from('rate_templates').insert([newTemplate]);
+
+        if (error) throw error;
+
+        toast({
+          title: 'Success',
+          description: 'Rate template created successfully',
+        });
+
+        if (onSuccess) {
+          onSuccess();
+        }
+      } else {
+        const { error } = await supabase
+          .from('rate_templates')
+          .update(newTemplate)
+          .eq('id', template.id);
+
+        if (error) throw error;
+
+        toast({
+          title: 'Success',
+          description: 'Rate template updated successfully',
+        });
+
+        if (onSuccess) {
+          onSuccess();
+        }
       }
-
-      // Generate a UUID for new templates
-      const id = templateId || crypto.randomUUID()
-
-      // Ensure required fields are present
-      if (!template.template_name) {
-        throw new Error('Template name is required')
-      }
-
-      const fullTemplate: RateTemplate = {
-        ...template,
-        id,
-        template_name: template.template_name,
-        template_type: template.template_type || 'apprentice',
-        org_id: user.org_id,
-        effective_from: format(new Date(), 'yyyy-MM-dd'),
-        version_number: template.version_number || 1,
-        rules: template.rules || {},
-        is_active: template.is_active || false,
-        is_approved: template.is_approved || false,
-        base_rate: template.base_rate || 0,
-        base_margin: template.base_margin || 0,
-        super_rate: template.super_rate || 0,
-        workers_comp_rate: template.workers_comp_rate || 0,
-        payroll_tax_rate: template.payroll_tax_rate || 0,
-        leave_loading: template.leave_loading || 0,
-        training_cost_rate: template.training_cost_rate || 0,
-      }
-
-      const savedTemplate = await ratesService.saveTemplate(fullTemplate)
-      toast({
-        title: 'Success',
-        description: 'Template saved successfully',
-      })
-      onSave?.(savedTemplate)
     } catch (error) {
-      const err = error as Error
-      setErrors([err.message])
+      console.error('Error saving template:', error);
       toast({
         title: 'Error',
-        description: 'Failed to save template',
+        description: 'Failed to save rate template',
         variant: 'destructive',
-      })
-    } finally {
-      setLoading(false)
+      });
     }
-  }
+  };
 
-  const handleEffectiveFromChange = useCallback(
-    (newDate: Date | ((prevDate: Date | undefined) => Date | undefined) | undefined) => {
-      if (newDate instanceof Date) {
-        setTemplate((prev) => ({
-          ...prev,
-          effective_from: format(newDate, 'yyyy-MM-dd'),
-        }))
-      }
-    },
-    []
-  )
-
-  const handleEffectiveToChange = useCallback(
-    (newDate: Date | ((prevDate: Date | undefined) => Date | undefined) | undefined) => {
-      if (newDate instanceof Date) {
-        setTemplate((prev) => ({
-          ...prev,
-          effective_to: format(newDate, 'yyyy-MM-dd'),
-        }))
-      }
-    },
-    []
-  )
+  const getSubmitButtonText = () => {
+    if (isSubmitting) return 'Saving...';
+    return template ? 'Update' : 'Create';
+  };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{templateId ? 'Edit Rate Template' : 'Create Rate Template'}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className='space-y-4'>
-          {errors.length > 0 && (
-            <div className='rounded-md bg-destructive/10 p-4'>
-              <h4 className='mb-2 font-semibold text-destructive'>
-                Please fix the following errors:
-              </h4>
-              <ul className='list-inside list-disc space-y-1'>
-                {errors.map((error, index) => (
-                  <li key={index} className='text-destructive'>
-                    {error}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          <div className='space-y-2'>
-            <Label htmlFor='templateName'>Template Name</Label>
-            <Input
-              id='templateName'
-              value={template.template_name || ''}
-              onChange={(e) =>
-                setTemplate((prev) => ({
-                  ...prev,
-                  template_name: e.target.value,
-                }))
-              }
-            />
-          </div>
-
-          <div className='space-y-2'>
-            <Label htmlFor='templateType'>Template Type</Label>
-            <Select
-              value={template.template_type}
-              onValueChange={(value) =>
-                setTemplate((prev) => ({
-                  ...prev,
-                  template_type: value as RateTemplate['template_type'],
-                }))
-              }
-            >
-              <SelectTrigger id='templateType'>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='apprentice'>Apprentice</SelectItem>
-                <SelectItem value='trainee'>Trainee</SelectItem>
-                <SelectItem value='casual'>Casual</SelectItem>
-                <SelectItem value='permanent'>Permanent</SelectItem>
-                <SelectItem value='contractor'>Contractor</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className='grid grid-cols-2 gap-4'>
-            <div className='space-y-2'>
-              <Label htmlFor='baseMargin'>Base Margin (%)</Label>
-              <Input
-                id='baseMargin'
-                type='number'
-                min='0'
-                step='0.01'
-                value={template.base_margin || ''}
-                onChange={(e) =>
-                  setTemplate((prev) => ({
-                    ...prev,
-                    base_margin: Number(e.target.value),
-                  }))
-                }
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='superRate'>Super Rate (%)</Label>
-              <Input
-                id='superRate'
-                type='number'
-                min='0'
-                step='0.01'
-                value={template.super_rate || ''}
-                onChange={(e) =>
-                  setTemplate((prev) => ({
-                    ...prev,
-                    super_rate: Number(e.target.value),
-                  }))
-                }
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='leaveLoading'>Leave Loading (%)</Label>
-              <Input
-                id='leaveLoading'
-                type='number'
-                min='0'
-                step='0.01'
-                value={template.leave_loading || ''}
-                onChange={(e) =>
-                  setTemplate((prev) => ({
-                    ...prev,
-                    leave_loading: Number(e.target.value),
-                  }))
-                }
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='workersCompRate'>Workers Comp Rate (%)</Label>
-              <Input
-                id='workersCompRate'
-                type='number'
-                min='0'
-                step='0.01'
-                value={template.workers_comp_rate || ''}
-                onChange={(e) =>
-                  setTemplate((prev) => ({
-                    ...prev,
-                    workers_comp_rate: Number(e.target.value),
-                  }))
-                }
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='payrollTaxRate'>Payroll Tax Rate (%)</Label>
-              <Input
-                id='payrollTaxRate'
-                type='number'
-                min='0'
-                step='0.01'
-                value={template.payroll_tax_rate || ''}
-                onChange={(e) =>
-                  setTemplate((prev) => ({
-                    ...prev,
-                    payroll_tax_rate: Number(e.target.value),
-                  }))
-                }
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='trainingCostRate'>Training Cost Rate (%)</Label>
-              <Input
-                id='trainingCostRate'
-                type='number'
-                min='0'
-                step='0.01'
-                value={template.training_cost_rate || ''}
-                onChange={(e) =>
-                  setTemplate((prev) => ({
-                    ...prev,
-                    training_cost_rate: Number(e.target.value),
-                  }))
-                }
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='otherCostsRate'>Other Costs Rate (%)</Label>
-              <Input
-                id='otherCostsRate'
-                type='number'
-                min='0'
-                step='0.01'
-                value={template.other_costs_rate || ''}
-                onChange={(e) =>
-                  setTemplate((prev) => ({
-                    ...prev,
-                    other_costs_rate: Number(e.target.value),
-                  }))
-                }
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='fundingOffset'>Funding Offset</Label>
-              <Input
-                id='fundingOffset'
-                type='number'
-                min='0'
-                step='0.01'
-                value={template.funding_offset || ''}
-                onChange={(e) =>
-                  setTemplate((prev) => ({
-                    ...prev,
-                    funding_offset: Number(e.target.value),
-                  }))
-                }
-              />
-            </div>
-          </div>
-
-          <div className='grid grid-cols-2 gap-4'>
-            <div className='space-y-2'>
-              <Label>Effective From</Label>
-              <DatePicker
-                date={template.effective_from ? new Date(template.effective_from) : undefined}
-                onSelect={handleEffectiveFromChange}
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label>Effective To</Label>
-              <DatePicker
-                date={template.effective_to ? new Date(template.effective_to) : undefined}
-                onSelect={handleEffectiveToChange}
-              />
-            </div>
-          </div>
-
-          <div className='pt-4'>
-            <Button onClick={handleSave} disabled={loading} className='w-full'>
-              {loading ? 'Saving...' : 'Save Template'}
-            </Button>
-          </div>
+    <form
+      onSubmit={handleFormSubmit(onSubmit)}
+      className='space-y-6'
+    >
+      <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
+        <div className='mb-4'>
+          <label
+            htmlFor='name'
+            className='block text-sm font-medium text-gray-700'
+          >
+            Name
+          </label>
+          <input
+            id='name'
+            type='text'
+            className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'
+            {...register('name')}
+          />
+          {errors.name && <p className='text-sm text-red-500'>{errors.name.message}</p>}
         </div>
-      </CardContent>
-    </Card>
-  )
+
+        <div className='mb-4'>
+          <label
+            htmlFor='templateType'
+            className='block text-sm font-medium text-gray-700'
+          >
+            Template Type
+          </label>
+          <select
+            id='templateType'
+            {...register('templateType')}
+            className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'
+          >
+            <option value='hourly'>Hourly</option>
+            <option value='daily'>Daily</option>
+            <option value='fixed'>Fixed</option>
+          </select>
+        </div>
+
+        <div className='mb-4'>
+          <label
+            htmlFor='baseRate'
+            className='block text-sm font-medium text-gray-700'
+          >
+            Base Rate
+          </label>
+          <input
+            id='baseRate'
+            type='number'
+            step='0.01'
+            {...register('baseRate', { valueAsNumber: true })}
+            className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'
+          />
+        </div>
+
+        <div className='mb-4'>
+          <label
+            htmlFor='baseMargin'
+            className='block text-sm font-medium text-gray-700'
+          >
+            Base Margin (%)
+          </label>
+          <input
+            id='baseMargin'
+            type='number'
+            step='0.01'
+            {...register('baseMargin', { valueAsNumber: true })}
+            className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'
+          />
+        </div>
+
+        <div className='mb-4'>
+          <label
+            htmlFor='superRate'
+            className='block text-sm font-medium text-gray-700'
+          >
+            Super Rate (%)
+          </label>
+          <input
+            id='superRate'
+            type='number'
+            step='0.01'
+            {...register('superRate', { valueAsNumber: true })}
+            className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'
+          />
+        </div>
+
+        <div className='mb-4'>
+          <label
+            htmlFor='leaveLoading'
+            className='block text-sm font-medium text-gray-700'
+          >
+            Leave Loading (%)
+          </label>
+          <input
+            id='leaveLoading'
+            type='number'
+            step='0.01'
+            {...register('leaveLoading', { valueAsNumber: true })}
+            className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'
+          />
+        </div>
+
+        <div className='mb-4'>
+          <label
+            htmlFor='workersCompRate'
+            className='block text-sm font-medium text-gray-700'
+          >
+            Workers Comp Rate (%)
+          </label>
+          <input
+            id='workersCompRate'
+            type='number'
+            step='0.01'
+            {...register('workersCompRate', { valueAsNumber: true })}
+            className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'
+          />
+        </div>
+
+        <div className='mb-4'>
+          <label
+            htmlFor='payrollTaxRate'
+            className='block text-sm font-medium text-gray-700'
+          >
+            Payroll Tax Rate (%)
+          </label>
+          <input
+            id='payrollTaxRate'
+            type='number'
+            step='0.01'
+            {...register('payrollTaxRate', { valueAsNumber: true })}
+            className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'
+          />
+        </div>
+
+        <div className='mb-4'>
+          <label
+            htmlFor='trainingCostRate'
+            className='block text-sm font-medium text-gray-700'
+          >
+            Training Cost Rate (%)
+          </label>
+          <input
+            id='trainingCostRate'
+            type='number'
+            step='0.01'
+            {...register('trainingCostRate', { valueAsNumber: true })}
+            className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'
+          />
+        </div>
+
+        <div className='mb-4'>
+          <label
+            htmlFor='otherCostsRate'
+            className='block text-sm font-medium text-gray-700'
+          >
+            Other Costs Rate (%)
+          </label>
+          <input
+            id='otherCostsRate'
+            type='number'
+            step='0.01'
+            {...register('otherCostsRate', { valueAsNumber: true })}
+            className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'
+          />
+        </div>
+
+        <div className='mb-4'>
+          <label
+            htmlFor='fundingOffset'
+            className='block text-sm font-medium text-gray-700'
+          >
+            Funding Offset
+          </label>
+          <input
+            id='fundingOffset'
+            type='number'
+            step='0.01'
+            {...register('fundingOffset', { valueAsNumber: true })}
+            className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'
+          />
+        </div>
+
+        <div className='mb-4'>
+          <label
+            htmlFor='effectiveFrom'
+            className='block text-sm font-medium text-gray-700'
+          >
+            Effective From
+          </label>
+          <input
+            id='effectiveFrom'
+            type='date'
+            {...register('effectiveFrom')}
+            className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'
+          />
+        </div>
+
+        <div className='mb-4'>
+          <label
+            htmlFor='effectiveTo'
+            className='block text-sm font-medium text-gray-700'
+          >
+            Effective To
+          </label>
+          <input
+            id='effectiveTo'
+            type='date'
+            {...register('effectiveTo')}
+            className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'
+          />
+        </div>
+
+        <div className='col-span-2 mb-4'>
+          <label
+            htmlFor='description'
+            className='block text-sm font-medium text-gray-700'
+          >
+            Description
+          </label>
+          <textarea
+            id='description'
+            {...register('description')}
+            className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'
+            rows={3}
+          />
+        </div>
+      </div>
+
+      <div className='flex justify-end space-x-4'>
+        {onCancel && (
+          <button
+            type='button'
+            onClick={onCancel}
+            className='rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200'
+          >
+            Cancel
+          </button>
+        )}
+        <button
+          type='submit'
+          disabled={isSubmitting}
+          className='rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50'
+        >
+          {getSubmitButtonText()}
+        </button>
+      </div>
+    </form>
+  );
 }

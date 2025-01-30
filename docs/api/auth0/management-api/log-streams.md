@@ -75,9 +75,9 @@ Retrieves a log stream by ID.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the log stream to retrieve |
+| Parameter | Type   | Description                          |
+| --------- | ------ | ------------------------------------ |
+| id        | string | The ID of the log stream to retrieve |
 
 ### Response
 
@@ -105,9 +105,9 @@ Updates a log stream.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the log stream to update |
+| Parameter | Type   | Description                        |
+| --------- | ------ | ---------------------------------- |
+| id        | string | The ID of the log stream to update |
 
 ### Request Body
 
@@ -128,9 +128,9 @@ Deletes a log stream.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the log stream to delete |
+| Parameter | Type   | Description                        |
+| --------- | ------ | ---------------------------------- |
+| id        | string | The ID of the log stream to delete |
 
 ### Response
 
@@ -139,6 +139,7 @@ A successful deletion returns a 204 No Content status with no response body.
 ## Stream Types
 
 Available stream types:
+
 - `eventbridge`: AWS EventBridge
 - `http`: HTTP Webhook
 - `datadog`: Datadog
@@ -149,6 +150,7 @@ Available stream types:
 ## Stream Status
 
 Possible stream statuses:
+
 - `active`: Stream is sending logs
 - `paused`: Stream is temporarily stopped
 - `suspended`: Stream is suspended due to errors
@@ -157,6 +159,7 @@ Possible stream statuses:
 ## Error Responses
 
 ### 400 Bad Request
+
 ```json
 {
   "error": "bad_request",
@@ -166,6 +169,7 @@ Possible stream statuses:
 ```
 
 ### 401 Unauthorized
+
 ```json
 {
   "error": "unauthorized",
@@ -175,6 +179,7 @@ Possible stream statuses:
 ```
 
 ### 403 Forbidden
+
 ```json
 {
   "error": "forbidden",
@@ -184,6 +189,7 @@ Possible stream statuses:
 ```
 
 ### 404 Not Found
+
 ```json
 {
   "error": "not_found",
@@ -193,6 +199,7 @@ Possible stream statuses:
 ```
 
 ### 429 Too Many Requests
+
 ```json
 {
   "error": "too_many_requests",
@@ -204,12 +211,14 @@ Possible stream statuses:
 ## Best Practices
 
 1. **Stream Configuration**
+
    - Monitor stream health
    - Configure error handling
    - Set appropriate filters
    - Document stream purpose
 
 2. **Performance**
+
    - Monitor throughput
    - Handle backpressure
    - Set batch sizes
@@ -229,6 +238,7 @@ The Log Streams API endpoints are subject to rate limiting:
 - Enterprise: 100 requests per minute
 
 Rate limit information is included in the response headers:
+
 - `X-RateLimit-Limit`
 - `X-RateLimit-Remaining`
 - `X-RateLimit-Reset`
@@ -238,6 +248,7 @@ Rate limit information is included in the response headers:
 ### Event Types
 
 Common log event types:
+
 - `s`: Success Login
 - `f`: Failed Login
 - `fu`: Failed Login (Invalid Email/Username)
@@ -253,6 +264,7 @@ Common log event types:
 ### Stream Configuration Examples
 
 1. **HTTP Webhook**
+
 ```json
 {
   "name": "My Webhook",
@@ -267,6 +279,7 @@ Common log event types:
 ```
 
 2. **Datadog**
+
 ```json
 {
   "name": "Datadog Stream",
@@ -280,6 +293,7 @@ Common log event types:
 ```
 
 3. **Splunk**
+
 ```json
 {
   "name": "Splunk Stream",
@@ -291,3 +305,4 @@ Common log event types:
     "secure": true
   }
 }
+```

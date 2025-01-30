@@ -12,12 +12,12 @@ Retrieves device credentials.
 
 ### Query Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| user_id | string | Filter by user ID |
-| client_id | string | Filter by client ID |
-| type | string | Filter by credential type |
-| fields | string | Comma-separated list of fields to include |
+| Parameter      | Type    | Description                                       |
+| -------------- | ------- | ------------------------------------------------- |
+| user_id        | string  | Filter by user ID                                 |
+| client_id      | string  | Filter by client ID                               |
+| type           | string  | Filter by credential type                         |
+| fields         | string  | Comma-separated list of fields to include         |
 | include_fields | boolean | Whether specified fields are included or excluded |
 
 ### Response
@@ -81,9 +81,9 @@ Deletes a device credential.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | string | The ID of the device credential to delete |
+| Parameter | Type   | Description                               |
+| --------- | ------ | ----------------------------------------- |
+| id        | string | The ID of the device credential to delete |
 
 ### Response
 
@@ -92,6 +92,7 @@ A successful deletion returns a 204 No Content status with no response body.
 ## Device Credential Types
 
 Available device credential types:
+
 - `public_key`: Public key credential
 - `refresh_token`: Refresh token credential
 - `rotating_refresh_token`: Rotating refresh token credential
@@ -99,6 +100,7 @@ Available device credential types:
 ## Error Responses
 
 ### 400 Bad Request
+
 ```json
 {
   "error": "bad_request",
@@ -108,6 +110,7 @@ Available device credential types:
 ```
 
 ### 401 Unauthorized
+
 ```json
 {
   "error": "unauthorized",
@@ -117,6 +120,7 @@ Available device credential types:
 ```
 
 ### 403 Forbidden
+
 ```json
 {
   "error": "forbidden",
@@ -126,6 +130,7 @@ Available device credential types:
 ```
 
 ### 404 Not Found
+
 ```json
 {
   "error": "not_found",
@@ -135,6 +140,7 @@ Available device credential types:
 ```
 
 ### 429 Too Many Requests
+
 ```json
 {
   "error": "too_many_requests",
@@ -146,12 +152,14 @@ Available device credential types:
 ## Best Practices
 
 1. **Security**
+
    - Regularly audit device credentials
    - Remove unused or suspicious devices
    - Monitor device credential usage
    - Implement device fingerprinting
 
 2. **Management**
+
    - Use descriptive device names
    - Track device types and models
    - Maintain device inventory
@@ -171,6 +179,7 @@ The Device Credentials API endpoints are subject to rate limiting:
 - Enterprise: 100 requests per minute
 
 Rate limit information is included in the response headers:
+
 - `X-RateLimit-Limit`
 - `X-RateLimit-Remaining`
 - `X-RateLimit-Reset`
@@ -180,11 +189,13 @@ Rate limit information is included in the response headers:
 ### Device Credential Lifecycle
 
 1. **Creation**
+
    - Generated during device registration
    - Associated with specific user and client
    - Assigned unique identifier
 
 2. **Usage**
+
    - Used for device authentication
    - Validates device identity
    - Enables secure access
@@ -197,11 +208,13 @@ Rate limit information is included in the response headers:
 ### Security Considerations
 
 1. **Device Verification**
+
    - Implement strong device verification
    - Use secure key storage
    - Validate device integrity
 
 2. **Monitoring**
+
    - Track suspicious activities
    - Monitor failed authentications
    - Alert on unusual patterns

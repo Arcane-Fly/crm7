@@ -1,12 +1,13 @@
-'use client'
+'use client';
 
-import * as React from 'react'
 import type {
   ColumnDef,
   ColumnFiltersState,
   SortingState,
   VisibilityState,
-} from '@tanstack/react-table'
+  CellContext,
+  Column,
+} from '@tanstack/react-table';
 import {
   flexRender,
   getCoreRowModel,
@@ -14,10 +15,22 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from '@tanstack/react-table'
-import { ArrowUpDown, ChevronDown, MoreHorizontal, Eye, Edit, Trash2, FileText } from 'lucide-react'
+} from '@tanstack/react-table';
+import {
+  ArrowUpDown,
+  ChevronDown,
+  MoreHorizontal,
+  Eye,
+  Edit,
+  Trash2,
+  FileText,
+} from 'lucide-react';
+import * as React from 'react';
+import { type ReactElement } from 'react';
 
-import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -26,8 +39,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -35,11 +48,21 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+} from '@/components/ui/table';
 
-import styles from './funding-programs-data-table.module.css'
+import styles from './funding-programs-data-table.module.css';
+
+export type FundingProgram = {
+  id: string;
+  name: string;
+  code: string;
+  source: string;
+  startDate: string;
+  endDate: string;
+  status: 'Active' | 'Inactive' | 'Upcoming';
+  totalFunding: number;
+  claimedFunding: number;
+};
 
 const data: FundingProgram[] = [
   {
@@ -97,24 +120,23 @@ const data: FundingProgram[] = [
     totalFunding: 800000,
     claimedFunding: 150000,
   },
-]
+];
 
-export type FundingProgram = {
-  id: string
-  name: string
-  code: string
-  source: string
-  startDate: string
-  endDate: string
-  status: 'Active' | 'Inactive' | 'Upcoming'
-  totalFunding: number
-  claimedFunding: number
-}
+const getStatusVariant = (status: FundingProgram['status']) => {
+  switch (status) {
+    case 'Active':
+      return 'secondary';
+    case 'Inactive':
+      return 'destructive';
+    default:
+      return 'default';
+  }
+};
 
 export const columns: ColumnDef<FundingProgram>[] = [
   {
     accessorKey: 'name',
-    header: ({ column }) => {
+    header: ({ column }: { column: Column<FundingProgram> }): ReactElement => {
       return (
         <Button
           variant='ghost'
@@ -123,67 +145,73 @@ export const columns: ColumnDef<FundingProgram>[] = [
           Program Name
           <ArrowUpDown className='ml-2 h-4 w-4' />
         </Button>
-      )
+      );
     },
-    cell: ({ row }) => <div className='font-medium'>{row.getValue('name')}</div>,
+    cell: ({ row }: CellContext<FundingProgram, unknown>): ReactElement => (
+      <div className='font-medium'>{row.getValue('name')}</div>
+    ),
   },
   {
     accessorKey: 'code',
     header: 'Code',
-    cell: ({ row }) => <div>{row.getValue('code')}</div>,
+    cell: ({ row }: CellContext<FundingProgram, unknown>): ReactElement => (
+      <div>{row.getValue('code')}</div>
+    ),
   },
   {
     accessorKey: 'source',
     header: 'Source',
-    cell: ({ row }) => <div>{row.getValue('source')}</div>,
+    cell: ({ row }: CellContext<FundingProgram, unknown>): ReactElement => (
+      <div>{row.getValue('source')}</div>
+    ),
   },
   {
     accessorKey: 'status',
     header: 'Status',
-    cell: ({ row }) => {
-      const status = row.getValue('status') as string
-      return (
-        <Badge
-          variant={
-            status === 'Active' ? 'secondary' : status === 'Inactive' ? 'destructive' : 'default'
-          }
-        >
-          {status}
-        </Badge>
-      )
+    cell: ({ row }: CellContext<FundingProgram, unknown>): ReactElement => {
+      const status = row.getValue('status') as FundingProgram['status'];
+      return <Badge variant={getStatusVariant(status)}>{String(status)}</Badge>;
     },
   },
   {
     accessorKey: 'totalFunding',
     header: 'Total Funding',
-    cell: ({ row }) => <div>${row.getValue<number>('totalFunding').toLocaleString()}</div>,
+    cell: ({ row }: CellContext<FundingProgram, unknown>): ReactElement => (
+      <div>${row.getValue<number>('totalFunding').toLocaleString()}</div>
+    ),
   },
   {
     accessorKey: 'claimedFunding',
     header: 'Claimed Funding',
-    cell: ({ row }) => {
-      const totalFunding = row.getValue<number>('totalFunding')
-      const claimedFunding = row.getValue<number>('claimedFunding')
-      const percentage = (claimedFunding / totalFunding) * 100
+    cell: ({ row }: CellContext<FundingProgram, unknown>): ReactElement => {
+      const totalFunding = row.getValue<number>('totalFunding');
+      const claimedFunding = row.getValue<number>('claimedFunding');
+      const percentage = (claimedFunding / totalFunding) * 100;
       return (
         <div className='flex items-center'>
           <div>${claimedFunding.toLocaleString()}</div>
           <div className='ml-2 h-2 w-16 overflow-hidden rounded-full bg-gray-200'>
-            <div className={styles.progressBar} data-percentage={percentage} />
+            <div
+              className={styles.progressBar}
+              data-percentage={percentage}
+            />
           </div>
         </div>
-      )
+      );
     },
   },
   {
     id: 'actions',
-    cell: ({ row }) => {
-      const program = row.original
+    cell: ({ row }: CellContext<FundingProgram, unknown>): ReactElement => {
+      const program = row.original;
 
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant='ghost' className='h-8 w-8 p-0'>
+            <Button
+              variant='ghost'
+              className='h-8 w-8 p-0'
+            >
               <span className='sr-only'>Open menu</span>
               <MoreHorizontal className='h-4 w-4' />
             </Button>
@@ -212,16 +240,16 @@ export const columns: ColumnDef<FundingProgram>[] = [
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      )
+      );
     },
   },
-]
+];
 
-export function FundingProgramsDataTable() {
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
+export function FundingProgramsDataTable(): ReactElement {
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({
     data,
@@ -240,7 +268,7 @@ export function FundingProgramsDataTable() {
       columnVisibility,
       rowSelection,
     },
-  })
+  });
 
   return (
     <Card>
@@ -252,13 +280,16 @@ export function FundingProgramsDataTable() {
         <div className='flex items-center py-4'>
           <Input
             placeholder='Filter programs...'
-            value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
+            value={table.getColumn('name')?.getFilterValue() as string}
             onChange={(event) => table.getColumn('name')?.setFilterValue(event.target.value)}
             className='max-w-sm'
           />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant='outline' className='ml-auto'>
+              <Button
+                variant='outline'
+                className='ml-auto'
+              >
                 Columns <ChevronDown className='ml-2 h-4 w-4' />
               </Button>
             </DropdownMenuTrigger>
@@ -276,7 +307,7 @@ export function FundingProgramsDataTable() {
                     >
                       {column.id}
                     </DropdownMenuCheckboxItem>
-                  )
+                  );
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
@@ -293,15 +324,18 @@ export function FundingProgramsDataTable() {
                           ? null
                           : flexRender(header.column.columnDef.header, header.getContext())}
                       </TableHead>
-                    )
+                    );
                   })}
                 </TableRow>
               ))}
             </TableHeader>
             <TableBody>
-              {table.getRowModel().rows?.length ? (
+              {table.getRowModel().rows.length ? (
                 table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && 'selected'}
+                  >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -311,7 +345,10 @@ export function FundingProgramsDataTable() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className='h-24 text-center'>
+                  <TableCell
+                    colSpan={columns.length}
+                    className='h-24 text-center'
+                  >
                     No results.
                   </TableCell>
                 </TableRow>
@@ -345,5 +382,5 @@ export function FundingProgramsDataTable() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

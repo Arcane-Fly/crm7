@@ -15,6 +15,7 @@ npm install -g auth0-deploy-cli
 The CLI requires credentials to access your Auth0 tenant. You can provide these in two ways:
 
 1. Environment variables:
+
 ```bash
 export AUTH0_DOMAIN=your-tenant.auth0.com
 export AUTH0_CLIENT_ID=your-client-id
@@ -22,6 +23,7 @@ export AUTH0_CLIENT_SECRET=your-client-secret
 ```
 
 2. Configuration file (auth0-deploy-cli.json):
+
 ```json
 {
   "AUTH0_DOMAIN": "your-tenant.auth0.com",
@@ -82,20 +84,20 @@ a0deploy dump --config_file config.json
 rules: []
 pages: []
 databases:
-- name: Username-Password-Authentication
-  strategy: auth0
-  enabled_clients:
-  - My Application
+  - name: Username-Password-Authentication
+    strategy: auth0
+    enabled_clients:
+      - My Application
 resourceServers:
-- name: My API
-  identifier: https://api.example.com
-  scopes:
-  - value: read:users
-    description: Read users
+  - name: My API
+    identifier: https://api.example.com
+    scopes:
+      - value: read:users
+        description: Read users
 clients:
-- name: My Application
-  callbacks:
-  - http://localhost:4200/callback
+  - name: My Application
+    callbacks:
+      - http://localhost:4200/callback
 ```
 
 ## Best Practices
@@ -127,21 +129,21 @@ name: Deploy Auth0
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Deploy to Auth0
-      run: |
-        npm install -g auth0-deploy-cli
-        a0deploy import --config_file auth0-deploy-cli.json --input_file ./tenant
-      env:
-        AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
-        AUTH0_CLIENT_ID: ${{ secrets.AUTH0_CLIENT_ID }}
-        AUTH0_CLIENT_SECRET: ${{ secrets.AUTH0_CLIENT_SECRET }}
+      - uses: actions/checkout@v2
+      - name: Deploy to Auth0
+        run: |
+          npm install -g auth0-deploy-cli
+          a0deploy import --config_file auth0-deploy-cli.json --input_file ./tenant
+        env:
+          AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
+          AUTH0_CLIENT_ID: ${{ secrets.AUTH0_CLIENT_ID }}
+          AUTH0_CLIENT_SECRET: ${{ secrets.AUTH0_CLIENT_SECRET }}
 ```
 
 ## Troubleshooting
@@ -149,10 +151,12 @@ jobs:
 ### Common Issues
 
 1. **Authentication Errors**
+
    - Verify your credentials are correct
    - Ensure the client has all required scopes
 
 2. **Rate Limiting**
+
    - Implement exponential backoff
    - Reduce concurrent operations
 
@@ -171,6 +175,7 @@ DEBUG=auth0-deploy-cli* a0deploy import --config_file config.json --input_file .
 ## Security Considerations
 
 1. **Credentials Management**
+
    - Use environment variables for secrets
    - Rotate client secrets regularly
    - Use restricted clients for deployment

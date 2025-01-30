@@ -12,8 +12,8 @@ Retrieves an email template.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
+| Parameter    | Type   | Description                          |
+| ------------ | ------ | ------------------------------------ |
 | templateName | string | The name of the template to retrieve |
 
 ### Response
@@ -79,8 +79,8 @@ Updates an email template.
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
+| Parameter    | Type   | Description                        |
+| ------------ | ------ | ---------------------------------- |
 | templateName | string | The name of the template to update |
 
 ### Request Body
@@ -100,6 +100,7 @@ Updates an email template.
 ## Template Types
 
 Available template types:
+
 - `verify_email`: Email verification
 - `welcome_email`: Welcome email
 - `reset_email`: Password reset
@@ -113,6 +114,7 @@ Available template types:
 ## Template Variables
 
 Common variables available in templates:
+
 - `{{ application.name }}`: Application name
 - `{{ user.email }}`: User's email
 - `{{ user.username }}`: User's username
@@ -125,6 +127,7 @@ Common variables available in templates:
 ## Error Responses
 
 ### 400 Bad Request
+
 ```json
 {
   "error": "bad_request",
@@ -134,6 +137,7 @@ Common variables available in templates:
 ```
 
 ### 401 Unauthorized
+
 ```json
 {
   "error": "unauthorized",
@@ -143,6 +147,7 @@ Common variables available in templates:
 ```
 
 ### 403 Forbidden
+
 ```json
 {
   "error": "forbidden",
@@ -152,6 +157,7 @@ Common variables available in templates:
 ```
 
 ### 404 Not Found
+
 ```json
 {
   "error": "not_found",
@@ -161,6 +167,7 @@ Common variables available in templates:
 ```
 
 ### 429 Too Many Requests
+
 ```json
 {
   "error": "too_many_requests",
@@ -172,18 +179,21 @@ Common variables available in templates:
 ## Best Practices
 
 1. **Template Design**
+
    - Use responsive email design
    - Test templates across email clients
    - Include plain text versions
    - Follow email best practices
 
 2. **Content**
+
    - Use clear and concise language
    - Include company branding
    - Provide clear call-to-actions
    - Test all links and buttons
 
 3. **Security**
+
    - Include anti-phishing measures
    - Add security disclaimers
    - Use HTTPS for all links
@@ -203,6 +213,7 @@ The Email Templates API endpoints are subject to rate limiting:
 - Enterprise: 100 requests per minute
 
 Rate limit information is included in the response headers:
+
 - `X-RateLimit-Limit`
 - `X-RateLimit-Remaining`
 - `X-RateLimit-Reset`
@@ -228,20 +239,25 @@ The template engine uses Liquid syntax. Common operations:
 ### HTML Email Tips
 
 1. **Structure**
+
    ```html
    <!DOCTYPE html>
    <html>
-   <head>
-     <meta charset="utf-8">
-     <meta name="viewport" content="width=device-width">
-   </head>
-   <body>
-     <!-- Template content -->
-   </body>
+     <head>
+       <meta charset="utf-8" />
+       <meta
+         name="viewport"
+         content="width=device-width"
+       />
+     </head>
+     <body>
+       <!-- Template content -->
+     </body>
    </html>
    ```
 
 2. **Inline CSS**
+
    - Use inline styles for better email client compatibility
    - Avoid external stylesheets
    - Test across different email clients

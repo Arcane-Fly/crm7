@@ -1,25 +1,27 @@
-'use client'
+'use client';
 
-import type { ColumnDef } from '@tanstack/react-table'
-import { Button } from '@/components/ui/button'
-import { MoreHorizontal } from 'lucide-react'
+import type { ColumnDef, Row } from '@tanstack/react-table';
+import { MoreHorizontal } from 'lucide-react';
+import { type ReactNode } from 'react';
+
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '@/components/ui/dropdown-menu';
 
 export type HostEmployer = {
-  id: string
-  name: string
-  contactPerson: string
-  email: string
-  phone: string
-  address: string
-  status: 'active' | 'inactive'
-  apprenticeCount: number
-}
+  id: string;
+  name: string;
+  contactPerson: string;
+  email: string;
+  phone: string;
+  address: string;
+  status: 'active' | 'inactive';
+  apprenticeCount: number;
+};
 
 export const columns: ColumnDef<HostEmployer>[] = [
   {
@@ -45,36 +47,45 @@ export const columns: ColumnDef<HostEmployer>[] = [
   {
     accessorKey: 'status',
     header: 'Status',
-    cell: ({ row }) => {
-      const status = row.getValue('status') as string
+    cell: ({ row }: { row: Row<HostEmployer> }): ReactNode => {
+      const status = row.getValue('status') as HostEmployer['status'];
       return (
         <div className={`capitalize ${status === 'active' ? 'text-green-600' : 'text-red-600'}`}>
           {status}
         </div>
-      )
+      );
     },
   },
   {
     id: 'actions',
-    cell: ({ row }) => {
-      const employer = row.original
+    cell: ({ row }: { row: Row<HostEmployer> }): ReactNode => {
+      const employer = row.original;
+
+      const handleCopyId = async (): Promise<void> => {
+        try {
+          await navigator.clipboard.writeText(employer.id);
+        } catch (error) {
+          console.error('Failed to copy ID to clipboard:', error);
+        }
+      };
 
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant='ghost' className='h-8 w-8 p-0'>
+            <Button
+              variant='ghost'
+              className='h-8 w-8 p-0'
+            >
               <MoreHorizontal className='h-4 w-4' />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align='end'>
-            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(employer.id)}>
-              Copy ID
-            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleCopyId}>Copy ID</DropdownMenuItem>
             <DropdownMenuItem>View Details</DropdownMenuItem>
             <DropdownMenuItem>Edit</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      )
+      );
     },
   },
-]
+];

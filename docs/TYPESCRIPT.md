@@ -1,174 +1,204 @@
-# TypeScript Guidelines
+# TypeScript Guidelines (Updated January 2025)
 
-## Type Definitions
+## Package Versions (January 2025)
 
-### Component Props
-```typescript
-interface ComponentProps {
-  /** Description of the prop */
-  propName: PropType;
-}
+For optimal TypeScript development, ensure you're using these minimum versions:
 
-// Example
-interface ButtonProps {
-  /** The text content of the button */
-  label: string;
-  /** Optional click handler */
-  onClick?: () => void;
-  /** Button variant */
-  variant?: 'primary' | 'secondary' | 'ghost';
-}
-```
-
-### Custom Hooks
-```typescript
-function useCustomHook<T>(param: T): [T, (value: T) => void] {
-  // Implementation
-}
-```
-
-### API Types
-```typescript
-interface ApiResponse<T> {
-  data: T;
-  status: number;
-  message: string;
-}
-
-interface ErrorResponse {
-  error: string;
-  code: number;
-}
-```
-
-## Best Practices
-
-### Type Inference
-- Let TypeScript infer types when obvious
-- Explicitly type complex objects and functions
-- Use `const` assertions for literal types
-
-### Generic Types
-- Use meaningful type parameter names
-- Constrain generics when possible
-- Document generic parameters
-
-### Type Guards
-```typescript
-function isError(value: unknown): value is Error {
-  return value instanceof Error;
-}
-```
-
-### Utility Types
-- Use built-in utility types (Partial, Pick, etc.)
-- Create custom utility types for reusability
-- Document complex type transformations
-
-### Async Code
-```typescript
-async function fetchData<T>(): Promise<T> {
-  try {
-    const response = await api.get<T>('/endpoint');
-    return response.data;
-  } catch (error) {
-    if (isError(error)) {
-      throw new Error(`Failed to fetch: ${error.message}`);
-    }
-    throw error;
+```json
+{
+  "dependencies": {
+    "typescript": "^5.3.3",
+    "next": "^14.2.23",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^14.2.23",
+    "prettier": "^3.4.2"
   }
 }
 ```
 
-## React Integration
+## TypeScript Configuration
 
-### Function Components
-```typescript
-const Component: React.FC<Props> = ({ prop }) => {
-  return <div>{prop}</div>;
-};
-```
+Our `tsconfig.json` is configured for optimal development with Next.js:
 
-### Event Handlers
-```typescript
-const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-  // Implementation
-};
-```
-
-### Context
-```typescript
-interface ContextType {
-  value: string;
-  setValue: (value: string) => void;
-}
-
-const Context = React.createContext<ContextType | undefined>(undefined);
-```
-
-### Custom Hooks
-```typescript
-function useLocalStorage<T>(key: string, initialValue: T) {
-  // Implementation
-}
-```
-
-## Type Safety
-
-### Strict Mode
-- Enable strict mode in tsconfig.json
-- Use strict null checks
-- Enable noImplicitAny
-
-### Type Assertions
-- Minimize use of type assertions
-- Use `as const` for literal types
-- Prefer type guards over assertions
-
-### Error Handling
-```typescript
-try {
-  // Operation
-} catch (error) {
-  if (error instanceof CustomError) {
-    // Handle specific error
-  } else {
-    // Handle unknown error
-  }
-}
-```
-
-## Tools and Configuration
-
-### ESLint
-- Use @typescript-eslint
-- Enable strict rules
-- Configure import sorting
-
-### Prettier
-- Use consistent formatting
-- Configure for TypeScript
-
-### tsconfig.json
 ```json
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "module": "ESNext",
-    "skipLibCheck": true,
+    "target": "es2022",
+    "lib": ["dom", "dom.iterable", "esnext"],
     "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
     "jsx": "react-jsx",
-    "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}
+```
+
+## React Type Best Practices
+
+### Component Types
+
+```typescript
+// Import types explicitly
+import { type ReactElement, type ReactNode } from 'react'
+
+// Use ReactElement for component return types
+export function MyComponent(): ReactElement {
+  return <div>Content</div>
+}
+
+// Use ReactNode for children props
+interface Props {
+  children: ReactNode
+}
+```
+
+### Context Pattern
+
+```typescript
+interface ContextType {
+  state: State;
+  dispatch: Dispatch<Action>;
+}
+
+const MyContext = createContext<ContextType | undefined>(undefined);
+
+export function useMyContext(): ContextType {
+  const context = useContext(MyContext);
+  if (!context) {
+    throw new Error('useMyContext must be used within MyProvider');
+  }
+  return context;
+}
+```
+
+### Service Pattern
+
+```typescript
+interface Service {
+  getData: () => Promise<Data>;
+  updateData: (id: string, data: Partial<Data>) => Promise<Data>;
+}
+
+export const myService: Service = {
+  getData: async () => {
+    // Implementation
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  updateData: async (id, data) => {
+    // Implementation
+  },
+};
+```
+
+## Error Handling
+
+```typescript
+try {
+  await operation();
+} catch (error) {
+  logger.error('Operation failed', { error, context: 'operationName' });
+  throw new CustomError('Operation failed', { cause: error });
+}
+```
+
+## Performance Optimization
+
+```typescript
+// Use type imports for better tree-shaking
+import type { MyType } from './types';
+
+// Use const assertions for literal types
+const VALID_STATUSES = ['active', 'inactive'] as const;
+type Status = (typeof VALID_STATUSES)[number];
+
+// Use Pick and Omit for derived types
+type CreateUserDTO = Omit<User, 'id' | 'createdAt'>;
+type UserSummary = Pick<User, 'id' | 'name' | 'email'>;
+```
+
+## Latest TypeScript Features
+
+### Using Decorators (Stage 3)
+
+```typescript
+@logged
+class Service {
+  @required
+  name: string;
+
+  @validate
+  async process(@format('json') data: unknown) {
+    // Implementation
+  }
+}
+```
+
+### Satisfies Operator
+
+```typescript
+const config = {
+  api: {
+    endpoint: 'https://api.example.com',
+    version: 'v1',
+  },
+  features: {
+    darkMode: true,
+  },
+} satisfies Config;
+```
+
+### Template Literal Types
+
+```typescript
+type Route = `/api/${string}`;
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+type Endpoint = `${HttpMethod} ${Route}`;
+```
+
+## Code Organization
+
+- Group imports by type (React, third-party, local)
+- Use barrel exports for related functionality
+- Keep type definitions close to their usage
+- Use type-only imports when possible
+
+## Testing
+
+```typescript
+import { type ReactElement } from 'react'
+import { render, screen } from '@testing-library/react'
+
+describe('Component', () => {
+  it('renders correctly', () => {
+    render(<Component />)
+    expect(screen.getByRole('button')).toBeInTheDocument()
+  })
+})
+```
+
+## Documentation
+
+- Use JSDoc for public APIs
+- Include type information in comments
+- Document complex type relationships
+- Keep examples up to date
+
+```typescript
+/**
+ * Processes user data with validation
+ * @param data - The user data to process
+ * @returns Processed user data
+ * @throws {ValidationError} If data is invalid
+ */
+async function processUser(data: UserInput): Promise<User> {
+  // Implementation
 }
 ```

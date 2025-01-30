@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
-import TopNav from './TopNav'
-import { Sidebar } from './Sidebar'
+import { Sidebar } from './Sidebar';
+import TopNav from './TopNav';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -10,5 +10,5 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <Sidebar />
       <main className='ml-64 pt-14'>{children}</main>
     </div>
-  )
+  );
 }
