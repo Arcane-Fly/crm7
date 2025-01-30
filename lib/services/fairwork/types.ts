@@ -1,33 +1,17 @@
 export interface FairWorkConfig {
-  apiKey?: string;
-  apiUrl?: string;
-  baseUrl?: string;
-  environment?: 'sandbox' | 'production';
-  timeout?: number;
-  retryAttempts?: number;
+  baseUrl: string;
+  apiKey: string;
+  cacheConfig?: {
+    ttl?: number;
+    prefix?: string;
+  };
 }
 
-export interface AwardRate {
-  awardCode: string;
-  classificationCode: string;
-  baseRate: number;
-  casualLoading?: number;
-  penalties?: Array<{
-    code: string;
-    rate: number;
-    description: string;
-  }>;
-  allowances?: Array<{
-    code: string;
-    amount: number;
-    description: string;
-  }>;
+export interface Award {
+  code: string;
+  name: string;
   effectiveFrom: Date;
   effectiveTo?: Date;
-  id: string;
-  rate: number;
-  effectiveDate: string;
-  status: 'active' | 'inactive';
 }
 
 export interface Classification {
@@ -35,41 +19,101 @@ export interface Classification {
   name: string;
   level: string;
   grade?: string;
-  yearOfExperience?: number;
-  qualifications?: string[];
-  parentCode?: string;
-  validFrom: Date;
-  validTo?: Date;
+}
+
+export interface ClassificationHierarchy {
+  code: string;
+  name: string;
+  children: ClassificationHierarchy[];
+}
+
+export interface RateTemplate {
+  code: string;
+  name: string;
+  baseRate: number;
+  allowances: Array<{
+    code: string;
+    amount: number;
+  }>;
+  penalties: Array<{
+    code: string;
+    multiplier: number;
+  }>;
+}
+
+export interface AwardRate extends Rate {
+  awardCode: string;
+  classificationCode: string;
+}
+
+export interface Rate {
+  baseRate: number;
+  allowances: Array<{
+    code: string;
+    amount: number;
+  }>;
+  penalties: Array<{
+    code: string;
+    multiplier: number;
+  }>;
+  effectiveFrom: Date;
+  effectiveTo?: Date;
+}
+
+export interface GetBaseRateParams {
+  awardCode: string;
+  classificationCode: string;
+  date?: Date;
+}
+
+export interface GetClassificationsParams {
+  awardCode: string;
+  includeInactive?: boolean;
+}
+
+export interface GetFutureRatesParams {
+  awardCode: string;
+  classificationCode: string;
+  startDate: Date;
+  endDate: Date;
+}
+
+export interface GetRateHistoryParams {
+  awardCode: string;
+  classificationCode: string;
+  startDate: Date;
+  endDate: Date;
 }
 
 export interface RateCalculationRequest {
   awardCode: string;
   classificationCode: string;
-  employmentType: 'casual' | 'permanent' | 'fixed-term';
+  employmentType: 'permanent' | 'casual' | 'fixed-term';
   date: Date;
-  hours?: number;
-  penalties?: string[];
-  allowances?: string[];
+  hours: number;
+  penalties?: Array<{
+    code: string;
+    multiplier: number;
+  }>;
+  allowances?: Array<{
+    code: string;
+    amount: number;
+  }>;
 }
 
 export interface RateCalculationResponse {
   baseRate: number;
-  casualLoading?: number;
   penalties: Array<{
     code: string;
-    rate: number;
     amount: number;
-    description: string;
   }>;
   allowances: Array<{
     code: string;
     amount: number;
-    description: string;
   }>;
   total: number;
   breakdown: {
     base: number;
-    loading?: number;
     penalties: number;
     allowances: number;
   };
@@ -80,41 +124,17 @@ export interface RateCalculationResponse {
   };
 }
 
-export interface RateValidationResponse {
-  isValid: boolean;
-  minimumRate: number;
-  difference: number;
-}
-
-export type GetBaseRateParams = {
-  awardCode: string;
-  classificationCode: string;
-  date: Date;
-};
-
-export type GetClassificationsParams = {
-  awardCode: string;
-  searchTerm?: string;
-  date?: Date;
-  includeInactive?: boolean;
-};
-
-export type GetRateHistoryParams = {
-  awardCode: string;
-  classificationCode: string;
-  startDate: Date;
-  endDate: Date;
-};
-
-export type GetFutureRatesParams = {
-  awardCode: string;
-  classificationCode: string;
-  fromDate: Date;
-};
-
-export type ValidateRateParams = {
+export interface ValidateRateParams {
   awardCode: string;
   classificationCode: string;
   rate: number;
-  date: Date;
-};
+  date?: Date;
+}
+
+export interface RateValidationResponse {
+  isValid: boolean;
+  minimumRate: number;
+  maximumRate?: number;
+  validationDate: Date;
+  messages?: string[];
+}

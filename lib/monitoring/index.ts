@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/nextjs';
 import type { EventHint } from '@sentry/types';
+import type { NextApiHandler } from 'next';
 
 import { logger } from '@/lib/services/logger';
 
@@ -214,25 +215,19 @@ export async function monitorDatabaseQuery<T>(name: string, query: () => Promise
 }
 
 // Monitor API endpoints performance and errors
-export function monitorAPIEndpoint(endpoint: string) {
-  return function (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) {
-    const originalMethod = descriptor.value;
+export function monitorAPIEndpoint<T>(handler: NextApiHandler<T>): NextApiHandler<T> {
+  return async (req, res) => {
+    const transaction = startTransaction(req.url || 'api', 'http.server');
 
-    descriptor.value = async function (...args: any[]) {
-      const transaction = startTransaction(endpoint, 'http.server');
-
-      try {
-        const result = await originalMethod.apply(this, args);
-        finishSpan(transaction, SpanStatus.Ok);
-        return result;
-      } catch (error) {
-        finishSpan(transaction, SpanStatus.InternalError, {
-          errorMessage: error instanceof Error ? error.message : String(error),
-        });
-        throw error;
-      }
-    };
-
-    return descriptor;
+    try {
+      const result = await handler(req, res);
+      finishSpan(transaction, SpanStatus.Ok);
+      return result;
+    } catch (error) {
+      finishSpan(transaction, SpanStatus.InternalError, {
+        errorMessage: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
   };
 }

@@ -1,20 +1,15 @@
 'use client';
 
-// Third-party imports
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { MenuIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import * as React from 'react';
 
-// UI Components
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-// Types and Config
 import type { NavItem } from '@/config/navigation';
 import { MAIN_NAV_ITEMS } from '@/config/navigation';
-// Utils
-import { useLockBody } from '@/lib/hooks/use-lock-body';
 import { cn } from '@/lib/utils';
 
 interface SidebarContextType {
@@ -86,31 +81,45 @@ interface SidebarContentProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function SidebarContent({ className }: SidebarContentProps): React.ReactElement {
   const pathname = usePathname() ?? '/';
+  // isCollapsed is used in renderItems
   const { isCollapsed } = React.useContext(SidebarContext);
+  const [activeItem, setActiveItem] = React.useState<NavItem | null>(null);
+
+  React.useEffect(() => {
+    const current = MAIN_NAV_ITEMS.find(
+      (item) => pathname && item.href && pathname.startsWith(item.href)
+    );
+    setActiveItem(current || null);
+  }, [pathname]);
+
+  const renderItems = React.useCallback((navItem: NavItem) => {
+    if (!navItem.children || isCollapsed) return null;
+    if (!navItem.children) return null;
+    return navItem.children.map((item) => (
+      <Link
+        key={item.href}
+        href={item.href || '#'}
+        className={cn(
+          'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium',
+          pathname === item.href && 'bg-accent text-accent-foreground',
+        )}
+      >
+        {item.icon && <item.icon className='h-4 w-4' />}
+        <span>{item.label}</span>
+      </Link>
+    ));
+  }, [pathname]);
 
   return (
     <ScrollArea className={cn('h-full py-6', className)}>
       <nav className='grid items-start gap-2 px-4'>
-        {MAIN_NAV_ITEMS.map((section: NavItem) => (
+        {MAIN_NAV_ITEMS.map((item) => (
           <div
-            key={section.slug}
+            key={item.slug}
             className='grid gap-2'
           >
-            <h4 className='text-sm font-medium'>{section.label}</h4>
-            {section.items?.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium',
-                  'hover:bg-accent hover:text-accent-foreground',
-                  pathname === item.href && 'bg-accent text-accent-foreground',
-                )}
-              >
-                <item.icon className='h-4 w-4' />
-                {!isCollapsed && <span>{item.title}</span>}
-              </Link>
-            ))}
+            <h4 className='text-sm font-medium'>{item.label}</h4>
+            {activeItem && renderItems(activeItem)}
           </div>
         ))}
       </nav>
@@ -129,30 +138,14 @@ export function useSidebar(): SidebarContextType {
 export function MobileSidebar(): React.ReactElement {
   const { isMobileOpen } = React.useContext(SidebarContext);
 
-  useLockBody(isMobileOpen);
-
   return (
-    <AnimatePresence>
-      {isMobileOpen && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className='fixed inset-0 z-40 bg-black/50 lg:hidden'
-          />
-          <motion.aside
-            initial={{ x: '-100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '-100%' }}
-            transition={{ duration: 0.2 }}
-            className='fixed left-0 top-0 z-50 h-screen w-[var(--sidebar-width)] border-r bg-background lg:hidden'
-          >
-            <SidebarContent />
-          </motion.aside>
-        </>
-      )}
-    </AnimatePresence>
+    <motion.aside
+      initial={{ x: '-100%' }}
+      animate={{ x: isMobileOpen ? 0 : '-100%' }}
+      transition={{ duration: 0.2 }}
+      className='fixed left-0 top-0 z-50 h-screen w-[var(--sidebar-width)] border-r bg-background lg:hidden'
+    >
+      <SidebarContent />
+    </motion.aside>
   );
 }

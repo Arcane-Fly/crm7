@@ -1,28 +1,28 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { type ReactElement } from 'react';
+import { type ReactElement, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { useToast } from '@/components/ui/use-toast';
 import { useUser } from '@/lib/hooks/useUser';
-import type { RateTemplate, RateTemplateStatus } from '@/lib/types/rates';
+import type { RateTemplate } from '@/lib/types/rates';
 
 const rateTemplateSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   description: z.string().optional(),
-  template_type: z.enum(['hourly', 'daily', 'fixed']),
-  base_rate: z.number().min(0),
-  base_margin: z.number().min(0),
-  super_rate: z.number().min(0),
-  leave_loading: z.number().min(0),
-  workers_comp_rate: z.number().min(0),
-  payroll_tax_rate: z.number().min(0),
-  training_cost_rate: z.number().min(0),
-  other_costs_rate: z.number().min(0),
-  funding_offset: z.number().min(0),
-  effective_from: z.string().nullable(),
-  effective_to: z.string().nullable(),
+  templateType: z.enum(['hourly', 'daily', 'fixed']),
+  baseRate: z.number().min(0),
+  baseMargin: z.number().min(0),
+  superRate: z.number().min(0),
+  leaveLoading: z.number().min(0),
+  workersCompRate: z.number().min(0),
+  payrollTaxRate: z.number().min(0),
+  trainingCostRate: z.number().min(0),
+  otherCostsRate: z.number().min(0),
+  fundingOffset: z.number().min(0),
+  effectiveFrom: z.string().optional(),
+  effectiveTo: z.string().optional(),
 });
 
 type RateTemplateFormData = z.infer<typeof rateTemplateSchema>;
@@ -50,38 +50,73 @@ export function RateTemplateBuilder({
     formState: { errors, isSubmitting },
   } = useForm<RateTemplateFormData>({
     resolver: zodResolver(rateTemplateSchema),
-    defaultValues: template || {
-      name: '',
-      description: '',
-      template_type: 'hourly',
-      base_rate: 0,
-      base_margin: 0,
-      super_rate: 10,
-      leave_loading: 0,
-      workers_comp_rate: 0,
-      payroll_tax_rate: 0,
-      training_cost_rate: 0,
-      other_costs_rate: 0,
-      funding_offset: 0,
-      effective_from: null,
-      effective_to: null,
-    },
+    defaultValues: template
+      ? {
+          name: template.name,
+          description: template.description || '',
+          templateType: template.templateType,
+          baseRate: template.baseRate,
+          baseMargin: template.baseMargin,
+          superRate: template.superRate,
+          leaveLoading: template.leaveLoading,
+          workersCompRate: template.workersCompRate,
+          payrollTaxRate: template.payrollTaxRate,
+          trainingCostRate: template.trainingCostRate,
+          otherCostsRate: template.otherCostsRate,
+          fundingOffset: template.fundingOffset,
+          effectiveFrom: template.effectiveFrom || undefined,
+          effectiveTo: template.effectiveTo || undefined,
+        }
+      : {
+          name: '',
+          description: '',
+          templateType: 'hourly',
+          baseRate: 0,
+          baseMargin: 0,
+          superRate: 10,
+          leaveLoading: 0,
+          workersCompRate: 0,
+          payrollTaxRate: 0,
+          trainingCostRate: 0,
+          otherCostsRate: 0,
+          fundingOffset: 0,
+          effectiveFrom: undefined,
+          effectiveTo: undefined,
+        },
   });
 
   useEffect(() => {
     if (template) {
-      reset(template);
+      const formData: RateTemplateFormData = {
+        name: template.name,
+        description: template.description || '',
+        templateType: template.templateType,
+        baseRate: template.baseRate,
+        baseMargin: template.baseMargin,
+        superRate: template.superRate,
+        leaveLoading: template.leaveLoading,
+        workersCompRate: template.workersCompRate,
+        payrollTaxRate: template.payrollTaxRate,
+        trainingCostRate: template.trainingCostRate,
+        otherCostsRate: template.otherCostsRate,
+        fundingOffset: template.fundingOffset,
+        effectiveFrom: template.effectiveFrom || undefined,
+        effectiveTo: template.effectiveTo || undefined,
+      };
+      reset(formData);
     }
   }, [template, reset]);
 
   const onSubmit = async (data: RateTemplateFormData): Promise<void> => {
     try {
-      const newTemplate: Partial<RateTemplate> = {
+      const newTemplate = {
         ...data,
         orgId: user?.id as string,
         status: template?.status || 'draft',
         updatedBy: user?.id as string,
-      };
+        effectiveFrom: data.effectiveFrom || undefined,
+        effectiveTo: data.effectiveTo || undefined,
+      } satisfies Partial<RateTemplate>;
 
       if (!template?.id) {
         const { error } = await supabase.from('rate_templates').insert([newTemplate]);
@@ -123,6 +158,11 @@ export function RateTemplateBuilder({
     }
   };
 
+  const getSubmitButtonText = () => {
+    if (isSubmitting) return 'Saving...';
+    return template ? 'Update' : 'Create';
+  };
+
   return (
     <form
       onSubmit={handleFormSubmit(onSubmit)}
@@ -147,14 +187,14 @@ export function RateTemplateBuilder({
 
         <div className='mb-4'>
           <label
-            htmlFor='template_type'
+            htmlFor='templateType'
             className='block text-sm font-medium text-gray-700'
           >
             Template Type
           </label>
           <select
-            id='template_type'
-            {...register('template_type')}
+            id='templateType'
+            {...register('templateType')}
             className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'
           >
             <option value='hourly'>Hourly</option>
@@ -165,174 +205,174 @@ export function RateTemplateBuilder({
 
         <div className='mb-4'>
           <label
-            htmlFor='base_rate'
+            htmlFor='baseRate'
             className='block text-sm font-medium text-gray-700'
           >
             Base Rate
           </label>
           <input
-            id='base_rate'
+            id='baseRate'
             type='number'
             step='0.01'
-            {...register('base_rate', { valueAsNumber: true })}
+            {...register('baseRate', { valueAsNumber: true })}
             className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'
           />
         </div>
 
         <div className='mb-4'>
           <label
-            htmlFor='base_margin'
+            htmlFor='baseMargin'
             className='block text-sm font-medium text-gray-700'
           >
             Base Margin (%)
           </label>
           <input
-            id='base_margin'
+            id='baseMargin'
             type='number'
             step='0.01'
-            {...register('base_margin', { valueAsNumber: true })}
+            {...register('baseMargin', { valueAsNumber: true })}
             className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'
           />
         </div>
 
         <div className='mb-4'>
           <label
-            htmlFor='super_rate'
+            htmlFor='superRate'
             className='block text-sm font-medium text-gray-700'
           >
             Super Rate (%)
           </label>
           <input
-            id='super_rate'
+            id='superRate'
             type='number'
             step='0.01'
-            {...register('super_rate', { valueAsNumber: true })}
+            {...register('superRate', { valueAsNumber: true })}
             className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'
           />
         </div>
 
         <div className='mb-4'>
           <label
-            htmlFor='leave_loading'
+            htmlFor='leaveLoading'
             className='block text-sm font-medium text-gray-700'
           >
             Leave Loading (%)
           </label>
           <input
-            id='leave_loading'
+            id='leaveLoading'
             type='number'
             step='0.01'
-            {...register('leave_loading', { valueAsNumber: true })}
+            {...register('leaveLoading', { valueAsNumber: true })}
             className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'
           />
         </div>
 
         <div className='mb-4'>
           <label
-            htmlFor='workers_comp_rate'
+            htmlFor='workersCompRate'
             className='block text-sm font-medium text-gray-700'
           >
             Workers Comp Rate (%)
           </label>
           <input
-            id='workers_comp_rate'
+            id='workersCompRate'
             type='number'
             step='0.01'
-            {...register('workers_comp_rate', { valueAsNumber: true })}
+            {...register('workersCompRate', { valueAsNumber: true })}
             className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'
           />
         </div>
 
         <div className='mb-4'>
           <label
-            htmlFor='payroll_tax_rate'
+            htmlFor='payrollTaxRate'
             className='block text-sm font-medium text-gray-700'
           >
             Payroll Tax Rate (%)
           </label>
           <input
-            id='payroll_tax_rate'
+            id='payrollTaxRate'
             type='number'
             step='0.01'
-            {...register('payroll_tax_rate', { valueAsNumber: true })}
+            {...register('payrollTaxRate', { valueAsNumber: true })}
             className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'
           />
         </div>
 
         <div className='mb-4'>
           <label
-            htmlFor='training_cost_rate'
+            htmlFor='trainingCostRate'
             className='block text-sm font-medium text-gray-700'
           >
             Training Cost Rate (%)
           </label>
           <input
-            id='training_cost_rate'
+            id='trainingCostRate'
             type='number'
             step='0.01'
-            {...register('training_cost_rate', { valueAsNumber: true })}
+            {...register('trainingCostRate', { valueAsNumber: true })}
             className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'
           />
         </div>
 
         <div className='mb-4'>
           <label
-            htmlFor='other_costs_rate'
+            htmlFor='otherCostsRate'
             className='block text-sm font-medium text-gray-700'
           >
             Other Costs Rate (%)
           </label>
           <input
-            id='other_costs_rate'
+            id='otherCostsRate'
             type='number'
             step='0.01'
-            {...register('other_costs_rate', { valueAsNumber: true })}
+            {...register('otherCostsRate', { valueAsNumber: true })}
             className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'
           />
         </div>
 
         <div className='mb-4'>
           <label
-            htmlFor='funding_offset'
+            htmlFor='fundingOffset'
             className='block text-sm font-medium text-gray-700'
           >
             Funding Offset
           </label>
           <input
-            id='funding_offset'
+            id='fundingOffset'
             type='number'
             step='0.01'
-            {...register('funding_offset', { valueAsNumber: true })}
+            {...register('fundingOffset', { valueAsNumber: true })}
             className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'
           />
         </div>
 
         <div className='mb-4'>
           <label
-            htmlFor='effective_from'
+            htmlFor='effectiveFrom'
             className='block text-sm font-medium text-gray-700'
           >
             Effective From
           </label>
           <input
-            id='effective_from'
+            id='effectiveFrom'
             type='date'
-            {...register('effective_from')}
+            {...register('effectiveFrom')}
             className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'
           />
         </div>
 
         <div className='mb-4'>
           <label
-            htmlFor='effective_to'
+            htmlFor='effectiveTo'
             className='block text-sm font-medium text-gray-700'
           >
             Effective To
           </label>
           <input
-            id='effective_to'
+            id='effectiveTo'
             type='date'
-            {...register('effective_to')}
+            {...register('effectiveTo')}
             className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'
           />
         </div>
@@ -368,7 +408,7 @@ export function RateTemplateBuilder({
           disabled={isSubmitting}
           className='rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50'
         >
-          {isSubmitting ? 'Saving...' : template ? 'Update' : 'Create'}
+          {getSubmitButtonText()}
         </button>
       </div>
     </form>

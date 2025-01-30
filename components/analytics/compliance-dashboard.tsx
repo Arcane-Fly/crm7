@@ -51,7 +51,7 @@ export function ComplianceDashboard(): ReactElement {
     };
 
     void fetchData();
-  }, [supabase]);
+  }, []);
 
   const calculateStats = (records: ComplianceRecord[]) => {
     const total = records.length;

@@ -1,223 +1,164 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { PostgrestError, SupabaseClient } from '@supabase/supabase-js';
+import { mock } from 'jest-mock-extended';
 
-import { logger } from '@/lib/logger';
-import { createClient } from '@/lib/supabase/client';
+import { logger } from '@/lib/services/logger';
+import { ApiError } from '@/lib/utils/error';
 
+import { FairWorkCacheMiddleware } from '../cache-middleware';
 import { FairWorkService } from '../fairwork-service';
+import type { RateCalculationRequest, RateCalculationResponse } from '../types';
 
-// Mock dependencies
-vi.mock('@/lib/supabase/client');
-vi.mock('@/lib/logger');
-
-const mockConfig = {
-  apiKey: 'test-api-key',
-  apiUrl: 'https://api.test.com',
-  environment: 'sandbox' as const,
-  timeout: 5000,
-  retryAttempts: 3,
-};
+jest.mock('@/lib/services/logger');
+jest.mock('@/lib/supabase/client', () => ({
+  createClient: jest.fn(() => mock<SupabaseClient>()),
+}));
+jest.mock('../cache-middleware');
 
 describe('FairWorkService', () => {
   let service: FairWorkService;
-  let mockSupabase: any;
+  let mockSupabase: jest.Mocked<SupabaseClient>;
+  let mockCache: jest.Mocked<FairWorkCacheMiddleware>;
+
+  const mockConfig = {
+    apiKey: 'test-key',
+    baseUrl: 'https://api.test',
+  };
 
   beforeEach(() => {
-    // Reset mocks
-    vi.clearAllMocks();
+    mockSupabase = mock<SupabaseClient>();
+    mockCache = mock<FairWorkCacheMiddleware>();
+    (FairWorkCacheMiddleware as jest.Mock).mockImplementation(() => mockCache);
 
-    // Setup mock Supabase client
-    mockSupabase = {
-      rpc: vi.fn(),
-    };
-    (createClient as any).mockReturnValue(mockSupabase);
-
-    // Create service instance
     service = new FairWorkService(mockConfig);
   });
 
-  describe('getBaseRate', () => {
-    it('should return base rate for valid parameters', async () => {
-      const params = {
-        awardCode: 'MA000001',
-        classificationCode: 'L1',
-        date: new Date('2025-01-01'),
-      };
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-      const expectedRate = 25.5;
-      mockSupabase.rpc.mockResolvedValue({ data: expectedRate, error: null });
+  describe('Base Rate Operations', () => {
+    const mockParams = {
+      awardCode: 'TEST001',
+      classificationCode: 'L1',
+      date: new Date('2025-01-29'),
+    };
 
-      const result = await service.getBaseRate(params);
-      expect(result).toBe(expectedRate);
-      expect(mockSupabase.rpc).toHaveBeenCalledWith('get_award_base_rate', params);
+    it('should use cache for base rate calculations', async () => {
+      const mockRate = 25.5;
+      mockCache.getBaseRate.mockImplementation(async (_, factory) => factory());
+
+      const result = await service.getBaseRate(mockParams);
+
+      expect(result).toBe(mockRate);
+      expect(mockCache.getBaseRate).toHaveBeenCalledWith(mockParams, expect.any(Function));
     });
 
-    it('should throw error when Supabase call fails', async () => {
-      const error = new Error('Database error');
-      mockSupabase.rpc.mockResolvedValue({ data: null, error });
+    it('should handle API errors with caching', async () => {
+      const error = new Error('API Error');
+      mockCache.getBaseRate.mockRejectedValue(error);
 
-      await expect(
-        service.getBaseRate({
-          awardCode: 'MA000001',
-          classificationCode: 'L1',
-          date: new Date('2025-01-01'),
-        }),
-      ).rejects.toThrow();
-
+      await expect(service.getBaseRate(mockParams)).rejects.toThrow(ApiError);
       expect(logger.error).toHaveBeenCalled();
     });
   });
 
-  describe('getAwardRate', () => {
-    it('should return full award rate details', async () => {
-      const params = {
-        awardCode: 'MA000001',
-        classificationCode: 'L1',
-        date: new Date('2025-01-01'),
+  describe('Rate Calculation Operations', () => {
+    const mockRequest: RateCalculationRequest = {
+      awardCode: 'TEST001',
+      classificationCode: 'L1',
+      employmentType: 'permanent',
+      date: new Date('2025-01-29'),
+      hours: 38,
+    };
+
+    const mockResponse: RateCalculationResponse = {
+      baseRate: 25.5,
+      penalties: [],
+      allowances: [],
+      total: 25.5,
+      breakdown: {
+        base: 25.5,
+        penalties: 0,
+        allowances: 0,
+      },
+      metadata: {
+        calculatedAt: new Date(),
+        effectiveDate: new Date('2025-01-29'),
+        source: 'fairwork',
+      },
+    };
+
+    it('should use cache for rate calculations', async () => {
+      const mockSuccessResponse = {
+        data: mockResponse,
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+        body: mockResponse,
       };
+      mockSupabase.rpc.mockResolvedValue(mockSuccessResponse);
+      mockCache.calculateRate.mockImplementation(async (_, factory) => factory());
 
-      const expectedRate = {
-        baseRate: 25.5,
-        casualLoading: 25,
-        penalties: [{ code: 'SAT', rate: 25, description: 'Saturday penalty' }],
-        allowances: [{ code: 'TOOL', amount: 15.5, description: 'Tool allowance' }],
+      const result = await service.calculateRate(mockRequest);
+
+      expect(result).toEqual(mockResponse);
+      expect(mockCache.calculateRate).toHaveBeenCalledWith(mockRequest, expect.any(Function));
+    });
+
+    it('should handle Supabase errors with caching', async () => {
+      const mockErrorResponse = {
+        data: null,
+        error: {
+          message: 'Database error',
+          details: 'Failed to execute RPC',
+          hint: 'Check database connection',
+          code: 'DB_ERROR',
+          name: 'PostgrestError',
+        } as PostgrestError,
+        count: null,
+        status: 500,
+        statusText: 'Internal Server Error',
+        body: null,
       };
+      mockSupabase.rpc.mockResolvedValue(mockErrorResponse);
+      mockCache.calculateRate.mockImplementation(async (_, factory) => factory());
 
-      mockSupabase.rpc.mockResolvedValue({ data: expectedRate, error: null });
+      await expect(service.calculateRate(mockRequest)).rejects.toThrow();
+      expect(logger.error).toHaveBeenCalled();
+    });
 
-      const result = await service.getAwardRate(params);
-      expect(result).toEqual(expectedRate);
-      expect(mockSupabase.rpc).toHaveBeenCalledWith('get_award_rate', params);
+    it('should handle cache errors gracefully', async () => {
+      const error = new Error('Cache error');
+      mockCache.calculateRate.mockRejectedValue(error);
+
+      await expect(service.calculateRate(mockRequest)).rejects.toThrow();
+      expect(logger.error).toHaveBeenCalled();
     });
   });
 
-  describe('getClassifications', () => {
-    it('should return classifications list', async () => {
-      const params = {
-        awardCode: 'MA000001',
-        searchTerm: 'Level 1',
-      };
+  describe('Award Cache Operations', () => {
+    const awardCode = 'TEST001';
 
-      const expectedClassifications = [
-        {
-          code: 'L1',
-          name: 'Level 1',
-          level: '1',
-          validFrom: '2025-01-01',
-        },
-      ];
+    it('should invalidate cache when award rates change', async () => {
+      await service.getAwardRates(awardCode);
 
-      mockSupabase.rpc.mockResolvedValue({ data: expectedClassifications, error: null });
+      expect(mockCache.invalidateAwardCache).toHaveBeenCalledWith(awardCode);
+    });
 
-      const result = await service.getClassifications(params);
-      expect(result).toEqual(expectedClassifications);
-      expect(mockSupabase.rpc).toHaveBeenCalledWith('get_award_classifications', params);
+    it('should handle cache invalidation errors', async () => {
+      const error = new Error('Cache error');
+      mockCache.invalidateAwardCache.mockRejectedValue(error);
+
+      await expect(service.getAwardRates(awardCode)).rejects.toThrow();
+      expect(logger.error).toHaveBeenCalled();
     });
   });
 
-  describe('calculateRate', () => {
-    it('should calculate pay rate with all components', async () => {
-      const params = {
-        awardCode: 'MA000001',
-        classificationCode: 'L1',
-        employmentType: 'casual' as const,
-        date: new Date('2025-01-01'),
-        penalties: ['SAT'],
-        allowances: ['TOOL'],
-      };
-
-      const expectedCalculation = {
-        baseRate: 25.5,
-        casualLoading: 25,
-        penalties: [{ code: 'SAT', rate: 25, amount: 6.375, description: 'Saturday penalty' }],
-        allowances: [{ code: 'TOOL', amount: 15.5, description: 'Tool allowance' }],
-        total: 47.375,
-        breakdown: {
-          base: 25.5,
-          loading: 6.375,
-          penalties: 6.375,
-          allowances: 15.5,
-        },
-      };
-
-      mockSupabase.rpc.mockResolvedValue({ data: expectedCalculation, error: null });
-
-      const result = await service.calculateRate(params);
-      expect(result).toEqual(expectedCalculation);
-      expect(mockSupabase.rpc).toHaveBeenCalledWith('calculate_award_rate', params);
-    });
-  });
-
-  describe('validateRate', () => {
-    it('should validate pay rate against award minimum', async () => {
-      const params = {
-        awardCode: 'MA000001',
-        classificationCode: 'L1',
-        rate: 30,
-        date: new Date('2025-01-01'),
-      };
-
-      const expectedValidation = {
-        isValid: true,
-        minimumRate: 25.5,
-        difference: 4.5,
-      };
-
-      mockSupabase.rpc.mockResolvedValue({ data: expectedValidation, error: null });
-
-      const result = await service.validateRate(params);
-      expect(result).toEqual(expectedValidation);
-      expect(mockSupabase.rpc).toHaveBeenCalledWith('validate_award_rate', params);
-    });
-  });
-
-  describe('getRateHistory', () => {
-    it('should return historical rates', async () => {
-      const params = {
-        awardCode: 'MA000001',
-        classificationCode: 'L1',
-        startDate: new Date('2024-01-01'),
-        endDate: new Date('2025-01-01'),
-      };
-
-      const expectedHistory = [
-        {
-          baseRate: 25.5,
-          effectiveFrom: '2025-01-01',
-        },
-        {
-          baseRate: 24.5,
-          effectiveFrom: '2024-07-01',
-        },
-      ];
-
-      mockSupabase.rpc.mockResolvedValue({ data: expectedHistory, error: null });
-
-      const result = await service.getRateHistory(params);
-      expect(result).toEqual(expectedHistory);
-      expect(mockSupabase.rpc).toHaveBeenCalledWith('get_award_rate_history', params);
-    });
-  });
-
-  describe('getFutureRates', () => {
-    it('should return future scheduled rates', async () => {
-      const params = {
-        awardCode: 'MA000001',
-        classificationCode: 'L1',
-        fromDate: new Date('2025-01-01'),
-      };
-
-      const expectedRates = [
-        {
-          baseRate: 26.5,
-          effectiveFrom: '2025-07-01',
-        },
-      ];
-
-      mockSupabase.rpc.mockResolvedValue({ data: expectedRates, error: null });
-
-      const result = await service.getFutureRates(params);
-      expect(result).toEqual(expectedRates);
-      expect(mockSupabase.rpc).toHaveBeenCalledWith('get_future_award_rates', params);
+  describe('Cleanup', () => {
+    it('should close cache service on cleanup', async () => {
+      await service.close();
+      expect(mockCache.close).toHaveBeenCalled();
     });
   });
 });

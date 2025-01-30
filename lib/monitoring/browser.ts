@@ -130,7 +130,11 @@ export function reportWebVitals(): void {
   }
 }
 
-function _reportVital(name: string, metric: any): void {
+/**
+ * Report a web vital metric to monitoring
+ * @todo Implement when web vitals are enabled
+ */
+export function _reportVital(name: string, metric: any): void {
   const span = startBrowserSpan(name, 'web.vitals');
 
   try {

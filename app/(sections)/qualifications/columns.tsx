@@ -55,7 +55,7 @@ export const columns: ColumnDef<Qualification>[] = [
     accessorKey: 'status',
     header: 'Status',
     cell: ({ row }) => {
-      const status = row.getValue('status');
+      const status = row.getValue('status') as 'active' | 'archived';
       return <Badge variant={status === 'active' ? 'default' : 'secondary'}>{status}</Badge>;
     },
   },

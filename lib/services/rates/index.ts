@@ -29,7 +29,7 @@ const ratesService: RatesService = {
 
   getRateTemplateById: async (id: string): Promise<RateTemplate> => {
     try {
-      const template = await rateManagementService.getRateTemplateById(id);
+      const template = await rateManagementService.getRateTemplate(id);
       if (!template) {
         throw new Error(`Template ${id} not found`);
       }
@@ -57,7 +57,7 @@ const ratesService: RatesService = {
         otherCostsRate: template.otherCostsRate || 0,
         fundingOffset: template.fundingOffset || 0,
         casualLoading: template.casualLoading || 0,
-        effectiveFrom: template.effectiveFrom || null,
+        effectiveFrom: template.effectiveFrom || new Date().toISOString(),
         effectiveTo: template.effectiveTo || null,
         status: template.status || 'draft',
         createdAt: new Date().toISOString(),
@@ -76,7 +76,12 @@ const ratesService: RatesService = {
 
   updateRateTemplate: async (id: string, template: Partial<RateTemplate>) => {
     try {
-      return rateManagementService.updateRateTemplate(id, template);
+      const update = {
+        ...template,
+        id,
+        updatedAt: new Date().toISOString(),
+      };
+      return rateManagementService.updateRateTemplate(id, update);
     } catch (error) {
       logger.error('Failed to update template', { error, id, template });
       throw error;
@@ -122,9 +127,10 @@ const ratesService: RatesService = {
   },
 
   // Rate Calculations
-  validateRateTemplate: async (template: RateTemplate) => {
+  validateRateTemplate: async (template: RateTemplate): Promise<boolean> => {
     try {
-      return rateManagementService.validateRateTemplate(template);
+      const result = await rateManagementService.validateRateTemplate(template);
+      return result.isValid;
     } catch (error) {
       logger.error('Failed to validate template', { error, template });
       throw error;

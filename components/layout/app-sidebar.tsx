@@ -16,17 +16,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MAIN_NAV_ITEMS, SECTIONS } from '@/config/navigation';
-import type { Section } from '@/config/navigation';
+import type { NavItem } from '@/config/navigation';
 import { cn } from '@/lib/utils';
 
 import { useSidebar } from './improved-sidebar';
-
-interface NavItem {
-  href: string;
-  icon?: React.ElementType;
-  label: string;
-  slug?: Section;
-}
 
 interface AppSidebarProps {
   className?: string;
@@ -35,7 +28,7 @@ interface AppSidebarProps {
 export function AppSidebar({ className }: AppSidebarProps): ReactElement {
   const { isCollapsed, setIsCollapsed } = useSidebar();
   const [isMobile, setIsMobile] = React.useState(false);
-  const [activeSection, setActiveSection] = React.useState<Section | null>(null);
+  const [activeSection, setActiveSection] = React.useState<string | null>(null);
   const pathname = usePathname();
 
   React.useEffect(() => {
@@ -49,8 +42,8 @@ export function AppSidebar({ className }: AppSidebarProps): ReactElement {
 
   React.useEffect(() => {
     // Find active section based on pathname
-    const section = MAIN_NAV_ITEMS.find((item) => pathname && pathname.startsWith(item.href))
-      ?.slug as Section | undefined;
+    const section = MAIN_NAV_ITEMS.find((item) => pathname && item.href && pathname.startsWith(item.href))
+      ?.slug;
     setActiveSection(section || null);
   }, [pathname]);
 
@@ -80,7 +73,7 @@ export function AppSidebar({ className }: AppSidebarProps): ReactElement {
     return (
       <Link
         key={href}
-        href={href}
+        href={href || '#'}
         className={cn(
           'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
           isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-muted/50',
@@ -136,12 +129,12 @@ export function AppSidebar({ className }: AppSidebarProps): ReactElement {
             {/* Main Navigation */}
             <nav className='grid gap-1'>
               {MAIN_NAV_ITEMS.map((item) =>
-                renderNavLink(item, pathname ? pathname.startsWith(item.href) : false),
+                renderNavLink(item, pathname ? pathname.startsWith(item.href || '') : false),
               )}
             </nav>
 
             {/* Sub Navigation */}
-            {activeSection && Object.hasOwn(SECTIONS, activeSection) && (
+            {activeSection && activeSection in SECTIONS && (
               <Accordion
                 type='single'
                 collapsible
@@ -153,11 +146,8 @@ export function AppSidebar({ className }: AppSidebarProps): ReactElement {
                   </AccordionTrigger>
                   <AccordionContent>
                     <nav className='grid gap-1'>
-                      {SECTIONS[activeSection].map((subItem) =>
-                        renderNavLink(
-                          { href: subItem.href, icon: subItem.icon, label: subItem.title },
-                          pathname === subItem.href,
-                        ),
+                      {SECTIONS[activeSection].map((subItem: NavItem) =>
+                        renderNavLink(subItem, pathname === subItem.href),
                       )}
                     </nav>
                   </AccordionContent>

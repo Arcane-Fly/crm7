@@ -9,6 +9,13 @@ interface LogEntry {
   error?: Error;
 }
 
+const LOG_LEVEL_PRIORITY: Record<LogLevel, number> = {
+  debug: 0,
+  info: 1,
+  warn: 2,
+  error: 3,
+};
+
 export class Logger {
   private static instance: Logger;
   private logLevel: LogLevel = 'info';
@@ -46,7 +53,13 @@ export class Logger {
     };
   }
 
+  private shouldLogLevel(level: LogLevel): boolean {
+    return LOG_LEVEL_PRIORITY[level] >= LOG_LEVEL_PRIORITY[this.logLevel];
+  }
+
   private logToConsole(entry: LogEntry) {
+    if (!this.shouldLogLevel(entry.level)) return;
+
     const formattedMessage = this.formatMessage(entry);
     // Only log errors and warnings in production
     if (process.env.NODE_ENV === 'production') {

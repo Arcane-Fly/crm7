@@ -7,13 +7,12 @@ import * as React from 'react';
 import { type ReactElement } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Z_INDEXES } from '@/config/constants';
 import { MAIN_NAV_ITEMS } from '@/config/navigation';
 import { cn } from '@/lib/utils';
 
+import styles from './header.module.css';
 import { useSidebar } from './improved-sidebar';
 import { UserNav } from './user-nav';
-import styles from './header.module.css';
 
 interface HeaderProps {
   className?: string;
@@ -28,7 +27,7 @@ export function Header({ className }: HeaderProps): ReactElement {
       className={cn(
         'sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60',
         className,
-        styles.header
+        styles.header,
       )}
     >
       <div className='container flex h-14 items-center'>
@@ -53,11 +52,11 @@ export function Header({ className }: HeaderProps): ReactElement {
         <div className='flex flex-1 items-center justify-between space-x-2 md:justify-end'>
           <nav className='flex items-center space-x-6 overflow-x-auto md:overflow-visible'>
             {MAIN_NAV_ITEMS.map((item) => {
-              const isActive = pathname.startsWith(item.href);
+              const isActive = pathname && item.href ? pathname.startsWith(item.href) : false;
               return (
                 <Link
                   key={item.slug}
-                  href={item.href}
+                  href={item.href || '#'}
                   className={cn(
                     'flex items-center space-x-2 whitespace-nowrap text-sm font-medium transition-colors hover:text-primary',
                     isActive ? 'text-foreground' : 'text-foreground/60',

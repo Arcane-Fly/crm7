@@ -58,14 +58,25 @@ export const POST = withErrorHandler(
     const body = await req.json();
     const params = CalculateParamsSchema.parse(body);
 
+    // Transform penalties and allowances into required format
+    const penalties = params.penalties?.map(code => ({
+      code,
+      multiplier: 1.0 // Default multiplier, adjust as needed
+    }));
+
+    const allowances = params.allowances?.map(code => ({
+      code,
+      amount: 0 // Default amount, adjust as needed
+    }));
+
     const calculation = await fairworkService.calculateRate({
       awardCode: params.awardCode,
       classificationCode: params.classificationCode,
       employmentType: params.employmentType,
       date: new Date(params.date),
-      hours: params.hours,
-      penalties: params.penalties,
-      allowances: params.allowances,
+      hours: params.hours || 0, // Provide default value
+      penalties,
+      allowances,
     });
 
     return createApiResponse(calculation);

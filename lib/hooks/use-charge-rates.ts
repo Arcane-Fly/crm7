@@ -1,12 +1,12 @@
 import { useMutation } from '@tanstack/react-query';
 
-import type { ChargeRateConfig, ChargeRateResult } from '@/lib/services/charge-calculation/types';
+import type { ChargeConfig, ChargeResult } from '@/lib/services/charge-calculation/types';
 import { ApiError } from '@/lib/utils/error';
 
 interface ChargeRateResponse {
   success: boolean;
   data?: {
-    result: ChargeRateResult;
+    result: ChargeResult;
     rates: {
       weeklyCharge: number;
       hourlyCharge: number;
@@ -23,7 +23,7 @@ interface ChargeRateResponse {
  * Hook for calculating charge rates
  */
 export function useChargeRates() {
-  return useMutation<ChargeRateResponse, ApiError, ChargeRateConfig>({
+  return useMutation<ChargeRateResponse, ApiError, ChargeConfig>({
     mutationFn: async (config) => {
       const response = await fetch('/api/charge-rates', {
         method: 'POST',

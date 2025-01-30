@@ -1,4 +1,4 @@
-import { handleAuth, handleCallback } from '@auth0/nextjs-auth0';
+import { handleAuth, handleCallback, handleLogin, handleLogout } from '@auth0/nextjs-auth0';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default handleAuth({
@@ -15,8 +15,10 @@ export default handleAuth({
 
   login: async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-      await handleCallback(req, res, {
-        redirectUri: process.env.AUTH0_REDIRECT_URI,
+      await handleLogin(req, res, {
+        authorizationParams: {
+          redirect_uri: process.env.AUTH0_REDIRECT_URI,
+        },
       });
     } catch (error) {
       console.error('Login error:', error);
@@ -26,7 +28,7 @@ export default handleAuth({
 
   logout: async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-      await handleCallback(req, res, {
+      await handleLogout(req, res, {
         returnTo: process.env.AUTH0_BASE_URL,
       });
     } catch (error) {

@@ -1,61 +1,55 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
+import type { SupabaseClient, PostgrestError } from '@supabase/supabase-js';
 
 import { logger } from '@/lib/services/logger';
-import { BaseError } from '@/lib/types/errors';
 import {
   type RateTemplate,
+  type RateTemplateInput,
+  type RateTemplateUpdate,
   type RateTemplateStatus,
   type BulkCalculation,
-  type RateTemplateHistory,
-  type RateCalculation,
   type RateAnalytics,
+  type RateValidationResult,
+  type RateTemplateHistory,
 } from '@/lib/types/rates';
-import type { Database } from '@/types/supabase-generated';
 
-
-import type { FairWorkService } from '../fairwork/fairwork-service';
-
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
-
-export enum RateManagementErrorCode {
-  TEMPLATE_NOT_FOUND = 'TEMPLATE_NOT_FOUND',
-  DATABASE_ERROR = 'DATABASE_ERROR',
-  VALIDATION_ERROR = 'VALIDATION_ERROR',
-  UNAUTHORIZED = 'UNAUTHORIZED',
-  RATE_LIMIT_EXCEEDED = 'RATE_LIMIT_EXCEEDED',
+interface LogError extends Error {
+  context: string;
+  code?: string;
+  [key: string]: unknown;
 }
 
-export class RateManagementError extends BaseError {
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  throw new Error('Missing Supabase environment variables');
+}
+
+interface CustomError extends Error {
+  details?: Record<string, unknown>;
+  code?: string;
+}
+
+export class RateManagementError extends Error {
   constructor(
     message: string,
-    code: RateManagementErrorCode,
-    context: string,
-    details?: Record<string, unknown>,
+    public readonly cause?: unknown,
   ) {
-    super(message, code, context, details);
+    super(message);
     this.name = 'RateManagementError';
-
-    // Log error with context
-    const errorContext: Record<string, unknown> = {
-      name: this.name,
-      stack: this.stack,
-      errorCode: code,
-      errorContext: context,
-      errorDetails: details,
-    };
-    logger.error(this.message, errorContext);
   }
 }
 
 export class RateManagementService {
-  private client: SupabaseClient<Database>;
-  private fairWorkService: FairWorkService;
+  private readonly client: SupabaseClient;
+  private readonly fairWorkService: any;
 
-  constructor(fairWorkService: FairWorkService, client?: SupabaseClient<Database>) {
-    this.client = client || supabase;
+  constructor(fairWorkService?: any) {
+    if (!SUPABASE_URL || !SUPABASE_KEY) {
+      throw new Error('Missing Supabase environment variables');
+    }
+    this.client = createClient(SUPABASE_URL, SUPABASE_KEY);
     this.fairWorkService = fairWorkService;
   }
 
@@ -64,33 +58,32 @@ export class RateManagementService {
       const { data, error } = await this.client
         .from('rate_templates')
         .select('*')
-        .eq('org_id', orgId)
-        .order('created_at', { ascending: false });
+        .eq('orgId', orgId)
+        .order('createdAt', { ascending: false });
 
       if (error) {
-        throw new RateManagementError(
-          'Failed to fetch rate templates',
-          RateManagementErrorCode.DATABASE_ERROR,
-          'getRateTemplates',
-          { error },
-        );
+        const customError = new Error(error.message) as CustomError;
+        customError.details = { code: error.code };
+        throw customError;
       }
 
-      return data as RateTemplate[];
+      return data.map(this.mapToRateTemplate);
     } catch (error) {
-      if (error instanceof RateManagementError) {
-        throw error;
-      }
-      throw new RateManagementError(
-        'Unexpected error while fetching rate templates',
-        RateManagementErrorCode.DATABASE_ERROR,
-        'getRateTemplates',
-        { cause: error },
-      );
+      const customError = error as PostgrestError;
+      const logError = new Error(customError.message) as LogError;
+      logError.context = 'getRateTemplates';
+      logError.code = customError.code;
+      logError.orgId = orgId;
+      logger.error('Error fetching rate templates', logError);
+      throw new RateManagementError('Failed to fetch rate templates', error);
     }
   }
 
-  async getRateTemplateById(id: string): Promise<RateTemplate | null> {
+  async getRateTemplate(id: string): Promise<RateTemplate | null> {
+    if (!id) {
+      throw new Error('Template ID is required');
+    }
+
     try {
       const { data, error } = await this.client
         .from('rate_templates')
@@ -99,158 +92,114 @@ export class RateManagementService {
         .single();
 
       if (error) {
-        throw new RateManagementError(
-          'Failed to fetch rate template',
-          RateManagementErrorCode.DATABASE_ERROR,
-          'getRateTemplateById',
-          { error },
-        );
+        const customError = new Error(error.message) as CustomError;
+        customError.details = { code: error.code };
+        throw customError;
       }
 
-      if (!data) {
-        throw new RateManagementError(
-          'Template not found',
-          RateManagementErrorCode.TEMPLATE_NOT_FOUND,
-          'getRateTemplateById',
-          { templateId: id },
-        );
-      }
-
-      return data as RateTemplate;
+      return data ? this.mapToRateTemplate(data) : null;
     } catch (error) {
-      if (error instanceof RateManagementError) {
-        throw error;
-      }
-      throw new RateManagementError(
-        'Unexpected error while fetching rate template',
-        RateManagementErrorCode.DATABASE_ERROR,
-        'getRateTemplateById',
-        { cause: error },
-      );
+      const customError = error as PostgrestError;
+      const logError = new Error(customError.message) as LogError;
+      logError.context = 'getRateTemplate';
+      logError.code = customError.code;
+      logError.id = id;
+      logger.error('Error fetching rate template', logError);
+      throw new RateManagementError('Failed to fetch rate template', error);
     }
   }
 
-  async createRateTemplate(template: Omit<RateTemplate, 'id'>): Promise<RateTemplate> {
+  async createRateTemplate(template: Omit<RateTemplateInput, 'id'>): Promise<RateTemplate> {
     try {
-      // Validate template data
-      this.validateRateTemplate(template);
-
       const { data, error } = await this.client
         .from('rate_templates')
-        .insert([template])
+        .insert([this.mapFromRateTemplate(template)])
         .select()
         .single();
 
       if (error) {
-        throw new RateManagementError(
-          'Failed to create rate template',
-          RateManagementErrorCode.DATABASE_ERROR,
-          'createRateTemplate',
-          { error },
-        );
+        const customError = new Error(error.message) as CustomError;
+        customError.details = { code: error.code };
+        throw customError;
       }
 
-      return data as RateTemplate;
+      return this.mapToRateTemplate(data);
     } catch (error) {
-      if (error instanceof RateManagementError) {
-        throw error;
-      }
-      throw new RateManagementError(
-        'Unexpected error while creating rate template',
-        RateManagementErrorCode.DATABASE_ERROR,
-        'createRateTemplate',
-        { cause: error },
-      );
+      const customError = error as PostgrestError;
+      const logError = new Error(customError.message) as LogError;
+      logError.context = 'createRateTemplate';
+      logError.code = customError.code;
+      logger.error('Error creating rate template', logError);
+      throw new RateManagementError('Failed to create rate template', error);
     }
   }
 
-  async updateRateTemplate(id: string, template: Partial<RateTemplate>): Promise<RateTemplate> {
+  async updateRateTemplate(id: string, updates: RateTemplateUpdate): Promise<RateTemplate> {
     try {
-      // Validate template data
-      this.validateRateTemplate(template);
-
       const { data, error } = await this.client
         .from('rate_templates')
-        .update(template)
+        .update(this.mapFromRateTemplate(updates))
         .eq('id', id)
         .select()
         .single();
 
       if (error) {
-        throw new RateManagementError(
-          'Failed to update rate template',
-          RateManagementErrorCode.DATABASE_ERROR,
-          'updateRateTemplate',
-          { error },
-        );
+        const customError = new Error(error.message) as CustomError;
+        customError.details = { code: error.code };
+        throw customError;
       }
 
-      if (!data) {
-        throw new RateManagementError(
-          'Template not found',
-          RateManagementErrorCode.TEMPLATE_NOT_FOUND,
-          'updateRateTemplate',
-          { templateId: id },
-        );
-      }
-
-      return data as RateTemplate;
+      return this.mapToRateTemplate(data);
     } catch (error) {
-      if (error instanceof RateManagementError) {
-        throw error;
-      }
-      throw new RateManagementError(
-        'Unexpected error while updating rate template',
-        RateManagementErrorCode.DATABASE_ERROR,
-        'updateRateTemplate',
-        { cause: error },
-      );
+      const customError = error as PostgrestError;
+      const logError = new Error(customError.message) as LogError;
+      logError.context = 'updateRateTemplate';
+      logError.code = customError.code;
+      logError.id = id;
+      logger.error('Error updating rate template', logError);
+      throw new RateManagementError('Failed to update rate template', error);
     }
+  }
+
+  private mapToRateTemplate(data: Record<string, unknown>): RateTemplate {
+    const templateType = data.templateType as RateTemplate['templateType'];
+    if (!['fixed', 'hourly', 'daily'].includes(templateType)) {
+      throw new Error(`Invalid template type: ${templateType}`);
+    }
+
+    return {
+      id: String(data.id),
+      orgId: String(data.orgId),
+      name: String(data.name),
+      templateType,
+      description: data.description ? String(data.description) : null,
+      baseRate: Number(data.baseRate),
+      baseMargin: Number(data.baseMargin),
+      superRate: Number(data.superRate),
+      leaveLoading: Number(data.leaveLoading),
+      workersCompRate: Number(data.workersCompRate),
+      payrollTaxRate: Number(data.payrollTaxRate),
+      trainingCostRate: Number(data.trainingCostRate),
+      otherCostsRate: Number(data.otherCostsRate),
+      fundingOffset: Number(data.fundingOffset),
+      casualLoading: Number(data.casualLoading),
+      effectiveFrom: String(data.effectiveFrom),
+      effectiveTo: data.effectiveTo ? String(data.effectiveTo) : null,
+      status: String(data.status) as RateTemplate['status'],
+      createdAt: String(data.createdAt),
+      updatedAt: String(data.updatedAt),
+      createdBy: String(data.createdBy),
+      updatedBy: String(data.updatedBy),
+      version: Number(data.version),
+    };
   }
 
   async updateRateTemplateStatus(
     id: string,
     status: RateTemplateStatus,
-    updated_by: string,
+    updatedBy: string,
   ): Promise<RateTemplate> {
-    try {
-      const { data, error } = await this.client
-        .from('rate_templates')
-        .update({ status, updated_by })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) {
-        throw new RateManagementError(
-          'Failed to update rate template status',
-          RateManagementErrorCode.DATABASE_ERROR,
-          'updateRateTemplateStatus',
-          { error },
-        );
-      }
-
-      if (!data) {
-        throw new RateManagementError(
-          'Template not found',
-          RateManagementErrorCode.TEMPLATE_NOT_FOUND,
-          'updateRateTemplateStatus',
-          { templateId: id },
-        );
-      }
-
-      return data as RateTemplate;
-    } catch (error) {
-      if (error instanceof RateManagementError) {
-        throw error;
-      }
-      throw new RateManagementError(
-        'Unexpected error while updating rate template status',
-        RateManagementErrorCode.DATABASE_ERROR,
-        'updateRateTemplateStatus',
-        { cause: error },
-      );
-    }
+    return this.updateRateTemplate(id, { status, updatedBy } as RateTemplateUpdate);
   }
 
   async deleteRateTemplate(id: string): Promise<void> {
@@ -258,117 +207,158 @@ export class RateManagementService {
       const { error } = await this.client.from('rate_templates').delete().eq('id', id);
 
       if (error) {
-        throw new RateManagementError(
-          'Failed to delete rate template',
-          RateManagementErrorCode.DATABASE_ERROR,
-          'deleteRateTemplate',
-          { error },
-        );
+        throw new Error(error.message);
       }
     } catch (error) {
-      if (error instanceof RateManagementError) {
-        throw error;
+      const customError = error as PostgrestError;
+      const logError = new Error(customError.message) as LogError;
+      logError.context = 'deleteRateTemplate';
+      logError.code = customError.code;
+      logger.error('Error deleting rate template', logError);
+      throw new RateManagementError('Failed to delete rate template', error);
+    }
+  }
+
+  async getRateTemplateHistory(id: string): Promise<RateTemplateHistory[]> {
+    try {
+      const { data, error } = await this.client
+        .from('rate_template_history')
+        .select('*')
+        .eq('templateId', id)
+        .order('changedAt', { ascending: false });
+
+      if (error) {
+        throw new Error(error.message);
       }
-      throw new RateManagementError(
-        'Unexpected error while deleting rate template',
-        RateManagementErrorCode.DATABASE_ERROR,
-        'deleteRateTemplate',
-        { cause: error },
-      );
+
+      return data;
+    } catch (error) {
+      const customError = error as PostgrestError;
+      const logError = new Error(customError.message) as LogError;
+      logError.context = 'getRateTemplateHistory';
+      logError.code = customError.code;
+      logger.error('Error fetching rate template history', logError);
+      throw new RateManagementError('Failed to fetch rate template history', error);
     }
   }
 
-  async validateRateTemplate(template: Partial<RateTemplate>): Promise<boolean> {
-    if (template.templateType && !['hourly', 'daily', 'fixed'].includes(template.templateType)) {
-      throw new RateManagementError(
-        'Invalid template type',
-        RateManagementErrorCode.VALIDATION_ERROR,
-        'validateRateTemplate',
-      );
-    }
+  async getRateCalculations(id: string): Promise<any[]> {
+    try {
+      const { data, error } = await this.client
+        .from('rate_calculations')
+        .select('*')
+        .eq('templateId', id)
+        .order('createdAt', { ascending: false });
 
-    if (typeof template.baseRate === 'number' && template.baseRate < 0) {
-      throw new RateManagementError(
-        'Base rate must be positive',
-        RateManagementErrorCode.VALIDATION_ERROR,
-        'validateRateTemplate',
-      );
-    }
-
-    if (typeof template.baseMargin === 'number' && template.baseMargin < 0) {
-      throw new RateManagementError(
-        'Base margin must be positive',
-        RateManagementErrorCode.VALIDATION_ERROR,
-        'validateRateTemplate',
-      );
-    }
-
-    // Check date validity if dates are provided
-    if (template.effectiveFrom && template.effectiveTo) {
-      const from = new Date(template.effectiveFrom);
-      const to = new Date(template.effectiveTo);
-      if (from > to) {
-        throw new RateManagementError(
-          'Effective from date must be before effective to date',
-          RateManagementErrorCode.VALIDATION_ERROR,
-          'validateRateTemplate',
-        );
+      if (error) {
+        throw new Error(error.message);
       }
+
+      return data;
+    } catch (error) {
+      const customError = error as PostgrestError;
+      const logError = new Error(customError.message) as LogError;
+      logError.context = 'getRateCalculations';
+      logError.code = customError.code;
+      logger.error('Error fetching rate calculations', logError);
+      throw new RateManagementError('Failed to fetch rate calculations', error);
     }
-
-    return true;
   }
 
-  async calculateRate(template: RateTemplate): Promise<number> {
-    const baseAmount = template.baseRate * (1 + template.baseMargin / 100);
-    const superAmount = baseAmount * (template.superRate / 100);
-    const leaveAmount = baseAmount * (template.leaveLoading / 100);
-    const workersCompAmount = baseAmount * (template.workersCompRate / 100);
-    const payrollTaxAmount = baseAmount * (template.payrollTaxRate / 100);
-    const trainingAmount = baseAmount * (template.trainingCostRate / 100);
-    const otherAmount = baseAmount * (template.otherCostsRate / 100);
+  async validateRateTemplate(template: RateTemplateInput): Promise<RateValidationResult> {
+    try {
+      const errors: string[] = [];
+      const warnings: string[] = [];
 
-    const totalAmount =
-      baseAmount +
-      superAmount +
-      leaveAmount +
-      workersCompAmount +
-      payrollTaxAmount +
-      trainingAmount +
-      otherAmount -
-      template.fundingOffset;
+      // Basic validation
+      if (!template.name) {
+        errors.push('Template name is required');
+      }
+      if (!template.templateType) {
+        errors.push('Template type is required');
+      }
 
-    return Number(totalAmount.toFixed(2));
+      // Rate type specific validation
+      if (template.templateType === 'hourly' && !template.baseRate) {
+        errors.push('Base rate is required for hourly templates');
+      }
+
+      // Check against Fair Work rates if available
+      if (this.fairWorkService && template.baseRate) {
+        const fairWorkRate = await this.fairWorkService.getMinimumRate(template);
+        if (template.baseRate < fairWorkRate) {
+          warnings.push(`Rate is below Fair Work minimum of ${fairWorkRate}`);
+        }
+      }
+
+      return {
+        isValid: errors.length === 0,
+        errors,
+        warnings,
+      };
+    } catch (error) {
+      const customError = error as Error;
+      const logError = new Error(customError.message) as LogError;
+      logError.context = 'validateRateTemplate';
+      logger.error('Error validating rate template', logError);
+      throw new RateManagementError('Failed to validate rate template', error);
+    }
   }
 
-  async getBulkCalculations(org_id: string): Promise<BulkCalculation[]> {
+  async calculateRate(template: RateTemplateInput): Promise<number> {
+    try {
+      const baseRate = template.baseRate;
+      const margin = template.baseMargin / 100;
+      const super_rate = template.superRate / 100;
+      const leave_loading = template.leaveLoading / 100;
+      const workers_comp = template.workersCompRate / 100;
+      const payroll_tax = template.payrollTaxRate / 100;
+      const training_cost = template.trainingCostRate / 100;
+      const other_costs = template.otherCostsRate / 100;
+      const funding_offset = template.fundingOffset;
+      const casual_loading = template.casualLoading / 100;
+
+      let final_rate = baseRate;
+      final_rate *= 1 + margin;
+      final_rate *= 1 + super_rate;
+      final_rate *= 1 + leave_loading;
+      final_rate *= 1 + workers_comp;
+      final_rate *= 1 + payroll_tax;
+      final_rate *= 1 + training_cost;
+      final_rate *= 1 + other_costs;
+      final_rate *= 1 + casual_loading;
+      final_rate -= funding_offset;
+
+      return Number(final_rate.toFixed(2));
+    } catch (error) {
+      const customError = error as Error;
+      const logError = new Error(customError.message) as LogError;
+      logError.context = 'calculateRate';
+      logger.error('Error calculating rate', logError);
+      throw new RateManagementError('Failed to calculate rate', error);
+    }
+  }
+
+  async getBulkCalculations(orgId: string): Promise<BulkCalculation[]> {
     try {
       const { data, error } = await this.client
         .from('bulk_calculations')
         .select('*')
-        .eq('org_id', org_id)
-        .order('created_at', { ascending: false });
+        .eq('orgId', orgId)
+        .order('createdAt', { ascending: false });
 
       if (error) {
-        throw new RateManagementError(
-          'Failed to fetch bulk calculations',
-          RateManagementErrorCode.DATABASE_ERROR,
-          'getBulkCalculations',
-          { error },
-        );
+        throw new Error(error.message);
       }
 
-      return data as BulkCalculation[];
+      return data;
     } catch (error) {
-      if (error instanceof RateManagementError) {
-        throw error;
-      }
-      throw new RateManagementError(
-        'Unexpected error while fetching bulk calculations',
-        RateManagementErrorCode.DATABASE_ERROR,
-        'getBulkCalculations',
-        { cause: error },
-      );
+      const customError = error as PostgrestError;
+      const logError = new Error(customError.message) as LogError;
+      logError.context = 'getBulkCalculations';
+      logError.code = customError.code;
+      logger.error('Error fetching bulk calculations', logError);
+      throw new RateManagementError('Failed to fetch bulk calculations', error);
     }
   }
 
@@ -381,174 +371,57 @@ export class RateManagementService {
         .single();
 
       if (error) {
-        throw new RateManagementError(
-          'Failed to create bulk calculation',
-          RateManagementErrorCode.DATABASE_ERROR,
-          'createBulkCalculation',
-          { error },
-        );
+        throw new Error(error.message);
       }
 
-      return data as BulkCalculation;
+      return data;
     } catch (error) {
-      if (error instanceof RateManagementError) {
-        throw error;
-      }
-      throw new RateManagementError(
-        'Unexpected error while creating bulk calculation',
-        RateManagementErrorCode.DATABASE_ERROR,
-        'createBulkCalculation',
-        { cause: error },
-      );
+      const customError = error as PostgrestError;
+      const logError = new Error(customError.message) as LogError;
+      logError.context = 'createBulkCalculation';
+      logError.code = customError.code;
+      logger.error('Error creating bulk calculation', logError);
+      throw new RateManagementError('Failed to create bulk calculation', error);
     }
-  }
-
-  async getRateTemplateHistory(id: string): Promise<RateTemplateHistory[]> {
-    try {
-      const { data, error } = await this.client
-        .from('rate_template_history')
-        .select('*')
-        .eq('template_id', id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        throw new RateManagementError(
-          'Failed to fetch rate template history',
-          RateManagementErrorCode.DATABASE_ERROR,
-          'getRateTemplateHistory',
-          { error },
-        );
-      }
-
-      return data as RateTemplateHistory[];
-    } catch (error) {
-      if (error instanceof RateManagementError) {
-        throw error;
-      }
-      throw new RateManagementError(
-        'Unexpected error while fetching rate template history',
-        RateManagementErrorCode.DATABASE_ERROR,
-        'getRateTemplateHistory',
-        { cause: error },
-      );
-    }
-  }
-
-  async getRateCalculations(id: string): Promise<RateCalculation[]> {
-    try {
-      const { data, error } = await this.client
-        .from('rate_calculations')
-        .select('*')
-        .eq('template_id', id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        throw new RateManagementError(
-          'Failed to fetch rate calculations',
-          RateManagementErrorCode.DATABASE_ERROR,
-          'getRateCalculations',
-          { error },
-        );
-      }
-
-      return data as RateCalculation[];
-    } catch (error) {
-      if (error instanceof RateManagementError) {
-        throw error;
-      }
-      throw new RateManagementError(
-        'Unexpected error while fetching rate calculations',
-        RateManagementErrorCode.DATABASE_ERROR,
-        'getRateCalculations',
-        { cause: error },
-      );
-    }
-  }
-
-  private mapToRateTemplate(data: any): RateTemplate {
-    return {
-      id: data.id,
-      orgId: data.orgId,
-      name: data.name,
-      templateType: data.templateType,
-      description: data.description,
-      baseRate: data.baseRate,
-      baseMargin: data.baseMargin,
-      superRate: data.superRate,
-      leaveLoading: data.leaveLoading,
-      workersCompRate: data.workersCompRate,
-      payrollTaxRate: data.payrollTaxRate,
-      trainingCostRate: data.trainingCostRate,
-      otherCostsRate: data.otherCostsRate,
-      fundingOffset: data.fundingOffset,
-      casualLoading: data.casualLoading,
-      effectiveFrom: data.effectiveFrom,
-      effectiveTo: data.effectiveTo,
-      status: data.status,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-      createdBy: data.createdBy,
-      updatedBy: data.updatedBy,
-      version: data.version,
-    };
   }
 
   async getAnalytics(orgId: string): Promise<RateAnalytics> {
     try {
-      const [templates, activeTemplates] = await Promise.all([
-        this.getRateTemplates(orgId),
-        this.getRateTemplates(orgId).then((templates) =>
-          templates.filter((t) => t.status === 'active'),
-        ),
-      ]);
-
-      const averageRate =
-        activeTemplates.length > 0
-          ? activeTemplates.reduce((sum, t) => sum + t.baseRate, 0) / activeTemplates.length
-          : 0;
-
-      // Get recent changes from history
-      const { data: history, error } = await this.client
-        .from('rate_template_history')
+      const { data: templates, error: templatesError } = await this.client
+        .from('rate_templates')
         .select('*')
-        .eq('orgId', orgId)
-        .order('created_at', { ascending: false })
-        .limit(10);
+        .eq('orgId', orgId);
 
-      if (error) {
-        throw new RateManagementError(
-          'Failed to fetch template history',
-          RateManagementErrorCode.DATABASE_ERROR,
-          'getAnalytics',
-          { error },
-        );
+      if (templatesError) {
+        throw new Error(templatesError.message);
       }
 
-      return {
+      const analytics: RateAnalytics = {
         totalTemplates: templates.length,
-        activeTemplates: activeTemplates.length,
-        averageRate,
-        recentChanges: history.map((h) => ({
-          templateId: h.templateId,
-          action: h.changes.type as 'created' | 'updated' | 'deleted',
-          timestamp: h.createdAt,
+        activeTemplates: templates.filter((t) => t.status === 'active').length,
+        averageRate: templates.reduce((acc, t) => acc + t.baseRate, 0) / templates.length || 0,
+        recentChanges: templates.slice(0, 5).map((t) => ({
+          templateId: t.id,
+          action: 'updated',
+          timestamp: t.updatedAt,
         })),
       };
+
+      return analytics;
     } catch (error) {
-      if (error instanceof RateManagementError) {
-        throw error;
-      }
-      throw new RateManagementError(
-        'Unexpected error while fetching analytics',
-        RateManagementErrorCode.DATABASE_ERROR,
-        'getAnalytics',
-        { cause: error },
-      );
+      const customError = error as PostgrestError;
+      const logError = new Error(customError.message) as LogError;
+      logError.context = 'getAnalytics';
+      logError.code = customError.code;
+      logger.error('Error fetching rate analytics', logError);
+      throw new RateManagementError('Failed to fetch rate analytics', error);
     }
   }
 
-  private mapFromRateTemplate(template: Partial<RateTemplate>): Record<string, any> {
-    return {
+  private mapFromRateTemplate(
+    template: RateTemplateInput | RateTemplateUpdate,
+  ): Record<string, unknown> {
+    const mapped: Record<string, unknown> = {
       orgId: template.orgId,
       name: template.name,
       templateType: template.templateType,
@@ -568,5 +441,11 @@ export class RateManagementService {
       status: template.status,
       updatedBy: template.updatedBy,
     };
+
+    if ('id' in template) {
+      mapped.id = template.id;
+    }
+
+    return mapped;
   }
 }

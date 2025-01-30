@@ -1,23 +1,29 @@
 import { useToast } from '@/components/ui/use-toast';
 import { useSupabaseQuery, useSupabaseMutation } from '@/lib/hooks/use-supabase-query';
-import type { Course, Enrollment, CourseCreate, EnrollmentCreate } from '@/lib/types/lms';
+import type { Database } from '@/types/supabase-generated';
+
+type Tables = Database['public']['Tables'];
+export type Course = Tables['courses']['Row'];
+export type CourseInsert = Tables['courses']['Insert'];
+export type Enrollment = Tables['enrollments']['Row'];
+export type EnrollmentInsert = Tables['enrollments']['Insert'];
 
 export function useLMS() {
   const { toast } = useToast();
 
   // Queries
-  const courses = useSupabaseQuery<Course[]>({
+  const courses = useSupabaseQuery({
     queryKey: ['courses'],
     table: 'courses',
   });
 
-  const enrollments = useSupabaseQuery<Enrollment[]>({
+  const enrollments = useSupabaseQuery({
     queryKey: ['enrollments'],
     table: 'enrollments',
   });
 
   // Course Mutations
-  const { mutateAsync: createCourse, isPending: isCreatingCourse } = useSupabaseMutation<Course>({
+  const { mutateAsync: createCourse, isPending: isCreatingCourse } = useSupabaseMutation({
     table: 'courses',
     onSuccess: () => {
       toast({
@@ -28,7 +34,7 @@ export function useLMS() {
     },
   });
 
-  const { mutateAsync: updateCourse, isPending: isUpdatingCourse } = useSupabaseMutation<Course>({
+  const { mutateAsync: updateCourse, isPending: isUpdatingCourse } = useSupabaseMutation({
     table: 'courses',
     onSuccess: () => {
       toast({
@@ -40,29 +46,27 @@ export function useLMS() {
   });
 
   // Enrollment Mutations
-  const { mutateAsync: createEnrollment, isPending: isCreatingEnrollment } =
-    useSupabaseMutation<Enrollment>({
-      table: 'enrollments',
-      onSuccess: () => {
-        toast({
-          title: 'Enrollment created',
-          description: 'The enrollment has been created successfully.',
-        });
-        enrollments.refetch();
-      },
-    });
+  const { mutateAsync: createEnrollment, isPending: isCreatingEnrollment } = useSupabaseMutation({
+    table: 'enrollments',
+    onSuccess: () => {
+      toast({
+        title: 'Enrollment created',
+        description: 'The enrollment has been created successfully.',
+      });
+      enrollments.refetch();
+    },
+  });
 
-  const { mutateAsync: updateEnrollment, isPending: isUpdatingEnrollment } =
-    useSupabaseMutation<Enrollment>({
-      table: 'enrollments',
-      onSuccess: () => {
-        toast({
-          title: 'Enrollment updated',
-          description: 'The enrollment has been updated successfully.',
-        });
-        enrollments.refetch();
-      },
-    });
+  const { mutateAsync: updateEnrollment, isPending: isUpdatingEnrollment } = useSupabaseMutation({
+    table: 'enrollments',
+    onSuccess: () => {
+      toast({
+        title: 'Enrollment updated',
+        description: 'The enrollment has been updated successfully.',
+      });
+      enrollments.refetch();
+    },
+  });
 
   return {
     // Queries
@@ -70,15 +74,15 @@ export function useLMS() {
     enrollments,
 
     // Course Mutations
-    createCourse: (data: CourseCreate) => createCourse({ data }),
-    updateCourse: (id: string, data: Partial<CourseCreate>) =>
+    createCourse: (data: CourseInsert) => createCourse({ data }),
+    updateCourse: (id: string, data: Partial<CourseInsert>) =>
       updateCourse({ match: { id }, data }),
     isCreatingCourse,
     isUpdatingCourse,
 
     // Enrollment Mutations
-    createEnrollment: (data: EnrollmentCreate) => createEnrollment({ data }),
-    updateEnrollment: (id: string, data: Partial<EnrollmentCreate>) =>
+    createEnrollment: (data: EnrollmentInsert) => createEnrollment({ data }),
+    updateEnrollment: (id: string, data: Partial<EnrollmentInsert>) =>
       updateEnrollment({ match: { id }, data }),
     isCreatingEnrollment,
     isUpdatingEnrollment,

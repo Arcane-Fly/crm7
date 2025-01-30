@@ -21,7 +21,7 @@ export type ApiHandler<T = unknown> = (
 
 export type ApiConfig<T = unknown> = {
   schema?: z.Schema;
-  handler: (data: T, params?: Record<string, string>) => Promise<unknown>;
+  handler: (data?: T, params?: Record<string, string>) => Promise<unknown>;
   rateLimit?: {
     requests: number;
     window: number; // in seconds
@@ -43,19 +43,20 @@ export function createApiHandler<T = unknown>(config: ApiConfig<T>): ApiHandler 
         // TODO: Implement rate limiting
       }
 
-      // Parse and validate request data
-      let data: T;
+      // Parse and validate request data if schema is provided
+      let parsedData: T | undefined;
       if (config.schema) {
         if (req.method === 'GET') {
           const url = new URL(req.url);
-          data = config.schema.parse(Object.fromEntries(url.searchParams));
+          parsedData = config.schema.parse(Object.fromEntries(url.searchParams)) as T;
         } else {
-          data = config.schema.parse(await req.json());
+          const jsonData = await req.json();
+          parsedData = config.schema.parse(jsonData) as T;
         }
       }
 
       // Execute handler
-      const result = await config.handler(data, params);
+      const result = await config.handler(parsedData, params);
 
       // Set cache headers if configured
       const headers = new Headers();

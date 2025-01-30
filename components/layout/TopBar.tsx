@@ -15,8 +15,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/lib/auth/useAuth';
 
+interface User {
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+}
+
 export const TopBar: React.FC = () => {
-  const { user, signOut } = useAuth();
+  const { user, logout } = useAuth();
 
   return (
     <div className='flex h-16 items-center justify-between border-b bg-background px-4'>
@@ -108,7 +114,7 @@ export const TopBar: React.FC = () => {
             <DropdownMenuItem>Profile</DropdownMenuItem>
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => signOut()}>Log out</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => logout()}>Log out</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

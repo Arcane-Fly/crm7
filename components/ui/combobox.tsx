@@ -17,11 +17,12 @@ interface ComboboxOption {
   value: string;
 }
 
-interface ComboboxProps {
+interface ComboboxProps extends Pick<React.HTMLAttributes<HTMLDivElement>, 'id' | 'className'> {
   options: ComboboxOption[];
   value?: string | string[];
   onChange: (value: string) => void;
   placeholder?: string;
+  emptyMessage?: string;
   multiple?: boolean;
 }
 
@@ -30,35 +31,32 @@ export function Combobox({
   value,
   onChange,
   placeholder = 'Select option...',
+  emptyMessage = 'No options found.',
   multiple = false,
-}: ComboboxProps) {
+}: ComboboxProps): React.ReactElement {
   const [open, setOpen] = React.useState(false);
-  const [selected, setSelected] = React.useState<string[]>(
-    Array.isArray(value) ? value : value ? [value] : [],
-  );
 
-  React.useEffect(() => {
-    setSelected(Array.isArray(value) ? value : value ? [value] : []);
-  }, [value]);
+  const getDisplayValue = (): string => {
+    if (!value) return placeholder;
 
-  const handleSelect = (currentValue: string) => {
-    if (multiple) {
-      const newSelected = selected.includes(currentValue)
-        ? selected.filter((item) => item !== currentValue)
-        : [...selected, currentValue];
-      setSelected(newSelected);
-      onChange(currentValue);
-    } else {
-      setSelected([currentValue]);
-      onChange(currentValue);
-      setOpen(false);
+    if (multiple && Array.isArray(value)) {
+      const selectedOptions = options.filter((option) => value.includes(option.value));
+      if (selectedOptions.length === 0) return placeholder;
+      if (selectedOptions.length === 1) return selectedOptions[0].label;
+      return `${selectedOptions.length} items selected`;
     }
+
+    const option = options.find((option) => option.value === value);
+    return option ? option.label : placeholder;
   };
 
-  const selectedLabels = selected
-    .map((s) => options.find((option) => option.value === s)?.label)
-    .filter(Boolean)
-    .join(', ');
+  const isSelected = (optionValue: string): boolean => {
+    if (!value) return false;
+    if (multiple && Array.isArray(value)) {
+      return value.includes(optionValue);
+    }
+    return value === optionValue;
+  };
 
   return (
     <Popover
@@ -72,25 +70,30 @@ export function Combobox({
           aria-expanded={open}
           className='w-full justify-between'
         >
-          {selectedLabels || placeholder}
+          {getDisplayValue()}
           <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
         </Button>
       </PopoverTrigger>
       <PopoverContent className='w-full p-0'>
         <Command>
           <CommandInput placeholder={placeholder} />
-          <CommandEmpty>No option found.</CommandEmpty>
+          <CommandEmpty>{emptyMessage}</CommandEmpty>
           <CommandGroup>
             {options.map((option) => (
               <CommandItem
                 key={option.value}
                 value={option.value}
-                onSelect={handleSelect}
+                onSelect={() => {
+                  onChange(option.value);
+                  if (!multiple) {
+                    setOpen(false);
+                  }
+                }}
               >
                 <Check
                   className={cn(
                     'mr-2 h-4 w-4',
-                    selected.includes(option.value) ? 'opacity-100' : 'opacity-0',
+                    isSelected(option.value) ? 'opacity-100' : 'opacity-0',
                   )}
                 />
                 {option.label}

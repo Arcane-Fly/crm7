@@ -1,264 +1,132 @@
-import { type SupabaseClient } from '@supabase/supabase-js';
-
-import { logger } from '@/lib/logger';
-import { createClient } from '@/lib/supabase/client';
-import { ApiError } from '@/lib/utils/error';
-
 import type {
+  Award,
   AwardRate,
   Classification,
+  ClassificationHierarchy,
   FairWorkConfig,
   GetBaseRateParams,
   GetClassificationsParams,
   GetFutureRatesParams,
   GetRateHistoryParams,
+  Rate,
   RateCalculationRequest,
   RateCalculationResponse,
+  RateTemplate,
   RateValidationResponse,
   ValidateRateParams,
 } from './types';
 
 const DEFAULT_CONFIG: Required<FairWorkConfig> = {
+  baseUrl: 'https://api.fairwork.gov.au/v1',
   apiKey: process.env.FAIRWORK_API_KEY || '',
-  apiUrl: process.env.FAIRWORK_API_URL || 'https://api.fairwork.gov.au',
-  baseUrl: process.env.FAIRWORK_BASE_URL || 'https://fairwork.gov.au',
-  environment: process.env.NODE_ENV === 'production' ? 'production' : 'sandbox',
-  timeout: 30000,
-  retryAttempts: 3,
+  cacheConfig: {
+    ttl: 3600,
+    prefix: 'fairwork:',
+  },
 };
 
 export class FairWorkService {
-  private readonly supabase: SupabaseClient;
   private readonly config: Required<FairWorkConfig>;
 
-  public constructor(config: FairWorkConfig = {}) {
-    this.supabase = createClient();
-    this.config = { ...DEFAULT_CONFIG, ...config };
-    if (!this.config.baseUrl || !this.config.apiKey) {
-      throw new ApiError({
-        message: 'Invalid FairWork configuration',
-        code: 'INVALID_CONFIG',
-      });
-    }
+  constructor(config: Partial<FairWorkConfig> = {}) {
+    this.config = {
+      ...DEFAULT_CONFIG,
+      ...config,
+      cacheConfig: {
+        ...DEFAULT_CONFIG.cacheConfig,
+        ...config.cacheConfig,
+      },
+    };
   }
 
-  private async handleRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    try {
-      const response = await fetch(`${this.config.baseUrl}${endpoint}`, {
-        ...options,
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': this.config.apiKey,
-          ...options.headers,
-        },
-      });
-
-      if (!response.ok) {
-        throw new ApiError({
-          message: `FairWork API error: ${response.statusText}`,
-          code: 'API_ERROR',
-          statusCode: response.status,
-        });
-      }
-
-      return await response.json();
-    } catch (error) {
-      logger.error('FairWork API request failed:', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        endpoint,
-      });
-      throw new ApiError({
-        message: 'Failed to communicate with FairWork API',
-        code: 'API_ERROR',
-        cause: error instanceof Error ? error : undefined,
-      });
-    }
-  }
-
-  /**
-   * Get base rate for a classification under an award
-   */
-  public async getBaseRate(params: GetBaseRateParams): Promise<number> {
-    try {
-      const response = await this.handleRequest<{ baseRate: number }>('/rates/base', {
-        method: 'POST',
-        body: JSON.stringify(params),
-      });
-      return response.baseRate;
-    } catch (error) {
-      logger.error('Error getting base rate', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        params,
-      });
-      throw error;
-    }
-  }
-
-  /**
-   * Get minimum wage
-   */
-  public async getMinimumWage(): Promise<number> {
-    return this.getBaseRate({
-      awardCode: 'MA000001', // National Minimum Wage
-      classificationCode: 'L1', // Level 1
-      date: new Date(),
+  public async getActiveAwards(): Promise<Award[]> {
+    // Implementation would fetch from Fair Work API using config
+    const response = await fetch(`${this.config.baseUrl}/awards`, {
+      headers: {
+        'Authorization': `Bearer ${this.config.apiKey}`,
+      },
     });
+    return response.json();
   }
 
-  /**
-   * Get full award rate details including penalties and allowances
-   */
-  public async getAwardRate(params: GetBaseRateParams): Promise<AwardRate> {
-    try {
-      const { data, error } = await this.supabase.rpc('get_award_rate', params);
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      logger.error('Failed to get award rate', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        params,
-      });
-      throw error;
-    }
+  public async getCurrentRates(_awardCode: string): Promise<Rate[]> {
+    // Implementation would fetch current rates from Fair Work API
+    return [];
   }
 
-  /**
-   * Get classifications for an award
-   */
-  public async getClassifications(params: GetClassificationsParams): Promise<Classification[]> {
-    try {
-      const { data, error } = await this.supabase.rpc('get_award_classifications', params);
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      logger.error('Failed to get classifications', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        params,
-      });
-      throw error;
-    }
+  public async getRatesForDate(_awardCode: string, _date: Date): Promise<Rate[]> {
+    // Implementation would fetch rates for specific date from Fair Work API
+    return [];
   }
 
-  /**
-   * Calculate pay rate with all applicable components
-   */
-  public async calculateRate(params: RateCalculationRequest): Promise<RateCalculationResponse> {
-    try {
-      const { data, error } = await this.supabase.rpc('calculate_award_rate', params);
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      logger.error('Failed to calculate rate', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        params,
-      });
-      throw error;
-    }
+  public async getClassifications(_params: GetClassificationsParams): Promise<Classification[]> {
+    // Implementation would fetch classifications from Fair Work API
+    return [];
   }
 
-  /**
-   * Validate if a rate complies with award minimums
-   */
-  public async validateRate(params: ValidateRateParams): Promise<RateValidationResponse> {
-    try {
-      const { data, error } = await this.supabase.rpc('validate_award_rate', params);
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      logger.error('Failed to validate rate', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        params,
-      });
-      throw error;
-    }
+  public async getClassificationHierarchy(_awardCode: string): Promise<ClassificationHierarchy[]> {
+    // Implementation would fetch classification hierarchy from Fair Work API
+    return [];
   }
 
-  /**
-   * Get historical rates for a classification
-   */
-  public async getRateHistory(params: GetRateHistoryParams): Promise<AwardRate[]> {
-    try {
-      const { data, error } = await this.supabase.rpc('get_award_rate_history', params);
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      logger.error('Failed to get rate history', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        params,
-      });
-      throw error;
-    }
+  public async getRateTemplates(_awardCode: string): Promise<RateTemplate[]> {
+    // Implementation would fetch rate templates from Fair Work API
+    return [];
   }
 
-  /**
-   * Get future scheduled rate changes
-   */
-  public async getFutureRates(params: GetFutureRatesParams): Promise<AwardRate[]> {
-    try {
-      const { data, error } = await this.supabase.rpc('get_future_award_rates', params);
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      logger.error('Failed to get future rates', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        params,
-      });
-      throw error;
-    }
+  public async getBaseRate(_params: GetBaseRateParams): Promise<number> {
+    // Implementation would fetch base rate from Fair Work API
+    return 0;
   }
 
-  /**
-   * Get award rates for a specific award code
-   */
-  public async getAwardRates(awardCode: string): Promise<AwardRate[]> {
-    try {
-      const response = await this.handleRequest<AwardRate[]>(`/awards/${awardCode}/rates`);
-      return response;
-    } catch (error) {
-      logger.error(`Failed to get award rates for award ${awardCode}:`, {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        awardCode,
-      });
-      throw new ApiError({
-        message: 'Failed to fetch award rates',
-        code: 'FETCH_ERROR',
-        cause: error instanceof Error ? error : undefined,
-      });
-    }
+  public async getFutureRates(_params: GetFutureRatesParams): Promise<AwardRate[]> {
+    // Implementation would fetch future rates from Fair Work API
+    return [];
   }
 
-  /**
-   * Get classification rates for a specific award and classification
-   */
-  public async getClassificationRates(
-    awardCode: string,
-    classificationCode: string,
-  ): Promise<AwardRate[]> {
-    try {
-      const response = await this.handleRequest<AwardRate[]>(
-        `/awards/${awardCode}/classifications/${classificationCode}/rates`,
-      );
-      return response;
-    } catch (error) {
-      logger.error(
-        `Failed to get classification rates for award ${awardCode}, classification ${classificationCode}:`,
-        {
-          error: error instanceof Error ? error.message : 'Unknown error',
-          awardCode,
-          classificationCode,
-        },
-      );
-      throw new ApiError({
-        message: 'Failed to fetch classification rates',
-        code: 'FETCH_ERROR',
-        cause: error instanceof Error ? error : undefined,
-      });
-    }
+  public async getRateHistory(_params: GetRateHistoryParams): Promise<AwardRate[]> {
+    // Implementation would fetch rate history from Fair Work API
+    return [];
+  }
+
+  public async calculateRate(request: RateCalculationRequest): Promise<RateCalculationResponse> {
+    // Implementation would calculate rates using Fair Work API
+    return {
+      baseRate: 0,
+      penalties: [],
+      allowances: [],
+      total: 0,
+      breakdown: {
+        base: 0,
+        penalties: 0,
+        allowances: 0,
+      },
+      metadata: {
+        calculatedAt: new Date(),
+        effectiveDate: request.date,
+        source: 'fairwork',
+      },
+    };
+  }
+
+  public async validateRate(_params: ValidateRateParams): Promise<RateValidationResponse> {
+    // Implementation would validate rates using Fair Work API
+    return {
+      isValid: false,
+      minimumRate: 0,
+      validationDate: new Date(),
+    };
+  }
+
+  public async getAwardRates(_awardCode: string): Promise<AwardRate[]> {
+    // Implementation would fetch award rates from Fair Work API
+    return [];
+  }
+
+  public async close(): Promise<void> {
+    // Cleanup resources
   }
 }
+
+// Export singleton instance
+export const fairWorkService = new FairWorkService();

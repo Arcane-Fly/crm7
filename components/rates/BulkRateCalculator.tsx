@@ -11,13 +11,9 @@ interface BulkRateCalculatorProps {
   orgId?: string;
 }
 
-interface TemplatesResponse {
-  data: RateTemplate[];
-}
-
-interface BulkCalculationsResponse {
-  data: BulkCalculation[];
-}
+type GetTemplatesResponse = { data: RateTemplate[] };
+type GetBulkCalculationsResponse = { data: BulkCalculation[] };
+type CreateBulkCalculationResponse = { data: BulkCalculation };
 
 export function BulkRateCalculator({
   orgId = 'default-org',
@@ -26,71 +22,39 @@ export function BulkRateCalculator({
   const queryClient = useQueryClient();
 
   // Fetch templates and calculations
-  const { data: templatesData } = useQuery<TemplatesResponse>({
+  const { data: templatesData } = useQuery<GetTemplatesResponse>({
     queryKey: ['templates', orgId],
     queryFn: () => ratesService.getTemplates({ org_id: orgId }),
   });
 
-  interface BulkCalculationResult {
-    id: string;
-    rate: number;
-    template_id: string;
-  }
-
-  interface BulkCalculation {
-    id: string;
-    rate: number;
-    template_id: string;
-    created_at: string;
-    status: 'pending' | 'processing' | 'completed' | 'failed';
-    results?: BulkCalculationResult[];
-  }
-
-  interface BulkCalculationResponse {
-    data: BulkCalculation[];
-  }
-
-  const { data: calculationsData, isLoading } = useQuery<BulkCalculationResponse>({
+  const { data: calculationsData, isLoading } = useQuery<GetBulkCalculationsResponse>({
     queryKey: ['bulk-calculations', orgId],
-    queryFn: () =>
-      ratesService.getBulkCalculations({ org_id: orgId }) as Promise<BulkCalculationResponse>,
+    queryFn: async () => {
+      const response = await ratesService.getBulkCalculations({ org_id: orgId });
+      return response as unknown as GetBulkCalculationsResponse;
+    },
   });
 
   // Create calculation mutation
-  const createCalculation = useMutation({
+  const createCalculation = useMutation<CreateBulkCalculationResponse, Error, void>({
     mutationFn: async () => {
       if (!templatesData?.data) {
         throw new Error('No templates available');
       }
       const templateIds = templatesData.data.slice(0, 2).map((t) => t.id);
-      return ratesService.createBulkCalculation({
+      const response = await ratesService.createBulkCalculation({
         org_id: orgId,
         templateIds,
       });
+      return response as unknown as CreateBulkCalculationResponse;
     },
     onSuccess: (response) => {
-      queryClient.setQueryData<BulkCalculationsResponse>(['calculations', orgId], (old) => ({
-        data: old?.data
-          ? [
-              ...old.data,
-              {
-                ...response.data[0],
-                results: response.data[0].results?.map((r) => ({
-                  templateId: r.template_id,
-                  rate: r.rate,
-                })),
-              },
-            ]
-          : [
-              {
-                ...response.data[0],
-                results: response.data[0].results?.map((r) => ({
-                  templateId: r.template_id,
-                  rate: r.rate,
-                })),
-              },
-            ],
-      }));
+      queryClient.setQueryData<GetBulkCalculationsResponse>(['bulk-calculations', orgId], (old) => {
+        if (!old) return { data: [response.data] };
+        return {
+          data: [...old.data, response.data],
+        };
+      });
       toast({
         title: 'Success',
         description: 'Calculation created successfully',
@@ -123,7 +87,6 @@ export function BulkRateCalculator({
         </div>
 
         <div className='space-y-4'>
-          {' '}
           {calculationsData?.data.map((calc) => (
             <Card
               key={calc.id}
@@ -133,7 +96,7 @@ export function BulkRateCalculator({
                 <div>
                   <h3 className='font-medium'>Calculation {calc.id}</h3>
                   <p className='text-sm text-gray-500'>
-                    Created: {new Date(calc.created_at).toLocaleString()}
+                    Created: {new Date(calc.createdAt).toLocaleString()}
                   </p>
                   <p className='text-sm text-gray-500'>Status: {calc.status}</p>
                 </div>
@@ -143,19 +106,13 @@ export function BulkRateCalculator({
                 <div className='mt-4'>
                   <h4 className='mb-2 font-medium'>Results</h4>
                   <ul className='space-y-2'>
-                    {calc.results.map((result, index: number) => (
+                    {calc.results.map((result) => (
                       <li
-                        key={index}
+                        key={`${calc.id}-${result.templateId}`}
                         className='flex items-center justify-between'
                       >
-                        <span>Template {result.template_id}</span>
-                        <span>
-                          {result.rate ? (
-                            <span className='font-medium'>${result.rate.toFixed(2)}</span>
-                          ) : (
-                            <span className='font-medium'>${result.rate.toFixed(2)}</span>
-                          )}
-                        </span>
+                        <span>Template {result.templateId}</span>
+                        <span className='font-medium'>${result.rate.toFixed(2)}</span>
                       </li>
                     ))}
                   </ul>

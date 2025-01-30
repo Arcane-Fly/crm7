@@ -1,18 +1,23 @@
 import { createClient } from '@supabase/supabase-js';
 import { useState, useEffect } from 'react';
+import type { ReactElement } from 'react';
 
 import type { Employee, Attendance, AttendanceStats } from '../../lib/types/hr';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-);
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  throw new Error('Missing Supabase environment variables');
+}
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 interface HRDashboardProps {
   orgId: string;
 }
 
-export default function HRDashboard({ orgId }: HRDashboardProps) {
+export default function HRDashboard({ orgId }: HRDashboardProps): ReactElement {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [attendance, setAttendance] = useState<Attendance[]>([]);
   const [stats, setStats] = useState<AttendanceStats | null>(null);
@@ -40,20 +45,12 @@ export default function HRDashboard({ orgId }: HRDashboardProps) {
       setAttendance(data || []);
     }
 
-    fetchEmployees();
-    fetchAttendance();
+    void fetchEmployees();
+    void fetchAttendance();
   }, [orgId]);
 
   useEffect(() => {
     if (attendance.length > 0) {
-      const _totalHours = attendance.reduce(
-        (sum, record) =>
-          sum +
-          (record.clockOut
-            ? new Date(record.clockOut).getHours() - new Date(record.clockIn).getHours()
-            : 0),
-        0,
-      );
       const presentCount = attendance.filter((a) => a.status === 'present').length;
       const absentCount = attendance.filter((a) => a.status === 'absent').length;
 

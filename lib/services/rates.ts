@@ -55,7 +55,6 @@ export interface AnalyticsData {
 }
 
 export class RatesServiceImpl implements RatesService {
-  private baseUrl = '/api/rates';
   private supabase = supabase;
 
   async generateQuote(templateId: string): Promise<unknown> {

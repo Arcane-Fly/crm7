@@ -1,37 +1,32 @@
+import type { ReactElement } from 'react';
+
 import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary';
-import { HEADER_HEIGHT, SIDEBAR_WIDTH, SIDEBAR_COLLAPSED_WIDTH } from '@/config/constants';
 import { cn } from '@/lib/utils';
 
 import { Header } from './Header';
-import { Sidebar } from './improved-sidebar';
-
+import { Sidebar, SidebarContent } from './improved-sidebar';
 
 interface MainLayoutProps {
   children: React.ReactNode;
   className?: string;
 }
 
-export function MainLayout({ children, className }: MainLayoutProps) {
+export function MainLayout({ children, className }: MainLayoutProps): ReactElement {
   return (
     <div className='min-h-screen bg-background'>
       <ErrorBoundary>
-        <Sidebar />
+        <Sidebar>
+          <SidebarContent />
+        </Sidebar>
         <div
           className={cn(
             'flex flex-col transition-all duration-300 ease-in-out',
-            'lg:ml-[var(--sidebar-width)]',
+            'lg:ml-[theme(spacing.sidebar-width)]',
             className,
           )}
-          style={
-            {
-              '--header-height': `${HEADER_HEIGHT}px`,
-              '--sidebar-width': `${SIDEBAR_WIDTH}px`,
-              '--sidebar-collapsed-width': `${SIDEBAR_COLLAPSED_WIDTH}px`,
-            } as React.CSSProperties
-          }
         >
           <Header />
-          <main className='container mx-auto p-6 pt-[calc(var(--header-height)+1.5rem)]'>
+          <main className='container mx-auto p-6 pt-[calc(theme(spacing.header-height)+1.5rem)]'>
             <ErrorBoundary>{children}</ErrorBoundary>
           </main>
         </div>

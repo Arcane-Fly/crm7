@@ -2,12 +2,10 @@ export type RateTemplateStatus = 'draft' | 'active' | 'archived' | 'deleted';
 
 export interface RateTemplate {
   id: string;
-  name: string;
-  description?: string;
   orgId: string;
+  name: string;
   templateType: 'hourly' | 'daily' | 'fixed';
-
-  // Base rates and margins
+  description: string | null;
   baseRate: number;
   baseMargin: number;
   superRate: number;
@@ -18,12 +16,8 @@ export interface RateTemplate {
   otherCostsRate: number;
   fundingOffset: number;
   casualLoading: number;
-
-  // Effective dates
-  effectiveFrom: string | null;
+  effectiveFrom: string;
   effectiveTo: string | null;
-
-  // Metadata
   status: RateTemplateStatus;
   createdAt: string;
   updatedAt: string;
@@ -51,11 +45,11 @@ export interface RateCalculation {
 
 export interface RateTemplateHistory {
   id: string;
-  template_id: string;
-  org_id: string;
-  changes: Record<string, any>;
-  created_at: string;
-  updated_at: string;
+  templateId: string;
+  orgId: string;
+  changes: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface RateAnalyticsData {
@@ -96,7 +90,7 @@ export interface RatesService {
 
   // Analytics and Employee Management
   getAnalytics: (params: { orgId: string }) => Promise<{ data: RateAnalytics }>;
-  getEmployees: () => Promise<{ data: Employee[] }>;
+  getEmployees: () => Promise<{ data: RateEmployee[] }>;
 }
 
 export interface BulkCalculation {
@@ -128,18 +122,35 @@ export interface RateAnalytics {
   }[];
 }
 
-export interface Employee {
+export interface RateEmployee {
   id: string;
   name: string;
   role: string;
   department: string;
 }
 
-export interface RateCalculation {
+export interface RateCalculationResult {
   id: string;
   templateId: string;
   rate: number;
   effectiveDate: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface RateTemplateInput
+  extends Omit<RateTemplate, 'id' | 'createdAt' | 'updatedAt' | 'version'> {
+  id?: string;
+  awardCode?: string;
+  classificationCode?: string;
+}
+
+export interface RateTemplateUpdate extends Partial<RateTemplate> {
+  id: string;
+}
+
+export interface RateValidationResult {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
 }

@@ -1,12 +1,11 @@
-import { render, screen, waitFor , fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { vi } from 'vitest';
 
 import { useLMS } from '@/lib/hooks/use-lms';
 import type { Course, Enrollment } from '@/lib/types/lms';
-import { PostgrestErrorType , createMockQueryResult } from '@/types/test-utils';
+import { PostgrestErrorType, createMockQueryResult } from '@/types/test-utils';
 
 import { TrainingDashboard } from '../training-dashboard';
-
 
 // Mock the hooks
 vi.mock('@/lib/hooks/use-lms');
@@ -107,44 +106,24 @@ describe('TrainingDashboard', () => {
   });
 
   it('shows error state', () => {
+    const error = new PostgrestErrorType('Failed to load courses');
     vi.mocked(useLMS).mockReturnValue({
       courses: createMockQueryResult<Course[]>({
         data: [],
         isLoading: false,
-        error: new PostgrestErrorType('Failed to load courses'),
-        isError: true,
-        isPending: false,
-        isLoadingError: true,
-        isRefetchError: false,
-        isSuccess: false,
-        status: 'error',
-        refetch: vi.fn(),
-        remove: vi.fn(),
-        fetchStatus: 'idle',
+        error,
       }),
       enrollments: createMockQueryResult<Enrollment[]>({
         data: [],
         isLoading: false,
         error: null,
-        isError: false,
-        isPending: false,
-        isLoadingError: false,
-        isRefetchError: false,
-        isSuccess: true,
-        status: 'success',
-        refetch: vi.fn(),
-        remove: vi.fn(),
-        fetchStatus: 'idle',
       }),
       createCourse: vi.fn(),
       updateCourse: vi.fn(),
-      deleteCourse: vi.fn(),
       createEnrollment: vi.fn(),
       updateEnrollment: vi.fn(),
-      deleteEnrollment: vi.fn(),
       isCreatingCourse: false,
       isUpdatingCourse: false,
-      isDeletingCourse: false,
       isCreatingEnrollment: false,
       isUpdatingEnrollment: false,
     });

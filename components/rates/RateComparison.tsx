@@ -86,13 +86,20 @@ export default function RateComparison({
   return (
     <div className='space-y-6'>
       <div className='space-y-2'>
-        <label className='text-sm font-medium'>Select Templates to Compare</label>
+        <label
+          htmlFor='template-select'
+          className='text-sm font-medium'
+        >
+          Select Templates to Compare
+        </label>
         <Combobox
+          id='template-select'
           options={templateOptions}
           value={selectedTemplates.map((t) => t.id)}
           onChange={handleTemplateSelect}
           placeholder='Select templates...'
           multiple
+          emptyMessage='No templates found.'
         />
         <p className='text-sm text-gray-500'>Select up to {maxSelections} templates to compare</p>
       </div>
@@ -120,15 +127,15 @@ export default function RateComparison({
             </thead>
             <tbody className='divide-y divide-gray-200 bg-white'>
               {[
-                { key: 'base_rate', label: 'Base Rate' },
-                { key: 'base_margin', label: 'Base Margin' },
-                { key: 'super_rate', label: 'Super Rate' },
-                { key: 'leave_loading', label: 'Leave Loading' },
-                { key: 'workers_comp_rate', label: 'Workers Comp Rate' },
-                { key: 'payroll_tax_rate', label: 'Payroll Tax Rate' },
-                { key: 'training_cost_rate', label: 'Training Cost Rate' },
-                { key: 'other_costs_rate', label: 'Other Costs Rate' },
-                { key: 'funding_offset', label: 'Funding Offset' },
+                { key: 'baseRate', label: 'Base Rate' },
+                { key: 'baseMargin', label: 'Base Margin' },
+                { key: 'superRate', label: 'Super Rate' },
+                { key: 'leaveLoading', label: 'Leave Loading' },
+                { key: 'workersCompRate', label: 'Workers Comp Rate' },
+                { key: 'payrollTaxRate', label: 'Payroll Tax Rate' },
+                { key: 'trainingCostRate', label: 'Training Cost Rate' },
+                { key: 'otherCostsRate', label: 'Other Costs Rate' },
+                { key: 'fundingOffset', label: 'Funding Offset' },
               ].map(({ key, label }) => (
                 <tr key={key}>
                   <td className='whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900'>

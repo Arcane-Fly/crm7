@@ -5,6 +5,8 @@ import type {
   ColumnFiltersState,
   SortingState,
   VisibilityState,
+  CellContext,
+  Column,
 } from '@tanstack/react-table';
 import {
   flexRender,
@@ -24,6 +26,7 @@ import {
   FileText,
 } from 'lucide-react';
 import * as React from 'react';
+import { type ReactElement } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -48,6 +51,18 @@ import {
 } from '@/components/ui/table';
 
 import styles from './funding-programs-data-table.module.css';
+
+export type FundingProgram = {
+  id: string;
+  name: string;
+  code: string;
+  source: string;
+  startDate: string;
+  endDate: string;
+  status: 'Active' | 'Inactive' | 'Upcoming';
+  totalFunding: number;
+  claimedFunding: number;
+};
 
 const data: FundingProgram[] = [
   {
@@ -107,22 +122,21 @@ const data: FundingProgram[] = [
   },
 ];
 
-export type FundingProgram = {
-  id: string;
-  name: string;
-  code: string;
-  source: string;
-  startDate: string;
-  endDate: string;
-  status: 'Active' | 'Inactive' | 'Upcoming';
-  totalFunding: number;
-  claimedFunding: number;
+const getStatusVariant = (status: FundingProgram['status']) => {
+  switch (status) {
+    case 'Active':
+      return 'secondary';
+    case 'Inactive':
+      return 'destructive';
+    default:
+      return 'default';
+  }
 };
 
 export const columns: ColumnDef<FundingProgram>[] = [
   {
     accessorKey: 'name',
-    header: ({ column }) => {
+    header: ({ column }: { column: Column<FundingProgram> }): ReactElement => {
       return (
         <Button
           variant='ghost'
@@ -133,43 +147,43 @@ export const columns: ColumnDef<FundingProgram>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className='font-medium'>{row.getValue('name')}</div>,
+    cell: ({ row }: CellContext<FundingProgram, unknown>): ReactElement => (
+      <div className='font-medium'>{row.getValue('name')}</div>
+    ),
   },
   {
     accessorKey: 'code',
     header: 'Code',
-    cell: ({ row }) => <div>{row.getValue('code')}</div>,
+    cell: ({ row }: CellContext<FundingProgram, unknown>): ReactElement => (
+      <div>{row.getValue('code')}</div>
+    ),
   },
   {
     accessorKey: 'source',
     header: 'Source',
-    cell: ({ row }) => <div>{row.getValue('source')}</div>,
+    cell: ({ row }: CellContext<FundingProgram, unknown>): ReactElement => (
+      <div>{row.getValue('source')}</div>
+    ),
   },
   {
     accessorKey: 'status',
     header: 'Status',
-    cell: ({ row }) => {
-      const status = row.getValue('status');
-      return (
-        <Badge
-          variant={
-            status === 'Active' ? 'secondary' : status === 'Inactive' ? 'destructive' : 'default'
-          }
-        >
-          {status}
-        </Badge>
-      );
+    cell: ({ row }: CellContext<FundingProgram, unknown>): ReactElement => {
+      const status = row.getValue('status') as FundingProgram['status'];
+      return <Badge variant={getStatusVariant(status)}>{String(status)}</Badge>;
     },
   },
   {
     accessorKey: 'totalFunding',
     header: 'Total Funding',
-    cell: ({ row }) => <div>${row.getValue<number>('totalFunding').toLocaleString()}</div>,
+    cell: ({ row }: CellContext<FundingProgram, unknown>): ReactElement => (
+      <div>${row.getValue<number>('totalFunding').toLocaleString()}</div>
+    ),
   },
   {
     accessorKey: 'claimedFunding',
     header: 'Claimed Funding',
-    cell: ({ row }) => {
+    cell: ({ row }: CellContext<FundingProgram, unknown>): ReactElement => {
       const totalFunding = row.getValue<number>('totalFunding');
       const claimedFunding = row.getValue<number>('claimedFunding');
       const percentage = (claimedFunding / totalFunding) * 100;
@@ -188,7 +202,7 @@ export const columns: ColumnDef<FundingProgram>[] = [
   },
   {
     id: 'actions',
-    cell: ({ row }) => {
+    cell: ({ row }: CellContext<FundingProgram, unknown>): ReactElement => {
       const program = row.original;
 
       return (
@@ -231,7 +245,7 @@ export const columns: ColumnDef<FundingProgram>[] = [
   },
 ];
 
-export function FundingProgramsDataTable() {
+export function FundingProgramsDataTable(): ReactElement {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
@@ -266,7 +280,7 @@ export function FundingProgramsDataTable() {
         <div className='flex items-center py-4'>
           <Input
             placeholder='Filter programs...'
-            value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
+            value={table.getColumn('name')?.getFilterValue() as string}
             onChange={(event) => table.getColumn('name')?.setFilterValue(event.target.value)}
             className='max-w-sm'
           />

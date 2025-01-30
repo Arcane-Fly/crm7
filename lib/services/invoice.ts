@@ -49,6 +49,20 @@ export interface Invoice {
   metadata?: Record<string, any>;
 }
 
+function isValidTimesheetImport(data: unknown): data is TimesheetImport {
+  if (typeof data !== 'object' || data === null) return false;
+  const d = data as Record<string, unknown>;
+  return (
+    typeof d.org_id === 'string' &&
+    typeof d.employee_id === 'string' &&
+    typeof d.host_employer_id === 'string' &&
+    typeof d.start_date === 'string' &&
+    typeof d.end_date === 'string' &&
+    typeof d.hours_worked === 'number' &&
+    typeof d.rate_per_hour === 'number'
+  );
+}
+
 class InvoiceService {
   private supabase = createClient();
 
@@ -153,7 +167,18 @@ class InvoiceService {
           const workbook = XLSX.read(e.target?.result, { type: 'binary' });
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
-          const timesheets = XLSX.utils.sheet_to_json(worksheet);
+          const rawData = XLSX.utils.sheet_to_json(worksheet);
+
+          if (!Array.isArray(rawData)) {
+            throw new Error('Invalid timesheet data format');
+          }
+
+          const timesheets = rawData.filter(isValidTimesheetImport);
+
+          if (timesheets.length === 0) {
+            throw new Error('No valid timesheet data found');
+          }
+
           resolve(timesheets);
         } catch (error) {
           reject(error);
