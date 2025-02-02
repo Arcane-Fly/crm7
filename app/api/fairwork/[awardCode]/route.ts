@@ -10,14 +10,14 @@ import { metrics } from '@/lib/utils/metrics';
 
 const log = logger.createLogger('fairwork-api');
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({});
 const serviceOptions = { prisma, metrics };
 
 const fairWorkApiConfig = {
-  apiKey: process.env.FAIRWORK_API_KEY || '',
-  baseUrl: process.env.FAIRWORK_BASE_URL || 'https://api.fairwork.com',
-  environment: process.env.FAIRWORK_ENV === 'production' ? 'production' : 'sandbox',
-  timeout: Number(process.env.FAIRWORK_TIMEOUT) || 5000,
+  apiKey: process.env['FAIRWORK_API_KEY'] || '',
+  baseUrl: process.env['FAIRWORK_BASE_URL'] || 'https://api.fairwork.com',
+  environment: (process.env['FAIRWORK_ENV'] === 'production' ? 'production' : 'sandbox') as "production" | "sandbox",
+  timeout: Number(process.env['FAIRWORK_TIMEOUT']) || 5000,
 };
 
 const fairworkService = new FairWorkServiceImpl(
@@ -31,7 +31,7 @@ const fairworkService = new FairWorkServiceImpl(
  * Retrieves award details by code
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { awardCode: string } }
 ) {
   try {
