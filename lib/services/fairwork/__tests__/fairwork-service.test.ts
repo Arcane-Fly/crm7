@@ -1,164 +1,168 @@
-import type { PostgrestError, SupabaseClient } from '@supabase/supabase-js';
-import { mock } from 'jest-mock-extended';
+import { describe, expect, it, vi } from 'vitest';
+import { type RedisClientType } from 'redis';
+import { FairWorkServiceImpl } from '../fairwork-service';
+import { type FairWorkApiClient } from '../api-client';
+import { type Award, type Rate } from '../types';
 
-import { logger } from '@/lib/services/logger';
-import { ApiError } from '@/lib/utils/error';
+// Mock dependencies
+const mockApiClient = {
+  getActiveAwards: vi.fn(),
+  getAward: vi.fn(),
+  getCurrentRates: vi.fn(),
+  getRatesForDate: vi.fn(),
+  getClassifications: vi.fn(),
+  getClassificationHierarchy: vi.fn(),
+  getRateTemplates: vi.fn(),
+  validateRate: vi.fn(),
+  calculateBaseRate: vi.fn(),
+} as unknown as FairWorkApiClient;
 
-import { FairWorkCacheMiddleware } from '../cache-middleware';
-import { FairWorkService } from '../fairwork-service';
-import type { RateCalculationRequest, RateCalculationResponse } from '../types';
-
-jest.mock('@/lib/services/logger');
-jest.mock('@/lib/supabase/client', () => ({
-  createClient: jest.fn(() => mock<SupabaseClient>()),
-}));
-jest.mock('../cache-middleware');
+const mockRedisClient = {
+  get: vi.fn(),
+  set: vi.fn(),
+  del: vi.fn(),
+} as unknown as RedisClientType;
 
 describe('FairWorkService', () => {
-  let service: FairWorkService;
-  let mockSupabase: jest.Mocked<SupabaseClient>;
-  let mockCache: jest.Mocked<FairWorkCacheMiddleware>;
-
-  const mockConfig = {
-    apiKey: 'test-key',
-    baseUrl: 'https://api.test',
-  };
+  const service = new FairWorkServiceImpl(mockApiClient, mockRedisClient);
 
   beforeEach(() => {
-    mockSupabase = mock<SupabaseClient>();
-    mockCache = mock<FairWorkCacheMiddleware>();
-    (FairWorkCacheMiddleware as jest.Mock).mockImplementation(() => mockCache);
-
-    service = new FairWorkService(mockConfig);
+    vi.clearAllMocks();
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
+  describe('getActiveAwards', () => {
+    const mockAwards: Award[] = [
+      {
+        code: 'MA000001',
+        title: 'Award 1',
+        status: 'active',
+      },
+    ];
+
+    it('should return cached awards if available', async () => {
+      mockRedisClient.get.mockResolvedValueOnce(JSON.stringify(mockAwards));
+
+      const result = await service.getActiveAwards();
+
+      expect(result).toEqual(mockAwards);
+      expect(mockRedisClient.get).toHaveBeenCalledWith('active_awards');
+      expect(mockApiClient.getActiveAwards).not.toHaveBeenCalled();
+    });
+
+    it('should fetch and cache awards if not cached', async () => {
+      mockRedisClient.get.mockResolvedValueOnce(null);
+      mockApiClient.getActiveAwards.mockResolvedValueOnce(mockAwards);
+
+      const result = await service.getActiveAwards();
+
+      expect(result).toEqual(mockAwards);
+      expect(mockRedisClient.get).toHaveBeenCalledWith('active_awards');
+      expect(mockApiClient.getActiveAwards).toHaveBeenCalled();
+      expect(mockRedisClient.set).toHaveBeenCalledWith(
+        'active_awards',
+        JSON.stringify(mockAwards),
+        expect.any(Number)
+      );
+    });
+
+    it('should handle errors gracefully', async () => {
+      mockRedisClient.get.mockResolvedValueOnce(null);
+      mockApiClient.getActiveAwards.mockRejectedValueOnce(new Error('API error'));
+
+      const result = await service.getActiveAwards();
+
+      expect(result).toEqual([]);
+    });
   });
 
-  describe('Base Rate Operations', () => {
+  describe('getCurrentRates', () => {
+    const mockRates: Rate[] = [
+      {
+        code: 'RATE1',
+        amount: 20.5,
+        effectiveFrom: '2024-01-01',
+        status: 'active',
+      },
+    ];
+
+    it('should return cached rates if available', async () => {
+      mockRedisClient.get.mockResolvedValueOnce(JSON.stringify(mockRates));
+
+      const result = await service.getCurrentRates('MA000001');
+
+      expect(result).toEqual(mockRates);
+      expect(mockRedisClient.get).toHaveBeenCalledWith('rates:current:MA000001');
+      expect(mockApiClient.getCurrentRates).not.toHaveBeenCalled();
+    });
+
+    it('should fetch and cache rates if not cached', async () => {
+      mockRedisClient.get.mockResolvedValueOnce(null);
+      mockApiClient.getCurrentRates.mockResolvedValueOnce({ items: mockRates });
+
+      const result = await service.getCurrentRates('MA000001');
+
+      expect(result).toEqual(mockRates);
+      expect(mockRedisClient.get).toHaveBeenCalledWith('rates:current:MA000001');
+      expect(mockApiClient.getCurrentRates).toHaveBeenCalledWith('MA000001');
+      expect(mockRedisClient.set).toHaveBeenCalledWith(
+        'rates:current:MA000001',
+        JSON.stringify(mockRates),
+        expect.any(Number)
+      );
+    });
+
+    it('should handle errors gracefully', async () => {
+      mockRedisClient.get.mockResolvedValueOnce(null);
+      mockApiClient.getCurrentRates.mockRejectedValueOnce(new Error('API error'));
+
+      const result = await service.getCurrentRates('MA000001');
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('calculateBaseRate', () => {
     const mockParams = {
-      awardCode: 'TEST001',
-      classificationCode: 'L1',
-      date: new Date('2025-01-29'),
+      awardCode: 'MA000001',
+      classification: 'L1',
     };
 
-    it('should use cache for base rate calculations', async () => {
-      const mockRate = 25.5;
-      mockCache.getBaseRate.mockImplementation(async (_, factory) => factory());
-
-      const result = await service.getBaseRate(mockParams);
-
-      expect(result).toBe(mockRate);
-      expect(mockCache.getBaseRate).toHaveBeenCalledWith(mockParams, expect.any(Function));
-    });
-
-    it('should handle API errors with caching', async () => {
-      const error = new Error('API Error');
-      mockCache.getBaseRate.mockRejectedValue(error);
-
-      await expect(service.getBaseRate(mockParams)).rejects.toThrow(ApiError);
-      expect(logger.error).toHaveBeenCalled();
-    });
-  });
-
-  describe('Rate Calculation Operations', () => {
-    const mockRequest: RateCalculationRequest = {
-      awardCode: 'TEST001',
-      classificationCode: 'L1',
-      employmentType: 'permanent',
-      date: new Date('2025-01-29'),
-      hours: 38,
-    };
-
-    const mockResponse: RateCalculationResponse = {
+    const mockResult = {
       baseRate: 25.5,
-      penalties: [],
-      allowances: [],
-      total: 25.5,
-      breakdown: {
-        base: 25.5,
-        penalties: 0,
-        allowances: 0,
-      },
-      metadata: {
-        calculatedAt: new Date(),
-        effectiveDate: new Date('2025-01-29'),
-        source: 'fairwork',
-      },
     };
 
-    it('should use cache for rate calculations', async () => {
-      const mockSuccessResponse = {
-        data: mockResponse,
-        error: null,
-        count: null,
-        status: 200,
-        statusText: 'OK',
-        body: mockResponse,
-      };
-      mockSupabase.rpc.mockResolvedValue(mockSuccessResponse);
-      mockCache.calculateRate.mockImplementation(async (_, factory) => factory());
+    it('should return cached result if available', async () => {
+      mockRedisClient.get.mockResolvedValueOnce(JSON.stringify(mockResult));
 
-      const result = await service.calculateRate(mockRequest);
+      const result = await service.calculateBaseRate(mockParams);
 
-      expect(result).toEqual(mockResponse);
-      expect(mockCache.calculateRate).toHaveBeenCalledWith(mockRequest, expect.any(Function));
+      expect(result).toEqual(mockResult);
+      expect(mockRedisClient.get).toHaveBeenCalledWith(
+        expect.stringContaining('rate:base:')
+      );
+      expect(mockApiClient.calculateBaseRate).not.toHaveBeenCalled();
     });
 
-    it('should handle Supabase errors with caching', async () => {
-      const mockErrorResponse = {
-        data: null,
-        error: {
-          message: 'Database error',
-          details: 'Failed to execute RPC',
-          hint: 'Check database connection',
-          code: 'DB_ERROR',
-          name: 'PostgrestError',
-        } as PostgrestError,
-        count: null,
-        status: 500,
-        statusText: 'Internal Server Error',
-        body: null,
-      };
-      mockSupabase.rpc.mockResolvedValue(mockErrorResponse);
-      mockCache.calculateRate.mockImplementation(async (_, factory) => factory());
+    it('should fetch and cache result if not cached', async () => {
+      mockRedisClient.get.mockResolvedValueOnce(null);
+      mockApiClient.calculateBaseRate.mockResolvedValueOnce(mockResult);
 
-      await expect(service.calculateRate(mockRequest)).rejects.toThrow();
-      expect(logger.error).toHaveBeenCalled();
+      const result = await service.calculateBaseRate(mockParams);
+
+      expect(result).toEqual(mockResult);
+      expect(mockApiClient.calculateBaseRate).toHaveBeenCalledWith(mockParams);
+      expect(mockRedisClient.set).toHaveBeenCalledWith(
+        expect.stringContaining('rate:base:'),
+        JSON.stringify(mockResult),
+        expect.any(Number)
+      );
     });
 
-    it('should handle cache errors gracefully', async () => {
-      const error = new Error('Cache error');
-      mockCache.calculateRate.mockRejectedValue(error);
+    it('should throw error on API failure', async () => {
+      mockRedisClient.get.mockResolvedValueOnce(null);
+      mockApiClient.calculateBaseRate.mockRejectedValueOnce(new Error('API error'));
 
-      await expect(service.calculateRate(mockRequest)).rejects.toThrow();
-      expect(logger.error).toHaveBeenCalled();
-    });
-  });
-
-  describe('Award Cache Operations', () => {
-    const awardCode = 'TEST001';
-
-    it('should invalidate cache when award rates change', async () => {
-      await service.getAwardRates(awardCode);
-
-      expect(mockCache.invalidateAwardCache).toHaveBeenCalledWith(awardCode);
-    });
-
-    it('should handle cache invalidation errors', async () => {
-      const error = new Error('Cache error');
-      mockCache.invalidateAwardCache.mockRejectedValue(error);
-
-      await expect(service.getAwardRates(awardCode)).rejects.toThrow();
-      expect(logger.error).toHaveBeenCalled();
-    });
-  });
-
-  describe('Cleanup', () => {
-    it('should close cache service on cleanup', async () => {
-      await service.close();
-      expect(mockCache.close).toHaveBeenCalled();
+      await expect(service.calculateBaseRate(mockParams)).rejects.toThrow('API error');
     });
   });
 });

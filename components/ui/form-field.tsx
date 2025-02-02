@@ -124,7 +124,7 @@ export function FormSelectField({
               {...field}
               {...props}
             >
-              {options.map((option) => (
+              {options.map((option: unknown) => (
                 <option
                   key={option.value}
                   value={option.value}

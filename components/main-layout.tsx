@@ -7,12 +7,11 @@ import { UserNav } from './dashboard/user-nav';
 import { Button } from './ui/button';
 import { Sidebar } from './ui/sidebar';
 
-
 interface MainLayoutProps {
   children: React.ReactNode;
 }
 
-export function MainLayout({ children }: MainLayoutProps) {
+export function MainLayout({ children }: MainLayoutProps): void {
   return (
     <div className='flex min-h-screen bg-background'>
       <Sidebar />

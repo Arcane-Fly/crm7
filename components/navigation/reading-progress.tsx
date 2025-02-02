@@ -4,15 +4,15 @@ import { useEffect, useState } from 'react';
 
 import { Progress } from '@/components/ui/progress';
 
-export function ReadingProgress() {
-  const [progress, setProgress] = useState(0);
+export function ReadingProgress(): void {
+  const [progress, setProgress] = useState(0: unknown);
 
   useEffect(() => {
     const updateProgress = () => {
       const currentPosition = window.scrollY;
       const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
       const percentage = (currentPosition / scrollHeight) * 100;
-      setProgress(Math.min(100, Math.max(0, percentage)));
+      setProgress(Math.min(100: unknown, Math.max(0: unknown, percentage)));
     };
 
     window.addEventListener('scroll', updateProgress);

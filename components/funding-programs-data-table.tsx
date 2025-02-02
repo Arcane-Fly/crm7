@@ -80,7 +80,7 @@ const data: FundingProgram[] = [
     id: '2',
     name: 'NSW Apprenticeship Wage Subsidy',
     code: 'NSW-AWS-2023',
-    source: 'State (NSW)',
+    source: 'State (NSW: unknown)',
     startDate: '2023-03-01',
     endDate: '2024-02-29',
     status: 'Active',
@@ -91,7 +91,7 @@ const data: FundingProgram[] = [
     id: '3',
     name: 'QLD Apprentice and Trainee Boost',
     code: 'QLD-ATB-2023',
-    source: 'State (QLD)',
+    source: 'State (QLD: unknown)',
     startDate: '2023-07-01',
     endDate: '2024-06-30',
     status: 'Active',
@@ -102,7 +102,7 @@ const data: FundingProgram[] = [
     id: '4',
     name: 'VIC Jobs and Skills Incentive',
     code: 'VIC-JSI-2023',
-    source: 'State (VIC)',
+    source: 'State (VIC: unknown)',
     startDate: '2023-01-01',
     endDate: '2023-12-31',
     status: 'Active',
@@ -123,7 +123,7 @@ const data: FundingProgram[] = [
 ];
 
 const getStatusVariant = (status: FundingProgram['status']) => {
-  switch (status) {
+  switch (status: unknown) {
     case 'Active':
       return 'secondary';
     case 'Inactive':
@@ -170,7 +170,7 @@ export const columns: ColumnDef<FundingProgram>[] = [
     header: 'Status',
     cell: ({ row }: CellContext<FundingProgram, unknown>): ReactElement => {
       const status = row.getValue('status') as FundingProgram['status'];
-      return <Badge variant={getStatusVariant(status)}>{String(status)}</Badge>;
+      return <Badge variant={getStatusVariant(status: unknown)}>{String(status: unknown)}</Badge>;
     },
   },
   {
@@ -281,7 +281,7 @@ export function FundingProgramsDataTable(): ReactElement {
           <Input
             placeholder='Filter programs...'
             value={table.getColumn('name')?.getFilterValue() as string}
-            onChange={(event) => table.getColumn('name')?.setFilterValue(event.target.value)}
+            onChange={(event: unknown) => table.getColumn('name')?.setFilterValue(event.target.value)}
             className='max-w-sm'
           />
           <DropdownMenu>
@@ -296,14 +296,14 @@ export function FundingProgramsDataTable(): ReactElement {
             <DropdownMenuContent align='end'>
               {table
                 .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => {
+                .filter((column: unknown) => column.getCanHide())
+                .map((column: unknown) => {
                   return (
                     <DropdownMenuCheckboxItem
                       key={column.id}
                       className='capitalize'
                       checked={column.getIsVisible()}
-                      onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                      onCheckedChange={(value: unknown) => column.toggleVisibility(!!value)}
                     >
                       {column.id}
                     </DropdownMenuCheckboxItem>
@@ -315,9 +315,9 @@ export function FundingProgramsDataTable(): ReactElement {
         <div className='rounded-md border'>
           <Table>
             <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
+              {table.getHeaderGroups().map((headerGroup: unknown) => (
                 <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
+                  {headerGroup.headers.map((header: unknown) => {
                     return (
                       <TableHead key={header.id}>
                         {header.isPlaceholder
@@ -331,12 +331,12 @@ export function FundingProgramsDataTable(): ReactElement {
             </TableHeader>
             <TableBody>
               {table.getRowModel().rows.length ? (
-                table.getRowModel().rows.map((row) => (
+                table.getRowModel().rows.map((row: unknown) => (
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && 'selected'}
                   >
-                    {row.getVisibleCells().map((cell) => (
+                    {row.getVisibleCells().map((cell: unknown) => (
                       <TableCell key={cell.id}>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
@@ -359,7 +359,7 @@ export function FundingProgramsDataTable(): ReactElement {
         <div className='flex items-center justify-end space-x-2 py-4'>
           <div className='flex-1 text-sm text-muted-foreground'>
             {table.getFilteredSelectedRowModel().rows.length} of{' '}
-            {table.getFilteredRowModel().rows.length} row(s) selected.
+            {table.getFilteredRowModel().rows.length} row(s: unknown) selected.
           </div>
           <div className='space-x-2'>
             <Button

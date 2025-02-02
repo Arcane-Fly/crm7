@@ -11,7 +11,7 @@ const sizeClasses = {
   lg: 'h-8 w-8',
 };
 
-export function LoadingSpinner({ size = 'md', className }: LoadingSpinnerProps) {
+export function LoadingSpinner({ size = 'md', className }: LoadingSpinnerProps): void {
   return (
     <div
       role='status'

@@ -8,7 +8,7 @@ import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
 import { defaultConfig } from '@/lib/services/fairwork/fairwork.config';
 
 // Initialize services
-const fairworkClient = new FairWorkClient(defaultConfig);
+const fairworkClient = new FairWorkClient(defaultConfig: unknown);
 
 // Request validation schemas
 const DateParamsSchema = z.object({
@@ -23,10 +23,10 @@ const DateParamsSchema = z.object({
 export const GET = withErrorHandler(
   withAuth(async (req: NextRequest, context: { params: Record<string, string> }) => {
     const { searchParams } = new URL(req.url);
-    const params = DateParamsSchema.parse(Object.fromEntries(searchParams));
+    const params = DateParamsSchema.parse(Object.fromEntries(searchParams: unknown));
 
     const allowances = await fairworkClient.getAllowances(context.params.awardCode, params);
 
-    return createApiResponse(allowances);
+    return createApiResponse(allowances: unknown);
   }),
 );

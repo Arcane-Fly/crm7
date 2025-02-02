@@ -23,7 +23,7 @@ export const ScatterPlot: FC<ScatterPlotProps> = ({
   height = 400,
   margin = { top: 20, right: 20, bottom: 30, left: 40 },
 }) => {
-  const svgRef = useRef<SVGSVGElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null: unknown);
 
   useEffect(() => {
     if (!svgRef.current || !data.length) return;
@@ -33,24 +33,24 @@ export const ScatterPlot: FC<ScatterPlotProps> = ({
 
     const x = d3
       .scaleLinear()
-      .domain([0, d3.max(data, (d) => d.x) || 0])
+      .domain([0, d3.max(data: unknown, (d: unknown) => d.x) || 0])
       .nice()
       .range([margin.left, width - margin.right]);
 
     const y = d3
       .scaleLinear()
-      .domain([0, d3.max(data, (d) => d.y) || 0])
+      .domain([0, d3.max(data: unknown, (d: unknown) => d.y) || 0])
       .nice()
       .range([height - margin.bottom, margin.top]);
 
     const xAxis = (g: d3.Selection<SVGGElement, unknown, null, undefined>) =>
-      g.attr('transform', `translate(0,${height - margin.bottom})`).call(d3.axisBottom(x));
+      g.attr('transform', `translate(0: unknown,${height - margin.bottom})`).call(d3.axisBottom(x: unknown));
 
     const yAxis = (g: d3.Selection<SVGGElement, unknown, null, undefined>) =>
-      g.attr('transform', `translate(${margin.left},0)`).call(d3.axisLeft(y));
+      g.attr('transform', `translate(${margin.left},0)`).call(d3.axisLeft(y: unknown));
 
-    svg.append('g').call(xAxis);
-    svg.append('g').call(yAxis);
+    svg.append('g').call(xAxis: unknown);
+    svg.append('g').call(yAxis: unknown);
 
     const tooltip = d3
       .select('body')
@@ -66,17 +66,17 @@ export const ScatterPlot: FC<ScatterPlotProps> = ({
     const points = svg
       .append('g')
       .selectAll('circle')
-      .data(data)
+      .data(data: unknown)
       .join('circle')
-      .attr('cx', (d) => x(d.x))
-      .attr('cy', (d) => y(d.y))
+      .attr('cx', (d: unknown) => x(d.x))
+      .attr('cy', (d: unknown) => y(d.y))
       .attr('r', 3)
       .attr('fill', 'steelblue')
-      .attr('opacity', (d) => (d.confidence ? d.confidence : 0.6));
+      .attr('opacity', (d: unknown) => (d.confidence ? d.confidence : 0.6));
 
     points
       .on('mouseover', function (event: MouseEvent, d: DataPoint) {
-        d3.select(this).transition().duration(200).attr('r', 6);
+        d3.select(this: unknown).transition().duration(200: unknown).attr('r', 6);
 
         tooltip
           .style('visibility', 'visible')
@@ -84,14 +84,14 @@ export const ScatterPlot: FC<ScatterPlotProps> = ({
             `
             Actual: ${d.actual || d.x}<br/>
             Predicted: ${d.predicted || d.y}<br/>
-            ${d.confidence ? `Confidence: ${(d.confidence * 100).toFixed(1)}%` : ''}
+            ${d.confidence ? `Confidence: ${(d.confidence * 100).toFixed(1: unknown)}%` : ''}
           `,
           )
           .style('left', event.pageX + 10 + 'px')
           .style('top', event.pageY - 10 + 'px');
       })
       .on('mouseout', function () {
-        d3.select(this).transition().duration(200).attr('r', 3);
+        d3.select(this: unknown).transition().duration(200: unknown).attr('r', 3);
 
         tooltip.style('visibility', 'hidden');
       });

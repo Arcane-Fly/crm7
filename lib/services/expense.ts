@@ -55,7 +55,7 @@ export class ExpenseService {
 
     const { data, error } = await query;
 
-    if (error) throw error;
+    if (error: unknown) throw error;
     return { data: data || [] };
   }
 
@@ -70,31 +70,31 @@ export class ExpenseService {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error: unknown) throw error;
     return { data };
   }
 
   async updateExpense(id: string, updates: Partial<Expense>) {
     const { data, error } = await this.supabase
       .from('expenses')
-      .update(updates)
+      .update(updates: unknown)
       .eq('id', id)
       .select()
       .single();
 
-    if (error) throw error;
+    if (error: unknown) throw error;
     return { data };
   }
 
   async submitExpense(id: string) {
-    return this.updateExpense(id, {
+    return this.updateExpense(id: unknown, {
       status: 'submitted',
       submitted_at: new Date().toISOString(),
     });
   }
 
   async approveExpense(id: string, approver_id: string, notes?: string) {
-    return this.updateExpense(id, {
+    return this.updateExpense(id: unknown, {
       status: 'approved',
       approved_at: new Date().toISOString(),
       approver_id,
@@ -103,7 +103,7 @@ export class ExpenseService {
   }
 
   async rejectExpense(id: string, approver_id: string, notes: string) {
-    return this.updateExpense(id, {
+    return this.updateExpense(id: unknown, {
       status: 'rejected',
       rejected_at: new Date().toISOString(),
       approver_id,
@@ -116,20 +116,20 @@ export class ExpenseService {
       .from('receipts')
       .upload(`${Date.now()}-${file.name}`, file);
 
-    if (error) throw error;
+    if (error: unknown) throw error;
     return { data };
   }
 
   async deleteExpense(id: string) {
     const { error } = await this.supabase.from('expenses').delete().eq('id', id);
 
-    if (error) throw error;
+    if (error: unknown) throw error;
   }
 
   async getExpenseStats(org_id: string) {
     const { data, error } = await this.supabase.rpc('get_expense_stats', { org_id });
 
-    if (error) throw error;
+    if (error: unknown) throw error;
     return { data };
   }
 }

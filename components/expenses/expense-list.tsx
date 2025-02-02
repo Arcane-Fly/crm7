@@ -15,12 +15,12 @@ import { formatDate } from '@/lib/utils';
 
 import { ExpenseDetails } from './expense-details';
 
-export function ExpenseList() {
+export function ExpenseList(): void {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [selectedExpense, setSelectedExpense] = React.useState<Expense | null>(null);
+  const [selectedExpense, setSelectedExpense] = React.useState<Expense | null>(null: unknown);
   const { data: expenses, error } = useSupabaseQuery<'expenses'>({
-    queryKey: ['expenses', user?.org_id || ''],
+    queryKey: ['expenses', user?.org_id ?? ''],
     table: 'expenses',
     filter: user ? [{ column: 'org_id', value: user.org_id }] : undefined,
     enabled: !!user,
@@ -41,7 +41,7 @@ export function ExpenseList() {
         variant: 'destructive',
       });
     },
-    invalidateQueries: [['expenses', user?.org_id || '']],
+    invalidateQueries: [['expenses', user?.org_id ?? '']],
   });
 
   const { mutate: rejectExpense, isPending: _isRejecting } = useSupabaseMutation<'expenses'>({
@@ -59,21 +59,21 @@ export function ExpenseList() {
         variant: 'destructive',
       });
     },
-    invalidateQueries: [['expenses', user?.org_id || '']],
+    invalidateQueries: [['expenses', user?.org_id ?? '']],
   });
 
   const columns = [
     {
       accessorKey: 'created_at',
       header: 'Date',
-      cell: ({ row }: { row: any }) => formatDate(row.original.created_at),
+      cell: ({ row }: { row: unknown }) => formatDate(row.original.created_at),
     },
     {
       accessorKey: 'amount',
       header: 'Amount',
-      cell: ({ row }: { row: any }) => {
+      cell: ({ row }: { row: unknown }) => {
         const amount = row.original.amount;
-        return <span>${amount.toFixed(2)}</span>;
+        return <span>${amount.toFixed(2: unknown)}</span>;
       },
     },
     {
@@ -83,7 +83,7 @@ export function ExpenseList() {
     {
       accessorKey: 'status',
       header: 'Status',
-      cell: ({ row }: { row: any }) => (
+      cell: ({ row }: { row: unknown }) => (
         <Badge
           variant={
             row.original.status === 'approved'
@@ -99,14 +99,14 @@ export function ExpenseList() {
     },
     {
       id: 'actions',
-      cell: ({ row }: { row: any }) => {
+      cell: ({ row }: { row: unknown }) => {
         const expense = row.original;
         return (
           <div className='flex items-center gap-2'>
             <Button
               variant='ghost'
               size='icon'
-              onClick={() => setSelectedExpense(expense)}
+              onClick={() => setSelectedExpense(expense: unknown)}
             >
               <Eye className='h-4 w-4' />
             </Button>
@@ -144,7 +144,7 @@ export function ExpenseList() {
     },
   ];
 
-  if (error) {
+  if (error: unknown) {
     return (
       <div className='flex h-[400px] items-center justify-center'>
         <p className='text-destructive'>Failed to load expenses</p>
@@ -162,7 +162,7 @@ export function ExpenseList() {
       />
       <Dialog
         open={!!selectedExpense}
-        onOpenChange={() => setSelectedExpense(null)}
+        onOpenChange={() => setSelectedExpense(null: unknown)}
       >
         <DialogContent>
           <DialogHeader>

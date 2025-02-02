@@ -95,9 +95,9 @@ const mainNavItems: NavItem[] = [
 
 export const MainNavigation: React.FC = () => {
   const router = useRouter();
-  const [activeSection, setActiveSection] = React.useState<string | null>(null);
+  const [activeSection, setActiveSection] = React.useState<string | null>(null: unknown);
 
-  const isActive = (href: string) => router.pathname.startsWith(href);
+  const isActive = (href: string) => router.pathname.startsWith(href: unknown);
 
   return (
     <TooltipProvider>
@@ -107,7 +107,7 @@ export const MainNavigation: React.FC = () => {
       >
         <ScrollArea className='h-full'>
           <div className='space-y-4 py-4'>
-            {mainNavItems.map((item) => (
+            {mainNavItems.map((item: unknown) => (
               <div
                 key={item.id}
                 className='px-3'

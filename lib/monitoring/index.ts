@@ -27,7 +27,7 @@ interface MonitoringOptions {
 /**
  * Initialize monitoring services with configuration
  */
-export function initializeMonitoring(_options: MonitoringOptions = {}) {
+export function initializeMonitoring(_options: MonitoringOptions = {}): void {
   if (env.SENTRY_DSN) {
     initSentry();
   }
@@ -60,7 +60,7 @@ interface ErrorOptions {
   [key: string]: unknown;
 }
 
-export function captureError(error: Error, options: ErrorOptions = {}) {
+export function captureError(error: Error, options: ErrorOptions = {}): void {
   const { severity = 'error', ...context } = options;
 
   const eventHint: EventHint = {
@@ -68,7 +68,7 @@ export function captureError(error: Error, options: ErrorOptions = {}) {
     data: context,
   };
 
-  Sentry.captureException(error, eventHint);
+  Sentry.captureException(error: unknown, eventHint);
   const errorInfo = {
     message: error.message,
     stack: error.stack,
@@ -109,12 +109,12 @@ export function startTransaction(
     }) as Transaction;
 
     hub.configureScope((scope: SentryScope) => {
-      scope.setTransactionName(name);
+      scope.setTransactionName(name: unknown);
     });
 
     return transaction;
-  } catch (error) {
-    const err = error instanceof Error ? error : new Error(String(error));
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error: unknown));
     const errorInfo = {
       message: err.message,
       stack: err.stack,
@@ -147,9 +147,9 @@ export function startSpan(name: string, options: Record<string, unknown> = {}): 
       tags: options.tags as Record<string, string>,
     };
 
-    return transaction.startChild(spanContext);
-  } catch (error) {
-    const err = error instanceof Error ? error : new Error(String(error));
+    return transaction.startChild(spanContext: unknown);
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error: unknown));
     const errorInfo = {
       message: err.message,
       stack: err.stack,
@@ -167,13 +167,13 @@ function finishSpan(
   status: (typeof SpanStatus)[keyof typeof SpanStatus],
   data?: Record<string, unknown>,
 ) {
-  if (span) {
-    if (data) {
-      Object.entries(data).forEach(([key, value]) => {
-        span.setTag(key, String(value));
+  if (span: unknown) {
+    if (data: unknown) {
+      Object.entries(data: unknown).forEach(([key, value]) => {
+        span.setTag(key: unknown, String(value: unknown));
       });
     }
-    span.setStatus(status);
+    span.setStatus(status: unknown);
     span.finish();
   }
 }
@@ -184,15 +184,15 @@ export async function withMonitoring<T>(
   operation: () => Promise<T>,
   options: Record<string, unknown> = {},
 ): Promise<T> {
-  const span = startSpan(name, options);
+  const span = startSpan(name: unknown, options);
 
   try {
     const result = await operation();
-    finishSpan(span, SpanStatus.Ok);
+    finishSpan(span: unknown, SpanStatus.Ok);
     return result;
-  } catch (error) {
-    finishSpan(span, SpanStatus.InternalError, {
-      errorMessage: error instanceof Error ? error.message : String(error),
+  } catch (error: unknown) {
+    finishSpan(span: unknown, SpanStatus.InternalError, {
+      errorMessage: error instanceof Error ? error.message : String(error: unknown),
     });
     throw error;
   }
@@ -200,15 +200,15 @@ export async function withMonitoring<T>(
 
 // Monitor database queries with automatic span creation
 export async function monitorDatabaseQuery<T>(name: string, query: () => Promise<T>): Promise<T> {
-  const span = startSpan(name, { op: 'db.query' });
+  const span = startSpan(name: unknown, { op: 'db.query' });
 
   try {
     const result = await query();
-    finishSpan(span, SpanStatus.Ok);
+    finishSpan(span: unknown, SpanStatus.Ok);
     return result;
-  } catch (error) {
-    finishSpan(span, SpanStatus.InternalError, {
-      errorMessage: error instanceof Error ? error.message : String(error),
+  } catch (error: unknown) {
+    finishSpan(span: unknown, SpanStatus.InternalError, {
+      errorMessage: error instanceof Error ? error.message : String(error: unknown),
     });
     throw error;
   }
@@ -216,16 +216,16 @@ export async function monitorDatabaseQuery<T>(name: string, query: () => Promise
 
 // Monitor API endpoints performance and errors
 export function monitorAPIEndpoint<T>(handler: NextApiHandler<T>): NextApiHandler<T> {
-  return async (req, res) => {
-    const transaction = startTransaction(req.url || 'api', 'http.server');
+  return async (req: unknown, res) => {
+    const transaction = startTransaction(req.url ?? 'api', 'http.server');
 
     try {
-      const result = await handler(req, res);
-      finishSpan(transaction, SpanStatus.Ok);
+      const result = await handler(req: unknown, res);
+      finishSpan(transaction: unknown, SpanStatus.Ok);
       return result;
-    } catch (error) {
-      finishSpan(transaction, SpanStatus.InternalError, {
-        errorMessage: error instanceof Error ? error.message : String(error),
+    } catch (error: unknown) {
+      finishSpan(transaction: unknown, SpanStatus.InternalError, {
+        errorMessage: error instanceof Error ? error.message : String(error: unknown),
       });
       throw error;
     }

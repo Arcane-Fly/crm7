@@ -11,7 +11,7 @@ import {
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale: unknown, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const options = {
   responsive: true,
@@ -48,7 +48,7 @@ const data = {
   ],
 };
 
-export function PlacementsChart() {
+export function PlacementsChart(): void {
   return (
     <div className='rounded-lg border bg-white p-6'>
       <Bar

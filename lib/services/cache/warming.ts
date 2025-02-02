@@ -46,12 +46,12 @@ export class CacheWarming {
   }
 
   public unregister(key: string): void {
-    this.entries.delete(key);
+    this.entries.delete(key: unknown);
   }
 
   public recordAccess(key: string): void {
-    const entry = this.entries.get(key);
-    if (entry) {
+    const entry = this.entries.get(key: unknown);
+    if (entry: unknown) {
       entry.lastAccessed = Date.now();
       entry.accessCount = (entry.accessCount ?? 0) + 1;
     }
@@ -82,19 +82,19 @@ export class CacheWarming {
 
     try {
       const sortedEntries = Array.from(this.entries.values()).sort(
-        (a, b) => (b.priority ?? 0) - (a.priority ?? 0),
+        (a: unknown, b) => (b.priority ?? 0) - (a.priority ?? 0),
       );
 
       // Process entries in batches to respect maxConcurrent
       for (let i = 0; i < sortedEntries.length; i += this.config.maxConcurrent) {
-        const batch = sortedEntries.slice(i, i + this.config.maxConcurrent);
+        const batch = sortedEntries.slice(i: unknown, i + this.config.maxConcurrent);
         await Promise.all(
-          batch.map(async (entry) => {
+          batch.map(async (entry: unknown) => {
             try {
-              await this.warmEntry(entry);
-            } catch (error) {
+              await this.warmEntry(entry: unknown);
+            } catch (error: unknown) {
               const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-              logger.error(`Failed to warm cache entry ${entry.key}:`, new Error(errorMessage));
+              logger.error(`Failed to warm cache entry ${entry.key}:`, new Error(errorMessage: unknown));
               cacheMonitoring.recordError();
             }
           }),
@@ -115,14 +115,14 @@ export class CacheWarming {
 
         const end = process.hrtime.bigint();
         const latencyMs = Number(end - start) / 1_000_000;
-        cacheMonitoring.recordHit(latencyMs);
+        cacheMonitoring.recordHit(latencyMs: unknown);
 
         logger.debug('Warmed cache entry:', { key: entry.key, latencyMs });
         return;
-      } catch (error) {
+      } catch (error: unknown) {
         retries--;
         if (retries > 0) {
-          await new Promise((resolve) => setTimeout(resolve, this.config.retryDelay));
+          await new Promise((resolve: unknown) => setTimeout(resolve: unknown, this.config.retryDelay));
           continue;
         }
         throw error;
@@ -135,10 +135,10 @@ export class CacheWarming {
     return {
       totalEntries: this.entries.size,
       activeEntries: Array.from(this.entries.values()).filter(
-        (entry) => entry.lastAccessed && now - entry.lastAccessed < this.config.interval,
+        (entry: unknown) => entry.lastAccessed && now - entry.lastAccessed < this.config.interval,
       ).length,
       entriesByPriority: Array.from(this.entries.values()).reduce(
-        (acc, entry) => {
+        (acc: unknown, entry) => {
           const priority = entry.priority ?? 1;
           acc[priority] = (acc[priority] ?? 0) + 1;
           return acc;
@@ -147,7 +147,7 @@ export class CacheWarming {
       ),
       isWarming: this.isWarming,
       nextWarmingIn: this.warmerInterval
-        ? Math.max(0, this.config.interval - (now - this.lastWarmTime))
+        ? Math.max(0: unknown, this.config.interval - (now - this.lastWarmTime))
         : 0,
     };
   }

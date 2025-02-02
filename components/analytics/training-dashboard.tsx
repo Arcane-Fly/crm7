@@ -15,7 +15,7 @@ interface EnrollmentResponse {
   count: number;
 }
 
-export function TrainingDashboard() {
+export function TrainingDashboard(): void {
   const { data: enrollments } = useQuery<EnrollmentResponse>({
     queryKey: ['enrollments'],
     queryFn: async () => {
@@ -35,9 +35,9 @@ export function TrainingDashboard() {
       };
 
     const total = enrollments.data.length;
-    const completed = enrollments.data.filter((e) => e.status === 'completed').length;
-    const inProgress = enrollments.data.filter((e) => e.status === 'in_progress').length;
-    const notStarted = enrollments.data.filter((e) => e.status === 'not_started').length;
+    const completed = enrollments.data.filter((e: unknown) => e.status === 'completed').length;
+    const inProgress = enrollments.data.filter((e: unknown) => e.status === 'in_progress').length;
+    const notStarted = enrollments.data.filter((e: unknown) => e.status === 'not_started').length;
     const completionRate = (completed / total) * 100;
 
     return {
@@ -65,7 +65,7 @@ export function TrainingDashboard() {
           <CardTitle className='text-sm font-medium'>Completion Rate</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className='text-2xl font-bold'>{stats.completionRate.toFixed(1)}%</div>
+          <div className='text-2xl font-bold'>{stats.completionRate.toFixed(1: unknown)}%</div>
           <Progress
             value={stats.completionRate}
             className='mt-2'

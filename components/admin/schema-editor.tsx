@@ -29,9 +29,9 @@ interface SchemaEditorProps {
   onUpdate: () => void;
 }
 
-export function SchemaEditor({ table, onUpdate }: SchemaEditorProps) {
+export function SchemaEditor({ table, onUpdate }: SchemaEditorProps): void {
   const { isAdmin } = useAdminAccess();
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false: unknown);
   const [newColumn, setNewColumn] = useState({ name: '', type: 'text' });
   const { toast } = useToast();
   const supabase = createClient();
@@ -47,15 +47,15 @@ export function SchemaEditor({ table, onUpdate }: SchemaEditorProps) {
         p_column_type: newColumn.type,
       });
 
-      if (schemaError) throw schemaError;
+      if (schemaError: unknown) throw schemaError;
 
       onUpdate();
-      setIsOpen(false);
+      setIsOpen(false: unknown);
       toast({
         title: 'Column added',
         description: 'The new column has been added successfully.',
       });
-    } catch (error) {
+    } catch (error: unknown) {
       toast({
         title: 'Error',
         description: 'Failed to add column. Please try again.',
@@ -87,7 +87,7 @@ export function SchemaEditor({ table, onUpdate }: SchemaEditorProps) {
             <Label>Column Name</Label>
             <Input
               value={newColumn.name}
-              onChange={(e) => setNewColumn({ ...newColumn, name: e.target.value })}
+              onChange={(e: unknown) => setNewColumn({ ...newColumn, name: e.target.value })}
               placeholder='Enter column name'
             />
           </div>
@@ -95,7 +95,7 @@ export function SchemaEditor({ table, onUpdate }: SchemaEditorProps) {
             <Label>Column Type</Label>
             <Select
               value={newColumn.type}
-              onValueChange={(value) => setNewColumn({ ...newColumn, type: value })}
+              onValueChange={(value: unknown) => setNewColumn({ ...newColumn, type: value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder='Select column type' />

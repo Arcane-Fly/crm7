@@ -1,122 +1,64 @@
 import { env } from '@/env.mjs';
 
-type LogLevel = 'debug' | 'info' | 'warn' | 'error';
-
-interface LogEntry {
-  level: LogLevel;
-  message: string;
-  timestamp: string;
-  context?: Record<string, unknown>;
+export interface Logger {
+  debug(message: string, context?: Record<string, unknown>): void;
+  info(message: string, context?: Record<string, unknown>): void;
+  warn(message: string, context?: Record<string, unknown>): void;
+  error(message: string, context?: Record<string, unknown>): void;
 }
 
-interface LoggerOptions {
-  name: string;
-  level?: LogLevel;
-  context?: Record<string, unknown>;
-}
+class ConsoleLogger implements Logger {
+  constructor(private readonly namespace: string) {}
 
-class Logger {
-  private static instance: Logger;
-  private logLevel: LogLevel = 'info';
-  private name: string;
-  private defaultContext?: Record<string, unknown>;
+  private formatMessage(level: string, message: string): string {
+    return `[${level.toUpperCase()}] ${this.namespace}: ${message}`;
+  }
 
-  private constructor(options: LoggerOptions) {
-    this.name = options.name;
-    this.defaultContext = options.context;
+  private formatContext(context?: Record<string, unknown>): string {
+    if (!context || Object.keys(context).length === 0) {
+      return '';
+    }
+    return ` ${JSON.stringify(context)}`;
+  }
 
+  debug(message: string, context?: Record<string, unknown>): void {
     if (env.NODE_ENV === 'development') {
-      this.logLevel = 'debug';
-    }
-
-    if (options.level) {
-      this.logLevel = options.level;
+      console.debug(
+        this.formatMessage('debug', message) + this.formatContext(context)
+      );
     }
   }
 
-  public static getInstance(options: LoggerOptions): Logger {
-    if (!Logger.instance) {
-      Logger.instance = new Logger(options);
-    }
-    return Logger.instance;
+  info(message: string, context?: Record<string, unknown>): void {
+    console.info(
+      this.formatMessage('info', message) + this.formatContext(context)
+    );
   }
 
-  private shouldLog(level: LogLevel): boolean {
-    const levels: LogLevel[] = ['debug', 'info', 'warn', 'error'];
-    return levels.indexOf(level) >= levels.indexOf(this.logLevel);
+  warn(message: string, context?: Record<string, unknown>): void {
+    console.warn(
+      this.formatMessage('warn', message) + this.formatContext(context)
+    );
   }
 
-  private formatMessage(entry: LogEntry): string {
-    const contextStr = entry.context ? ` ${JSON.stringify(entry.context)}` : '';
-    return `[${entry.timestamp}] ${entry.level.toUpperCase()} [${this.name}]: ${entry.message}${contextStr}`;
-  }
-
-  private createLogEntry(
-    level: LogLevel,
-    message: string,
-    context?: Record<string, unknown>,
-  ): LogEntry {
-    return {
-      level,
-      message,
-      timestamp: new Date().toISOString(),
-      context: {
-        ...this.defaultContext,
-        ...context,
-      },
-    };
-  }
-
-  public debug(message: string, context?: Record<string, unknown>): void {
-    if (this.shouldLog('debug')) {
-      const entry = this.createLogEntry('debug', message, context);
-      console.debug(this.formatMessage(entry));
-    }
-  }
-
-  public info(message: string, context?: Record<string, unknown>): void {
-    if (this.shouldLog('info')) {
-      const entry = this.createLogEntry('info', message, context);
-      console.info(this.formatMessage(entry));
-    }
-  }
-
-  public warn(message: string, context?: Record<string, unknown>): void {
-    if (this.shouldLog('warn')) {
-      const entry = this.createLogEntry('warn', message, context);
-      console.warn(this.formatMessage(entry));
-    }
-  }
-
-  public error(message: string, context?: Record<string, unknown>): void {
-    if (this.shouldLog('error')) {
-      const entry = this.createLogEntry('error', message, context);
-      console.error(this.formatMessage(entry));
-
-      // Send to error reporting service in production
-      if (env.NODE_ENV === 'production') {
-        // TODO: Implement error reporting service integration
-      }
-    }
-  }
-
-  public extend(name: string, context?: Record<string, unknown>): Logger {
-    return Logger.getInstance({
-      name: `${this.name}:${name}`,
-      level: this.logLevel,
-      context: {
-        ...this.defaultContext,
-        ...context,
-      },
-    });
+  error(message: string, context?: Record<string, unknown>): void {
+    console.error(
+      this.formatMessage('error', message) + this.formatContext(context)
+    );
   }
 }
 
-export function createLogger(name: string, options: Partial<LoggerOptions> = {}): Logger {
-  return Logger.getInstance({
-    name,
-    ...options,
-  });
+class LoggerFactory {
+  private loggers = new Map<string, Logger>();
+
+  createLogger(namespace: string): Logger {
+    let logger = this.loggers.get(namespace);
+    if (!logger) {
+      logger = new ConsoleLogger(namespace);
+      this.loggers.set(namespace, logger);
+    }
+    return logger;
+  }
 }
 
-export const logger = createLogger('app');
+export const logger = new LoggerFactory();

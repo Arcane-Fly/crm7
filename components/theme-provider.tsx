@@ -6,6 +6,6 @@ import * as React from 'react';
 
 type ThemeProviderProps = React.ComponentProps<typeof ThemeProviderType>;
 
-export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
+export function ThemeProvider({ children, ...props }: ThemeProviderProps): void {
   return <NextThemesProvider {...props}>{children}</NextThemesProvider>;
 }

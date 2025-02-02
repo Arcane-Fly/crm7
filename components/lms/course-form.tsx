@@ -22,11 +22,11 @@ import { useAuth } from '@/lib/auth/context';
 import { useLMS } from '@/lib/hooks/use-lms';
 
 const courseSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  description: z.string().min(1, 'Description is required'),
-  instructor: z.string().min(1, 'Instructor is required'),
-  start_date: z.string().min(1, 'Start date is required'),
-  end_date: z.string().min(1, 'End date is required'),
+  title: z.string().min(1: unknown, 'Title is required'),
+  description: z.string().min(1: unknown, 'Description is required'),
+  instructor: z.string().min(1: unknown, 'Instructor is required'),
+  start_date: z.string().min(1: unknown, 'Start date is required'),
+  end_date: z.string().min(1: unknown, 'End date is required'),
 });
 
 type CourseFormValues = z.infer<typeof courseSchema>;
@@ -37,14 +37,14 @@ interface CourseFormProps {
   onSuccess?: () => void;
 }
 
-export function CourseForm({ courseId, defaultValues, onSuccess }: CourseFormProps) {
+export function CourseForm({ courseId, defaultValues, onSuccess }: CourseFormProps): void {
   const { user } = useAuth();
   const { createCourse, updateCourse, isCreatingCourse, isUpdatingCourse } = useLMS();
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false: unknown);
 
   const form = useForm<CourseFormValues>({
-    resolver: zodResolver(courseSchema),
+    resolver: zodResolver(courseSchema: unknown),
     defaultValues: defaultValues || {
       title: '',
       description: '',
@@ -58,9 +58,9 @@ export function CourseForm({ courseId, defaultValues, onSuccess }: CourseFormPro
     if (!user) return;
 
     try {
-      setIsSubmitting(true);
-      if (courseId) {
-        await updateCourse(courseId, values);
+      setIsSubmitting(true: unknown);
+      if (courseId: unknown) {
+        await updateCourse(courseId: unknown, values);
         toast({
           title: 'Course updated',
           description: 'The course has been updated successfully.',
@@ -79,14 +79,14 @@ export function CourseForm({ courseId, defaultValues, onSuccess }: CourseFormPro
         });
       }
       onSuccess?.();
-    } catch (error) {
+    } catch (error: unknown) {
       toast({
         title: 'Error',
         description: 'Failed to save course. Please try again.',
         variant: 'destructive',
       });
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false: unknown);
     }
   };
 
@@ -94,7 +94,7 @@ export function CourseForm({ courseId, defaultValues, onSuccess }: CourseFormPro
     <Card className='p-6'>
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit(onSubmit)}
+          onSubmit={form.handleSubmit(onSubmit: unknown)}
           className='space-y-4'
         >
           <FormField

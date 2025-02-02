@@ -64,7 +64,7 @@ export const columns: ColumnDef<HostEmployer>[] = [
       const handleCopyId = async (): Promise<void> => {
         try {
           await navigator.clipboard.writeText(employer.id);
-        } catch (error) {
+        } catch (error: unknown) {
           console.error('Failed to copy ID to clipboard:', error);
         }
       };

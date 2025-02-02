@@ -1,14 +1,484 @@
 {
+  // TypeScript Configuration
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
-  "deno.enable": false,
-  "deno.lint": false,
-  "deno.unstable": false,
-  "javascript.implicitProjectConfig.checkJs": true,
+  "typescript.preferences.importModuleSpecifier": "shortest",
+  "typescript.preferences.autoImportFileExcludePatterns": ["node_modules/*"],
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.suggest.completeFunctionCalls": true,
+  "typescript.inlayHints.functionLikeReturnTypes": true,
+  "typescript.inlayHints.parameterNames": true,
+  "typescript.inlayHints.parameterTypes": true,
+  "typescript.inlayHints.variableTypes": true,
+  "typescript.surveys.enabled": false,
+  "typescript.preferences.includePackageJsonAutoImports": "on",
+  "typescript.preferences.quoteStyle": "single",
+  "typescript.suggest.autoImports": true,
+  "typescript.suggest.paths": true,
+  "typescript.suggest.enabled": true,
+  "typescript.suggestionActions.enabled": true,
+  "typescript.validate.enable": true,
+  "typescript.workspaceSymbols.scope": "allOpenProjects",
+  "typescript.preferences.preferTypeOnlyAutoImports": true,
+
+  // Editor Configuration
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.formatOnType": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "always",
+    "source.organizeImports": "always",
+    "source.addMissingImports": "always",
+    "source.removeUnused": "always",
+    "source.fixAll.eslint": "always",
+    "source.fixAll.stylelint": "always",
+    "source.fixAll.markdownlint": "always"
+  },
+  "editor.suggest.showStatusBar": true,
+  "editor.suggestSelection": "first",
+  "editor.acceptSuggestionOnEnter": "smart",
+  "editor.quickSuggestions": {
+    "strings": true,
+    "other": true,
+    "comments": true
+  },
+  "editor.quickSuggestionsDelay": 0,
+  "editor.suggestOnTriggerCharacters": true,
+  "editor.maxTokenizationLineLength": 20000,
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true,
+  "editor.linkedEditing": true,
+  "editor.stickyScroll.enabled": true,
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.rulers": [100],
+  "editor.wordWrap": "on",
+  "editor.wordWrapColumn": 100,
+
+  // Problem Management
+  "problems.autoReveal": true,
+  "problems.decorations.enabled": true,
+  "problems.showCurrentInStatus": true,
+  "problems.defaultViewMode": "table",
+
+  // ESLint Configuration
+  "eslint.enable": true,
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+  "eslint.run": "onType",
+  "eslint.debug": true,
+  "eslint.lintTask.enable": true,
+  "eslint.workingDirectories": [{ "mode": "auto" }],
+  "eslint.options": {
+    "cache": true,
+    "cacheLocation": ".eslintcache",
+    "resolvePluginsRelativeTo": "."
+  },
+  "eslint.codeActionsOnSave.mode": "all",
+  "eslint.format.enable": true,
+  "eslint.packageManager": "pnpm",
+
+  // JavaScript Configuration
+  "javascript.validate.enable": true,
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "javascript.suggest.completeFunctionCalls": true,
+  "javascript.preferences.importModuleSpecifier": "shortest",
+  "javascript.preferences.quoteStyle": "single",
+  "javascript.inlayHints.functionLikeReturnTypes": true,
+  "javascript.inlayHints.parameterNames": true,
+  "javascript.inlayHints.parameterTypes": true,
+  "javascript.inlayHints.variableTypes": true,
+
+  // Search Configuration
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/*.code-search": true,
+    "**/dist": true,
+    "**/coverage": true,
+    "**/.git": true
+  },
+
+  // File Management
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.eol": "\n",
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/node_modules": true
+  },
+
+  // Codeium Enhanced Configuration
+  "codeium.enableConfig": {
+    "typescript": true,
+    "typescriptreact": true,
+    "javascript": true,
+    "javascriptreact": true,
+    "json": true,
+    "markdown": true
+  },
+  "codeium.inlineSuggestCount": 5,
+  "codeium.enableInlineCompletion": true,
+  "codeium.enableSearch": true,
+  "codeium.searchMaxResults": 50,
+  "codeium.searchTimeout": 5000,
+  "codeium.enableCodeLens": true,
+  "codeium.enableStatusBar": true,
+  "codeium.suggestMethod": "inline",
+  "codeium.enableAutoImport": true,
+  "codeium.useProxyServer": false,
+  "codeium.inferSelection": true,
+  "codeium.enableMultiCursor": true,
+  "codeium.enableSnippets": true,
+  "codeium.enableTabCompletion": true,
+  "codeium.enableTelemetry": true,
+  "codeium.experimentalFeatures": true,
+  "codeium.agentMode": {
+    "enabled": true,
+    "autonomyLevel": "high",
+    "maxConcurrentTasks": 5,
+    "autoApplyFixes": true,
+    "autoImportLibraries": true,
+    "autoOrganizeImports": true,
+    "autoFixLintErrors": true,
+    "autoFixTypeErrors": true,
+    "suggestRefactoring": true,
+    "suggestTests": true
+  },
+
+  // Puppeteer/Chrome Configuration
+  "puppeteer.executablePath": "/usr/bin/google-chrome",
+  "puppeteer.browserArgs": [
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
+    "--disable-dev-shm-usage",
+    "--disable-accelerated-2d-canvas",
+    "--disable-gpu",
+    "--no-first-run",
+    "--no-zygote",
+    "--single-process",
+    "--disable-extensions"
+  ],
+  "puppeteer.headless": true,
+  "puppeteer.defaultViewport": {
+    "width": 1920,
+    "height": 1080
+  },
+
+  // System Configuration
+  "security.workspace.trust.enabled": true,
+  "security.workspace.trust.startupPrompt": "never",
+  "security.workspace.trust.banner": "never",
+  "security.workspace.trust.emptyWindow": false,
+  "security.allowedUNCHosts": ["*"],
+  "terminal.integrated.allowChords": false,
+  "terminal.integrated.gpuAcceleration": "off",
+  "terminal.integrated.persistentSessionReviveProcess": "never",
+
+  // Enhanced Error Handling
+  "debug.javascript.autoAttachFilter": "disabled",
+  "debug.javascript.terminalOptions": {
+    "skipFiles": ["<node_internals>/**", "**/node_modules/**"]
+  },
+  "debug.chrome.useV3": true,
+  "debug.javascript.usePreview": false,
+  "debug.allowBreakpointsEverywhere": true,
+
+  // Process Management
+  "processExplorer.processOptions": {
+    "showAllProcesses": true,
+    "showProcessTree": true
+  },
+
+  // Language-specific settings
   "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "always",
+      "source.organizeImports": "always"
+    }
   },
   "[typescriptreact]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "always",
+      "source.organizeImports": "always"
+    }
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "always",
+      "source.organizeImports": "always"
+    }
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "always",
+      "source.organizeImports": "always"
+    }
+  },
+
+  // Git Configuration
+  "git.autofetch": true,
+  "git.enableSmartCommit": true,
+  "git.confirmSync": false,
+  "git.autoStash": true,
+  "git.branchProtection": ["main", "master"],
+  "git.branchValidation": {
+    "main": ["protected"],
+    "master": ["protected"]
+  },
+
+  // Cline Enhanced Configuration
+  "cline.enable": true,
+  "cline.enableInlineCompletion": true,
+  "cline.enableSearch": true,
+  "cline.enableCodeLens": true,
+  "cline.enableStatusBar": true,
+  "cline.inlineSuggestCount": 5,
+  "cline.searchMaxResults": 50,
+  "cline.searchTimeout": 5000,
+  "cline.suggestMethod": "inline",
+  "cline.enableAutoImport": true,
+  "cline.inferSelection": true,
+  "cline.enableMultiCursor": true,
+  "cline.enableSnippets": true,
+  "cline.enableTabCompletion": true,
+  "cline.enableTelemetry": true,
+  "cline.experimentalFeatures": true,
+  "cline.agentMode": {
+    "enabled": true,
+    "autonomyLevel": "high",
+    "maxConcurrentTasks": 5,
+    "autoApplyFixes": true,
+    "autoImportLibraries": true,
+    "autoOrganizeImports": true,
+    "autoFixLintErrors": true,
+    "autoFixTypeErrors": true,
+    "suggestRefactoring": true,
+    "suggestTests": true,
+    "autoImplementInterface": true,
+    "autoGenerateTests": true,
+    "autoDocumentation": true
+  },
+  "cline.languageServer": {
+    "typescript": true,
+    "javascript": true,
+    "typescriptreact": true,
+    "javascriptreact": true,
+    "json": true,
+    "markdown": true
+  },
+  "cline.completion": {
+    "enableAutoComplete": true,
+    "enableFunctionParenthesis": true,
+    "enableSignatureHelp": true,
+    "enableSnippets": true,
+    "maxResults": 50,
+    "timeout": 5000
+  },
+  "cline.analysis": {
+    "enableDiagnostics": true,
+    "enableCodeActions": true,
+    "enableReferences": true,
+    "enableDefinitions": true,
+    "enableTypeDefinitions": true,
+    "enableImplementations": true,
+    "maxAnalysisTime": 5000
+  },
+  "cline.aiFeatures": {
+    "enableContextAwareness": true,
+    "enableSemanticAnalysis": true,
+    "enableCodeGeneration": true,
+    "enableRefactoring": true,
+    "enableTestGeneration": true,
+    "enableDocumentation": true,
+    "models": {
+      "default": "o1",
+      "completion": "o1-mini",
+      "reasoning": "o1",
+      "generation": "gpt-4o",
+      "search": "sonar-pro"
+    },
+    "contextSize": 200000,
+    "maxTokens": {
+      "completion": 128000,
+      "reasoning": 200000,
+      "generation": 128000,
+      "search": 200000
+    },
+    "temperature": {
+      "completion": 0.6,
+      "reasoning": 0.7,
+      "generation": 0.8,
+      "search": 0.5
+    }
+  },
+
+  // Roo-Cline Enhanced Configuration
+  "roo-cline.enable": true,
+  "roo-cline.enableInlineCompletion": true,
+  "roo-cline.enableSearch": true,
+  "roo-cline.enableCodeLens": true,
+  "roo-cline.enableStatusBar": true,
+  "roo-cline.inlineSuggestCount": 5,
+  "roo-cline.searchMaxResults": 50,
+  "roo-cline.searchTimeout": 5000,
+  "roo-cline.suggestMethod": "inline",
+  "roo-cline.enableAutoImport": true,
+  "roo-cline.inferSelection": true,
+  "roo-cline.enableMultiCursor": true,
+  "roo-cline.enableSnippets": true,
+  "roo-cline.enableTabCompletion": true,
+  "roo-cline.enableTelemetry": true,
+  "roo-cline.experimentalFeatures": true,
+  "roo-cline.agentMode": {
+    "enabled": true,
+    "autonomyLevel": "high",
+    "maxConcurrentTasks": 5,
+    "autoApplyFixes": true,
+    "autoImportLibraries": true,
+    "autoOrganizeImports": true,
+    "autoFixLintErrors": true,
+    "autoFixTypeErrors": true,
+    "suggestRefactoring": true,
+    "suggestTests": true,
+    "autoImplementInterface": true,
+    "autoGenerateTests": true,
+    "autoDocumentation": true
+  },
+  "roo-cline.languageServer": {
+    "typescript": true,
+    "javascript": true,
+    "typescriptreact": true,
+    "javascriptreact": true,
+    "json": true,
+    "markdown": true
+  },
+  "roo-cline.completion": {
+    "enableAutoComplete": true,
+    "enableFunctionParenthesis": true,
+    "enableSignatureHelp": true,
+    "enableSnippets": true,
+    "maxResults": 50,
+    "timeout": 5000
+  },
+  "roo-cline.analysis": {
+    "enableDiagnostics": true,
+    "enableCodeActions": true,
+    "enableReferences": true,
+    "enableDefinitions": true,
+    "enableTypeDefinitions": true,
+    "enableImplementations": true,
+    "maxAnalysisTime": 5000
+  },
+  "roo-cline.aiFeatures": {
+    "enableContextAwareness": true,
+    "enableSemanticAnalysis": true,
+    "enableCodeGeneration": true,
+    "enableRefactoring": true,
+    "enableTestGeneration": true,
+    "enableDocumentation": true,
+    "models": {
+      "default": "o1",
+      "completion": "o1-mini",
+      "reasoning": "o1",
+      "generation": "gpt-4o",
+      "search": "sonar-pro"
+    },
+    "contextSize": 200000,
+    "maxTokens": {
+      "completion": 128000,
+      "reasoning": 200000,
+      "generation": 128000,
+      "search": 200000
+    },
+    "temperature": {
+      "completion": 0.6,
+      "reasoning": 0.7,
+      "generation": 0.8,
+      "search": 0.5
+    }
+  },
+
+  // AI Supervisor Configuration
+  "ai.supervisor": {
+    "enabled": true,
+    "mode": "proactive",
+    "autoAssign": true,
+    "trackProgress": true,
+    "generateReports": true,
+    "coordination": {
+      "enableCrossExtensionSync": true,
+      "primaryAgent": "codeium",
+      "delegateAgents": ["cline", "roo-cline"]
+    }
+  },
+
+  // Codeium Supervisor Configuration
+  "codeium.supervisor": {
+    "enabled": true,
+    "role": "primary",
+    "taskManagement": true,
+    "autoDelegate": true,
+    "progressTracking": true,
+    "qualityControl": true,
+    "autonomyLevel": "high",
+    "interactionMode": "proactive",
+    "metrics": {
+      "trackCodeQuality": true,
+      "trackPerformance": true,
+      "trackCompletion": true
+    }
+  },
+
+  // Cline Supervisor Configuration
+  "cline.supervisor": {
+    "enabled": true,
+    "role": "delegate",
+    "acceptTasks": true,
+    "reportProgress": true,
+    "autonomyLevel": "high",
+    "interactionMode": "collaborative",
+    "taskTypes": ["analysis", "refactoring", "testing"]
+  },
+
+  // Roo-Cline Supervisor Configuration
+  "roo-cline.supervisor": {
+    "enabled": true,
+    "role": "delegate",
+    "acceptTasks": true,
+    "reportProgress": true,
+    "autonomyLevel": "high",
+    "interactionMode": "collaborative",
+    "taskTypes": ["generation", "documentation", "optimization"]
+  },
+
+  // Workflow Automation Configuration
+  "workflow.automation": {
+    "enabled": true,
+    "taskCoordination": true,
+    "progressTracking": true,
+    "qualityControl": true,
+    "metrics": {
+      "collect": true,
+      "analyze": true,
+      "report": true
+    }
+  },
+  "windsurf.autoExecutionPolicy": "shred"
 }

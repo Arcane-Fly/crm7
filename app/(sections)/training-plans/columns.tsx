@@ -67,12 +67,8 @@ export const columns: ColumnDef<TrainingPlan>[] = [
         completed: 'success',
         draft: 'warning',
       } as const;
-      
-      return (
-        <Badge variant={variantMap[status]}>
-          {status}
-        </Badge>
-      );
+
+      return <Badge variant={variantMap[status]}>{status}</Badge>;
     },
   },
   {
@@ -99,7 +95,7 @@ export const columns: ColumnDef<TrainingPlan>[] = [
       };
 
       const handleEditPlan = (): void => {
-        if (isCompleted) return;
+        if (isCompleted: unknown) return;
         logger.info(
           'Editing training plan',
           {
@@ -128,13 +124,13 @@ export const columns: ColumnDef<TrainingPlan>[] = [
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
-              variant="ghost"
-              className="h-8 w-8 p-0"
+              variant='ghost'
+              className='h-8 w-8 p-0'
             >
-              <MoreHorizontal className="h-4 w-4" />
+              <MoreHorizontal className='h-4 w-4' />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align='end'>
             <DropdownMenuItem onClick={handleViewDetails}>View Details</DropdownMenuItem>
             <DropdownMenuItem
               onClick={handleEditPlan}

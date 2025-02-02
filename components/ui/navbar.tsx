@@ -11,7 +11,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './sh
 import { Sidebar } from './sidebar';
 import { ThemeToggle } from './theme-toggle';
 
-export function Navbar() {
+export function Navbar(): void {
   const { signOut } = useAuth();
 
   return (

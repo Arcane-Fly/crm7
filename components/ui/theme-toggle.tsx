@@ -6,7 +6,7 @@ import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 
-export function ThemeToggle() {
+export function ThemeToggle(): void {
   const { setTheme, theme } = useTheme();
 
   return (

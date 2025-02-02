@@ -11,29 +11,29 @@ interface RateComparisonProps {
   maxSelections?: number;
 }
 
-export default function RateComparison({
+const RateComparison: React.FC<RateComparisonProps> = ({
   selectedTemplates = [],
   onTemplateSelect,
   maxSelections = 3,
-}: RateComparisonProps) {
+}) => {
   const { supabase } = useSupabase();
   const { toast } = useToast();
   const [templates, setTemplates] = useState<RateTemplate[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true: unknown);
+  const [error, setError] = useState<string | null>(null: unknown);
 
   useEffect(() => {
-    async function fetchTemplates() {
+    const fetchData = async () => {
       try {
         const { data, error } = await supabase
           .from('rate_templates')
           .select('*')
           .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        if (error: unknown) throw error;
 
         setTemplates(data as RateTemplate[]);
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('Error fetching templates:', err);
         setError('Failed to load templates');
         toast({
@@ -42,19 +42,18 @@ export default function RateComparison({
           variant: 'destructive',
         });
       } finally {
-        setLoading(false);
+        setLoading(false: unknown);
       }
-    }
-
-    fetchTemplates();
+    };
+    void fetchData();
   }, [supabase, toast]);
 
   const handleTemplateSelect = (templateId: string) => {
-    const template = templates.find((t) => t.id === templateId);
+    const template = templates.find((t: unknown) => t.id === templateId);
     if (!template) return;
 
-    const newSelection = selectedTemplates.some((t) => t.id === templateId)
-      ? selectedTemplates.filter((t) => t.id !== templateId)
+    const newSelection = selectedTemplates.some((t: unknown) => t.id === templateId)
+      ? selectedTemplates.filter((t: unknown) => t.id !== templateId)
       : [...selectedTemplates, template];
 
     if (newSelection.length > maxSelections) {
@@ -66,13 +65,13 @@ export default function RateComparison({
       return;
     }
 
-    onTemplateSelect?.(newSelection);
+    onTemplateSelect?.(newSelection: unknown);
   };
 
-  if (loading) return <div>Loading templates...</div>;
-  if (error) return <div className='text-red-500'>{error}</div>;
+  if (loading: unknown) return <div>Loading templates...</div>;
+  if (error: unknown) return <div className='text-red-500'>{error}</div>;
 
-  const templateOptions = templates.map((template) => ({
+  const templateOptions = templates.map((template: unknown) => ({
     label: template.name,
     value: template.id,
   }));
@@ -80,7 +79,7 @@ export default function RateComparison({
   const calculateDifference = (value1: number, value2: number): string => {
     const diff = value1 - value2;
     const percentage = (diff / value2) * 100;
-    return `${diff >= 0 ? '+' : ''}${percentage.toFixed(2)}%`;
+    return `${diff >= 0 ? '+' : ''}${percentage.toFixed(2: unknown)}%`;
   };
 
   return (
@@ -95,7 +94,7 @@ export default function RateComparison({
         <Combobox
           id='template-select'
           options={templateOptions}
-          value={selectedTemplates.map((t) => t.id)}
+          value={selectedTemplates.map((t: unknown) => t.id)}
           onChange={handleTemplateSelect}
           placeholder='Select templates...'
           multiple
@@ -112,7 +111,7 @@ export default function RateComparison({
                 <th className='px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500'>
                   Rate Component
                 </th>
-                {selectedTemplates.map((template, index) => (
+                {selectedTemplates.map((template: unknown, index) => (
                   <th
                     key={template.id}
                     className='px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500'
@@ -141,7 +140,7 @@ export default function RateComparison({
                   <td className='whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900'>
                     {label}
                   </td>
-                  {selectedTemplates.map((template, index) => (
+                  {selectedTemplates.map((template: unknown, index) => (
                     <td
                       key={template.id}
                       className='whitespace-nowrap px-6 py-4 text-sm text-gray-500'
@@ -172,4 +171,6 @@ export default function RateComparison({
       )}
     </div>
   );
-}
+};
+
+export default RateComparison;

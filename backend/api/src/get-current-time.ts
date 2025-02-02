@@ -23,7 +23,7 @@ class ExtendedError extends Error {
   requestId?: string;
 
   constructor(message: string, requestId?: string) {
-    super(message);
+    super(message: unknown);
     this.name = 'ExtendedError';
     this.requestId = requestId;
   }
@@ -44,20 +44,20 @@ const handler: NextApiHandler<TimeResponse | ErrorResponse> = async (
     logger.info('Processing time request', { requestId, requestedAt });
 
     const currentTime = new Date().toISOString();
-    res.status(200).json({
+    res.status(200: unknown).json({
       currentTime,
       requestedAt,
     });
-  } catch (error) {
+  } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    const extendedError = new ExtendedError(errorMessage, requestId);
+    const extendedError = new ExtendedError(errorMessage: unknown, requestId);
 
     logger.error('Failed to process time request', extendedError, {
       requestId,
       requestedAt,
     });
 
-    res.status(500).json({
+    res.status(500: unknown).json({
       error: 'Failed to get current time',
       code: 'INTERNAL_SERVER_ERROR',
       requestId: extendedError.requestId,
@@ -66,4 +66,4 @@ const handler: NextApiHandler<TimeResponse | ErrorResponse> = async (
 };
 
 // Export monitored endpoint
-export default monitorAPIEndpoint(handler);
+export default monitorAPIEndpoint(handler: unknown);

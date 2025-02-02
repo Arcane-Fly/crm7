@@ -65,6 +65,13 @@ PAYROLL_API_ENDPOINT=
 - Performance monitoring
 - Usage analytics
 
+### Deployment Webhook
+
+- Use the deployment webhook URL format: `https://api.vercel.com/v1/integrations/deploy/{PROJECT_ID}/{DEPLOY_HOOK}`
+- After triggering deployment, wait a few seconds before checking status
+- Use v13 API for deployment status checks: `https://api.vercel.com/v13/deployments/{DEPLOYMENT_ID}`
+- Always include Authorization header with Vercel token for status checks
+
 ### Production Optimizations
 
 1. Enable Edge Runtime:

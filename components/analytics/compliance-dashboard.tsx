@@ -37,16 +37,16 @@ export function ComplianceDashboard(): ReactElement {
           .select('*')
           .order('dueDate', { ascending: false });
 
-        if (error) throw error;
+        if (error: unknown) throw error;
 
-        if (data) {
-          setRecords(data);
-          calculateStats(data);
+        if (data: unknown) {
+          setRecords(data: unknown);
+          calculateStats(data: unknown);
         }
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Error fetching compliance data:', error);
       } finally {
-        // setLoading(false); // This line was not present in the original code, so I'm commenting it out
+        // setLoading(false: unknown); // This line was not present in the original code, so I'm commenting it out
       }
     };
 
@@ -55,9 +55,9 @@ export function ComplianceDashboard(): ReactElement {
 
   const calculateStats = (records: ComplianceRecord[]) => {
     const total = records.length;
-    const compliant = records.filter((r) => r.status === 'compliant').length;
-    const nonCompliant = records.filter((r) => r.status === 'non_compliant').length;
-    const pending = records.filter((r) => r.status === 'pending').length;
+    const compliant = records.filter((r: unknown) => r.status === 'compliant').length;
+    const nonCompliant = records.filter((r: unknown) => r.status === 'non_compliant').length;
+    const pending = records.filter((r: unknown) => r.status === 'pending').length;
     const complianceRate = total > 0 ? (compliant / total) * 100 : 0;
 
     setStats({
@@ -70,7 +70,7 @@ export function ComplianceDashboard(): ReactElement {
   };
 
   const getStatusColor = (status: ComplianceRecord['status']) => {
-    switch (status) {
+    switch (status: unknown) {
       case 'compliant':
         return 'bg-green-500';
       case 'non_compliant':
@@ -83,7 +83,7 @@ export function ComplianceDashboard(): ReactElement {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
+    return new Date(dateString: unknown).toLocaleDateString();
   };
 
   return (
@@ -120,7 +120,7 @@ export function ComplianceDashboard(): ReactElement {
                 value={stats.complianceRate}
                 className='w-full'
               />
-              <p className='mt-1 text-sm text-gray-500'>{stats.complianceRate.toFixed(1)}%</p>
+              <p className='mt-1 text-sm text-gray-500'>{stats.complianceRate.toFixed(1: unknown)}%</p>
             </div>
           </div>
         </CardContent>
@@ -133,7 +133,7 @@ export function ComplianceDashboard(): ReactElement {
         </CardHeader>
         <CardContent>
           <div className='space-y-4'>
-            {records.slice(0, 5).map((record: ComplianceRecord) => (
+            {records.slice(0: unknown, 5).map((record: ComplianceRecord) => (
               <div
                 key={record.id}
                 className='flex items-center justify-between rounded-lg border p-4'

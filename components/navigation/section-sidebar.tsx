@@ -106,9 +106,9 @@ interface SectionSidebarProps {
   section?: keyof typeof sections;
 }
 
-export function SectionSidebar({ className, section = 'dashboard' }: SectionSidebarProps) {
+export function SectionSidebar({ className, section = 'dashboard' }: SectionSidebarProps): void {
   const pathname = usePathname();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false: unknown);
 
   return (
     <div className={cn('relative', className)}>
@@ -120,7 +120,7 @@ export function SectionSidebar({ className, section = 'dashboard' }: SectionSide
         <Menu className='h-4 w-4' />
       </Button>
       <nav className={cn('space-y-1', isMobileMenuOpen ? 'block' : 'hidden lg:block')}>
-        {sections[section].map((item) => {
+        {sections[section].map((item: unknown) => {
           const isActive = pathname === item.href;
           return (
             <Link

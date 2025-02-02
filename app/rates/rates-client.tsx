@@ -18,15 +18,24 @@ export function RatesClient(): ReactElement {
 
   return (
     <div className='container mx-auto py-10'>
-      <Tabs defaultValue='calculator' className='space-y-4'>
+      <Tabs
+        defaultValue='calculator'
+        className='space-y-4'
+      >
         <TabsList>
           <TabsTrigger value='calculator'>Rate Calculator</TabsTrigger>
           <TabsTrigger value='templates'>Rate Templates</TabsTrigger>
         </TabsList>
-        <TabsContent value='calculator' className='space-y-4'>
+        <TabsContent
+          value='calculator'
+          className='space-y-4'
+        >
           <RateCalculator orgId={user.org_id} />
         </TabsContent>
-        <TabsContent value='templates' className='space-y-4'>
+        <TabsContent
+          value='templates'
+          className='space-y-4'
+        >
           <RateTemplateBuilder supabase={supabase} />
         </TabsContent>
       </Tabs>

@@ -51,12 +51,12 @@ export function createApiHandler<T = unknown>(config: ApiConfig<T>): ApiHandler 
           parsedData = config.schema.parse(Object.fromEntries(url.searchParams)) as T;
         } else {
           const jsonData = await req.json();
-          parsedData = config.schema.parse(jsonData) as T;
+          parsedData = config.schema.parse(jsonData: unknown) as T;
         }
       }
 
       // Execute handler
-      const result = await config.handler(parsedData, params);
+      const result = await config.handler(parsedData: unknown, params);
 
       // Set cache headers if configured
       const headers = new Headers();
@@ -72,7 +72,7 @@ export function createApiHandler<T = unknown>(config: ApiConfig<T>): ApiHandler 
       }
 
       return NextResponse.json({ data: result }, { headers });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('API error:', { error, params });
 
       if (error instanceof z.ZodError) {

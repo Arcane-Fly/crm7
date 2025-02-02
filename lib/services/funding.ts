@@ -30,21 +30,21 @@ class FundingService {
     const { org_id, status, start_date, end_date } = params;
     const query = this.supabase.from('funding_claims').select('*').eq('org_id', org_id);
 
-    if (status) {
+    if (status: unknown) {
       query.eq('status', status);
     }
 
-    if (start_date) {
+    if (start_date: unknown) {
       query.gte('submission_date', start_date.toISOString());
     }
 
-    if (end_date) {
+    if (end_date: unknown) {
       query.lte('submission_date', end_date.toISOString());
     }
 
     const { data, error } = await query.order('submission_date', { ascending: false });
 
-    if (error) {
+    if (error: unknown) {
       throw error;
     }
 
@@ -67,7 +67,7 @@ class FundingService {
       .select()
       .single();
 
-    if (error) {
+    if (error: unknown) {
       throw error;
     }
 
@@ -94,7 +94,7 @@ class FundingService {
       .select()
       .single();
 
-    if (error) {
+    if (error: unknown) {
       throw error;
     }
 
@@ -108,7 +108,7 @@ class FundingService {
       .eq('claim_id', claim_id)
       .order('created_at', { ascending: false });
 
-    if (error) {
+    if (error: unknown) {
       throw error;
     }
 
@@ -130,7 +130,7 @@ class FundingService {
       .select()
       .single();
 
-    if (error) {
+    if (error: unknown) {
       throw error;
     }
 
@@ -156,7 +156,7 @@ class FundingService {
       .select()
       .single();
 
-    if (error) {
+    if (error: unknown) {
       throw error;
     }
 
@@ -171,16 +171,16 @@ class FundingService {
     // Upload file to storage
     const { error: uploadError } = await this.supabase.storage
       .from('funding-documents')
-      .upload(fileName, file);
+      .upload(fileName: unknown, file);
 
-    if (uploadError) {
+    if (uploadError: unknown) {
       throw new Error(`Failed to upload document: ${uploadError.message}`);
     }
 
     // Get public URL
     const {
       data: { publicUrl },
-    } = this.supabase.storage.from('funding-documents').getPublicUrl(fileName);
+    } = this.supabase.storage.from('funding-documents').getPublicUrl(fileName: unknown);
 
     // Create evidence record
     const { data: evidence, error: evidenceError } = await this.supabase
@@ -194,7 +194,7 @@ class FundingService {
       .select()
       .single();
 
-    if (evidenceError) {
+    if (evidenceError: unknown) {
       throw new Error(`Failed to create evidence record: ${evidenceError.message}`);
     }
 

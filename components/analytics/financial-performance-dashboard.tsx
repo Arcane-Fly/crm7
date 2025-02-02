@@ -38,31 +38,31 @@ export function FinancialPerformanceDashboard(): ReactElement {
           .select('*')
           .order('date', { ascending: false });
 
-        if (error) throw error;
+        if (error: unknown) throw error;
 
-        if (data) {
-          setPerformances(data);
-          calculateStats(data);
+        if (data: unknown) {
+          setPerformances(data: unknown);
+          calculateStats(data: unknown);
         }
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Error fetching performance data:', error);
       } finally {
-        // setLoading(false); // You might need to add a loading state
+        // setLoading(false: unknown); // You might need to add a loading state
       }
     };
 
     void fetchPerformanceData();
-  }, [supabase]);
+  }, []); // Empty dependency array since supabase is stable
 
   const calculateStats = (performances: Performance[]) => {
     const totalReviews = performances.length;
     const averageRating =
       performances.length > 0
-        ? performances.reduce((sum, p) => sum + p.rating, 0) / totalReviews
+        ? performances.reduce((sum: unknown, p) => sum + p.rating, 0) / totalReviews
         : 0;
-    const draftCount = performances.filter((p) => p.status === 'draft').length;
-    const submittedCount = performances.filter((p) => p.status === 'submitted').length;
-    const approvedCount = performances.filter((p) => p.status === 'approved').length;
+    const draftCount = performances.filter((p: unknown) => p.status === 'draft').length;
+    const submittedCount = performances.filter((p: unknown) => p.status === 'submitted').length;
+    const approvedCount = performances.filter((p: unknown) => p.status === 'approved').length;
     const completionRate = totalReviews > 0 ? (approvedCount / totalReviews) * 100 : 0;
 
     setStats({
@@ -76,7 +76,7 @@ export function FinancialPerformanceDashboard(): ReactElement {
   };
 
   const getStatusColor = (status: Performance['status']) => {
-    switch (status) {
+    switch (status: unknown) {
       case 'approved':
         return 'bg-green-500';
       case 'submitted':
@@ -104,7 +104,7 @@ export function FinancialPerformanceDashboard(): ReactElement {
               </div>
               <div>
                 <p className='text-sm font-medium'>Average Rating</p>
-                <p className='text-2xl font-bold'>{stats.averageRating.toFixed(1)}</p>
+                <p className='text-2xl font-bold'>{stats.averageRating.toFixed(1: unknown)}</p>
               </div>
               <div>
                 <p className='text-sm font-medium'>Approved Reviews</p>
@@ -122,7 +122,7 @@ export function FinancialPerformanceDashboard(): ReactElement {
                 value={stats.completionRate}
                 className='w-full'
               />
-              <p className='mt-1 text-sm text-gray-500'>{stats.completionRate.toFixed(1)}%</p>
+              <p className='mt-1 text-sm text-gray-500'>{stats.completionRate.toFixed(1: unknown)}%</p>
             </div>
           </div>
         </CardContent>
@@ -135,7 +135,7 @@ export function FinancialPerformanceDashboard(): ReactElement {
         </CardHeader>
         <CardContent>
           <div className='space-y-4'>
-            {performances.slice(0, 5).map((performance: Performance) => (
+            {performances.slice(0: unknown, 5).map((performance: Performance) => (
               <div
                 key={performance.id}
                 className='flex items-center justify-between rounded-lg border p-4'
@@ -145,7 +145,7 @@ export function FinancialPerformanceDashboard(): ReactElement {
                   <p className='text-sm text-gray-500'>Period: {performance.period}</p>
                 </div>
                 <div className='flex items-center space-x-4'>
-                  <p className='font-medium'>Rating: {performance.rating.toFixed(1)}</p>
+                  <p className='font-medium'>Rating: {performance.rating.toFixed(1: unknown)}</p>
                   <Badge className={getStatusColor(performance.status)}>{performance.status}</Badge>
                 </div>
               </div>

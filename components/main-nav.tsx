@@ -44,13 +44,13 @@ const navItems = [
   },
 ];
 
-export function MainNav() {
+export function MainNav(): void {
   const pathname = usePathname();
 
   return (
     <nav className='border-b bg-background'>
       <div className='flex h-14 items-center gap-6 overflow-x-auto px-4'>
-        {navItems.map((item) => (
+        {navItems.map((item: unknown) => (
           <Link
             key={item.href}
             href={item.href}

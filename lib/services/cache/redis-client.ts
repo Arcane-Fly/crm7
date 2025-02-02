@@ -4,7 +4,7 @@ import { logger } from '@/lib/services/logger';
 
 class LogError extends Error {
   constructor(message: string) {
-    super(message);
+    super(message: unknown);
     this.name = 'LogError';
   }
   error?: string;
@@ -13,8 +13,8 @@ class LogError extends Error {
 }
 
 const REDIS_CONFIG = {
-  host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT || '6379', 10),
+  host: process.env.REDIS_HOST ?? 'localhost',
+  port: parseInt(process.env.REDIS_PORT ?? '6379', 10),
   password: process.env.REDIS_PASSWORD,
   keyPrefix: 'fairwork:',
   retryStrategy: (times: number) => {
@@ -37,15 +37,15 @@ class RedisClient {
     if (RedisClient.isConnecting) {
       // Wait for connection to complete
       while (RedisClient.isConnecting) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise((resolve: unknown) => setTimeout(resolve: unknown, 100));
       }
-      return RedisClient.instance!;
+      return RedisClient.instance ?? undefined;
     }
 
     RedisClient.isConnecting = true;
 
     try {
-      const redis = new Redis(REDIS_CONFIG);
+      const redis = new Redis(REDIS_CONFIG: unknown);
 
       redis.on('error', (error: Error) => {
         const logError = new LogError('Redis connection error');
@@ -61,7 +61,7 @@ class RedisClient {
       await redis.ping();
       RedisClient.instance = redis;
       return redis;
-    } catch (error) {
+    } catch (error: unknown) {
       const logError = new LogError('Failed to initialize Redis');
       logError.error = error instanceof Error ? error.message : 'Unknown error';
       logError.stack = error instanceof Error ? error.stack : undefined;

@@ -12,28 +12,28 @@ import type { Database } from '../types/database';
  * - Database operations in API routes
  * - Server-side data fetching
  */
-export const createClient = () => {
+export const createClient = (): void => {
   const cookieStore = cookies();
 
   return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? undefined,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? undefined,
     {
       cookies: {
         get(name: string) {
-          return cookieStore.get(name)?.value;
+          return cookieStore.get(name: unknown)?.value;
         },
-        set(name: string, value: string, options: any) {
+        set(name: string, value: string, options: unknown) {
           try {
             cookieStore.set({ name, value, ...options });
-          } catch (error) {
+          } catch (error: unknown) {
             logger.error('Failed to set cookie', { error, name });
           }
         },
-        remove(name: string, options: any) {
+        remove(name: string, options: unknown) {
           try {
             cookieStore.delete({ name, ...options });
-          } catch (error) {
+          } catch (error: unknown) {
             logger.error('Failed to remove cookie', { error, name });
           }
         },
@@ -52,7 +52,7 @@ export const createClient = () => {
  * Creates a Supabase admin client with full database access.
  * This should only be used in trusted server contexts.
  */
-export const createAdminClient = () => {
+export const createAdminClient = (): void => {
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
     throw new Error('SUPABASE_SERVICE_ROLE_KEY is not set');
   }
@@ -60,24 +60,24 @@ export const createAdminClient = () => {
   const cookieStore = cookies();
 
   return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? undefined,
     process.env.SUPABASE_SERVICE_ROLE_KEY,
     {
       cookies: {
         get(name: string) {
-          return cookieStore.get(name)?.value;
+          return cookieStore.get(name: unknown)?.value;
         },
-        set(name: string, value: string, options: any) {
+        set(name: string, value: string, options: unknown) {
           try {
             cookieStore.set({ name, value, ...options });
-          } catch (error) {
+          } catch (error: unknown) {
             logger.error('Failed to set cookie in admin client', { error, name });
           }
         },
-        remove(name: string, options: any) {
+        remove(name: string, options: unknown) {
           try {
             cookieStore.delete({ name, ...options });
-          } catch (error) {
+          } catch (error: unknown) {
             logger.error('Failed to remove cookie in admin client', { error, name });
           }
         },

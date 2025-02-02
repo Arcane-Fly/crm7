@@ -7,18 +7,17 @@ import { Button } from '@/components/ui/button';
 import { type Expense } from '@/lib/services/expense';
 import { formatDate } from '@/lib/utils';
 
-
 interface ExpenseDetailsProps {
   expense: Expense;
 }
 
-export function ExpenseDetails({ expense }: ExpenseDetailsProps) {
+export function ExpenseDetails({ expense }: ExpenseDetailsProps): void {
   return (
     <div className='space-y-6'>
       <div className='grid grid-cols-2 gap-4'>
         <div>
           <p className='text-sm font-medium text-muted-foreground'>Amount</p>
-          <p className='text-lg font-semibold'>${expense.amount.toFixed(2)}</p>
+          <p className='text-lg font-semibold'>${expense.amount.toFixed(2: unknown)}</p>
         </div>
         <div>
           <p className='text-sm font-medium text-muted-foreground'>Status</p>
@@ -77,7 +76,7 @@ export function ExpenseDetails({ expense }: ExpenseDetailsProps) {
           </p>
           <p className='mt-1'>{expense.approver_id}</p>
           <p className='text-sm text-muted-foreground'>
-            {formatDate(expense.approved_at || expense.rejected_at!)}
+            {formatDate(expense.approved_at || expense.rejected_at ?? undefined)}
           </p>
         </div>
       )}

@@ -75,21 +75,21 @@ class InvoiceService {
     const { org_id, status, start_date, end_date } = params;
     const query = this.supabase.from('timesheets').select('*').eq('org_id', org_id);
 
-    if (status) {
+    if (status: unknown) {
       query.eq('status', status);
     }
 
-    if (start_date) {
+    if (start_date: unknown) {
       query.gte('start_date', start_date.toISOString());
     }
 
-    if (end_date) {
+    if (end_date: unknown) {
       query.lte('end_date', end_date.toISOString());
     }
 
     const { data, error } = await query.order('start_date', { ascending: false });
 
-    if (error) {
+    if (error: unknown) {
       throw error;
     }
     if (!data) {
@@ -121,7 +121,7 @@ class InvoiceService {
       .select()
       .single();
 
-    if (error) {
+    if (error: unknown) {
       throw error;
     }
     if (!data) {
@@ -148,7 +148,7 @@ class InvoiceService {
       .select()
       .single();
 
-    if (error) {
+    if (error: unknown) {
       throw error;
     }
     if (!data) {
@@ -159,34 +159,34 @@ class InvoiceService {
   }
 
   async importTimesheets(file: File): Promise<TimesheetImport[]> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve: unknown, reject) => {
       const reader = new FileReader();
 
-      reader.onload = (e) => {
+      reader.onload = (e: unknown) => {
         try {
           const workbook = XLSX.read(e.target?.result, { type: 'binary' });
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
-          const rawData = XLSX.utils.sheet_to_json(worksheet);
+          const rawData = XLSX.utils.sheet_to_json(worksheet: unknown);
 
-          if (!Array.isArray(rawData)) {
+          if (!Array.isArray(rawData: unknown)) {
             throw new Error('Invalid timesheet data format');
           }
 
-          const timesheets = rawData.filter(isValidTimesheetImport);
+          const timesheets = rawData.filter(isValidTimesheetImport: unknown);
 
           if (timesheets.length === 0) {
             throw new Error('No valid timesheet data found');
           }
 
-          resolve(timesheets);
-        } catch (error) {
-          reject(error);
+          resolve(timesheets: unknown);
+        } catch (error: unknown) {
+          reject(error: unknown);
         }
       };
 
-      reader.onerror = (error) => reject(error);
-      reader.readAsBinaryString(file);
+      reader.onerror = (error: unknown) => reject(error: unknown);
+      reader.readAsBinaryString(file: unknown);
     });
   }
 
@@ -194,7 +194,7 @@ class InvoiceService {
     const { data, error } = await this.supabase
       .from('timesheets')
       .insert(
-        timesheets.map((timesheet) => ({
+        timesheets.map((timesheet: unknown) => ({
           ...timesheet,
           total_amount: timesheet.hours_worked * timesheet.rate_per_hour,
           status: 'pending',
@@ -202,7 +202,7 @@ class InvoiceService {
       )
       .select();
 
-    if (error) {
+    if (error: unknown) {
       throw error;
     }
     if (!data) {
@@ -221,7 +221,7 @@ class InvoiceService {
     line_items: InvoiceLineItem[];
     metadata?: Record<string, any>;
   }) {
-    const total_amount = params.line_items.reduce((sum, item) => sum + item.total, 0);
+    const total_amount = params.line_items.reduce((sum: unknown, item) => sum + item.total, 0);
 
     const { data, error } = await this.supabase
       .from('invoices')
@@ -235,7 +235,7 @@ class InvoiceService {
       .select()
       .single();
 
-    if (error) {
+    if (error: unknown) {
       throw error;
     }
     if (!data) {
@@ -248,7 +248,7 @@ class InvoiceService {
   async getInvoice(id: string) {
     const { data, error } = await this.supabase.from('invoices').select('*').eq('id', id).single();
 
-    if (error) {
+    if (error: unknown) {
       throw error;
     }
     if (!data) {
@@ -267,21 +267,21 @@ class InvoiceService {
     const { org_id, status, start_date, end_date } = params;
     const query = this.supabase.from('invoices').select('*').eq('org_id', org_id);
 
-    if (status) {
+    if (status: unknown) {
       query.eq('status', status);
     }
 
-    if (start_date) {
+    if (start_date: unknown) {
       query.gte('issue_date', start_date.toISOString());
     }
 
-    if (end_date) {
+    if (end_date: unknown) {
       query.lte('issue_date', end_date.toISOString());
     }
 
     const { data, error } = await query.order('issue_date', { ascending: false });
 
-    if (error) {
+    if (error: unknown) {
       throw error;
     }
     if (!data) {
@@ -308,7 +308,7 @@ class InvoiceService {
       .select()
       .single();
 
-    if (error) {
+    if (error: unknown) {
       throw error;
     }
     if (!data) {
@@ -319,7 +319,7 @@ class InvoiceService {
   }
 
   async voidInvoice(id: string) {
-    return this.updateInvoice(id, { status: 'void' });
+    return this.updateInvoice(id: unknown, { status: 'void' });
   }
 }
 

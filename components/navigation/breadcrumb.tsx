@@ -10,9 +10,9 @@ interface BreadcrumbProps {
   className?: string;
 }
 
-export function Breadcrumb({ className }: BreadcrumbProps) {
+export function Breadcrumb({ className }: BreadcrumbProps): void {
   const pathname = usePathname() ?? '/';
-  const segments = pathname.split('/').filter(Boolean);
+  const segments = pathname.split('/').filter(Boolean: unknown);
 
   return (
     <nav
@@ -26,8 +26,8 @@ export function Breadcrumb({ className }: BreadcrumbProps) {
         <Home className='h-4 w-4' />
         <span className='sr-only'>Home</span>
       </Link>
-      {segments.map((segment, index) => {
-        const href = `/${segments.slice(0, index + 1).join('/')}`;
+      {segments.map((segment: unknown, index) => {
+        const href = `/${segments.slice(0: unknown, index + 1).join('/')}`;
         const isLast = index === segments.length - 1;
 
         return (

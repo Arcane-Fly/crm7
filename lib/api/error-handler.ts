@@ -2,20 +2,9 @@ import { type NextRequest, type NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { logger } from '@/lib/logger';
+import { AppError, ValidationError, ErrorCode, type ErrorContext } from '@/lib/types/errors';
 
 import { createErrorResponse } from './response';
-
-export class ApiError extends Error {
-  constructor(
-    message: string,
-    public code: string,
-    public status: number = 400,
-    public details?: unknown,
-  ) {
-    super(message);
-    this.name = 'ApiError';
-  }
-}
 
 type RouteHandler = (
   req: NextRequest,
@@ -23,49 +12,48 @@ type RouteHandler = (
 ) => Promise<NextResponse>;
 
 /**
- * Wrap a route handler with error handling
+ * Wraps a route handler with standardized error handling
  */
 export function withErrorHandler(handler: RouteHandler): RouteHandler {
   return async (req: NextRequest, context: { params: Record<string, string> }) => {
     try {
-      return await handler(req, context);
-    } catch (error) {
-      // Handle known API errors
-      if (error instanceof ApiError) {
-        logger.warn('API Error', {
+      return await handler(req: unknown, context);
+    } catch (error: unknown) {
+      // Handle known application errors
+      if (error instanceof AppError) {
+        logger.warn('Application Error', {
           code: error.code,
           message: error.message,
           details: error.details,
+          stack: error.stack,
+          cause: error.cause,
         });
-        return createErrorResponse(error.code, error.message, error.details, error.status);
+        return createErrorResponse(error.toJSON(), error.status);
       }
 
       // Handle Zod validation errors
       if (error instanceof z.ZodError) {
-        logger.warn('Validation Error', { issues: error.issues });
-        return createErrorResponse('VALIDATION_ERROR', 'Invalid request data', error.issues, 400);
+        const validationError = new ValidationError('Invalid request data', error);
+        logger.warn('Validation Error', validationError.toJSON());
+        return createErrorResponse(validationError.toJSON(), validationError.status);
       }
 
-      // Log unknown errors
-      logger.error('Unhandled Error', { error });
-
-      // Return generic error in production
-      if (process.env.NODE_ENV === 'production') {
-        return createErrorResponse(
-          'INTERNAL_SERVER_ERROR',
-          'An unexpected error occurred',
-          undefined,
-          500,
-        );
-      }
-
-      // Return detailed error in development
-      return createErrorResponse(
-        'INTERNAL_SERVER_ERROR',
-        error instanceof Error ? error.message : 'An unexpected error occurred',
+      // Handle unknown errors
+      logger.error('Unhandled Error', {
         error,
-        500,
-      );
+        path: req.nextUrl.pathname,
+        method: req.method,
+      });
+
+      // Convert unknown errors to AppError
+      const appError = new AppError({
+        code: ErrorCode.INTERNAL_ERROR,
+        message: 'An unexpected error occurred',
+        status: 500,
+        cause: error instanceof Error ? error : undefined,
+      });
+
+      return createErrorResponse(appError.toJSON(), appError.status);
     }
   };
 }

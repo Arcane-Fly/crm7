@@ -16,8 +16,8 @@ export interface Timesheet {
   regular_hours: number;
   overtime_hours: number;
   break_hours: number;
-  allowances: any[];
-  penalties: any[];
+  allowances: unknown[];
+  penalties: unknown[];
   notes?: string;
   submitted_at?: Date;
   approved_at?: Date;
@@ -87,19 +87,19 @@ export interface CreateInvoiceParams {
 
 export class BillingService {
   private supabase = createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? undefined,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? undefined,
   );
 
   // Timesheet Management
   async createTimesheet(timesheet: Omit<Timesheet, 'id'>): Promise<Timesheet> {
     const { data, error } = await this.supabase
       .from('timesheets')
-      .insert(timesheet)
+      .insert(timesheet: unknown)
       .select()
       .single();
 
-    if (error) throw error;
+    if (error: unknown) throw error;
     if (!data) throw new Error('Failed to create timesheet');
     return data as Timesheet;
   }
@@ -107,11 +107,11 @@ export class BillingService {
   async addTimesheetEntry(entry: Omit<TimesheetEntry, 'id'>): Promise<TimesheetEntry> {
     const { data, error } = await this.supabase
       .from('timesheet_entries')
-      .insert(entry)
+      .insert(entry: unknown)
       .select()
       .single();
 
-    if (error) throw error;
+    if (error: unknown) throw error;
     if (!data) throw new Error('Failed to create timesheet entry');
     return data as TimesheetEntry;
   }
@@ -125,7 +125,7 @@ export class BillingService {
       })
       .eq('id', timesheetId);
 
-    if (error) throw error;
+    if (error: unknown) throw error;
   }
 
   async approveTimesheet(timesheetId: string, approverId: string): Promise<void> {
@@ -138,7 +138,7 @@ export class BillingService {
       })
       .eq('id', timesheetId);
 
-    if (error) throw error;
+    if (error: unknown) throw error;
   }
 
   // Billing Management
@@ -149,7 +149,7 @@ export class BillingService {
       .eq('org_id', orgId)
       .single();
 
-    if (error) throw error;
+    if (error: unknown) throw error;
     if (!data) throw new Error('Billing settings not found');
     return data as BillingSettings;
   }
@@ -167,7 +167,7 @@ export class BillingService {
       })
       .single();
 
-    if (error) throw error;
+    if (error: unknown) throw error;
     if (!data) throw new Error('Failed to generate invoice');
     return data as Invoice;
   }
@@ -179,7 +179,7 @@ export class BillingService {
       .select()
       .eq('auto_generate_invoices', true);
 
-    if (error) throw error;
+    if (error: unknown) throw error;
     if (!billingSettings || billingSettings.length === 0) {
       logger.info('No organizations found with auto-billing enabled', {
         service: 'BillingService',
@@ -207,10 +207,10 @@ export class BillingService {
         if (settings.auto_send_invoices) {
           // TODO: Implement invoice sending logic
         }
-      } catch (err) {
+      } catch (err: unknown) {
         logger.error(
           `Failed to process billing for org ${settings.org_id}:`,
-          err instanceof Error ? err : new Error(String(err)),
+          err instanceof Error ? err : new Error(String(err: unknown)),
           { service: 'BillingService' },
         );
         // Continue processing other organizations even if one fails
@@ -230,7 +230,7 @@ export class BillingService {
       .eq('id', invoiceId)
       .single();
 
-    if (error) throw error;
+    if (error: unknown) throw error;
     if (!data) throw new Error('Invoice not found');
     return data as Invoice;
   }
@@ -238,7 +238,7 @@ export class BillingService {
   async updateInvoiceStatus(invoiceId: string, status: Invoice['status']): Promise<void> {
     const { error } = await this.supabase.from('invoices').update({ status }).eq('id', invoiceId);
 
-    if (error) throw error;
+    if (error: unknown) throw error;
   }
 
   async getBillingCycles(params: {
@@ -250,21 +250,21 @@ export class BillingService {
     const { org_id, start_date, end_date, status } = params;
     const query = this.supabase.from('billing_cycles').select('*').eq('org_id', org_id);
 
-    if (start_date) {
+    if (start_date: unknown) {
       query.gte('start_date', start_date.toISOString());
     }
 
-    if (end_date) {
+    if (end_date: unknown) {
       query.lte('end_date', end_date.toISOString());
     }
 
-    if (status) {
+    if (status: unknown) {
       query.eq('status', status);
     }
 
     const { data, error } = await query.order('start_date', { ascending: false });
 
-    if (error) {
+    if (error: unknown) {
       throw error;
     }
 
@@ -288,7 +288,7 @@ export class BillingService {
       .select()
       .single();
 
-    if (error) {
+    if (error: unknown) {
       throw error;
     }
 
@@ -312,7 +312,7 @@ export class BillingService {
       .select()
       .single();
 
-    if (error) {
+    if (error: unknown) {
       throw error;
     }
 
@@ -328,21 +328,21 @@ export class BillingService {
     const { org_id, status, start_date, end_date } = params;
     const query = this.supabase.from('invoices').select('*').eq('org_id', org_id);
 
-    if (status) {
+    if (status: unknown) {
       query.eq('status', status);
     }
 
-    if (start_date) {
+    if (start_date: unknown) {
       query.gte('issued_date', start_date.toISOString());
     }
 
-    if (end_date) {
+    if (end_date: unknown) {
       query.lte('issued_date', end_date.toISOString());
     }
 
     const { data, error } = await query.order('issued_date', { ascending: false });
 
-    if (error) {
+    if (error: unknown) {
       throw error;
     }
 
@@ -357,7 +357,7 @@ export class BillingService {
       p_end_date: end_date,
     });
 
-    if (error) throw error;
+    if (error: unknown) throw error;
     return data as InvoiceStats;
   }
 
@@ -381,7 +381,7 @@ export class BillingService {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error: unknown) throw error;
     if (!data) throw new Error('Failed to create invoice');
     return data as Invoice;
   }
@@ -405,7 +405,7 @@ export class BillingService {
       .select()
       .single();
 
-    if (error) {
+    if (error: unknown) {
       throw error;
     }
 

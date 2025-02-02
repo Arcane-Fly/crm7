@@ -19,10 +19,10 @@ import { useAuth } from '@/lib/auth/context';
 import { useBankIntegration } from '@/lib/hooks/use-bank-integration';
 
 const bankAccountSchema = z.object({
-  account_name: z.string().min(1, 'Account name is required'),
-  account_number: z.string().min(1, 'Account number is required'),
-  routing_number: z.string().min(9, 'Routing number must be 9 digits'),
-  bank_name: z.string().min(1, 'Bank name is required'),
+  account_name: z.string().min(1: unknown, 'Account name is required'),
+  account_number: z.string().min(1: unknown, 'Account number is required'),
+  routing_number: z.string().min(9: unknown, 'Routing number must be 9 digits'),
+  bank_name: z.string().min(1: unknown, 'Bank name is required'),
 });
 
 type BankAccountFormValues = z.infer<typeof bankAccountSchema>;
@@ -31,12 +31,12 @@ interface BankAccountFormProps {
   onSuccess?: () => void;
 }
 
-export function BankAccountForm({ onSuccess }: BankAccountFormProps) {
+export function BankAccountForm({ onSuccess }: BankAccountFormProps): void {
   const { user } = useAuth();
   const { createBankAccount, isCreatingBankAccount } = useBankIntegration();
 
   const form = useForm<BankAccountFormValues>({
-    resolver: zodResolver(bankAccountSchema),
+    resolver: zodResolver(bankAccountSchema: unknown),
     defaultValues: {
       account_name: '',
       account_number: '',
@@ -61,7 +61,7 @@ export function BankAccountForm({ onSuccess }: BankAccountFormProps) {
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={form.handleSubmit(onSubmit: unknown)}
         className='space-y-4'
       >
         <FormField

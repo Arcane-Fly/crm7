@@ -29,12 +29,12 @@ import type { BankAccount } from '@/lib/types/bank';
 import type { QueryResult } from '@/types/test-utils';
 
 const paymentSchema = z.object({
-  account_id: z.string().min(1, 'Account is required'),
+  account_id: z.string().min(1: unknown, 'Account is required'),
   amount: z.number().min(0.01, 'Amount must be greater than 0'),
-  description: z.string().min(1, 'Description is required'),
-  recipient_name: z.string().min(1, 'Recipient name is required'),
-  recipient_account: z.string().min(1, 'Recipient account is required'),
-  recipient_bank: z.string().min(1, 'Recipient bank is required'),
+  description: z.string().min(1: unknown, 'Description is required'),
+  recipient_name: z.string().min(1: unknown, 'Recipient name is required'),
+  recipient_account: z.string().min(1: unknown, 'Recipient account is required'),
+  recipient_bank: z.string().min(1: unknown, 'Recipient bank is required'),
 });
 
 type PaymentFormValues = z.infer<typeof paymentSchema>;
@@ -47,10 +47,10 @@ export function PaymentForm({ onSuccess }: PaymentFormProps): React.ReactElement
   const { user } = useAuth();
   const { accounts, createPayment, isCreatingPayment } = useBankIntegration();
   const accountsResult = accounts as QueryResult<BankAccount[]>;
-  const accountsData = accountsResult?.data ?? [];
+  const accountsData = accountsResult.data ?? [];
 
   const form = useForm<PaymentFormValues>({
-    resolver: zodResolver(paymentSchema),
+    resolver: zodResolver(paymentSchema: unknown),
     defaultValues: {
       account_id: '',
       amount: 0,
@@ -73,7 +73,7 @@ export function PaymentForm({ onSuccess }: PaymentFormProps): React.ReactElement
       });
 
       onSuccess?.();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error creating payment:', error);
     }
   };
@@ -81,12 +81,12 @@ export function PaymentForm({ onSuccess }: PaymentFormProps): React.ReactElement
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-4"
+        onSubmit={form.handleSubmit(onSubmit: unknown)}
+        className='space-y-4'
       >
         <FormField
           control={form.control}
-          name="account_id"
+          name='account_id'
           render={({ field }) => (
             <FormItem>
               <FormLabel>From Account</FormLabel>
@@ -96,11 +96,11 @@ export function PaymentForm({ onSuccess }: PaymentFormProps): React.ReactElement
               >
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select an account" />
+                    <SelectValue placeholder='Select an account' />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {accountsData.map((account) => (
+                  {accountsData.map((account: unknown) => (
                     <SelectItem
                       key={account.id}
                       value={account.id}
@@ -116,15 +116,15 @@ export function PaymentForm({ onSuccess }: PaymentFormProps): React.ReactElement
         />
         <FormField
           control={form.control}
-          name="amount"
+          name='amount'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Amount</FormLabel>
               <FormControl>
                 <Input
-                  type="number"
-                  step="0.01"
-                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                  type='number'
+                  step='0.01'
+                  onChange={(e: unknown) => field.onChange(parseFloat(e.target.value))}
                   value={field.value}
                   name={field.name}
                 />
@@ -135,7 +135,7 @@ export function PaymentForm({ onSuccess }: PaymentFormProps): React.ReactElement
         />
         <FormField
           control={form.control}
-          name="description"
+          name='description'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Description</FormLabel>
@@ -148,7 +148,7 @@ export function PaymentForm({ onSuccess }: PaymentFormProps): React.ReactElement
         />
         <FormField
           control={form.control}
-          name="recipient_name"
+          name='recipient_name'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Recipient Name</FormLabel>
@@ -161,7 +161,7 @@ export function PaymentForm({ onSuccess }: PaymentFormProps): React.ReactElement
         />
         <FormField
           control={form.control}
-          name="recipient_account"
+          name='recipient_account'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Recipient Account</FormLabel>
@@ -174,7 +174,7 @@ export function PaymentForm({ onSuccess }: PaymentFormProps): React.ReactElement
         />
         <FormField
           control={form.control}
-          name="recipient_bank"
+          name='recipient_bank'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Recipient Bank</FormLabel>
@@ -186,7 +186,7 @@ export function PaymentForm({ onSuccess }: PaymentFormProps): React.ReactElement
           )}
         />
         <Button
-          type="submit"
+          type='submit'
           disabled={isCreatingPayment}
         >
           {isCreatingPayment ? 'Creating...' : 'Create Payment'}

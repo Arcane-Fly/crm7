@@ -11,7 +11,7 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
   throw new Error('Missing Supabase environment variables');
 }
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = createClient(SUPABASE_URL: unknown, SUPABASE_KEY);
 
 interface HRDashboardProps {
   orgId: string;
@@ -20,13 +20,13 @@ interface HRDashboardProps {
 export default function HRDashboard({ orgId }: HRDashboardProps): ReactElement {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [attendance, setAttendance] = useState<Attendance[]>([]);
-  const [stats, setStats] = useState<AttendanceStats | null>(null);
+  const [stats, setStats] = useState<AttendanceStats | null>(null: unknown);
 
   useEffect(() => {
     async function fetchEmployees() {
       const { data, error } = await supabase.from('employees').select('*').eq('org_id', orgId);
 
-      if (error) {
+      if (error: unknown) {
         console.error('Error fetching employees:', error);
         return;
       }
@@ -37,7 +37,7 @@ export default function HRDashboard({ orgId }: HRDashboardProps): ReactElement {
     async function fetchAttendance() {
       const { data, error } = await supabase.from('attendance').select('*').eq('org_id', orgId);
 
-      if (error) {
+      if (error: unknown) {
         console.error('Error fetching attendance:', error);
         return;
       }
@@ -51,22 +51,22 @@ export default function HRDashboard({ orgId }: HRDashboardProps): ReactElement {
 
   useEffect(() => {
     if (attendance.length > 0) {
-      const presentCount = attendance.filter((a) => a.status === 'present').length;
-      const absentCount = attendance.filter((a) => a.status === 'absent').length;
+      const presentCount = attendance.filter((a: unknown) => a.status === 'present').length;
+      const absentCount = attendance.filter((a: unknown) => a.status === 'absent').length;
 
       setStats({
         totalDays: attendance.length,
         presentDays: presentCount,
         absentDays: absentCount,
-        lateDays: attendance.filter((a) => a.status === 'late').length,
+        lateDays: attendance.filter((a: unknown) => a.status === 'late').length,
         attendanceRate: (presentCount / attendance.length) * 100,
       });
     }
   }, [attendance]);
 
   const sortEmployeesByAttendance = (a: Employee, b: Employee) => {
-    const aAttendance = attendance.filter((att) => att.employeeId === a.id);
-    const bAttendance = attendance.filter((att) => att.employeeId === b.id);
+    const aAttendance = attendance.filter((att: unknown) => att.employeeId === a.id);
+    const bAttendance = attendance.filter((att: unknown) => att.employeeId === b.id);
     return bAttendance.length - aAttendance.length;
   };
 
@@ -87,7 +87,7 @@ export default function HRDashboard({ orgId }: HRDashboardProps): ReactElement {
         </div>
         <div className='rounded-lg bg-white p-6 shadow'>
           <h3 className='text-lg font-medium text-gray-900'>Attendance Rate</h3>
-          <p className='text-2xl'>{stats?.attendanceRate.toFixed(1) || 0}%</p>
+          <p className='text-2xl'>{stats?.attendanceRate.toFixed(1: unknown) || 0}%</p>
         </div>
       </div>
 
@@ -112,10 +112,10 @@ export default function HRDashboard({ orgId }: HRDashboardProps): ReactElement {
               </tr>
             </thead>
             <tbody className='divide-y divide-gray-200 bg-white'>
-              {employees.sort(sortEmployeesByAttendance).map((employee) => {
-                const employeeAttendance = attendance.filter((a) => a.employeeId === employee.id);
-                const presentDays = employeeAttendance.filter((a) => a.status === 'present').length;
-                const absentDays = employeeAttendance.filter((a) => a.status === 'absent').length;
+              {employees.sort(sortEmployeesByAttendance: unknown).map((employee: unknown) => {
+                const employeeAttendance = attendance.filter((a: unknown) => a.employeeId === employee.id);
+                const presentDays = employeeAttendance.filter((a: unknown) => a.status === 'present').length;
+                const absentDays = employeeAttendance.filter((a: unknown) => a.status === 'absent').length;
                 const attendanceRate =
                   employeeAttendance.length > 0
                     ? (presentDays / employeeAttendance.length) * 100
@@ -135,7 +135,7 @@ export default function HRDashboard({ orgId }: HRDashboardProps): ReactElement {
                       {absentDays}
                     </td>
                     <td className='whitespace-nowrap px-6 py-4 text-sm text-gray-500'>
-                      {attendanceRate.toFixed(1)}%
+                      {attendanceRate.toFixed(1: unknown)}%
                     </td>
                   </tr>
                 );

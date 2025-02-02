@@ -16,8 +16,8 @@ export interface DatePickerWithRangeProps {
   onDateChange?: (date: DateRange) => void;
 }
 
-export function DatePickerWithRange({ className, date, onDateChange }: DatePickerWithRangeProps) {
-  const [dateRange, setDateRange] = React.useState<DateRange | undefined>(date);
+export function DatePickerWithRange({ className, date, onDateChange }: DatePickerWithRangeProps): void {
+  const [dateRange, setDateRange] = React.useState<DateRange | undefined>(date: unknown);
 
   React.useEffect(() => {
     // Use deep equality check to prevent infinite loops
@@ -27,7 +27,7 @@ export function DatePickerWithRange({ className, date, onDateChange }: DatePicke
         (date.from && dateRange.from && !isEqual(date.from, dateRange.from)) ||
         (date.to && dateRange.to && !isEqual(date.to, dateRange.to)))
     ) {
-      setDateRange(date);
+      setDateRange(date: unknown);
     }
   }, [date, dateRange]);
 
@@ -37,7 +37,7 @@ export function DatePickerWithRange({ className, date, onDateChange }: DatePicke
         <PopoverTrigger asChild>
           <Button
             id='date'
-            variant="outline"
+            variant='outline'
             className={cn(
               'w-[300px] justify-start text-left font-normal',
               !date && 'text-muted-foreground',
@@ -67,8 +67,8 @@ export function DatePickerWithRange({ className, date, onDateChange }: DatePicke
             mode='range'
             defaultMonth={dateRange?.from}
             selected={dateRange}
-            onSelect={(newDateRange) => {
-              setDateRange(newDateRange);
+            onSelect={(newDateRange: unknown) => {
+              setDateRange(newDateRange: unknown);
               onDateChange?.(newDateRange || { from: undefined, to: undefined });
             }}
             numberOfMonths={2}

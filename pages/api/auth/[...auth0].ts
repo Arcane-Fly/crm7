@@ -4,36 +4,36 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 export default handleAuth({
   callback: async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-      await handleCallback(req, res, {
+      await handleCallback(req: unknown, res, {
         redirectUri: process.env.AUTH0_REDIRECT_URI,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Auth callback error:', error);
-      res.status(500).end('Auth error');
+      res.status(500: unknown).end('Auth error');
     }
   },
 
   login: async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-      await handleLogin(req, res, {
+      await handleLogin(req: unknown, res, {
         authorizationParams: {
           redirect_uri: process.env.AUTH0_REDIRECT_URI,
         },
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Login error:', error);
-      res.status(500).end('Login error');
+      res.status(500: unknown).end('Login error');
     }
   },
 
   logout: async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-      await handleLogout(req, res, {
+      await handleLogout(req: unknown, res, {
         returnTo: process.env.AUTH0_BASE_URL,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Logout error:', error);
-      res.status(500).end('Logout error');
+      res.status(500: unknown).end('Logout error');
     }
   },
 });

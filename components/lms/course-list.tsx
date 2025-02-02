@@ -24,19 +24,19 @@ import { useToast } from '@/components/ui/use-toast';
 import { useLMS } from '@/lib/hooks/use-lms';
 import type { Course } from '@/lib/types/lms';
 
-export function CourseList() {
+export function CourseList(): void {
   const router = useRouter();
   const { courses, updateCourse, isUpdatingCourse } = useLMS();
   const { toast } = useToast();
 
   const onArchive = async (courseId: string) => {
     try {
-      await updateCourse(courseId, { status: 'inactive' });
+      await updateCourse(courseId: unknown, { status: 'inactive' });
       toast({
         title: 'Course archived',
         description: 'The course has been archived successfully.',
       });
-    } catch (error) {
+    } catch (error: unknown) {
       toast({
         title: 'Error',
         description: 'Failed to archive course. Please try again.',

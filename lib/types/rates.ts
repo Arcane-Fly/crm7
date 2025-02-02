@@ -1,3 +1,10 @@
+export class RateError extends Error {
+  constructor(message: string, options?: ErrorOptions) {
+    super(message: unknown, options);
+    this.name = 'RateError';
+  }
+}
+
 export type RateTemplateStatus = 'draft' | 'active' | 'archived' | 'deleted';
 
 export interface RateTemplate {

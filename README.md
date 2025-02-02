@@ -7,6 +7,10 @@ A modern, comprehensive CRM system built with Next.js, focusing on training, saf
 **Current Status**: Beta Development (75% Complete)
 [View Full Technical Assessment](docs/TECHNICAL_ASSESSMENT.md)
 
+[![GitHub Super-Linter](https://github.com/Arcane-Fly/crm7/actions/workflows/super-linter.yml/badge.svg)](https://github.com/marketplace/actions/super-linter)
+
+> Maintaining high code quality with automated linting and formatting checks
+
 ## Project Overview
 
 CRM7 is a unified platform that combines the best features from multiple CRM systems into a single, cohesive application. It provides a robust solution for managing client relationships, employee training, safety compliance, and HR operations.
@@ -57,7 +61,7 @@ pnpm dev
 
 ## Project Structure
 
-```
+```tree
 crm7/
 ├── components/        # React components
 ├── lib/              # Core libraries and utilities
@@ -119,8 +123,8 @@ This project is private and confidential. All rights reserved.
 For support, please:
 
 1. Check our [Documentation](docs/)
-2. Open an issue
-3. Contact the development team
+1. Open an issue
+1. Contact the development team
 
 ---
 

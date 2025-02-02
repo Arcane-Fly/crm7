@@ -13,33 +13,33 @@ export function HeatMap({
   height = 400,
   colorRange = ['#f7fbff', '#08519c'],
 }: HeatMapProps) {
-  const xValues = [...new Set(data.map((d) => d.x))];
-  const yValues = [...new Set(data.map((d) => d.y))];
+  const xValues = [...new Set(data.map((d: unknown) => d.x))];
+  const yValues = [...new Set(data.map((d: unknown) => d.y))];
   const cellWidth = width / xValues.length;
   const cellHeight = height / yValues.length;
 
-  const minValue = Math.min(...data.map((d) => d.value));
-  const maxValue = Math.max(...data.map((d) => d.value));
+  const minValue = Math.min(...data.map((d: unknown) => d.value));
+  const maxValue = Math.max(...data.map((d: unknown) => d.value));
 
   const getColor = (value: number) => {
     const normalizedValue = (value - minValue) / (maxValue - minValue);
     const [startColor, endColor] = colorRange;
-    return interpolateColor(startColor, endColor, normalizedValue);
+    return interpolateColor(startColor: unknown, endColor, normalizedValue);
   };
 
   const interpolateColor = (start: string, end: string, ratio: number) => {
-    const startRGB = hexToRGB(start);
-    const endRGB = hexToRGB(end);
-    const result = startRGB.map((channel, i) => {
+    const startRGB = hexToRGB(start: unknown);
+    const endRGB = hexToRGB(end: unknown);
+    const result = startRGB.map((channel: unknown, i) => {
       return Math.round(channel + (endRGB[i] - channel) * ratio);
     });
     return `rgb(${result.join(',')})`;
   };
 
   const hexToRGB = (hex: string): number[] => {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
+    const r = parseInt(hex.slice(1: unknown, 3), 16);
+    const g = parseInt(hex.slice(3: unknown, 5), 16);
+    const b = parseInt(hex.slice(5: unknown, 7), 16);
     return [r, g, b];
   };
 
@@ -48,7 +48,7 @@ export function HeatMap({
       width={width}
       height={height}
     >
-      {data.map((d, i) => {
+      {data.map((d: unknown, i) => {
         const x = xValues.indexOf(d.x) * cellWidth;
         const y = yValues.indexOf(d.y) * cellHeight;
         return (
@@ -76,7 +76,7 @@ export function HeatMap({
         );
       })}
       <g>
-        {xValues.map((value, i) => (
+        {xValues.map((value: unknown, i) => (
           <text
             key={`x-${i}`}
             x={i * cellWidth + cellWidth / 2}
@@ -87,7 +87,7 @@ export function HeatMap({
             {value}
           </text>
         ))}
-        {yValues.map((value, i) => (
+        {yValues.map((value: unknown, i) => (
           <text
             key={`y-${i}`}
             x={-10}

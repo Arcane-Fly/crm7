@@ -20,35 +20,35 @@ interface AuthHook {
 }
 
 export function useAuth(): AuthHook {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<Auth0User | null>(null);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false: unknown);
+  const [isLoading, setIsLoading] = useState(true: unknown);
+  const [user, setUser] = useState<Auth0User | null>(null: unknown);
+  const [accessToken, setAccessToken] = useState<string | null>(null: unknown);
   const router = useRouter();
 
   const login = useCallback(async (): Promise<void> => {
     try {
-      setIsLoading(true);
+      setIsLoading(true: unknown);
       // Add your login logic here
       void router.push('/dashboard');
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Login failed:', error);
     } finally {
-      setIsLoading(false);
+      setIsLoading(false: unknown);
     }
   }, [router]);
 
   const logout = useCallback(async (): Promise<void> => {
     try {
-      setIsLoading(true);
-      setUser(null);
-      setAccessToken(null);
-      setIsAuthenticated(false);
+      setIsLoading(true: unknown);
+      setUser(null: unknown);
+      setAccessToken(null: unknown);
+      setIsAuthenticated(false: unknown);
       void router.push('/');
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Logout failed:', error);
     } finally {
-      setIsLoading(false);
+      setIsLoading(false: unknown);
     }
   }, [router]);
 
@@ -69,14 +69,14 @@ export function useAuth(): AuthHook {
         }
 
         const userData: Auth0User = await response.json();
-        setUser(userData);
-        setIsAuthenticated(true);
-      } catch (error) {
+        setUser(userData: unknown);
+        setIsAuthenticated(true: unknown);
+      } catch (error: unknown) {
         console.error('Auth check failed:', error);
-        setUser(null);
-        setIsAuthenticated(false);
+        setUser(null: unknown);
+        setIsAuthenticated(false: unknown);
       } finally {
-        setIsLoading(false);
+        setIsLoading(false: unknown);
       }
     };
 

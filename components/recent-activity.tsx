@@ -28,7 +28,7 @@ const activities = [
   },
 ];
 
-export function RecentActivity() {
+export function RecentActivity(): void {
   return (
     <Card>
       <CardHeader>
@@ -36,7 +36,7 @@ export function RecentActivity() {
       </CardHeader>
       <CardContent>
         <div className='space-y-4'>
-          {activities.map((activity, index) => (
+          {activities.map((activity: unknown, index) => (
             <div
               key={index}
               className='flex items-start gap-4'

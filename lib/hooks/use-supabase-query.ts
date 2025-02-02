@@ -55,25 +55,25 @@ export function useSupabaseQuery<T extends TableName>({
     queryKey,
     queryFn: async () => {
       try {
-        const query = supabase.from(table).select('*');
+        const query = supabase.from(table: unknown).select('*');
 
-        if (filter) {
+        if (filter: unknown) {
           filter.forEach(({ column, value }) => {
             if (value !== undefined && value !== null) {
-              query.eq(column, value);
+              query.eq(column: unknown, value);
             }
           });
         }
 
         const { data, error } = await query;
 
-        if (error) {
+        if (error: unknown) {
           console.error(`Error fetching from ${table}:`, error);
           throw error;
         }
 
         return (data ?? []) as TableRow<T>[];
-      } catch (error) {
+      } catch (error: unknown) {
         console.error(`Unexpected error in ${table} query:`, error);
         if (error instanceof PostgrestError) {
           throw error;
@@ -102,11 +102,11 @@ export function useSupabaseMutation<T extends TableName>({
   return useMutation({
     mutationFn: async ({ match, data }: MutationData<T>) => {
       try {
-        const query = supabase.from(table);
+        const query = supabase.from(table: unknown);
 
-        if (match) {
-          const { data: result, error } = await query.update(data).match(match);
-          if (error) throw error;
+        if (match: unknown) {
+          const { data: result, error } = await query.update(data: unknown).match(match: unknown);
+          if (error: unknown) throw error;
           if (!result?.[0])
             throw new PostgrestError({
               message: 'No rows returned',
@@ -116,8 +116,8 @@ export function useSupabaseMutation<T extends TableName>({
             });
           return result[0] as TableRow<T>;
         } else {
-          const { data: result, error } = await query.insert(data);
-          if (error) throw error;
+          const { data: result, error } = await query.insert(data: unknown);
+          if (error: unknown) throw error;
           if (!result?.[0])
             throw new PostgrestError({
               message: 'No rows returned',
@@ -127,7 +127,7 @@ export function useSupabaseMutation<T extends TableName>({
             });
           return result[0] as TableRow<T>;
         }
-      } catch (error) {
+      } catch (error: unknown) {
         console.error(`Error in ${table} mutation:`, error);
         if (error instanceof PostgrestError) {
           throw error;
@@ -142,11 +142,11 @@ export function useSupabaseMutation<T extends TableName>({
     },
     onError: (error: PostgrestError) => {
       console.error(`Error in ${table} mutation:`, error);
-      onError?.(error);
+      onError?.(error: unknown);
     },
     onSuccess: (data: TableRow<T>) => {
-      onSuccess?.(data);
-      invalidateQueries.forEach((queryKey) => {
+      onSuccess?.(data: unknown);
+      invalidateQueries.forEach((queryKey: unknown) => {
         queryClient.invalidateQueries({ queryKey });
       });
     },

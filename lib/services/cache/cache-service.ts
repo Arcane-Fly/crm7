@@ -15,7 +15,7 @@ class LogError extends Error {
       [key: string]: unknown;
     },
   ) {
-    super(message);
+    super(message: unknown);
     this.name = 'LogError';
   }
 }
@@ -32,7 +32,7 @@ export class CacheError extends Error {
     public readonly code: string,
     public readonly cause?: unknown,
   ) {
-    super(message);
+    super(message: unknown);
     this.name = 'CacheError';
   }
 }
@@ -66,7 +66,7 @@ export class CacheService {
     const start = process.hrtime.bigint();
     try {
       const client = await this.getClient();
-      const data = await client.get(this.getKey(key));
+      const data = await client.get(this.getKey(key: unknown));
 
       const end = process.hrtime.bigint();
       const latencyMs = Number(end - start) / 1_000_000;
@@ -76,9 +76,9 @@ export class CacheService {
         return null;
       }
 
-      cacheMonitoring.recordHit(latencyMs);
-      return JSON.parse(data) as T;
-    } catch (error) {
+      cacheMonitoring.recordHit(latencyMs: unknown);
+      return JSON.parse(data: unknown) as T;
+    } catch (error: unknown) {
       const logError = new LogError('Cache get error', {
         error: error instanceof Error ? error.message : 'Unknown error',
         key,
@@ -93,19 +93,19 @@ export class CacheService {
     const start = process.hrtime.bigint();
     try {
       const client = await this.getClient();
-      const serializedValue = JSON.stringify(value);
+      const serializedValue = JSON.stringify(value: unknown);
       const effectiveTtl = ttl ?? this.config.ttl;
 
       if (effectiveTtl > 0) {
-        await client.setex(this.getKey(key), effectiveTtl, serializedValue);
+        await client.setex(this.getKey(key: unknown), effectiveTtl, serializedValue);
       } else {
-        await client.set(this.getKey(key), serializedValue);
+        await client.set(this.getKey(key: unknown), serializedValue);
       }
 
       const end = process.hrtime.bigint();
       const latencyMs = Number(end - start) / 1_000_000;
-      cacheMonitoring.recordHit(latencyMs);
-    } catch (error) {
+      cacheMonitoring.recordHit(latencyMs: unknown);
+    } catch (error: unknown) {
       const logError = new LogError('Cache set error', {
         error: error instanceof Error ? error.message : 'Unknown error',
         key,
@@ -119,9 +119,9 @@ export class CacheService {
   async delete(key: string): Promise<void> {
     try {
       const client = await this.getClient();
-      await client.del(this.getKey(key));
+      await client.del(this.getKey(key: unknown));
       cacheMonitoring.recordEviction();
-    } catch (error) {
+    } catch (error: unknown) {
       const logError = new LogError('Cache delete error', {
         error: error instanceof Error ? error.message : 'Unknown error',
         key,
@@ -135,12 +135,12 @@ export class CacheService {
   async deletePattern(pattern: string): Promise<void> {
     try {
       const client = await this.getClient();
-      const keys = await client.keys(this.getKey(pattern));
+      const keys = await client.keys(this.getKey(pattern: unknown));
       if (keys.length > 0) {
         await client.del(...keys);
         keys.forEach(() => cacheMonitoring.recordEviction());
       }
-    } catch (error) {
+    } catch (error: unknown) {
       const logError = new LogError('Cache delete pattern error', {
         error: error instanceof Error ? error.message : 'Unknown error',
         pattern,
@@ -162,7 +162,7 @@ export class CacheService {
     while (retries >= 0) {
       try {
         // Try to get from cache first
-        const cached = await this.get<T>(key);
+        const cached = await this.get<T>(key: unknown);
         if (cached !== null) {
           return cached;
         }
@@ -171,15 +171,15 @@ export class CacheService {
         const value = await factory();
 
         // Store in cache
-        await this.set(key, value, ttl);
+        await this.set(key: unknown, value, ttl);
 
         return value;
-      } catch (error) {
+      } catch (error: unknown) {
         lastError = error;
         retries--;
 
         if (retries >= 0) {
-          await new Promise((resolve) => setTimeout(resolve, 100));
+          await new Promise((resolve: unknown) => setTimeout(resolve: unknown, 100));
           continue;
         }
       }
@@ -197,7 +197,7 @@ export class CacheService {
         await client.del(...keys);
         keys.forEach(() => cacheMonitoring.recordEviction());
       }
-    } catch (error) {
+    } catch (error: unknown) {
       const logError = new LogError('Cache clear error', {
         error: error instanceof Error ? error.message : 'Unknown error',
       });

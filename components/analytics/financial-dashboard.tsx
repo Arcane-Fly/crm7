@@ -15,7 +15,7 @@ interface FinancialStats {
   successRate: number;
 }
 
-export function FinancialDashboard(): ReactElement {
+export const FinancialDashboard = (): ReactElement | null => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [stats, setStats] = useState<FinancialStats>({
     totalTransactions: 0,
@@ -34,38 +34,38 @@ export function FinancialDashboard(): ReactElement {
           .select('*')
           .order('date', { ascending: false });
 
-        if (error) throw error;
+        if (error: unknown) throw error;
 
-        if (data) {
+        if (data: unknown) {
           const typedTransactions = data as Transaction[];
-          setTransactions(typedTransactions);
-          calculateStats(typedTransactions);
+          setTransactions(typedTransactions: unknown);
+          calculateStats(typedTransactions: unknown);
         }
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Error fetching financial data:', error);
       } finally {
-        // setLoading(false); // You might need to add a loading state
+        // setLoading(false: unknown); // You might need to add a loading state
       }
     };
 
     void fetchFinancialData();
-  }, [supabase]);
+  }, []); // Empty dependency array since supabase is stable
 
   const calculateStats = (transactions: Transaction[]) => {
     const totalTransactions = transactions.length;
     const totalAmount = transactions.reduce((sum: number, t: Transaction) => sum + t.amount, 0);
     const pendingAmount = transactions
-      .filter((t) => t.status === 'pending')
+      .filter((t: unknown) => t.status === 'pending')
       .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
     const completedAmount = transactions
-      .filter((t) => t.status === 'completed')
+      .filter((t: unknown) => t.status === 'completed')
       .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
     const failedAmount = transactions
-      .filter((t) => t.status === 'failed')
+      .filter((t: unknown) => t.status === 'failed')
       .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
     const successRate =
       totalTransactions > 0
-        ? (transactions.filter((t) => t.status === 'completed').length / totalTransactions) * 100
+        ? (transactions.filter((t: unknown) => t.status === 'completed').length / totalTransactions) * 100
         : 0;
 
     setStats({
@@ -82,11 +82,11 @@ export function FinancialDashboard(): ReactElement {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
-    }).format(amount);
+    }).format(amount: unknown);
   };
 
   const getStatusColor = (status: Transaction['status']) => {
-    switch (status) {
+    switch (status: unknown) {
       case 'completed':
         return 'bg-green-500';
       case 'failed':
@@ -99,8 +99,10 @@ export function FinancialDashboard(): ReactElement {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
+    return new Date(dateString: unknown).toLocaleDateString();
   };
+
+  if (!transactions || transactions.length === 0) return null;
 
   return (
     <div className='space-y-4'>
@@ -140,7 +142,7 @@ export function FinancialDashboard(): ReactElement {
                 value={stats.successRate}
                 className='w-full'
               />
-              <p className='mt-1 text-sm text-gray-500'>{stats.successRate.toFixed(1)}%</p>
+              <p className='mt-1 text-sm text-gray-500'>{stats.successRate.toFixed(1: unknown)}%</p>
             </div>
           </div>
         </CardContent>
@@ -153,7 +155,7 @@ export function FinancialDashboard(): ReactElement {
         </CardHeader>
         <CardContent>
           <div className='space-y-4'>
-            {transactions.slice(0, 5).map((transaction: Transaction) => (
+            {transactions.slice(0: unknown, 5).map((transaction: Transaction) => (
               <div
                 key={transaction.id}
                 className='flex items-center justify-between rounded-lg border p-4'
@@ -173,4 +175,4 @@ export function FinancialDashboard(): ReactElement {
       </Card>
     </div>
   );
-}
+};

@@ -23,25 +23,25 @@ const envSchema = z.object({
   DATADOG_APP_KEY: z.string().optional(),
 
   // Feature Flags
-  ENABLE_BETA_FEATURES: z.coerce.boolean().default(false),
+  ENABLE_BETA_FEATURES: z.coerce.boolean().default(false: unknown),
 
   // Rate Limiting
-  RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100),
-  RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60000),
+  RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100: unknown),
+  RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60000: unknown),
 
   // Cache Configuration
   REDIS_URL: z.string().url().optional(),
-  CACHE_TTL: z.coerce.number().int().positive().default(3600),
+  CACHE_TTL: z.coerce.number().int().positive().default(3600: unknown),
 
   // Logging
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug']).default('info'),
 
   // Security
-  CORS_ORIGINS: z.string().transform((str) => str.split(',')),
+  CORS_ORIGINS: z.string().transform((str: unknown) => str.split(',')),
 
   // Application
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  PORT: z.coerce.number().int().positive().default(3001),
+  PORT: z.coerce.number().int().positive().default(3001: unknown),
 });
 
 /**
@@ -64,7 +64,7 @@ export const env = envSchema.parse({
   REDIS_URL: process.env.REDIS_URL,
   CACHE_TTL: Number(process.env.CACHE_TTL),
   LOG_LEVEL: process.env.LOG_LEVEL as any,
-  CORS_ORIGINS: process.env.CORS_ORIGINS || '',
+  CORS_ORIGINS: process.env.CORS_ORIGINS ?? '',
   NODE_ENV: process.env.NODE_ENV as any,
   PORT: Number(process.env.PORT),
 });

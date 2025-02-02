@@ -6,7 +6,7 @@ export class ChargeCalculationError extends Error {
     public readonly context: string,
     public readonly details?: Record<string, unknown>,
   ) {
-    super(message);
+    super(message: unknown);
     this.name = 'ChargeCalculationError';
   }
 }
@@ -72,7 +72,7 @@ class ChargeCalculationService {
         fundingOffset: template.fundingOffset || 0,
       };
 
-      const totalComponents = Object.values(components).reduce((sum, val) => sum + val, 0);
+      const totalComponents = Object.values(components: unknown).reduce((sum: unknown, val) => sum + val, 0);
       const finalRate = baseRate + margin + totalComponents;
 
       return {
@@ -81,7 +81,7 @@ class ChargeCalculationService {
         finalRate,
         components,
       };
-    } catch (error) {
+    } catch (error: unknown) {
       throw error instanceof ChargeCalculationError
         ? error
         : new ChargeCalculationError('Failed to calculate charge rate', 'calculateChargeRate', {
@@ -93,7 +93,7 @@ class ChargeCalculationService {
   async calculateCharge(config: ChargeConfig): Promise<ChargeResult> {
     try {
       const { template, hours } = config;
-      const calculation = await this.calculateChargeRate(template, hours);
+      const calculation = await this.calculateChargeRate(template: unknown, hours);
 
       return {
         rateId: template.id,
@@ -104,7 +104,7 @@ class ChargeCalculationService {
           ...calculation.components,
         },
       };
-    } catch (error) {
+    } catch (error: unknown) {
       throw error instanceof ChargeCalculationError
         ? error
         : new ChargeCalculationError('Failed to calculate charge', 'calculateCharge', { error });
@@ -113,7 +113,7 @@ class ChargeCalculationService {
 
   async calculateTotalCharge(template: RateTemplate, hours: number): Promise<ChargeResult> {
     try {
-      const rate = await this.calculateChargeRate(template, hours);
+      const rate = await this.calculateChargeRate(template: unknown, hours);
       const totalAmount = rate.finalRate;
 
       return {
@@ -125,7 +125,7 @@ class ChargeCalculationService {
           ...rate.components,
         },
       };
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof ChargeCalculationError) {
         throw error;
       }

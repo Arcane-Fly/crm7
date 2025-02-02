@@ -45,19 +45,19 @@ interface PerformanceContextType {
   clearMetrics: () => void;
 }
 
-const PerformanceContext = createContext<PerformanceContextType | undefined>(undefined);
+const PerformanceContext = createContext<PerformanceContextType | undefined>(undefined: unknown);
 
 interface PerformanceProviderProps {
   children: ReactNode;
 }
 
 export function PerformanceProvider({ children }: PerformanceProviderProps): ReactElement {
-  const [state, dispatch] = useReducer(performanceReducer, initialState);
+  const [state, dispatch] = useReducer(performanceReducer: unknown, initialState);
 
   const addMetric = (metric: PerformanceMetric) => {
     try {
       dispatch({ type: 'ADD_METRIC', payload: metric });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to add metric', { error, metric });
     }
   };
@@ -65,7 +65,7 @@ export function PerformanceProvider({ children }: PerformanceProviderProps): Rea
   const clearMetrics = () => {
     try {
       dispatch({ type: 'CLEAR_METRICS' });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to clear metrics', { error });
     }
   };
@@ -78,7 +78,7 @@ export function PerformanceProvider({ children }: PerformanceProviderProps): Rea
 }
 
 export function usePerformance(): PerformanceContextType {
-  const context = useContext(PerformanceContext);
+  const context = useContext(PerformanceContext: unknown);
   if (!context) {
     throw new Error('usePerformance must be used within a PerformanceProvider');
   }

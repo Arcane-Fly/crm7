@@ -12,7 +12,7 @@ interface StatsCardProps {
   className?: string;
 }
 
-export function StatsCard({ title, value, change, icon, className }: StatsCardProps) {
+export function StatsCard({ title, value, change, icon, className }: StatsCardProps): void {
   return (
     <div className={cn('rounded-xl bg-white p-6 shadow-sm', className)}>
       <div className='flex items-center justify-between'>

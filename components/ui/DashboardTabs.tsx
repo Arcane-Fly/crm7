@@ -8,14 +8,14 @@ interface TabProps {
   onTabChange: (tab: string) => void;
 }
 
-export function DashboardTabs({ tabs, activeTab, onTabChange }: TabProps) {
+export function DashboardTabs({ tabs, activeTab, onTabChange }: TabProps): void {
   return (
     <div className='border-b border-gray-200'>
       <nav className='-mb-px flex space-x-8'>
-        {tabs.map((tab) => (
+        {tabs.map((tab: unknown) => (
           <button
             key={tab}
-            onClick={() => onTabChange(tab)}
+            onClick={() => onTabChange(tab: unknown)}
             className={cn(
               'whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium',
               activeTab === tab

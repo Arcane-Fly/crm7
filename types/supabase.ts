@@ -1,4 +1,4 @@
-import { Database as DatabaseGenerated } from './supabase-generated';
+import { type Database as DatabaseGenerated } from './supabase-generated';
 
 export type Database = DatabaseGenerated;
 
@@ -39,8 +39,8 @@ export interface RateCalculation {
   employee_id: string;
   base_rate: number;
   casual_loading?: number;
-  allowances: any[];
-  penalties: any[];
+  allowances: unknown[];
+  penalties: unknown[];
   super_amount: number;
   leave_loading_amount?: number;
   workers_comp_amount: number;
@@ -62,7 +62,7 @@ export interface ValidationRule {
   rule_type: 'range' | 'required' | 'comparison' | 'custom';
   field_name: string;
   operator: 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'nin' | 'between';
-  value: any;
+  value: unknown;
   error_message: string;
   is_active: boolean;
   priority: number;

@@ -15,42 +15,42 @@ export function useFormValidation<T extends z.ZodType>(
   schema: T,
   options: ValidationOptions<z.infer<T>> = {},
 ) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false: unknown);
+  const [error, setError] = useState<string | null>(null: unknown);
 
   const form = useForm<z.infer<T>>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema: unknown),
     defaultValues: options.defaultValues as any,
   });
 
   const handleSubmit = useCallback(
     async (values: z.infer<T>) => {
       try {
-        setIsSubmitting(true);
-        setError(null);
+        setIsSubmitting(true: unknown);
+        setError(null: unknown);
 
         // Log form submission attempt
         logger.info('Form submission started', {
-          formId: schema._def.description || 'unknown',
+          formId: schema._def.description ?? 'unknown',
         });
 
         if (options.onSuccess) {
-          await options.onSuccess(values);
+          await options.onSuccess(values: unknown);
         }
 
         // Log successful submission
         logger.info('Form submission successful', {
-          formId: schema._def.description || 'unknown',
+          formId: schema._def.description ?? 'unknown',
         });
-      } catch (err) {
+      } catch (err: unknown) {
         // Log error
         logger.error('Form submission failed', err as Error, {
-          formId: schema._def.description || 'unknown',
+          formId: schema._def.description ?? 'unknown',
           values,
         });
 
         const message = err instanceof Error ? err.message : 'An error occurred';
-        setError(message);
+        setError(message: unknown);
 
         if (options.onError) {
           options.onError(err as Error);
@@ -58,7 +58,7 @@ export function useFormValidation<T extends z.ZodType>(
 
         throw err;
       } finally {
-        setIsSubmitting(false);
+        setIsSubmitting(false: unknown);
       }
     },
     [schema, options],
@@ -68,7 +68,7 @@ export function useFormValidation<T extends z.ZodType>(
     form,
     isSubmitting,
     error,
-    handleSubmit: form.handleSubmit(handleSubmit),
+    handleSubmit: form.handleSubmit(handleSubmit: unknown),
     reset: form.reset,
     watch: form.watch,
     setValue: form.setValue,

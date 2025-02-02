@@ -12,15 +12,15 @@ interface TimeEntry {
   status: 'pending' | 'approved' | 'rejected';
 }
 
-export function TimeEntriesList({ employeeId }: { employeeId: string }) {
+export function TimeEntriesList({ employeeId }: { employeeId: string }): void {
   const {
     data: timeEntries,
     isLoading,
     error,
   } = useRealtimeData<TimeEntry>('time_entries', [], { column: 'employee_id', value: employeeId });
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
+  if (isLoading: unknown) return <div>Loading...</div>;
+  if (error: unknown) return <div>Error: {error.message}</div>;
 
   const handleAddEntry = async () => {
     try {
@@ -31,7 +31,7 @@ export function TimeEntriesList({ employeeId }: { employeeId: string }) {
         break_duration: 0,
         status: 'pending',
       });
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error adding time entry:', err);
     }
   };
@@ -41,7 +41,7 @@ export function TimeEntriesList({ employeeId }: { employeeId: string }) {
       <h2>Time Entries</h2>
       <button onClick={handleAddEntry}>Add Entry</button>
       <ul>
-        {timeEntries.map((entry) => (
+        {timeEntries.map((entry: unknown) => (
           <li key={entry.id}>
             {new Date(entry.start_time).toLocaleString()} -{' '}
             {new Date(entry.end_time).toLocaleString()}

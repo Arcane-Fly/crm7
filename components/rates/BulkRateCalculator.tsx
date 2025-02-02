@@ -41,15 +41,15 @@ export function BulkRateCalculator({
       if (!templatesData?.data) {
         throw new Error('No templates available');
       }
-      const templateIds = templatesData.data.slice(0, 2).map((t) => t.id);
+      const templateIds = templatesData.data.slice(0: unknown, 2).map((t: unknown) => t.id);
       const response = await ratesService.createBulkCalculation({
         org_id: orgId,
         templateIds,
       });
       return response as unknown as CreateBulkCalculationResponse;
     },
-    onSuccess: (response) => {
-      queryClient.setQueryData<GetBulkCalculationsResponse>(['bulk-calculations', orgId], (old) => {
+    onSuccess: (response: unknown) => {
+      queryClient.setQueryData<GetBulkCalculationsResponse>(['bulk-calculations', orgId], (old: unknown) => {
         if (!old) return { data: [response.data] };
         return {
           data: [...old.data, response.data],
@@ -87,7 +87,7 @@ export function BulkRateCalculator({
         </div>
 
         <div className='space-y-4'>
-          {calculationsData?.data.map((calc) => (
+          {calculationsData?.data.map((calc: unknown) => (
             <Card
               key={calc.id}
               className='p-4'
@@ -102,26 +102,40 @@ export function BulkRateCalculator({
                 </div>
                 {calc.status === 'completed' && <Button variant='outline'>View Results</Button>}
               </div>
-              {calc.results && calc.results.length > 0 && (
-                <div className='mt-4'>
-                  <h4 className='mb-2 font-medium'>Results</h4>
-                  <ul className='space-y-2'>
-                    {calc.results.map((result) => (
+              {Array.isArray(calc.results) && calc.results.length > 0 ? (
+                <div className='space-y-2'>
+                  <h4 className='font-semibold'>Results</h4>
+                  <ul className='space-y-1'>
+                    {calc.results.map((result: unknown) => (
                       <li
                         key={`${calc.id}-${result.templateId}`}
                         className='flex items-center justify-between'
                       >
                         <span>Template {result.templateId}</span>
-                        <span className='font-medium'>${result.rate.toFixed(2)}</span>
+                        <span className='font-medium'>${result.rate.toFixed(2: unknown)}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
+              ) : (
+                <EmptyState message='No rates calculated' />
               )}
             </Card>
           ))}
         </div>
       </Card>
+    </div>
+  );
+}
+
+interface EmptyStateProps {
+  message: string;
+}
+
+function EmptyState({ message }: EmptyStateProps): ReactElement {
+  return (
+    <div className='p-4 text-center text-gray-500'>
+      <p>{message}</p>
     </div>
   );
 }

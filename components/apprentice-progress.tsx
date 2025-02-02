@@ -21,7 +21,7 @@ const qualificationData = [
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
-export function ApprenticeProgress() {
+export function ApprenticeProgress(): void {
   return (
     <Tabs
       defaultValue='progress'
@@ -49,7 +49,7 @@ export function ApprenticeProgress() {
               fontSize={12}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(value) => `${value}`}
+              tickFormatter={(value: unknown) => `${value}`}
             />
             <Tooltip />
             <Legend />
@@ -98,7 +98,7 @@ export function ApprenticeProgress() {
               dataKey='value'
               radius={[0, 4, 4, 0]}
             >
-              {qualificationData.map((_, index) => (
+              {qualificationData.map((_: unknown, index) => (
                 <Cell
                   key={`cell-${index}`}
                   fill={COLORS[index % COLORS.length]}

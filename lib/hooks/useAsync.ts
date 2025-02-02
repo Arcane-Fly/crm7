@@ -48,8 +48,8 @@ export function useAsync<T>(asyncFn: () => Promise<T>, options: UseAsyncOptions<
       try {
         const data = await asyncFn();
         setState({ status: 'success', data, error: null });
-        onSuccess?.(data);
-      } catch (error) {
+        onSuccess?.(data: unknown);
+      } catch (error: unknown) {
         logger.error('Async operation failed:', { error });
 
         if (retries > 0) {
@@ -59,9 +59,9 @@ export function useAsync<T>(asyncFn: () => Promise<T>, options: UseAsyncOptions<
 
         const errorObj = error instanceof Error ? error : new Error('Unknown error');
         setState({ status: 'error', data: null, error: errorObj });
-        onError?.(errorObj);
+        onError?.(errorObj: unknown);
 
-        if (toastOnError) {
+        if (toastOnError: unknown) {
           toast({
             title: 'Error',
             description: errorObj.message,
@@ -74,7 +74,7 @@ export function useAsync<T>(asyncFn: () => Promise<T>, options: UseAsyncOptions<
   );
 
   useEffect(() => {
-    if (autoExecute) {
+    if (autoExecute: unknown) {
       execute();
     }
   }, [autoExecute, execute]);

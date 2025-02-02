@@ -11,7 +11,60 @@
   "endOfLine": "lf",
   "embeddedLanguageFormatting": "auto",
   "singleAttributePerLine": true,
-  "plugins": ["prettier-plugin-tailwindcss"],
+  "plugins": [
+    "prettier-plugin-tailwindcss",
+    "@ianvs/prettier-plugin-sort-imports"
+  ],
   "tailwindConfig": "./tailwind.config.ts",
-  "tailwindFunctions": ["cn", "cva"]
+  "tailwindFunctions": ["cn", "cva", "clsx", "twMerge"],
+  "importOrder": [
+    "^(react/(.*)$)|^(react$)",
+    "^(next/(.*)$)|^(next$)",
+    "<THIRD_PARTY_MODULES>",
+    "",
+    "^@/types/(.*)$",
+    "^@/config/(.*)$",
+    "^@/lib/(.*)$",
+    "^@/hooks/(.*)$",
+    "^@/components/ui/(.*)$",
+    "^@/components/(.*)$",
+    "^@/styles/(.*)$",
+    "^@/app/(.*)$",
+    "",
+    "^[./]"
+  ],
+  "importOrderParserPlugins": ["typescript", "jsx", "decorators-legacy"],
+  "overrides": [
+    {
+      "files": "*.{ts,tsx}",
+      "options": {
+        "parser": "typescript",
+        "semi": true,
+        "trailingComma": "all"
+      }
+    },
+    {
+      "files": "**/__tests__/**/*.{ts,tsx}",
+      "options": {
+        "parser": "typescript",
+        "semi": true,
+        "trailingComma": "all",
+        "printWidth": 120
+      }
+    },
+    {
+      "files": "*.{css,scss}",
+      "options": {
+        "singleQuote": false,
+        "parser": "css"
+      }
+    },
+    {
+      "files": "*.{json,md}",
+      "options": {
+        "useTabs": false,
+        "parser": "json"
+      }
+    }
+  ]
 }

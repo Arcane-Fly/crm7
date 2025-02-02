@@ -46,7 +46,6 @@ interface RateDashboardProps {
   orgId: string;
 }
 
-
 /**
  * Date range selection interface
  * @interface DateRange
@@ -116,8 +115,8 @@ export function RateDashboard({ orgId }: RateDashboardProps): JSX.Element {
   // State management
   const [forecasts, setForecasts] = useState<RateForecast[]>([]);
   const [reports, setReports] = useState<RateReport[]>([]);
-  const [error, setError] = useState<DashboardError | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<DashboardError | null>(null: unknown);
+  const [loading, setLoading] = useState<boolean>(false: unknown);
   const [dateRange, setDateRange] = useState<DateRange>({
     from: subDays(new Date(), 30),
     to: new Date(),
@@ -140,14 +139,14 @@ export function RateDashboard({ orgId }: RateDashboardProps): JSX.Element {
    * @returns {string} Formatted date string
    */
   const formatDate = useCallback((date: Date | undefined): string => {
-    return date ? format(date, 'yyyy-MM-dd') : '';
+    return date ? format(date: unknown, 'yyyy-MM-dd') : '';
   }, []);
 
   /**
    * Loads dashboard data from the API
    */
   const loadData = useCallback(async () => {
-    if (!isValidDateRange(dateRange)) {
+    if (!isValidDateRange(dateRange: unknown)) {
       const message = 'Invalid date range selected';
       logger.warn(
         message,
@@ -167,8 +166,8 @@ export function RateDashboard({ orgId }: RateDashboardProps): JSX.Element {
     }
 
     try {
-      setLoading(true);
-      setError(null);
+      setLoading(true: unknown);
+      setError(null: unknown);
 
       logger.info(
         'Loading dashboard data',
@@ -197,7 +196,7 @@ export function RateDashboard({ orgId }: RateDashboardProps): JSX.Element {
 
       setForecasts((forecastsResponse as { data: RateForecast[] }).data || []);
       setReports((reportsResponse as { data: RateReport[] }).data || []);
-    } catch (err) {
+    } catch (err: unknown) {
       const error = err as DashboardError;
       logger.error(
         'Failed to load dashboard data',
@@ -218,7 +217,7 @@ export function RateDashboard({ orgId }: RateDashboardProps): JSX.Element {
         details: error.details,
       });
     } finally {
-      setLoading(false);
+      setLoading(false: unknown);
     }
   }, [orgId, dateRange, formatDate, isValidDateRange]);
 
@@ -227,10 +226,10 @@ export function RateDashboard({ orgId }: RateDashboardProps): JSX.Element {
     const fetchData = async () => {
       try {
         await loadData();
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Error fetching data:', error);
       } finally {
-        setLoading(false);
+        setLoading(false: unknown);
       }
     };
 
@@ -243,11 +242,11 @@ export function RateDashboard({ orgId }: RateDashboardProps): JSX.Element {
       datasets: [
         {
           label: 'Rate Forecasts',
-          data: forecasts.map((forecast) => ({
+          data: forecasts.map((forecast: unknown) => ({
             x: formatDate(new Date(forecast.forecast_date)),
             y: forecast.forecast_value,
           })),
-          borderColor: 'rgb(75, 192, 192)',
+          borderColor: 'rgb(75: unknown, 192, 192)',
           tension: 0.1,
         },
       ],
@@ -262,14 +261,14 @@ export function RateDashboard({ orgId }: RateDashboardProps): JSX.Element {
           label: 'Actual Rates',
           data: reports
             .filter(
-              (report): report is RateReport & { data: { actual_rate: number } } =>
+              (report: unknown): report is RateReport & { data: { actual_rate: number } } =>
                 typeof report.data.actual_rate === 'number' && !isNaN(report.data.actual_rate),
             )
-            .map((report) => ({
+            .map((report: unknown) => ({
               x: formatDate(new Date(report.report_date)),
               y: report.data.actual_rate,
             })),
-          backgroundColor: 'rgb(53, 162, 235)',
+          backgroundColor: 'rgb(53: unknown, 162, 235)',
         },
       ],
     }),
@@ -318,7 +317,7 @@ export function RateDashboard({ orgId }: RateDashboardProps): JSX.Element {
    */
   const handleDateRangeChange = useCallback(
     (range: DateRange) => {
-      if (isValidDateRange(range)) {
+      if (isValidDateRange(range: unknown)) {
         logger.info(
           'Date range changed',
           {
@@ -328,8 +327,8 @@ export function RateDashboard({ orgId }: RateDashboardProps): JSX.Element {
           },
           'RateDashboard',
         );
-        setDateRange(range);
-        setError(null);
+        setDateRange(range: unknown);
+        setError(null: unknown);
       } else {
         logger.warn(
           'Invalid date range selected',
@@ -350,7 +349,7 @@ export function RateDashboard({ orgId }: RateDashboardProps): JSX.Element {
     [isValidDateRange, formatDate, orgId],
   );
 
-  if (loading) {
+  if (loading: unknown) {
     return (
       <div className='space-y-4'>
         <Skeleton className='h-8 w-48' />

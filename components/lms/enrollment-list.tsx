@@ -17,7 +17,7 @@ export function EnrollmentList(): React.ReactElement {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error: unknown) throw error;
       return data as ApprenticeQualificationRow[];
     },
   });

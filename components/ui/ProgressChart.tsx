@@ -15,7 +15,7 @@ const data: ChartData[] = [
   { name: 'Year 4', completed: 300, inProgress: 200 },
 ];
 
-export function ProgressChart() {
+export function ProgressChart(): void {
   return (
     <div className='h-[300px] w-full'>
       <ResponsiveContainer

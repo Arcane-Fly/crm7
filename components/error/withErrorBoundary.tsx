@@ -19,7 +19,7 @@ export function withErrorBoundary<P extends object>(
         onReset={options?.onReset ?? (() => window.location.reload())}
         onError={
           options?.onError ??
-          ((error, _info) => {
+          ((error: unknown, _info) => {
             // TODO: Add your error logging service here
             console.error('Error caught by error boundary:', error);
           })

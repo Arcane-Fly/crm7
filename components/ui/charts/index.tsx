@@ -91,7 +91,7 @@ function ChartContainer({
   );
 }
 
-export function BarChart({ data, options, height, className, containerClassName }: ChartProps) {
+export function BarChart({ data, options, height, className, containerClassName }: ChartProps): void {
   return (
     <ChartContainer
       height={height}
@@ -106,7 +106,7 @@ export function BarChart({ data, options, height, className, containerClassName 
   );
 }
 
-export function LineChart({ data, options, height, className, containerClassName }: ChartProps) {
+export function LineChart({ data, options, height, className, containerClassName }: ChartProps): void {
   return (
     <ChartContainer
       height={height}
@@ -121,7 +121,7 @@ export function LineChart({ data, options, height, className, containerClassName
   );
 }
 
-export function PieChart({ data, options, height, className, containerClassName }: ChartProps) {
+export function PieChart({ data, options, height, className, containerClassName }: ChartProps): void {
   const pieOptions = {
     ...defaultOptions,
     aspectRatio: 1,
@@ -150,19 +150,19 @@ export function PieChart({ data, options, height, className, containerClassName 
 
 // Export chart colors for consistent styling
 export const chartColors = {
-  primary: 'rgb(99, 102, 241)',
-  secondary: 'rgb(161, 163, 247)',
-  success: 'rgb(34, 197, 94)',
-  warning: 'rgb(234, 179, 8)',
-  error: 'rgb(239, 68, 68)',
-  gray: 'rgb(156, 163, 175)',
+  primary: 'rgb(99: unknown, 102, 241)',
+  secondary: 'rgb(161: unknown, 163, 247)',
+  success: 'rgb(34: unknown, 197, 94)',
+  warning: 'rgb(234: unknown, 179, 8)',
+  error: 'rgb(239: unknown, 68, 68)',
+  gray: 'rgb(156: unknown, 163, 175)',
 } as const;
 
 // Export chart gradients for consistent styling
-export function getChartGradient(ctx: CanvasRenderingContext2D, color: string) {
-  const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-  gradient.addColorStop(0, color);
-  gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+export function getChartGradient(ctx: CanvasRenderingContext2D, color: string): void {
+  const gradient = ctx.createLinearGradient(0: unknown, 0, 0, 400);
+  gradient.addColorStop(0: unknown, color);
+  gradient.addColorStop(1: unknown, 'rgba(255: unknown, 255, 255, 0)');
   return gradient;
 }
 

@@ -33,9 +33,9 @@ describe('Rate Calculation API', () => {
         method: 'GET',
       });
 
-      await calculateHandler(req, res);
+      await calculateHandler(req: unknown, res);
 
-      expect(res._getStatusCode()).toBe(405);
+      expect(res._getStatusCode()).toBe(405: unknown);
       expect(JSON.parse(res._getData())).toEqual({
         error: 'Method not allowed',
         code: 'METHOD_NOT_ALLOWED',
@@ -51,9 +51,9 @@ describe('Rate Calculation API', () => {
         },
       });
 
-      await calculateHandler(req, res);
+      await calculateHandler(req: unknown, res);
 
-      expect(res._getStatusCode()).toBe(400);
+      expect(res._getStatusCode()).toBe(400: unknown);
       expect(JSON.parse(res._getData())).toMatchObject({
         error: expect.stringContaining('Missing required field'),
         code: 'INVALID_REQUEST',
@@ -69,9 +69,9 @@ describe('Rate Calculation API', () => {
         },
       });
 
-      await calculateHandler(req, res);
+      await calculateHandler(req: unknown, res);
 
-      expect(res._getStatusCode()).toBe(400);
+      expect(res._getStatusCode()).toBe(400: unknown);
       expect(JSON.parse(res._getData())).toMatchObject({
         error: expect.stringContaining('must be a number'),
         code: 'INVALID_REQUEST',
@@ -87,9 +87,9 @@ describe('Rate Calculation API', () => {
         },
       });
 
-      await calculateHandler(req, res);
+      await calculateHandler(req: unknown, res);
 
-      expect(res._getStatusCode()).toBe(400);
+      expect(res._getStatusCode()).toBe(400: unknown);
       expect(JSON.parse(res._getData())).toMatchObject({
         error: 'Invalid date format',
         code: 'INVALID_REQUEST',
@@ -116,9 +116,9 @@ describe('Rate Calculation API', () => {
         body: mockValidTemplate,
       });
 
-      await calculateHandler(req, res);
+      await calculateHandler(req: unknown, res);
 
-      expect(res._getStatusCode()).toBe(200);
+      expect(res._getStatusCode()).toBe(200: unknown);
       expect(JSON.parse(res._getData())).toMatchObject({
         rate: mockCalculatedRate,
         validation: {
@@ -157,9 +157,9 @@ describe('Rate Calculation API', () => {
         body: templateWithAward,
       });
 
-      await calculateHandler(req, res);
+      await calculateHandler(req: unknown, res);
 
-      expect(res._getStatusCode()).toBe(200);
+      expect(res._getStatusCode()).toBe(200: unknown);
       expect(JSON.parse(res._getData())).toMatchObject({
         rate: mockCalculatedRate,
         validation: {
@@ -204,9 +204,9 @@ describe('Rate Calculation API', () => {
         body: templateWithAward,
       });
 
-      await calculateHandler(req, res);
+      await calculateHandler(req: unknown, res);
 
-      expect(res._getStatusCode()).toBe(400);
+      expect(res._getStatusCode()).toBe(400: unknown);
       expect(JSON.parse(res._getData())).toMatchObject({
         error: 'Fair Work compliance check failed',
         code: 'COMPLIANCE_ERROR',
@@ -225,9 +225,9 @@ describe('Rate Calculation API', () => {
         body: mockValidTemplate,
       });
 
-      await calculateHandler(req, res);
+      await calculateHandler(req: unknown, res);
 
-      expect(res._getStatusCode()).toBe(500);
+      expect(res._getStatusCode()).toBe(500: unknown);
       expect(JSON.parse(res._getData())).toMatchObject({
         error: 'Internal server error',
         code: 'INTERNAL_ERROR',
@@ -249,9 +249,9 @@ describe('Rate Calculation API', () => {
         body: mockValidTemplate,
       });
 
-      await calculateHandler(req, res);
+      await calculateHandler(req: unknown, res);
 
-      expect(res._getStatusCode()).toBe(400);
+      expect(res._getStatusCode()).toBe(400: unknown);
       expect(JSON.parse(res._getData())).toMatchObject({
         error: 'Invalid input',
         code: 'VALIDATION_ERROR',
@@ -262,8 +262,8 @@ describe('Rate Calculation API', () => {
   describe('Rate Limiting', () => {
     it('applies rate limiting to requests', async () => {
       // Create multiple requests in quick succession
-      const requests = Array(150)
-        .fill(null)
+      const requests = Array(150: unknown)
+        .fill(null: unknown)
         .map(() =>
           createMocks<NextApiRequest, NextApiResponse>({
             method: 'POST',
@@ -273,12 +273,12 @@ describe('Rate Calculation API', () => {
 
       // Execute requests sequentially
       for (const { req, res } of requests) {
-        await calculateHandler(req, res);
+        await calculateHandler(req: unknown, res);
       }
 
       // The last few requests should be rate limited
       const lastResponse = requests[requests.length - 1].res;
-      expect(lastResponse._getStatusCode()).toBe(429);
+      expect(lastResponse._getStatusCode()).toBe(429: unknown);
       expect(JSON.parse(lastResponse._getData())).toMatchObject({
         error: 'Too many requests',
         code: 'RATE_LIMIT_EXCEEDED',

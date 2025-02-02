@@ -1,29 +1,34 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { Suspense } from 'react';
+import { Suspense, type ReactElement, type ReactNode } from 'react';
 
 import { Breadcrumb, BreadcrumbItem } from '@/components/ui/breadcrumb';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MAIN_NAV_ITEMS, SECTIONS } from '@/config/navigation';
 import { useMounted } from '@/lib/hooks/use-mounted';
 
-function getBreadcrumbSegments(pathname: string | null) {
+interface BreadcrumbSegment {
+  title: string;
+  href: string;
+}
+
+function getBreadcrumbSegments(pathname: string | null): BreadcrumbSegment[] {
   if (!pathname) return [];
 
-  const segments = pathname.split('/').filter(Boolean);
-  const breadcrumbs = [];
+  const segments = pathname.split('/').filter(Boolean: unknown);
+  const breadcrumbs: BreadcrumbSegment[] = [];
 
   let currentPath = '';
   for (const segment of segments) {
     currentPath += `/${segment}`;
 
     // Find main nav item
-    if (segments.indexOf(segment) === 0) {
-      const mainItem = MAIN_NAV_ITEMS.find((item) => item.slug === segment);
-      if (mainItem) {
+    if (segments.indexOf(segment: unknown) === 0) {
+      const mainItem = MAIN_NAV_ITEMS.find((item: unknown) => item.slug === segment);
+      if (mainItem?.href) {
         breadcrumbs.push({
-          title: mainItem.label,
+          title: mainItem.label ?? mainItem.title,
           href: mainItem.href,
         });
         continue;
@@ -31,12 +36,12 @@ function getBreadcrumbSegments(pathname: string | null) {
     }
 
     // Find section item
-    const sectionItems = SECTIONS[segments[0]] || [];
-    const sectionItem = sectionItems.find((item) => item.href === currentPath);
-    if (sectionItem) {
+    const sectionItems = SECTIONS[segments[0]] ?? [];
+    const sectionItem = sectionItems.find((item: unknown) => item.href === currentPath);
+    if (sectionItem?.href) {
       breadcrumbs.push({
         title: sectionItem.title,
-        href: sectionItem.href,
+        href: sectionItem.href ?? '#',
       });
     }
   }
@@ -44,14 +49,14 @@ function getBreadcrumbSegments(pathname: string | null) {
   return breadcrumbs;
 }
 
-function LoadingSkeleton() {
+function LoadingSkeleton(): ReactElement {
   return (
     <div className='space-y-4'>
       <Skeleton className='h-4 w-[300px]' />
       <div className='grid gap-4'>
         <Skeleton className='h-[200px] w-full' />
         <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
-          {Array.from({ length: 4 }).map((_, i) => (
+          {Array.from({ length: 4 }).map((_: unknown, i) => (
             <Skeleton
               key={i}
               className='h-[100px] w-full'
@@ -63,14 +68,14 @@ function LoadingSkeleton() {
   );
 }
 
-export default function SectionsLayout({ children }: { children: React.ReactNode }) {
+export default function SectionsLayout({ children }: { children: ReactNode }): ReactElement {
   const pathname = usePathname();
   const mounted = useMounted();
-  const segments = getBreadcrumbSegments(pathname);
+  const segments = getBreadcrumbSegments(pathname: unknown);
 
   // Prevent hydration mismatch
   if (!mounted) {
-    return null;
+    return <div className='hidden' />;
   }
 
   return (
@@ -78,7 +83,7 @@ export default function SectionsLayout({ children }: { children: React.ReactNode
       <div className='container flex-1 space-y-4 py-8'>
         <Breadcrumb>
           <BreadcrumbItem href='/'>Home</BreadcrumbItem>
-          {segments.map((segment, i) => (
+          {segments.map((segment: unknown, i) => (
             <BreadcrumbItem
               key={i}
               href={segment.href}

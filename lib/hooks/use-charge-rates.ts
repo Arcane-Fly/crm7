@@ -22,22 +22,22 @@ interface ChargeRateResponse {
 /**
  * Hook for calculating charge rates
  */
-export function useChargeRates() {
+export function useChargeRates(): void {
   return useMutation<ChargeRateResponse, ApiError, ChargeConfig>({
-    mutationFn: async (config) => {
+    mutationFn: async (config: unknown) => {
       const response = await fetch('/api/charge-rates', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(config),
+        body: JSON.stringify(config: unknown),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
         throw new ApiError({
-          message: data.error?.message || 'Failed to calculate charge rates',
+          message: data.error?.message ?? 'Failed to calculate charge rates',
           statusCode: response.status,
           context: data.error?.details,
         });

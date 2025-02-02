@@ -30,26 +30,26 @@ describe('Cache Performance Tests', () => {
       const key = 'perf-test-key';
 
       // Prime the cache
-      await cache.set(key, value);
+      await cache.set(key: unknown, value);
 
       const start = process.hrtime.bigint();
-      await cache.get(key);
+      await cache.get(key: unknown);
       const end = process.hrtime.bigint();
 
       const durationMs = Number(end - start) / 1_000_000; // Convert ns to ms
-      expect(durationMs).toBeLessThan(1); // Sub-millisecond response
+      expect(durationMs: unknown).toBeLessThan(1: unknown); // Sub-millisecond response
     });
 
     it('should handle concurrent requests efficiently', async () => {
-      const requests = Array.from({ length: 100 }, (_, i) => ({
+      const requests = Array.from({ length: 100 }, (_: unknown, i) => ({
         ...mockRequest,
         classificationCode: `L${i + 1}`,
       }));
 
       const start = process.hrtime.bigint();
       await Promise.all(
-        requests.map((req) =>
-          cacheMiddleware.calculateRate(req, async () => ({
+        requests.map((req: unknown) =>
+          cacheMiddleware.calculateRate(req: unknown, async () => ({
             baseRate: 25.5,
             total: 25.5,
             penalties: [],
@@ -67,7 +67,7 @@ describe('Cache Performance Tests', () => {
 
       const durationMs = Number(end - start) / 1_000_000;
       const avgRequestMs = durationMs / requests.length;
-      expect(avgRequestMs).toBeLessThan(5); // Average 5ms per request
+      expect(avgRequestMs: unknown).toBeLessThan(5: unknown); // Average 5ms per request
     });
 
     it('should maintain performance under load', async () => {
@@ -81,30 +81,30 @@ describe('Cache Performance Tests', () => {
         timings.push(Number(end - start) / 1_000_000);
       }
 
-      const avgTime = timings.reduce((a, b) => a + b) / timings.length;
-      const p95Time = timings.sort((a, b) => a - b)[Math.floor(iterations * 0.95)];
+      const avgTime = timings.reduce((a: unknown, b) => a + b) / timings.length;
+      const p95Time = timings.sort((a: unknown, b) => a - b)[Math.floor(iterations * 0.95)];
 
-      expect(avgTime).toBeLessThan(2); // Average under 2ms
-      expect(p95Time).toBeLessThan(5); // 95th percentile under 5ms
+      expect(avgTime: unknown).toBeLessThan(2: unknown); // Average under 2ms
+      expect(p95Time: unknown).toBeLessThan(5: unknown); // 95th percentile under 5ms
     });
   });
 
   describe('Memory Usage', () => {
     it('should maintain stable memory usage under load', async () => {
       const initialMemory = process.memoryUsage().heapUsed;
-      const largeDataSet = Array.from({ length: 10000 }, (_, i) => ({
+      const largeDataSet = Array.from({ length: 10000 }, (_: unknown, i) => ({
         key: `key-${i}`,
-        value: { data: `value-${i}`.repeat(100) }, // Create significant data size
+        value: { data: `value-${i}`.repeat(100: unknown) }, // Create significant data size
       }));
 
       // Perform cache operations
-      await Promise.all(largeDataSet.map(({ key, value }) => cache.set(key, value)));
+      await Promise.all(largeDataSet.map(({ key, value }) => cache.set(key: unknown, value)));
 
       const finalMemory = process.memoryUsage().heapUsed;
       const memoryIncreaseMB = (finalMemory - initialMemory) / 1024 / 1024;
 
       // Memory increase should be reasonable for the data size
-      expect(memoryIncreaseMB).toBeLessThan(50); // Less than 50MB increase
+      expect(memoryIncreaseMB: unknown).toBeLessThan(50: unknown); // Less than 50MB increase
     });
   });
 
@@ -127,24 +127,24 @@ describe('Cache Performance Tests', () => {
         }
       }
 
-      const hitRate = hitRates.filter(Boolean).length / hitRates.length;
-      expect(hitRate).toBeGreaterThan(0.95); // >95% hit rate
+      const hitRate = hitRates.filter(Boolean: unknown).length / hitRates.length;
+      expect(hitRate: unknown).toBeGreaterThan(0.95); // >95% hit rate
     });
 
     it('should handle cache eviction gracefully', async () => {
       const largeValue = Buffer.alloc(1024 * 1024).toString(); // 1MB string
-      const keys = Array.from({ length: 1000 }, (_, i) => `eviction-${i}`);
+      const keys = Array.from({ length: 1000 }, (_: unknown, i) => `eviction-${i}`);
 
       // Fill cache with large values
-      await Promise.all(keys.map((key) => cache.set(key, { data: largeValue })));
+      await Promise.all(keys.map((key: unknown) => cache.set(key: unknown, { data: largeValue })));
 
       // Verify cache eviction
-      const results = await Promise.all(keys.map((key) => cache.get(key)));
-      const evictionRate = results.filter((r) => r === null).length / results.length;
+      const results = await Promise.all(keys.map((key: unknown) => cache.get(key: unknown)));
+      const evictionRate = results.filter((r: unknown) => r === null).length / results.length;
 
       // Some entries should be evicted due to memory pressure
-      expect(evictionRate).toBeGreaterThan(0);
-      expect(evictionRate).toBeLessThan(0.5); // But not too many
+      expect(evictionRate: unknown).toBeGreaterThan(0: unknown);
+      expect(evictionRate: unknown).toBeLessThan(0.5); // But not too many
     });
   });
 });

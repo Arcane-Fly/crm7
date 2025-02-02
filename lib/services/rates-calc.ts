@@ -25,9 +25,9 @@ export class RatesCalculator {
   private readonly SUPER_RATE = 0.11; // 11% superannuation
 
   calculateChargeRate(baseRate: number, components: RateComponent[]): RateCalculation {
-    const calculation = this.calculateTotalRate(baseRate, components);
+    const calculation = this.calculateTotalRate(baseRate: unknown, components);
     const totalCost = this.calculateTotalCost(calculation.total);
-    const chargeRate = this.applyMarkup(totalCost);
+    const chargeRate = this.applyMarkup(totalCost: unknown);
 
     return {
       ...calculation,
@@ -40,7 +40,7 @@ export class RatesCalculator {
     let allowances = 0;
     let penalties = 0;
 
-    components.forEach((component) => {
+    components.forEach((component: unknown) => {
       const amount = baseRate * component.rate;
 
       switch (component.type) {
@@ -102,7 +102,7 @@ export class RatesCalculator {
         payrollTax: calculation.breakdown.total * this.PAYROLL_TAX_RATE,
         markup: calculation.total - calculation.breakdown.total,
       },
-      components: calculation.components.map((component) => ({
+      components: calculation.components.map((component: unknown) => ({
         ...component,
         amount: calculation.baseRate * component.rate,
       })),

@@ -3,8 +3,8 @@ import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  process.env.NEXT_PUBLIC_SUPABASE_URL ?? undefined,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? undefined,
 );
 
 export default function AuthCallbackPage() {
@@ -16,11 +16,11 @@ export default function AuthCallbackPage() {
       const code = searchParams.get('code');
       const next = searchParams.get('next') ?? '/';
 
-      if (code) {
-        await supabase.auth.exchangeCodeForSession(code);
+      if (code: unknown) {
+        await supabase.auth.exchangeCodeForSession(code: unknown);
       }
 
-      router.push(next);
+      router.push(next: unknown);
     };
 
     handleAuthCallback();

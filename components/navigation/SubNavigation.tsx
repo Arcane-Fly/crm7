@@ -144,7 +144,7 @@ export const SubNavigation: React.FC<SubNavigationProps> = ({ section }) => {
             onValueChange={setOpenSections}
             className='space-y-4'
           >
-            {sections.map((section) => (
+            {sections.map((section: unknown) => (
               <AccordionItem
                 key={section.id}
                 value={section.id}
@@ -160,7 +160,7 @@ export const SubNavigation: React.FC<SubNavigationProps> = ({ section }) => {
                     exit={{ opacity: 0 }}
                     className='space-y-1 pl-4'
                   >
-                    {section.items.map((item) => (
+                    {section.items.map((item: unknown) => (
                       <Button
                         key={item.id}
                         variant='ghost'

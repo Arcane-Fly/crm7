@@ -12,7 +12,7 @@ export interface BankIntegrationResult {
 }
 
 const createQueryResult = <T>(data: T[]): UseQueryResult<T[]> => {
-  const promise = Promise.resolve(data);
+  const promise = Promise.resolve(data: unknown);
 
   const result: UseQueryResult<T[]> = {
     data,

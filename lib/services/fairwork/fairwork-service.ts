@@ -1,132 +1,222 @@
-import type {
-  Award,
-  AwardRate,
-  Classification,
-  ClassificationHierarchy,
-  FairWorkConfig,
-  GetBaseRateParams,
-  GetClassificationsParams,
-  GetFutureRatesParams,
-  GetRateHistoryParams,
-  Rate,
-  RateCalculationRequest,
-  RateCalculationResponse,
-  RateTemplate,
-  RateValidationResponse,
-  ValidateRateParams,
+import { type RedisClientType } from 'redis';
+
+import { CacheService } from '@/lib/utils/cache';
+import { logger } from '@/lib/utils/logger';
+import { BaseService, type ServiceOptions } from '@/lib/utils/service';
+
+import { type FairWorkApiClient } from './api-client';
+import {
+  type Award,
+  type Classification,
+  type ClassificationHierarchy,
+  type Rate,
+  type RateTemplate,
+  type RateValidationRequest,
+  type RateValidationResponse,
 } from './types';
 
-const DEFAULT_CONFIG: Required<FairWorkConfig> = {
-  baseUrl: 'https://api.fairwork.gov.au/v1',
-  apiKey: process.env.FAIRWORK_API_KEY || '',
-  cacheConfig: {
-    ttl: 3600,
-    prefix: 'fairwork:',
-  },
-};
-
-export class FairWorkService {
-  private readonly config: Required<FairWorkConfig>;
-
-  constructor(config: Partial<FairWorkConfig> = {}) {
-    this.config = {
-      ...DEFAULT_CONFIG,
-      ...config,
-      cacheConfig: {
-        ...DEFAULT_CONFIG.cacheConfig,
-        ...config.cacheConfig,
-      },
-    };
-  }
-
-  public async getActiveAwards(): Promise<Award[]> {
-    // Implementation would fetch from Fair Work API using config
-    const response = await fetch(`${this.config.baseUrl}/awards`, {
-      headers: {
-        'Authorization': `Bearer ${this.config.apiKey}`,
-      },
-    });
-    return response.json();
-  }
-
-  public async getCurrentRates(_awardCode: string): Promise<Rate[]> {
-    // Implementation would fetch current rates from Fair Work API
-    return [];
-  }
-
-  public async getRatesForDate(_awardCode: string, _date: Date): Promise<Rate[]> {
-    // Implementation would fetch rates for specific date from Fair Work API
-    return [];
-  }
-
-  public async getClassifications(_params: GetClassificationsParams): Promise<Classification[]> {
-    // Implementation would fetch classifications from Fair Work API
-    return [];
-  }
-
-  public async getClassificationHierarchy(_awardCode: string): Promise<ClassificationHierarchy[]> {
-    // Implementation would fetch classification hierarchy from Fair Work API
-    return [];
-  }
-
-  public async getRateTemplates(_awardCode: string): Promise<RateTemplate[]> {
-    // Implementation would fetch rate templates from Fair Work API
-    return [];
-  }
-
-  public async getBaseRate(_params: GetBaseRateParams): Promise<number> {
-    // Implementation would fetch base rate from Fair Work API
-    return 0;
-  }
-
-  public async getFutureRates(_params: GetFutureRatesParams): Promise<AwardRate[]> {
-    // Implementation would fetch future rates from Fair Work API
-    return [];
-  }
-
-  public async getRateHistory(_params: GetRateHistoryParams): Promise<AwardRate[]> {
-    // Implementation would fetch rate history from Fair Work API
-    return [];
-  }
-
-  public async calculateRate(request: RateCalculationRequest): Promise<RateCalculationResponse> {
-    // Implementation would calculate rates using Fair Work API
-    return {
-      baseRate: 0,
-      penalties: [],
-      allowances: [],
-      total: 0,
-      breakdown: {
-        base: 0,
-        penalties: 0,
-        allowances: 0,
-      },
-      metadata: {
-        calculatedAt: new Date(),
-        effectiveDate: request.date,
-        source: 'fairwork',
-      },
-    };
-  }
-
-  public async validateRate(_params: ValidateRateParams): Promise<RateValidationResponse> {
-    // Implementation would validate rates using Fair Work API
-    return {
-      isValid: false,
-      minimumRate: 0,
-      validationDate: new Date(),
-    };
-  }
-
-  public async getAwardRates(_awardCode: string): Promise<AwardRate[]> {
-    // Implementation would fetch award rates from Fair Work API
-    return [];
-  }
-
-  public async close(): Promise<void> {
-    // Cleanup resources
-  }
+export interface FairWorkService {
+  getActiveAwards(): Promise<Award[]>;
+  getAward(awardCode: string): Promise<Award | null>;
+  getCurrentRates(awardCode: string): Promise<Rate[]>;
+  getRatesForDate(awardCode: string, date?: string): Promise<Rate[]>;
+  getClassifications(awardCode: string): Promise<Classification[]>;
+  getClassificationHierarchy(awardCode: string): Promise<ClassificationHierarchy>;
+  getRateTemplates(awardCode: string): Promise<RateTemplate[]>;
+  validateRate(params: RateValidationRequest): Promise<RateValidationResponse>;
+  calculateBaseRate(params: {
+    awardCode: string;
+    classification: string;
+  }): Promise<{ baseRate: number }>;
 }
 
-// Export singleton instance
-export const fairWorkService = new FairWorkService();
+export class FairWorkServiceImpl extends BaseService implements FairWorkService {
+  private readonly apiClient: FairWorkApiClient;
+  private readonly cache: CacheService;
+  private readonly serviceLogger = logger.createLogger('FairWorkService');
+  private readonly CACHE_TTL = 3600;
+
+  constructor(apiClient: FairWorkApiClient, redisClient: RedisClientType, options: ServiceOptions) {
+    super(options);
+    this.apiClient = apiClient;
+    this.cache = new CacheService(redisClient);
+  }
+
+  async getActiveAwards(): Promise<Award[]> {
+    return this.executeServiceMethod('getActiveAwards', async () => {
+      try {
+        const cacheKey = 'active_awards';
+        const cachedAwards = await this.cache.get<Award[]>(cacheKey);
+
+        if (cachedAwards) {
+          return cachedAwards;
+        }
+
+        const { items: awards } = await this.apiClient.getActiveAwards();
+        await this.cache.set(cacheKey, awards, this.CACHE_TTL);
+        return awards;
+      } catch (error) {
+        this.serviceLogger.error('Failed to get active awards', { error });
+        throw error;
+      }
+    });
+  }
+
+  async getAward(awardCode: string): Promise<Award | null> {
+    return this.executeServiceMethod('getAward', async () => {
+      try {
+        const cacheKey = `award:${awardCode}`;
+        const cachedAward = await this.cache.get<Award>(cacheKey);
+
+        if (cachedAward) {
+          return cachedAward;
+        }
+
+        const awards = await this.getActiveAwards();
+        const award = awards.find((a) => a.code === awardCode);
+
+        if (award) {
+          await this.cache.set(cacheKey, award, this.CACHE_TTL);
+        }
+
+        return award ?? null;
+      } catch (error) {
+        this.serviceLogger.error('Failed to get award', { error, awardCode });
+        throw error;
+      }
+    });
+  }
+
+  async getCurrentRates(awardCode: string): Promise<Rate[]> {
+    return this.executeServiceMethod('getCurrentRates', async () => {
+      try {
+        const cacheKey = `rates:${awardCode}:current`;
+        const cachedRates = await this.cache.get<Rate[]>(cacheKey);
+
+        if (cachedRates) {
+          return cachedRates;
+        }
+
+        const rates = await this.apiClient.getCurrentRates(awardCode);
+        await this.cache.set(cacheKey, rates, this.CACHE_TTL);
+        return rates;
+      } catch (error) {
+        this.serviceLogger.error('Failed to get current rates', { error, awardCode });
+        throw error;
+      }
+    });
+  }
+
+  async getRatesForDate(awardCode: string, date: string = new Date().toISOString()): Promise<Rate[]> {
+    return this.executeServiceMethod('getRatesForDate', async () => {
+      try {
+        const cacheKey = `rates:${awardCode}:${date}`;
+        const cachedRates = await this.cache.get<Rate[]>(cacheKey);
+
+        if (cachedRates) {
+          return cachedRates;
+        }
+
+        const rates = await this.apiClient.getRatesForDate(awardCode, date);
+        await this.cache.set(cacheKey, rates, this.CACHE_TTL);
+        return rates;
+      } catch (error) {
+        this.serviceLogger.error('Failed to get rates for date', { error, awardCode, date });
+        throw error;
+      }
+    });
+  }
+
+  async getClassifications(awardCode: string): Promise<Classification[]> {
+    return this.executeServiceMethod('getClassifications', async () => {
+      try {
+        const cacheKey = `classifications:${awardCode}`;
+        const cachedClassifications = await this.cache.get<Classification[]>(cacheKey);
+
+        if (cachedClassifications) {
+          return cachedClassifications;
+        }
+
+        const classifications = await this.apiClient.getClassifications(awardCode);
+        await this.cache.set(cacheKey, classifications, this.CACHE_TTL);
+        return classifications;
+      } catch (error) {
+        this.serviceLogger.error('Failed to get classifications', { error, awardCode });
+        throw error;
+      }
+    });
+  }
+
+  async getClassificationHierarchy(awardCode: string): Promise<ClassificationHierarchy> {
+    return this.executeServiceMethod('getClassificationHierarchy', async () => {
+      try {
+        const cacheKey = `classification_hierarchy:${awardCode}`;
+        const cachedHierarchy = await this.cache.get<ClassificationHierarchy>(cacheKey);
+
+        if (cachedHierarchy) {
+          return cachedHierarchy;
+        }
+
+        const hierarchy = await this.apiClient.getClassificationHierarchy(awardCode);
+        await this.cache.set(cacheKey, hierarchy, this.CACHE_TTL);
+        return hierarchy;
+      } catch (error) {
+        this.serviceLogger.error('Failed to get classification hierarchy', { error, awardCode });
+        throw error;
+      }
+    });
+  }
+
+  async getRateTemplates(awardCode: string): Promise<RateTemplate[]> {
+    return this.executeServiceMethod('getRateTemplates', async () => {
+      try {
+        const cacheKey = `rate_templates:${awardCode}`;
+        const cachedTemplates = await this.cache.get<RateTemplate[]>(cacheKey);
+
+        if (cachedTemplates) {
+          return cachedTemplates;
+        }
+
+        const templates = await this.apiClient.getRateTemplates(awardCode);
+        await this.cache.set(cacheKey, templates, this.CACHE_TTL);
+        return templates;
+      } catch (error) {
+        this.serviceLogger.error('Failed to get rate templates', { error, awardCode });
+        throw error;
+      }
+    });
+  }
+
+  async validateRate(params: RateValidationRequest): Promise<RateValidationResponse> {
+    return this.executeServiceMethod('validateRate', async () => {
+      try {
+        return await this.apiClient.validateRate(params);
+      } catch (error) {
+        this.serviceLogger.error('Failed to validate rate', { error, params });
+        throw error;
+      }
+    });
+  }
+
+  async calculateBaseRate(params: {
+    awardCode: string;
+    classification: string;
+  }): Promise<{ baseRate: number }> {
+    return this.executeServiceMethod('calculateBaseRate', async () => {
+      try {
+        const { awardCode, classification } = params;
+        const rates = await this.getCurrentRates(awardCode);
+        const baseRate = rates.find((r) => r.code === classification)?.baseRate;
+
+        if (!baseRate) {
+          throw new Error(`Base rate not found for classification ${classification}`);
+        }
+
+        return { baseRate };
+      } catch (error) {
+        this.serviceLogger.error('Failed to calculate base rate', { error, params });
+        throw error;
+      }
+    });
+  }
+}

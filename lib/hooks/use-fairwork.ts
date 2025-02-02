@@ -41,7 +41,7 @@ const fairworkApi = axios.create({
 });
 
 // Hooks
-export function useSearchAwards(params?: SearchParams) {
+export function useSearchAwards(params?: SearchParams): void {
   return useQuery({
     queryKey: ['awards', params],
     queryFn: async () => {
@@ -52,7 +52,7 @@ export function useSearchAwards(params?: SearchParams) {
   });
 }
 
-export function useAward(awardCode: string) {
+export function useAward(awardCode: string): void {
   return useQuery({
     queryKey: ['award', awardCode],
     queryFn: async () => {
@@ -63,7 +63,7 @@ export function useAward(awardCode: string) {
   });
 }
 
-export function useClassification(awardCode: string, classificationCode: string) {
+export function useClassification(awardCode: string, classificationCode: string): void {
   return useQuery({
     queryKey: ['classification', awardCode, classificationCode],
     queryFn: async () => {
@@ -110,7 +110,7 @@ export function useRateHistory(
   });
 }
 
-export function useFutureRates(awardCode: string, classificationCode: string, fromDate: string) {
+export function useFutureRates(awardCode: string, classificationCode: string, fromDate: string): void {
   return useQuery({
     queryKey: ['future', awardCode, classificationCode, fromDate],
     queryFn: async () => {
@@ -123,7 +123,7 @@ export function useFutureRates(awardCode: string, classificationCode: string, fr
   });
 }
 
-export function usePenalties(awardCode: string, date?: string, type?: string) {
+export function usePenalties(awardCode: string, date?: string, type?: string): void {
   return useQuery({
     queryKey: ['penalties', awardCode, date, type],
     queryFn: async () => {
@@ -136,7 +136,7 @@ export function usePenalties(awardCode: string, date?: string, type?: string) {
   });
 }
 
-export function useAllowances(awardCode: string, date?: string, type?: string) {
+export function useAllowances(awardCode: string, date?: string, type?: string): void {
   return useQuery({
     queryKey: ['allowances', awardCode, date, type],
     queryFn: async () => {
@@ -166,7 +166,7 @@ export function useLeaveEntitlements(
   });
 }
 
-export function useCalculatePay() {
+export function useCalculatePay(): void {
   return useMutation({
     mutationFn: async (params: CalculateParams) => {
       const { data } = await fairworkApi.post('/calculate', params);
@@ -175,7 +175,7 @@ export function useCalculatePay() {
   });
 }
 
-export function useValidateRate() {
+export function useValidateRate(): void {
   return useMutation({
     mutationFn: async (params: ValidateParams) => {
       const { data } = await fairworkApi.post(

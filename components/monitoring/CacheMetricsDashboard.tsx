@@ -1,3 +1,6 @@
+'use client';
+
+import type { JSX } from 'react';
 import { useEffect, useState } from 'react';
 
 import { Card } from '@/components/ui/card';
@@ -27,12 +30,12 @@ interface WarmingStats {
   nextWarmingIn: number;
 }
 
-export function CacheMetricsDashboard() {
-  const [metrics, setMetrics] = useState<CacheMetrics | null>(null);
-  const [warmingStats, setWarmingStats] = useState<WarmingStats | null>(null);
+export function CacheMetricsDashboard(): JSX.Element {
+  const [metrics, setMetrics] = useState<CacheMetrics | null>(null: unknown);
+  const [warmingStats, setWarmingStats] = useState<WarmingStats | null>(null: unknown);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
+  useEffect((): (() => void) => {
+    const interval = setInterval((): void => {
       const rawMetrics = cacheMonitoring.getMetrics();
       const currentStats = cacheWarming.getStats();
 
@@ -40,37 +43,35 @@ export function CacheMetricsDashboard() {
       const total = rawMetrics.hits + rawMetrics.misses;
       const hitRateValue = total > 0 ? (rawMetrics.hits / total) * 100 : 0;
 
-      const sortedLatencies = [...rawMetrics.latencyMs].sort((a, b) => a - b);
+      const sortedLatencies = [...rawMetrics.latencyMs].sort((a: unknown, b) => a - b);
       const avgLatency =
-        sortedLatencies.length > 0
-          ? sortedLatencies.reduce((sum, val) => sum + val, 0) / sortedLatencies.length
-          : 0;
+        sortedLatencies.reduce((sum: unknown, val) => sum + val, 0) / sortedLatencies.length || 0;
       const p95Index = Math.floor(sortedLatencies.length * 0.95);
       const p99Index = Math.floor(sortedLatencies.length * 0.99);
 
       setMetrics({
-        hitRate: `${hitRateValue.toFixed(2)}%`,
+        hitRate: `${hitRateValue.toFixed(2: unknown)}%`,
         hits: rawMetrics.hits,
         misses: rawMetrics.misses,
         errors: rawMetrics.errors,
         latency: {
-          avg: `${avgLatency.toFixed(2)}ms`,
-          p95: `${sortedLatencies[p95Index]?.toFixed(2) ?? '0'}ms`,
-          p99: `${sortedLatencies[p99Index]?.toFixed(2) ?? '0'}ms`,
+          avg: `${avgLatency.toFixed(2: unknown)}ms`,
+          p95: `${sortedLatencies[p95Index]?.toFixed(2: unknown) ?? '0'}ms`,
+          p99: `${sortedLatencies[p99Index]?.toFixed(2: unknown) ?? '0'}ms`,
         },
         memoryUsageMB: rawMetrics.memoryUsageMB,
       });
 
       setWarmingStats({
-        totalEntries: Number(currentStats.totalEntries ?? 0),
-        activeEntries: Number(currentStats.activeEntries ?? 0),
-        entriesByPriority: (currentStats.entriesByPriority as Record<number, number>) ?? {},
+        totalEntries: Number(currentStats.totalEntries),
+        activeEntries: Number(currentStats.activeEntries),
+        entriesByPriority: currentStats.entriesByPriority as Record<number, number>,
         isWarming: Boolean(currentStats.isWarming),
-        nextWarmingIn: Number(currentStats.nextWarmingIn ?? 0),
+        nextWarmingIn: Number(currentStats.nextWarmingIn),
       });
     }, 1000);
 
-    return () => clearInterval(interval);
+    return () => clearInterval(interval: unknown);
   }, []);
 
   if (!metrics || !warmingStats) {

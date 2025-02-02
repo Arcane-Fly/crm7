@@ -43,14 +43,10 @@ export const enrichmentLogColumns: ColumnDef<EnrichmentLog>[] = [
       const variantMap = {
         pending: 'default',
         completed: 'success',
-        failed: 'destructive'
+        failed: 'destructive',
       } as const;
-      
-      return (
-        <Badge variant={variantMap[status as keyof typeof variantMap]}>
-          {status}
-        </Badge>
-      );
+
+      return <Badge variant={variantMap[status as keyof typeof variantMap]}>{status}</Badge>;
     },
   },
   {
@@ -62,7 +58,7 @@ export const enrichmentLogColumns: ColumnDef<EnrichmentLog>[] = [
     header: 'Error',
     cell: ({ row }: { row: { getValue: (key: string) => string | null } }): ReactNode => {
       const error = row.getValue('error_message');
-      return error ? <span className="text-sm text-red-500">{error}</span> : null;
+      return error ? <span className='text-sm text-red-500'>{error}</span> : null;
     },
   },
 ];

@@ -17,7 +17,7 @@ const alerts = [
   },
 ];
 
-export function AlertsList() {
+export function AlertsList(): void {
   return (
     <div className='rounded-lg border bg-white'>
       <div className='border-b p-4'>
@@ -27,7 +27,7 @@ export function AlertsList() {
         </div>
       </div>
       <div className='divide-y'>
-        {alerts.map((alert, index) => (
+        {alerts.map((alert: unknown, index) => (
           <div
             key={index}
             className={`p-4 ${alert.type === 'error' ? 'bg-red-50' : 'bg-blue-50'}`}

@@ -19,7 +19,7 @@ const mockConfig: FairWorkConfig = {
 
 describe('FairWorkClient', () => {
   let client: FairWorkClient;
-  let mockAxios: any;
+  let mockAxios: unknown;
 
   beforeEach(() => {
     // Reset mocks
@@ -35,10 +35,10 @@ describe('FairWorkClient', () => {
         },
       },
     };
-    (axios.create as any).mockReturnValue(mockAxios);
+    (axios.create as any).mockReturnValue(mockAxios: unknown);
 
     // Create client instance
-    client = new FairWorkClient(mockConfig);
+    client = new FairWorkClient(mockConfig: unknown);
   });
 
   describe('constructor', () => {
@@ -75,10 +75,10 @@ describe('FairWorkClient', () => {
         },
       };
 
-      mockAxios.get.mockResolvedValue(mockResponse);
+      mockAxios.get.mockResolvedValue(mockResponse: unknown);
 
-      const result = await client.getAward(awardCode);
-      expect(result).toEqual(mockResponse.data);
+      const result = await client.getAward(awardCode: unknown);
+      expect(result: unknown).toEqual(mockResponse.data);
       expect(mockAxios.get).toHaveBeenCalledWith(`/awards/${awardCode}`);
     });
 
@@ -90,7 +90,7 @@ describe('FairWorkClient', () => {
         },
       };
 
-      mockAxios.get.mockRejectedValue(error);
+      mockAxios.get.mockRejectedValue(error: unknown);
 
       await expect(client.getAward('invalid')).rejects.toThrow('Award not found');
       expect(logger.error).toHaveBeenCalled();
@@ -116,10 +116,10 @@ describe('FairWorkClient', () => {
         },
       };
 
-      mockAxios.get.mockResolvedValue(mockResponse);
+      mockAxios.get.mockResolvedValue(mockResponse: unknown);
 
-      const result = await client.searchAwards(params);
-      expect(result).toEqual(mockResponse.data);
+      const result = await client.searchAwards(params: unknown);
+      expect(result: unknown).toEqual(mockResponse.data);
       expect(mockAxios.get).toHaveBeenCalledWith('/awards', { params });
     });
   });
@@ -135,10 +135,10 @@ describe('FairWorkClient', () => {
         },
       };
 
-      mockAxios.get.mockResolvedValue(mockResponse);
+      mockAxios.get.mockResolvedValue(mockResponse: unknown);
 
-      const result = await client.getClassification(awardCode, classificationCode);
-      expect(result).toEqual(mockResponse.data);
+      const result = await client.getClassification(awardCode: unknown, classificationCode);
+      expect(result: unknown).toEqual(mockResponse.data);
       expect(mockAxios.get).toHaveBeenCalledWith(
         `/awards/${awardCode}/classifications/${classificationCode}`,
       );
@@ -165,10 +165,10 @@ describe('FairWorkClient', () => {
         },
       };
 
-      mockAxios.post.mockResolvedValue(mockResponse);
+      mockAxios.post.mockResolvedValue(mockResponse: unknown);
 
-      const result = await client.calculatePay(awardCode, classificationCode, params);
-      expect(result).toEqual(mockResponse.data);
+      const result = await client.calculatePay(awardCode: unknown, classificationCode, params);
+      expect(result: unknown).toEqual(mockResponse.data);
       expect(mockAxios.post).toHaveBeenCalledWith(
         `/awards/${awardCode}/classifications/${classificationCode}/calculate`,
         params,
@@ -194,10 +194,10 @@ describe('FairWorkClient', () => {
         },
       };
 
-      mockAxios.post.mockResolvedValue(mockResponse);
+      mockAxios.post.mockResolvedValue(mockResponse: unknown);
 
-      const result = await client.validatePayRate(awardCode, classificationCode, params);
-      expect(result).toEqual(mockResponse.data);
+      const result = await client.validatePayRate(awardCode: unknown, classificationCode, params);
+      expect(result: unknown).toEqual(mockResponse.data);
       expect(mockAxios.post).toHaveBeenCalledWith(
         `/awards/${awardCode}/classifications/${classificationCode}/validate`,
         params,
@@ -220,10 +220,10 @@ describe('FairWorkClient', () => {
         ],
       };
 
-      mockAxios.get.mockResolvedValue(mockResponse);
+      mockAxios.get.mockResolvedValue(mockResponse: unknown);
 
-      const result = await client.getPenalties(awardCode, params);
-      expect(result).toEqual(mockResponse.data);
+      const result = await client.getPenalties(awardCode: unknown, params);
+      expect(result: unknown).toEqual(mockResponse.data);
       expect(mockAxios.get).toHaveBeenCalledWith(`/awards/${awardCode}/penalties`, { params });
     });
   });
@@ -240,10 +240,10 @@ describe('FairWorkClient', () => {
         data: [{ code: 'TOOL', amount: 15.5, description: 'Tool allowance' }],
       };
 
-      mockAxios.get.mockResolvedValue(mockResponse);
+      mockAxios.get.mockResolvedValue(mockResponse: unknown);
 
-      const result = await client.getAllowances(awardCode, params);
-      expect(result).toEqual(mockResponse.data);
+      const result = await client.getAllowances(awardCode: unknown, params);
+      expect(result: unknown).toEqual(mockResponse.data);
       expect(mockAxios.get).toHaveBeenCalledWith(`/awards/${awardCode}/allowances`, { params });
     });
   });
@@ -263,10 +263,10 @@ describe('FairWorkClient', () => {
         ],
       };
 
-      mockAxios.get.mockResolvedValue(mockResponse);
+      mockAxios.get.mockResolvedValue(mockResponse: unknown);
 
-      const result = await client.getLeaveEntitlements(awardCode, params);
-      expect(result).toEqual(mockResponse.data);
+      const result = await client.getLeaveEntitlements(awardCode: unknown, params);
+      expect(result: unknown).toEqual(mockResponse.data);
       expect(mockAxios.get).toHaveBeenCalledWith(`/awards/${awardCode}/leave-entitlements`, {
         params,
       });
@@ -287,10 +287,10 @@ describe('FairWorkClient', () => {
         ],
       };
 
-      mockAxios.get.mockResolvedValue(mockResponse);
+      mockAxios.get.mockResolvedValue(mockResponse: unknown);
 
-      const result = await client.getPublicHolidays(params);
-      expect(result).toEqual(mockResponse.data);
+      const result = await client.getPublicHolidays(params: unknown);
+      expect(result: unknown).toEqual(mockResponse.data);
       expect(mockAxios.get).toHaveBeenCalledWith('/public-holidays', { params });
     });
   });

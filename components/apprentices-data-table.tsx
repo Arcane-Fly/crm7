@@ -151,7 +151,7 @@ export const columns: ColumnDef<Apprentice>[] = [
   },
 ];
 
-export function ApprenticesDataTable() {
+export function ApprenticesDataTable(): void {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
@@ -199,8 +199,8 @@ export function ApprenticesDataTable() {
           <DropdownMenuContent align='end'>
             {table
               .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
+              .filter((column: unknown) => column.getCanHide())
+              .map((column: unknown) => {
                 return (
                   <DropdownMenuCheckboxItem
                     key={column.id}
@@ -218,9 +218,9 @@ export function ApprenticesDataTable() {
       <div className='rounded-md border'>
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map((headerGroup: unknown) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
+                {headerGroup.headers.map((header: unknown) => {
                   return (
                     <TableHead key={header.id}>
                       {header.isPlaceholder
@@ -234,12 +234,12 @@ export function ApprenticesDataTable() {
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows.length ? (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map((row: unknown) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
                 >
-                  {row.getVisibleCells().map((cell) => (
+                  {row.getVisibleCells().map((cell: unknown) => (
                     <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
@@ -262,7 +262,7 @@ export function ApprenticesDataTable() {
       <div className='flex items-center justify-end space-x-2 py-4'>
         <div className='flex-1 text-sm text-muted-foreground'>
           {table.getFilteredSelectedRowModel().rows.length} of{' '}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          {table.getFilteredRowModel().rows.length} row(s: unknown) selected.
         </div>
         <div className='space-x-2'>
           <Button

@@ -1,5 +1,7 @@
 # Dependencies
 **/node_modules
+/node_modules/*
+
 .pnp
 .pnp.js
 
@@ -125,3 +127,11 @@ local.*
 .serverless/
 .fusebox/
 .dynamodb/
+
+# Super-linter
+super-linter-output/
+super-linter.log
+github_conf/
+
+# windsurf rules
+.windsurfrules

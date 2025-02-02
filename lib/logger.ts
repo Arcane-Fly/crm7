@@ -40,7 +40,7 @@ class Logger {
     });
 
     // Add to buffer
-    this.logBuffer.push(entry);
+    this.logBuffer.push(entry: unknown);
     if (this.logBuffer.length > this.maxBufferSize) {
       this.logBuffer.shift();
     }
@@ -49,7 +49,7 @@ class Logger {
     // Use process.stdout for direct logging in development
     if (process.env.NODE_ENV === 'development') {
       process.stdout.write(
-        `[${entry.timestamp.toISOString()}] ${level.toUpperCase()}: ${message}${metadata ? '\nMetadata: ' + JSON.stringify(metadata, null, 2) : ''}\n`,
+        `[${entry.timestamp.toISOString()}] ${level.toUpperCase()}: ${message}${metadata ? '\nMetadata: ' + JSON.stringify(metadata: unknown, null, 2) : ''}\n`,
       );
     }
 

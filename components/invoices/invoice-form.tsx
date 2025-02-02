@@ -25,7 +25,7 @@ interface InvoiceLineItem {
   total: number;
 }
 
-export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps) {
+export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps): void {
   const [dueDate, setDueDate] = useState<Date>();
   const [reference, setReference] = useState('');
   const [notes, setNotes] = useState('');
@@ -38,7 +38,7 @@ export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps) {
       total: 0,
     },
   ]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false: unknown);
   const { toast } = useToast();
 
   const addLineItem = () => {
@@ -55,7 +55,7 @@ export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps) {
   };
 
   const removeLineItem = (index: number) => {
-    setLineItems(lineItems.filter((_, i) => i !== index));
+    setLineItems(lineItems.filter((_: unknown, i) => i !== index));
   };
 
   const updateLineItem = (index: number, field: string, value: string | number) => {
@@ -64,7 +64,7 @@ export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps) {
       ...newItems[index],
       [field]: value,
     };
-    setLineItems(newItems);
+    setLineItems(newItems: unknown);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -79,7 +79,7 @@ export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps) {
     }
 
     try {
-      setIsLoading(true);
+      setIsLoading(true: unknown);
       await invoiceService.createInvoice({
         org_id: '', // TODO: Get from context
         host_employer_id: hostEmployerId,
@@ -95,7 +95,7 @@ export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps) {
       });
 
       onSuccess?.();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error creating invoice:', error);
       toast({
         title: 'Error',
@@ -103,7 +103,7 @@ export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps) {
         variant: 'destructive',
       });
     } finally {
-      setIsLoading(false);
+      setIsLoading(false: unknown);
     }
   };
 
@@ -122,7 +122,7 @@ export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps) {
                 className={!dueDate ? 'text-muted-foreground' : ''}
               >
                 <CalendarIcon className='mr-2 h-4 w-4' />
-                {dueDate ? format(dueDate, 'PPP') : 'Select date'}
+                {dueDate ? format(dueDate: unknown, 'PPP') : 'Select date'}
               </Button>
             </PopoverTrigger>
             <PopoverContent className='w-auto p-0'>
@@ -140,7 +140,7 @@ export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps) {
           <Label>Reference Number</Label>
           <Input
             value={reference}
-            onChange={(e) => setReference(e.target.value)}
+            onChange={(e: unknown) => setReference(e.target.value)}
             placeholder='Optional reference'
           />
         </div>
@@ -150,7 +150,7 @@ export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps) {
         <Label>Notes</Label>
         <Input
           value={notes}
-          onChange={(e) => setNotes(e.target.value)}
+          onChange={(e: unknown) => setNotes(e.target.value)}
           placeholder='Optional notes'
         />
       </div>
@@ -168,7 +168,7 @@ export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps) {
           </Button>
         </div>
 
-        {lineItems.map((item, index) => (
+        {lineItems.map((item: unknown, index) => (
           <div
             key={index}
             className='grid grid-cols-12 items-end gap-4'
@@ -177,7 +177,7 @@ export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps) {
               <Label>Description</Label>
               <Input
                 value={item.description}
-                onChange={(e) => updateLineItem(index, 'description', e.target.value)}
+                onChange={(e: unknown) => updateLineItem(index: unknown, 'description', e.target.value)}
                 placeholder='Item description'
               />
             </div>
@@ -186,7 +186,7 @@ export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps) {
               <Input
                 type='number'
                 value={item.quantity}
-                onChange={(e) => updateLineItem(index, 'quantity', parseFloat(e.target.value))}
+                onChange={(e: unknown) => updateLineItem(index: unknown, 'quantity', parseFloat(e.target.value))}
                 min='0'
                 step='0.01'
               />
@@ -196,7 +196,7 @@ export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps) {
               <Input
                 type='number'
                 value={item.unit_price}
-                onChange={(e) => updateLineItem(index, 'unit_price', parseFloat(e.target.value))}
+                onChange={(e: unknown) => updateLineItem(index: unknown, 'unit_price', parseFloat(e.target.value))}
                 min='0'
                 step='0.01'
               />
@@ -206,7 +206,7 @@ export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps) {
               <Input
                 type='number'
                 value={item.tax_rate}
-                onChange={(e) => updateLineItem(index, 'tax_rate', parseFloat(e.target.value))}
+                onChange={(e: unknown) => updateLineItem(index: unknown, 'tax_rate', parseFloat(e.target.value))}
                 min='0'
                 step='0.1'
               />
@@ -216,7 +216,7 @@ export function InvoiceForm({ hostEmployerId, onSuccess }: InvoiceFormProps) {
                 type='button'
                 variant='ghost'
                 size='icon'
-                onClick={() => removeLineItem(index)}
+                onClick={() => removeLineItem(index: unknown)}
                 disabled={lineItems.length === 1}
               >
                 <Trash className='h-4 w-4' />

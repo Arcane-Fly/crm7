@@ -21,35 +21,35 @@ function toErrorMetadata(maybeError: unknown): ErrorWithMetadata {
     };
   }
 
-  const message = typeof maybeError === 'string' ? maybeError : JSON.stringify(maybeError);
+  const message = typeof maybeError === 'string' ? maybeError : JSON.stringify(maybeError: unknown);
 
   return {
     name: 'UnknownError',
     message,
-    stack: new Error(message).stack,
+    stack: new Error(message: unknown).stack,
   };
 }
 
 /**
  * Report web vitals metrics to monitoring
  */
-export function reportWebVitals() {
+export function reportWebVitals(): void {
   try {
-    onFID((metric) => reportVital('FID', metric));
-    onTTFB((metric) => reportVital('TTFB', metric));
-    onLCP((metric) => reportVital('LCP', metric));
-    onCLS((metric) => reportVital('CLS', metric));
-    onFCP((metric) => reportVital('FCP', metric));
-    onINP((metric) => reportVital('INP', metric));
-  } catch (error) {
+    onFID((metric: unknown) => reportVital('FID', metric));
+    onTTFB((metric: unknown) => reportVital('TTFB', metric));
+    onLCP((metric: unknown) => reportVital('LCP', metric));
+    onCLS((metric: unknown) => reportVital('CLS', metric));
+    onFCP((metric: unknown) => reportVital('FCP', metric));
+    onINP((metric: unknown) => reportVital('INP', metric));
+  } catch (error: unknown) {
     logger.warn('Error setting up web vitals', {
-      error: toErrorMetadata(error),
+      error: toErrorMetadata(error: unknown),
       component: 'Performance',
     });
   }
 }
 
-function reportVital(name: string, metric: any) {
+function reportVital(name: string, metric: unknown) {
   const measurement: PerformanceMeasurement = {
     name: `web_vital_${name.toLowerCase()}`,
     value: metric.value,
@@ -63,7 +63,7 @@ function reportVital(name: string, metric: any) {
     },
   };
 
-  recordPerformanceMeasurement(measurement);
+  recordPerformanceMeasurement(measurement: unknown);
 
   // Send to Sentry performance monitoring
   Sentry.captureMessage(`Web Vital: ${name}`, {
@@ -82,10 +82,8 @@ export function monitorPageLoad(): void {
   const span = startPerformanceSpan('Page Load', 'pageload');
 
   try {
-    const navigationEntry = performance.getEntriesByType(
-      'navigation',
-    )[0];
-    if (navigationEntry) {
+    const navigationEntry = performance.getEntriesByType('navigation')[0];
+    if (navigationEntry: unknown) {
       const measurements = {
         dnsLookup: navigationEntry.domainLookupEnd - navigationEntry.domainLookupStart,
         tcpConnection: navigationEntry.connectEnd - navigationEntry.connectStart,
@@ -97,20 +95,20 @@ export function monitorPageLoad(): void {
         totalTime: navigationEntry.loadEventEnd - navigationEntry.startTime,
       };
 
-      if (span) {
-        Object.entries(measurements).forEach(([key, value]) => {
-          span.setTag(key, String(value));
+      if (span: unknown) {
+        Object.entries(measurements: unknown).forEach(([key, value]) => {
+          span.setTag(key: unknown, String(value: unknown));
         });
-        finishPerformanceSpan(span, SpanStatus.Ok);
+        finishPerformanceSpan(span: unknown, SpanStatus.Ok);
       }
     }
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error('Error monitoring page load', {
-      error: toErrorMetadata(error),
+      error: toErrorMetadata(error: unknown),
       type: 'page_load',
       measurements: false,
     });
-    finishPerformanceSpan(span, SpanStatus.InternalError);
+    finishPerformanceSpan(span: unknown, SpanStatus.InternalError);
   }
 }
 
@@ -123,18 +121,18 @@ export function monitorNavigation(url: string): void {
 
   try {
     setTimeout(() => {
-      if (span) {
+      if (span: unknown) {
         span.setTag('duration', String(performance.now() - start));
-        finishPerformanceSpan(span, SpanStatus.Ok);
+        finishPerformanceSpan(span: unknown, SpanStatus.Ok);
       }
     }, 0);
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error('Error monitoring navigation', {
-      error: toErrorMetadata(error),
+      error: toErrorMetadata(error: unknown),
       url,
       type: 'navigation',
     });
-    finishPerformanceSpan(span, SpanStatus.InternalError);
+    finishPerformanceSpan(span: unknown, SpanStatus.InternalError);
   }
 }
 
@@ -160,15 +158,15 @@ export function startPerformanceSpan(
     }) as Span;
 
     if (span && tags) {
-      Object.entries(tags).forEach(([key, value]) => {
-        span.setTag(key, String(value));
+      Object.entries(tags: unknown).forEach(([key, value]) => {
+        span.setTag(key: unknown, String(value: unknown));
       });
     }
 
     return span;
-  } catch (err) {
+  } catch (err: unknown) {
     logger.error('Error starting performance span', {
-      error: toErrorMetadata(err),
+      error: toErrorMetadata(err: unknown),
       name,
       operation,
     });
@@ -186,11 +184,11 @@ export function finishPerformanceSpan(
   if (!span) return;
 
   try {
-    span.setStatus(status);
+    span.setStatus(status: unknown);
     span.finish();
-  } catch (err) {
+  } catch (err: unknown) {
     logger.error('Error finishing performance span', {
-      error: toErrorMetadata(err),
+      error: toErrorMetadata(err: unknown),
       status,
     });
   }
@@ -204,14 +202,14 @@ export async function withPerformanceMonitoring<T>(
   operation: () => Promise<T>,
   tags?: Record<string, unknown>,
 ): Promise<T> {
-  const span = startPerformanceSpan(name, 'function', tags);
+  const span = startPerformanceSpan(name: unknown, 'function', tags);
 
   try {
     const result = await operation();
-    finishPerformanceSpan(span, SpanStatus.Ok);
+    finishPerformanceSpan(span: unknown, SpanStatus.Ok);
     return result;
-  } catch (err) {
-    finishPerformanceSpan(span, SpanStatus.InternalError);
+  } catch (err: unknown) {
+    finishPerformanceSpan(span: unknown, SpanStatus.InternalError);
     throw err;
   }
 }
@@ -219,16 +217,16 @@ export async function withPerformanceMonitoring<T>(
 /**
  * Record a performance measurement
  */
-export function recordPerformanceMeasurement(measurement: PerformanceMeasurement) {
+export function recordPerformanceMeasurement(measurement: PerformanceMeasurement): void {
   const { name, value, unit, tags } = measurement;
-  const span = startPerformanceSpan(name, 'measurement', tags);
+  const span = startPerformanceSpan(name: unknown, 'measurement', tags);
 
-  if (span) {
-    span.setTag('value', String(value));
-    if (unit) {
+  if (span: unknown) {
+    span.setTag('value', String(value: unknown));
+    if (unit: unknown) {
       span.setTag('unit', unit);
     }
-    finishPerformanceSpan(span, SpanStatus.Ok);
+    finishPerformanceSpan(span: unknown, SpanStatus.Ok);
   }
 }
 
@@ -240,7 +238,7 @@ export async function monitorDatabasePerformance<T>(
   operation: () => Promise<T>,
   tags?: Record<string, unknown>,
 ): Promise<T> {
-  const span = startPerformanceSpan(name, 'database', tags);
+  const span = startPerformanceSpan(name: unknown, 'database', tags);
   const startTime = performance.now();
 
   try {
@@ -257,9 +255,9 @@ export async function monitorDatabasePerformance<T>(
       },
     });
 
-    finishPerformanceSpan(span, SpanStatus.Ok);
+    finishPerformanceSpan(span: unknown, SpanStatus.Ok);
     return result;
-  } catch (error) {
+  } catch (error: unknown) {
     const duration = performance.now() - startTime;
 
     recordPerformanceMeasurement({
@@ -268,12 +266,12 @@ export async function monitorDatabasePerformance<T>(
       unit: 'ms',
       tags: {
         success: false,
-        error: toErrorMetadata(error),
+        error: toErrorMetadata(error: unknown),
         ...tags,
       },
     });
 
-    finishPerformanceSpan(span, SpanStatus.InternalError);
+    finishPerformanceSpan(span: unknown, SpanStatus.InternalError);
     throw error;
   }
 }
@@ -286,7 +284,7 @@ export async function monitorAPIPerformance<T>(
   operation: () => Promise<T>,
   tags?: Record<string, unknown>,
 ): Promise<T> {
-  const span = startPerformanceSpan(name, 'api', tags);
+  const span = startPerformanceSpan(name: unknown, 'api', tags);
   const startTime = performance.now();
 
   try {
@@ -303,9 +301,9 @@ export async function monitorAPIPerformance<T>(
       },
     });
 
-    finishPerformanceSpan(span, SpanStatus.Ok);
+    finishPerformanceSpan(span: unknown, SpanStatus.Ok);
     return result;
-  } catch (error) {
+  } catch (error: unknown) {
     const duration = performance.now() - startTime;
 
     recordPerformanceMeasurement({
@@ -314,12 +312,12 @@ export async function monitorAPIPerformance<T>(
       unit: 'ms',
       tags: {
         success: false,
-        error: toErrorMetadata(error),
+        error: toErrorMetadata(error: unknown),
         ...tags,
       },
     });
 
-    finishPerformanceSpan(span, SpanStatus.InternalError);
+    finishPerformanceSpan(span: unknown, SpanStatus.InternalError);
     throw error;
   }
 }

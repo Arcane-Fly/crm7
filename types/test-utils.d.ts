@@ -1,7 +1,9 @@
 import type { PostgrestError } from '@supabase/supabase-js';
-import type { Json } from './supabase';
-import type { Course, Enrollment } from '@/lib/types/lms';
 import type { QueryObserverResult } from '@tanstack/react-query';
+
+import type { Course, Enrollment } from '@/lib/types/lms';
+
+import type { Json } from './supabase';
 import '@testing-library/jest-dom';
 
 // Re-export testing library
@@ -50,7 +52,7 @@ export class PostgrestErrorType extends Error implements PostgrestError {
   code: string;
 
   constructor(message: string) {
-    super(message);
+    super(message: unknown);
     this.name = 'PostgrestError';
     this.details = '';
     this.hint = '';

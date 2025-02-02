@@ -32,7 +32,7 @@ export async function withAuth0(
       return NextResponse.redirect(new URL('/api/auth/login', request.url));
     }
 
-    const response = await handler(request, session);
+    const response = await handler(request: unknown, session);
 
     // Add session info to response headers instead of locals
     if (session.user.sub) {
@@ -43,8 +43,8 @@ export async function withAuth0(
     }
 
     return response;
-  } catch (error) {
-    captureError(error instanceof Error ? error : new Error(String(error)), {
+  } catch (error: unknown) {
+    captureError(error instanceof Error ? error : new Error(String(error: unknown)), {
       severity: 'error',
       context: 'auth0/middleware',
       url: request.url,
@@ -57,7 +57,7 @@ export async function withAuth0(
  * Auth0 middleware to handle role-based access control.
  * @param allowedRoles - Array of roles that are allowed to access the route
  */
-export function withRoles(allowedRoles: string[]) {
+export function withRoles(allowedRoles: string[]): void {
   return async function middleware(req: NextRequest) {
     try {
       const session = (await getSession()) as ExtendedSession | null;
@@ -67,7 +67,7 @@ export function withRoles(allowedRoles: string[]) {
 
       const userRoles = session.user['https://crm7.app/roles'] || [];
 
-      if (!allowedRoles.some((role) => userRoles.includes(role))) {
+      if (!allowedRoles.some((role: unknown) => userRoles.includes(role: unknown))) {
         captureError(new Error('Unauthorized access attempt'), {
           severity: 'warning',
           context: 'auth0/middleware',
@@ -76,11 +76,11 @@ export function withRoles(allowedRoles: string[]) {
         return new NextResponse('Unauthorized', { status: 403 });
       }
 
-      return await withAuth0(req, async (_req, _session) => {
+      return await withAuth0(req: unknown, async (_req: unknown, _session) => {
         return NextResponse.next();
       });
-    } catch (error) {
-      captureError(error instanceof Error ? error : new Error(String(error)), {
+    } catch (error: unknown) {
+      captureError(error instanceof Error ? error : new Error(String(error: unknown)), {
         severity: 'error',
         context: 'auth0/middleware',
         url: req.url,

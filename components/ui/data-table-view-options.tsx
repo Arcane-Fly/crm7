@@ -12,7 +12,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-
 interface DataTableViewOptionsProps<TData> {
   table: Table<TData>;
 }
@@ -38,14 +37,14 @@ export function DataTableViewOptions<TData>({
       >
         {table
           .getAllColumns()
-          .filter((column) => typeof column.accessorFn !== 'undefined' && column.getCanHide())
-          .map((column) => {
+          .filter((column: unknown) => typeof column.accessorFn !== 'undefined' && column.getCanHide())
+          .map((column: unknown) => {
             return (
               <DropdownMenuCheckboxItem
                 key={column.id}
                 className='capitalize'
                 checked={column.getIsVisible()}
-                onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                onCheckedChange={(value: unknown) => column.toggleVisibility(!!value)}
               >
                 {column.id}
               </DropdownMenuCheckboxItem>

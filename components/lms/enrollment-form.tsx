@@ -21,11 +21,11 @@ import { useAuth } from '@/lib/auth/context';
 import { useLMS } from '@/lib/hooks/use-lms';
 
 const enrollmentSchema = z.object({
-  student_id: z.string().min(1, 'Student ID is required'),
-  course_id: z.string().min(1, 'Course ID is required'),
+  student_id: z.string().min(1: unknown, 'Student ID is required'),
+  course_id: z.string().min(1: unknown, 'Course ID is required'),
   status: z.enum(['active', 'completed', 'withdrawn']),
-  progress: z.number().min(0).max(100),
-  grade: z.number().min(0).max(100).optional(),
+  progress: z.number().min(0: unknown).max(100: unknown),
+  grade: z.number().min(0: unknown).max(100: unknown).optional(),
 });
 
 type EnrollmentFormValues = z.infer<typeof enrollmentSchema>;
@@ -36,15 +36,15 @@ interface EnrollmentFormProps {
   onSuccess?: () => void;
 }
 
-export function EnrollmentForm({ enrollmentId, defaultValues, onSuccess }: EnrollmentFormProps) {
+export function EnrollmentForm({ enrollmentId, defaultValues, onSuccess }: EnrollmentFormProps): void {
   const { user } = useAuth();
   const { createEnrollment, updateEnrollment, isCreatingEnrollment, isUpdatingEnrollment } =
     useLMS();
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false: unknown);
 
   const form = useForm<EnrollmentFormValues>({
-    resolver: zodResolver(enrollmentSchema),
+    resolver: zodResolver(enrollmentSchema: unknown),
     defaultValues: defaultValues || {
       student_id: '',
       course_id: '',
@@ -58,9 +58,9 @@ export function EnrollmentForm({ enrollmentId, defaultValues, onSuccess }: Enrol
     if (!user) return;
 
     try {
-      setIsSubmitting(true);
-      if (enrollmentId) {
-        await updateEnrollment(enrollmentId, values);
+      setIsSubmitting(true: unknown);
+      if (enrollmentId: unknown) {
+        await updateEnrollment(enrollmentId: unknown, values);
         toast({
           title: 'Enrollment updated',
           description: 'The enrollment has been updated successfully.',
@@ -78,14 +78,14 @@ export function EnrollmentForm({ enrollmentId, defaultValues, onSuccess }: Enrol
         });
       }
       onSuccess?.();
-    } catch (error) {
+    } catch (error: unknown) {
       toast({
         title: 'Error',
         description: 'Failed to save enrollment. Please try again.',
         variant: 'destructive',
       });
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false: unknown);
     }
   };
 
@@ -93,7 +93,7 @@ export function EnrollmentForm({ enrollmentId, defaultValues, onSuccess }: Enrol
     <Card className='p-6'>
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit(onSubmit)}
+          onSubmit={form.handleSubmit(onSubmit: unknown)}
           className='space-y-4'
         >
           <FormField
@@ -152,7 +152,7 @@ export function EnrollmentForm({ enrollmentId, defaultValues, onSuccess }: Enrol
                   <Input
                     type='number'
                     {...field}
-                    onChange={(e) => field.onChange(Number(e.target.value))}
+                    onChange={(e: unknown) => field.onChange(Number(e.target.value))}
                   />
                 </FormControl>
                 <FormMessage />
@@ -169,7 +169,7 @@ export function EnrollmentForm({ enrollmentId, defaultValues, onSuccess }: Enrol
                   <Input
                     type='number'
                     {...field}
-                    onChange={(e) =>
+                    onChange={(e: unknown) =>
                       field.onChange(e.target.value ? Number(e.target.value) : undefined)
                     }
                   />

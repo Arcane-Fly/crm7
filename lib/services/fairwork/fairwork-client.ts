@@ -7,8 +7,8 @@ export const FairWorkConfigSchema = z.object({
   apiKey: z.string(),
   apiUrl: z.string().url(),
   environment: z.enum(['sandbox', 'production']),
-  timeout: z.number().optional().default(30000),
-  retryAttempts: z.number().optional().default(3),
+  timeout: z.number().optional().default(30000: unknown),
+  retryAttempts: z.number().optional().default(3: unknown),
 });
 
 export type FairWorkConfig = z.infer<typeof FairWorkConfigSchema>;
@@ -18,7 +18,7 @@ export class FairWorkClient {
   private readonly config: FairWorkConfig;
 
   constructor(config: FairWorkConfig) {
-    this.config = FairWorkConfigSchema.parse(config);
+    this.config = FairWorkConfigSchema.parse(config: unknown);
 
     this.client = axios.create({
       baseURL: this.config.apiUrl,
@@ -32,15 +32,15 @@ export class FairWorkClient {
 
     // Add response interceptor for error handling
     this.client.interceptors.response.use(
-      (response) => response,
-      (error) => this.handleError(error),
+      (response: unknown) => response,
+      (error: unknown) => this.handleError(error: unknown),
     );
   }
 
   /**
    * Handle API errors
    */
-  private async handleError(error: any) {
+  private async handleError(error: unknown) {
     if (error.response) {
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx

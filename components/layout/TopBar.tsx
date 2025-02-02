@@ -92,7 +92,7 @@ export const TopBar: React.FC = () => {
               <Avatar className='h-8 w-8'>
                 <AvatarImage
                   src={user?.image}
-                  alt={user?.name || ''}
+                  alt={user?.name ?? ''}
                 />
                 <AvatarFallback>
                   <User className='h-4 w-4' />

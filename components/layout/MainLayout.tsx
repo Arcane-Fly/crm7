@@ -4,7 +4,7 @@ import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary';
 import { cn } from '@/lib/utils';
 
 import { Header } from './Header';
-import { Sidebar, SidebarContent } from './improved-sidebar';
+import { Sidebar, SidebarProvider } from './improved-sidebar';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -15,21 +15,21 @@ export function MainLayout({ children, className }: MainLayoutProps): ReactEleme
   return (
     <div className='min-h-screen bg-background'>
       <ErrorBoundary>
-        <Sidebar>
-          <SidebarContent />
-        </Sidebar>
-        <div
-          className={cn(
-            'flex flex-col transition-all duration-300 ease-in-out',
-            'lg:ml-[theme(spacing.sidebar-width)]',
-            className,
-          )}
-        >
-          <Header />
-          <main className='container mx-auto p-6 pt-[calc(theme(spacing.header-height)+1.5rem)]'>
-            <ErrorBoundary>{children}</ErrorBoundary>
-          </main>
-        </div>
+        <SidebarProvider>
+          <Sidebar />
+          <div
+            className={cn(
+              'flex flex-col transition-all duration-300 ease-in-out',
+              'lg:ml-[theme(spacing.sidebar-width)]',
+              className,
+            )}
+          >
+            <Header />
+            <main className='container mx-auto p-6 pt-[calc(theme(spacing.header-height)+1.5rem)]'>
+              <ErrorBoundary>{children}</ErrorBoundary>
+            </main>
+          </div>
+        </SidebarProvider>
       </ErrorBoundary>
     </div>
   );

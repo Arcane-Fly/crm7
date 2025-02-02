@@ -14,7 +14,6 @@ import {
 import { useToast } from '@/components/ui/use-toast';
 import { createClient } from '@/lib/supabase/client';
 
-
 interface BulkOperationsProps {
   table: string;
   selectedIds: string[];
@@ -22,62 +21,62 @@ interface BulkOperationsProps {
   onComplete: () => void;
 }
 
-export function BulkOperations({ table, selectedIds, columns, onComplete }: BulkOperationsProps) {
-  const [isLoading, setIsLoading] = useState(false);
+export function BulkOperations({ table, selectedIds, columns, onComplete }: BulkOperationsProps): void {
+  const [isLoading, setIsLoading] = useState(false: unknown);
   const { toast } = useToast();
   const supabase = createClient();
 
   const handleExport = async () => {
     try {
-      setIsLoading(true);
+      setIsLoading(true: unknown);
 
       // Fetch selected records
       const { data, error } = await supabase
-        .from(table)
+        .from(table: unknown)
         .select(columns.join(','))
         .in('id', selectedIds);
 
-      if (error) throw error;
+      if (error: unknown) throw error;
 
       // Create workbook
-      const ws = XLSX.utils.json_to_sheet(data);
+      const ws = XLSX.utils.json_to_sheet(data: unknown);
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, table);
+      XLSX.utils.book_append_sheet(wb: unknown, ws, table);
 
       // Generate and download file
-      XLSX.writeFile(wb, `${table}_export.xlsx`);
+      XLSX.writeFile(wb: unknown, `${table}_export.xlsx`);
 
       toast({
         title: 'Export complete',
         description: `Successfully exported ${data.length} records.`,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       toast({
         title: 'Export failed',
         description: 'Failed to export records. Please try again.',
         variant: 'destructive',
       });
     } finally {
-      setIsLoading(false);
+      setIsLoading(false: unknown);
     }
   };
 
   const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
-      setIsLoading(true);
+      setIsLoading(true: unknown);
       const file = event.target.files?.[0];
       if (!file) return;
 
       const reader = new FileReader();
-      reader.onload = async (e) => {
+      reader.onload = async (e: unknown) => {
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
+        const workbook = XLSX.read(data: unknown, { type: 'array' });
         const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        const jsonData = XLSX.utils.sheet_to_json(worksheet: unknown);
 
         // Insert data
-        const { error } = await supabase.from(table).insert(jsonData);
-        if (error) throw error;
+        const { error } = await supabase.from(table: unknown).insert(jsonData: unknown);
+        if (error: unknown) throw error;
 
         onComplete();
         toast({
@@ -85,39 +84,39 @@ export function BulkOperations({ table, selectedIds, columns, onComplete }: Bulk
           description: `Successfully imported ${jsonData.length} records.`,
         });
       };
-      reader.readAsArrayBuffer(file);
-    } catch (error) {
+      reader.readAsArrayBuffer(file: unknown);
+    } catch (error: unknown) {
       toast({
         title: 'Import failed',
         description: 'Failed to import records. Please try again.',
         variant: 'destructive',
       });
     } finally {
-      setIsLoading(false);
+      setIsLoading(false: unknown);
     }
   };
 
   const handleDelete = async () => {
     try {
-      setIsLoading(true);
+      setIsLoading(true: unknown);
 
-      const { error } = await supabase.from(table).delete().in('id', selectedIds);
+      const { error } = await supabase.from(table: unknown).delete().in('id', selectedIds);
 
-      if (error) throw error;
+      if (error: unknown) throw error;
 
       onComplete();
       toast({
         title: 'Delete complete',
         description: `Successfully deleted ${selectedIds.length} records.`,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       toast({
         title: 'Delete failed',
         description: 'Failed to delete records. Please try again.',
         variant: 'destructive',
       });
     } finally {
-      setIsLoading(false);
+      setIsLoading(false: unknown);
     }
   };
 

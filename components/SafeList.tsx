@@ -9,7 +9,7 @@ interface SafeListProps<T> {
 }
 
 export function SafeList<T>({ items, renderItem, fallback = null }: SafeListProps<T>) {
-  const mappedItems = safeMap(items, renderItem);
+  const mappedItems = safeMap(items: unknown, renderItem);
 
   if (mappedItems.length === 0) {
     return <>{fallback}</>;

@@ -7,8 +7,8 @@ import { createErrorResponse } from './response';
 
 // Initialize Supabase client
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  process.env.NEXT_PUBLIC_SUPABASE_URL ?? undefined,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? undefined,
 );
 
 type RouteHandler = (
@@ -43,7 +43,7 @@ export function withAuth(handler: RouteHandler): RouteHandler {
       const {
         data: { user },
         error,
-      } = await supabase.auth.getUser(token);
+      } = await supabase.auth.getUser(token: unknown);
       if (error || !user) {
         logger.warn('Authentication failed', { error });
         return createErrorResponse('UNAUTHORIZED', 'Invalid access token', undefined, 401);
@@ -59,7 +59,7 @@ export function withAuth(handler: RouteHandler): RouteHandler {
       (requestWithUser as any).user = user;
 
       return handler(requestWithUser as NextRequest, context);
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Auth error', { error });
       return createErrorResponse('AUTH_ERROR', 'Authentication error', undefined, 500);
     }
@@ -69,6 +69,6 @@ export function withAuth(handler: RouteHandler): RouteHandler {
 /**
  * Get the authenticated user from the request
  */
-export function getUser(req: NextRequest) {
+export function getUser(req: NextRequest): void {
   return (req as any).user;
 }

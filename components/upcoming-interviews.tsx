@@ -27,7 +27,7 @@ const interviews = [
   },
 ];
 
-export function UpcomingInterviews() {
+export function UpcomingInterviews(): void {
   return (
     <Card>
       <CardHeader>
@@ -35,7 +35,7 @@ export function UpcomingInterviews() {
       </CardHeader>
       <CardContent>
         <div className='space-y-4'>
-          {interviews.map((interview, index) => (
+          {interviews.map((interview: unknown, index) => (
             <div
               key={index}
               className='space-y-2'

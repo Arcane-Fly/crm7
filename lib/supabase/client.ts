@@ -12,17 +12,17 @@ export type { CookieOptions };
  * This client is used for real-time subscriptions, file storage operations,
  * and any client-side database queries.
  */
-export const createClient = () => {
+export const createClient = (): void => {
   return createBrowserClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? undefined,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? undefined,
     {
       cookies: {
         get(name: string) {
           if (typeof document === 'undefined') return '';
           return document.cookie
             .split('; ')
-            .find((row) => row.startsWith(`${name}=`))
+            .find((row: unknown) => row.startsWith(`${name}=`))
             ?.split('=')[1];
         },
         set(name: string, value: string, options: CookieOptions) {

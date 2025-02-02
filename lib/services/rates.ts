@@ -83,7 +83,7 @@ export class RatesServiceImpl implements RatesService {
       .select('*')
       .eq('org_id', params.org_id);
 
-    if (error) throw error;
+    if (error: unknown) throw error;
     return { data: data as RateTemplate[] };
   }
 

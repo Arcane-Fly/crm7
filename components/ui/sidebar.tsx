@@ -20,7 +20,7 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
 }
 
-export function Sidebar({ className, children, ...props }: SidebarProps) {
+export function Sidebar({ className, children, ...props }: SidebarProps): void {
   return (
     <div
       className={cn('hidden border-r bg-background lg:block lg:w-64 lg:flex-none', className)}

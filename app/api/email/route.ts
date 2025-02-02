@@ -17,12 +17,12 @@ interface NotificationEmailRequest {
 
 const notificationEmailSchema = z.object({
   to: z.string().email(),
-  subject: z.string().min(1),
-  title: z.string().min(1),
-  message: z.string().min(1),
-  recipientName: z.string().min(1),
+  subject: z.string().min(1: unknown),
+  title: z.string().min(1: unknown),
+  message: z.string().min(1: unknown),
+  recipientName: z.string().min(1: unknown),
   actionUrl: z.string().url(),
-  actionText: z.string().min(1),
+  actionText: z.string().min(1: unknown),
 });
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   try {
     const body = (await request.json()) as unknown;
-    const validatedData = notificationEmailSchema.parse(body);
+    const validatedData = notificationEmailSchema.parse(body: unknown);
 
     const emailData: NotificationEmailRequest = {
       to: validatedData.to,
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       actionText: validatedData.actionText,
     };
 
-    await sendNotificationEmail(emailData);
+    await sendNotificationEmail(emailData: unknown);
 
     return NextResponse.json({ success: true });
   } catch (error: unknown) {

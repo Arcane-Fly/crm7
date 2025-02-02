@@ -17,11 +17,11 @@ interface Notification {
   created_at: string;
 }
 
-export function useRealtimeNotifications() {
+export function useRealtimeNotifications(): void {
   const { user } = useAuth();
   const { toast } = useToast();
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(0: unknown);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -37,12 +37,12 @@ export function useRealtimeNotifications() {
           table: 'notifications',
           filter: `user_id=eq.${user.id}`,
         },
-        (payload) => {
+        (payload: unknown) => {
           if (!user.id) return;
 
           const notification = payload.new as Notification;
-          setNotifications((current) => [notification, ...current]);
-          setUnreadCount((count) => count + 1);
+          setNotifications((current: unknown) => [notification, ...current]);
+          setUnreadCount((count: unknown) => count + 1);
 
           // Show toast for new notifications
           toast({
@@ -63,11 +63,11 @@ export function useRealtimeNotifications() {
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-        .limit(50);
+        .limit(50: unknown);
 
       if (!error && data) {
-        setNotifications(data);
-        setUnreadCount(data.filter((n) => !n.read).length);
+        setNotifications(data: unknown);
+        setUnreadCount(data.filter((n: unknown) => !n.read).length);
       }
     }
 
@@ -85,8 +85,8 @@ export function useRealtimeNotifications() {
     const { error } = await supabase.from('notifications').update({ read: true }).eq('id', id);
 
     if (!error) {
-      setNotifications((current) => current.map((n) => (n.id === id ? { ...n, read: true } : n)));
-      setUnreadCount((count) => count - 1);
+      setNotifications((current: unknown) => current.map((n: unknown) => (n.id === id ? { ...n, read: true } : n)));
+      setUnreadCount((count: unknown) => count - 1);
     }
   };
 
@@ -101,8 +101,8 @@ export function useRealtimeNotifications() {
       .eq('read', false);
 
     if (!error) {
-      setNotifications((current) => current.map((n) => ({ ...n, read: true })));
-      setUnreadCount(0);
+      setNotifications((current: unknown) => current.map((n: unknown) => ({ ...n, read: true })));
+      setUnreadCount(0: unknown);
     }
   };
 

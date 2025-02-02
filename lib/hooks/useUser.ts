@@ -12,9 +12,9 @@ interface UseUserReturn {
 
 export const useUser = (): UseUserReturn => {
   const { supabase } = useSupabase();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [user, setUser] = useState<User | null>(null: unknown);
+  const [loading, setLoading] = useState(true: unknown);
+  const [error, setError] = useState<Error | null>(null: unknown);
 
   useEffect(() => {
     const getUser = async () => {
@@ -23,17 +23,17 @@ export const useUser = (): UseUserReturn => {
           data: { user },
           error: supabaseError,
         } = await supabase.auth.getUser();
-        if (supabaseError) {
+        if (supabaseError: unknown) {
           throw new AuthenticationError('Failed to get user', supabaseError);
         }
-        setUser(user);
-        setError(null);
-      } catch (error) {
+        setUser(user: unknown);
+        setError(null: unknown);
+      } catch (error: unknown) {
         console.error('Error getting user:', error);
-        setUser(null);
+        setUser(null: unknown);
         setError(error instanceof Error ? error : new Error('Unknown error occurred'));
       } finally {
-        setLoading(false);
+        setLoading(false: unknown);
       }
     };
 
@@ -41,9 +41,9 @@ export const useUser = (): UseUserReturn => {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event: unknown, session) => {
       setUser(session?.user ?? null);
-      setError(null);
+      setError(null: unknown);
     });
 
     return () => {

@@ -43,8 +43,8 @@ export interface SentryScope extends Omit<Hub['getScope'], ''> {
   setTransactionName(name: string): this;
   getTransaction(): SentryTransaction | undefined;
   setTag(key: string, value: string): this;
-  setClient(client: any): this;
-  getClient(): any;
+  setClient(client: unknown): this;
+  getClient(): unknown;
   setLastEventId(eventId: string): this;
   getLastEventId(): string | undefined;
   setUser(user: Record<string, any> | null): this;

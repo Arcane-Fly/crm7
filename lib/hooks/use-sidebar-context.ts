@@ -11,7 +11,7 @@ export const SidebarContext = createContext<SidebarContextType>({
 });
 
 export const useSidebarContext = (): SidebarContextType => {
-  const context = useContext(SidebarContext);
+  const context = useContext(SidebarContext: unknown);
   if (!context) {
     throw new Error('useSidebarContext must be used within a SidebarProvider');
   }

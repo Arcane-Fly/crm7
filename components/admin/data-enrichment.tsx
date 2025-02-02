@@ -22,11 +22,11 @@ interface DataEnrichmentProps {
   onComplete?: () => void;
 }
 
-export function DataEnrichment({ type, id, onComplete }: DataEnrichmentProps) {
+export function DataEnrichment({ type, id, onComplete }: DataEnrichmentProps): void {
   const { isAdmin } = useAdminAccess();
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false: unknown);
   const [websiteUrl, setWebsiteUrl] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false: unknown);
   const { toast } = useToast();
   const enrichmentService = new DataEnrichmentService();
 
@@ -34,16 +34,16 @@ export function DataEnrichment({ type, id, onComplete }: DataEnrichmentProps) {
 
   const handleEnrich = async () => {
     try {
-      setIsLoading(true);
+      setIsLoading(true: unknown);
 
-      if (websiteUrl) {
-        await enrichmentService.enrichFromWebsite(websiteUrl);
+      if (websiteUrl: unknown) {
+        await enrichmentService.enrichFromWebsite(websiteUrl: unknown);
       }
 
       if (type === 'apprentice') {
-        await enrichmentService.enrichApprenticeData(id);
+        await enrichmentService.enrichApprenticeData(id: unknown);
       } else {
-        await enrichmentService.enrichQualificationData(id);
+        await enrichmentService.enrichQualificationData(id: unknown);
       }
 
       toast({
@@ -51,16 +51,16 @@ export function DataEnrichment({ type, id, onComplete }: DataEnrichmentProps) {
         description: 'Successfully enriched data with AI insights.',
       });
 
-      setIsOpen(false);
+      setIsOpen(false: unknown);
       onComplete?.();
-    } catch (error) {
+    } catch (error: unknown) {
       toast({
         title: 'Enrichment failed',
         description: 'Failed to enrich data. Please try again.',
         variant: 'destructive',
       });
     } finally {
-      setIsLoading(false);
+      setIsLoading(false: unknown);
     }
   };
 
@@ -84,12 +84,17 @@ export function DataEnrichment({ type, id, onComplete }: DataEnrichmentProps) {
         </DialogHeader>
         <div className='space-y-4 py-4'>
           <div className='space-y-2'>
-            <label htmlFor="websiteUrl" className='text-sm font-medium'>Website URL (Optional)</label>
+            <label
+              htmlFor='websiteUrl'
+              className='text-sm font-medium'
+            >
+              Website URL (Optional: unknown)
+            </label>
             <Input
-              id="websiteUrl"
+              id='websiteUrl'
               placeholder='Enter website URL to scrape'
               value={websiteUrl}
-              onChange={(e) => setWebsiteUrl(e.target.value)}
+              onChange={(e: unknown) => setWebsiteUrl(e.target.value)}
             />
             <p className='text-sm text-gray-500'>
               Enter a URL to extract additional information, or leave blank to use AI insights only.

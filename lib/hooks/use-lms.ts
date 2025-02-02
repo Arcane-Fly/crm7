@@ -8,7 +8,7 @@ export type CourseInsert = Tables['courses']['Insert'];
 export type Enrollment = Tables['enrollments']['Row'];
 export type EnrollmentInsert = Tables['enrollments']['Insert'];
 
-export function useLMS() {
+export function useLMS(): void {
   const { toast } = useToast();
 
   // Queries

@@ -29,7 +29,7 @@ const alertStyles = {
   Low: 'bg-blue-100 text-blue-700',
 };
 
-export function ComplianceAlerts() {
+export function ComplianceAlerts(): void {
   return (
     <Card>
       <CardHeader>
@@ -37,7 +37,7 @@ export function ComplianceAlerts() {
       </CardHeader>
       <CardContent>
         <div className='space-y-4'>
-          {alerts.map((alert, index) => (
+          {alerts.map((alert: unknown, index) => (
             <div
               key={index}
               className='flex items-start gap-4'

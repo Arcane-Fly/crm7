@@ -15,19 +15,19 @@ interface DocumentPreviewProps {
   isOpen: boolean;
 }
 
-export function DocumentPreview({ file, onClose, isOpen }: DocumentPreviewProps) {
-  const [numPages, setNumPages] = useState<number>(0);
-  const [pageNumber, setPageNumber] = useState(1);
+export function DocumentPreview({ file, onClose, isOpen }: DocumentPreviewProps): void {
+  const [numPages, setNumPages] = useState<number>(0: unknown);
+  const [pageNumber, setPageNumber] = useState(1: unknown);
   const [scale, setScale] = useState(1.0);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true: unknown);
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
-    setNumPages(numPages);
-    setLoading(false);
+    setNumPages(numPages: unknown);
+    setLoading(false: unknown);
   }
 
   function changePage(offset: number) {
-    setPageNumber((prev) => prev + offset);
+    setPageNumber((prev: unknown) => prev + offset);
   }
 
   function previousPage() {
@@ -35,15 +35,15 @@ export function DocumentPreview({ file, onClose, isOpen }: DocumentPreviewProps)
   }
 
   function nextPage() {
-    changePage(1);
+    changePage(1: unknown);
   }
 
   function zoomIn() {
-    setScale((prev) => Math.min(prev + 0.2, 2.0));
+    setScale((prev: unknown) => Math.min(prev + 0.2, 2.0));
   }
 
   function zoomOut() {
-    setScale((prev) => Math.max(prev - 0.2, 0.5));
+    setScale((prev: unknown) => Math.max(prev - 0.2, 0.5));
   }
 
   return (

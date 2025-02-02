@@ -53,9 +53,9 @@ export class BankIntegrationService {
         .eq('org_id', orgId)
         .order('is_default', { ascending: false });
 
-      if (error) throw error;
+      if (error: unknown) throw error;
       return { data: data as BankAccount[] };
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to fetch bank accounts', error as Error, { orgId });
       throw error;
     }
@@ -72,9 +72,9 @@ export class BankIntegrationService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error: unknown) throw error;
       return { data: data as BankAccount };
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to add bank account', error as Error, { account });
       throw error;
     }
@@ -89,9 +89,9 @@ export class BankIntegrationService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error: unknown) throw error;
       return { data: data as BankAccount };
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to verify bank account', error as Error, { id });
       throw error;
     }
@@ -127,9 +127,9 @@ export class BankIntegrationService {
 
       const { data, error } = await query;
 
-      if (error) throw error;
+      if (error: unknown) throw error;
       return { data: data as BankTransaction[] };
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to fetch transactions', error as Error, { params });
       throw error;
     }
@@ -147,9 +147,9 @@ export class BankIntegrationService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error: unknown) throw error;
       return { data: data as PaymentRequest };
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to create payment request', error as Error, { payment });
       throw error;
     }
@@ -167,9 +167,9 @@ export class BankIntegrationService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error: unknown) throw error;
       return { data: data as PaymentRequest };
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to approve payment request', error as Error, { id });
       throw error;
     }
@@ -203,7 +203,7 @@ export class BankIntegrationService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error: unknown) throw error;
 
       // Update payment request status
       await this.supabase
@@ -215,7 +215,7 @@ export class BankIntegrationService {
         .eq('id', paymentId);
 
       return { data: transaction as BankTransaction };
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to process payment', error as Error, { paymentId });
       throw error;
     }
@@ -228,9 +228,9 @@ export class BankIntegrationService {
         org_id: orgId,
       });
 
-      if (error) throw error;
+      if (error: unknown) throw error;
       return { data };
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to fetch transaction stats', error as Error, { orgId });
       throw error;
     }

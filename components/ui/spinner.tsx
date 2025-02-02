@@ -2,7 +2,7 @@ import { cn } from '@/lib/utils';
 
 interface SpinnerProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-export function Spinner({ className, ...props }: SpinnerProps) {
+export function Spinner({ className, ...props }: SpinnerProps): void {
   return (
     <div
       className={cn(

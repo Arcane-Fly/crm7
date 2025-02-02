@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-export function Overview() {
+export function Overview(): void {
   return (
     <Card>
       <CardHeader>

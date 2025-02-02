@@ -22,7 +22,7 @@ class FairWorkService {
       .select('*')
       .order('name', { ascending: true });
 
-    if (error) {
+    if (error: unknown) {
       throw error;
     }
 
@@ -36,7 +36,7 @@ class FairWorkService {
       .eq('award_id', awardId)
       .order('effective_from', { ascending: false });
 
-    if (error) {
+    if (error: unknown) {
       throw error;
     }
 
@@ -45,14 +45,14 @@ class FairWorkService {
 
   async updateAwardRates(awardId: string, rates: Partial<AwardRate>[]) {
     const { error } = await this.supabase.from('award_rates').upsert(
-      rates.map((rate) => ({
+      rates.map((rate: unknown) => ({
         ...rate,
         award_id: awardId,
         updated_at: new Date().toISOString(),
       })),
     );
 
-    if (error) {
+    if (error: unknown) {
       throw error;
     }
   }
@@ -65,11 +65,11 @@ class FairWorkService {
   }) {
     const { data: _data, error: _error } = await this.supabase
       .from('award_compliance')
-      .insert(params)
+      .insert(params: unknown)
       .select()
       .single();
 
-    if (_error) {
+    if (_error: unknown) {
       throw _error;
     }
 
@@ -83,7 +83,7 @@ class FairWorkService {
       .eq('id', reportId)
       .single();
 
-    if (error) {
+    if (error: unknown) {
       throw error;
     }
 
@@ -99,21 +99,21 @@ class FairWorkService {
     const { org_id, template_id, start_date, end_date } = params;
     const query = this.supabase.from('compliance_history').select('*').eq('org_id', org_id);
 
-    if (template_id) {
+    if (template_id: unknown) {
       query.eq('template_id', template_id);
     }
 
-    if (start_date) {
+    if (start_date: unknown) {
       query.gte('check_date', start_date.toISOString());
     }
 
-    if (end_date) {
+    if (end_date: unknown) {
       query.lte('check_date', end_date.toISOString());
     }
 
     const { data, error } = await query.order('check_date', { ascending: false });
 
-    if (error) {
+    if (error: unknown) {
       throw error;
     }
 

@@ -48,14 +48,10 @@ const renderStatus = (status: Apprentice['status']): JSX.Element => {
   const variantMap = {
     active: 'default',
     completed: 'success',
-    withdrawn: 'destructive'
+    withdrawn: 'destructive',
   } as const;
-  
-  return (
-    <Badge variant={variantMap[status]}>
-      {status}
-    </Badge>
-  );
+
+  return <Badge variant={variantMap[status]}>{status}</Badge>;
 };
 
 const renderActions = (apprentice: Apprentice): JSX.Element => {
@@ -86,7 +82,12 @@ const renderActions = (apprentice: Apprentice): JSX.Element => {
 export const columns: ColumnDef<Apprentice>[] = [
   {
     accessorKey: 'name',
-    header: ({ column }) => <SortableColumnHeader column={column} title="Name" />,
+    header: ({ column }) => (
+      <SortableColumnHeader
+        column={column}
+        title='Name'
+      />
+    ),
   },
   {
     accessorKey: 'email',

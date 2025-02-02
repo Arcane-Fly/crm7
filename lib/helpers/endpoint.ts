@@ -15,10 +15,10 @@ export function monitorAPIEndpoint<_T extends string>(
     logResponse?: boolean;
   },
 ) {
-  return function (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) {
+  return function (_target: unknown, _propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
 
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function (...args: unknown[]) {
       const startTime = Date.now();
       const [req, res] = args;
 
@@ -31,7 +31,7 @@ export function monitorAPIEndpoint<_T extends string>(
       }
 
       try {
-        const result = await originalMethod.apply(this, args);
+        const result = await originalMethod.apply(this: unknown, args);
 
         const duration = Date.now() - startTime;
         logger.info(`API Response: ${path}`, {
@@ -45,7 +45,7 @@ export function monitorAPIEndpoint<_T extends string>(
         }
 
         return result;
-      } catch (error) {
+      } catch (error: unknown) {
         const duration = Date.now() - startTime;
         logger.error(`API Error: ${path}`, {
           duration,

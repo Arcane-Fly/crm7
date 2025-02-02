@@ -25,7 +25,7 @@ interface ClaimFormProps {
   user: { org_id: string };
 }
 
-export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user }: ClaimFormProps) {
+export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user }: ClaimFormProps): void {
   const [programId, setProgramId] = useState('');
   const [employeeId, setEmployeeId] = useState('');
   const [hostEmployerId, setHostEmployerId] = useState('');
@@ -33,7 +33,7 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
   const [referenceNumber, setReferenceNumber] = useState('');
   const [notes, setNotes] = useState('');
   const [files, setFiles] = useState<File[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false: unknown);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,13 +48,13 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
     }
 
     try {
-      setIsLoading(true);
+      setIsLoading(true: unknown);
 
       // Create the funding claim
       const claim = await fundingService.createClaim({
         org_id: user.org_id,
         claim_number: referenceNumber,
-        amount: parseFloat(amountClaimed),
+        amount: parseFloat(amountClaimed: unknown),
         metadata: {
           program_id: programId,
           employee_id: employeeId,
@@ -66,7 +66,7 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
       // Upload documents if any
       if (files.length > 0) {
         await Promise.all(
-          files.map((file) =>
+          files.map((file: unknown) =>
             fundingService.uploadDocument({
               fundingClaimId: claim.id,
               documentType: 'supporting_document',
@@ -82,7 +82,7 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
       });
 
       onSuccess?.();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error creating funding claim:', error);
       toast({
         title: 'Error',
@@ -90,7 +90,7 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
         variant: 'destructive',
       });
     } finally {
-      setIsLoading(false);
+      setIsLoading(false: unknown);
     }
   };
 
@@ -110,7 +110,7 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
               <SelectValue placeholder='Select a program' />
             </SelectTrigger>
             <SelectContent>
-              {programs.map((program) => (
+              {programs.map((program: unknown) => (
                 <SelectItem
                   key={program.id}
                   value={program.id}
@@ -132,7 +132,7 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
               <SelectValue placeholder='Select an employee' />
             </SelectTrigger>
             <SelectContent>
-              {employees.map((employee) => (
+              {employees.map((employee: unknown) => (
                 <SelectItem
                   key={employee.id}
                   value={employee.id}
@@ -156,7 +156,7 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
               <SelectValue placeholder='Select a host employer' />
             </SelectTrigger>
             <SelectContent>
-              {hostEmployers.map((employer) => (
+              {hostEmployers.map((employer: unknown) => (
                 <SelectItem
                   key={employer.id}
                   value={employer.id}
@@ -173,7 +173,7 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
           <Input
             type='number'
             value={amountClaimed}
-            onChange={(e) => setAmountClaimed(e.target.value)}
+            onChange={(e: unknown) => setAmountClaimed(e.target.value)}
             placeholder='Enter amount'
             min='0'
             step='0.01'
@@ -185,7 +185,7 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
         <Label>Reference Number</Label>
         <Input
           value={referenceNumber}
-          onChange={(e) => setReferenceNumber(e.target.value)}
+          onChange={(e: unknown) => setReferenceNumber(e.target.value)}
           placeholder='Optional reference number'
         />
       </div>
@@ -194,7 +194,7 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
         <Label>Notes</Label>
         <Textarea
           value={notes}
-          onChange={(e) => setNotes(e.target.value)}
+          onChange={(e: unknown) => setNotes(e.target.value)}
           placeholder='Additional notes or comments'
         />
       </div>
@@ -204,7 +204,7 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
         <FileUploader
           accept='.pdf,.doc,.docx,.jpg,.jpeg,.png'
           maxSize={5 * 1024 * 1024} // 5MB
-          onFileSelect={(files) => setFiles(files)}
+          onFileSelect={(files: unknown) => setFiles(files: unknown)}
           multiple={true}
         />
       </div>

@@ -68,7 +68,7 @@ export default function TopNav() {
           <span className='text-lg'>GTO Manager</span>
         </div>
         <nav className='flex flex-1 items-center gap-1'>
-          {topNavItems.map((item) => {
+          {topNavItems.map((item: unknown) => {
             const isActive = pathname.startsWith(item.href);
             return (
               <Link

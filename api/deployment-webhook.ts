@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 
 export const runtime = 'edge';
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<void> {
   try {
     const payload = await request.json();
 
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Send deployment status to monitoring service
-    await fetch(process.env.MONITORING_WEBHOOK_URL!, {
+    await fetch(process.env.MONITORING_WEBHOOK_URL ?? undefined, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -29,9 +29,9 @@ export async function POST(request: NextRequest) {
     });
 
     return new NextResponse('OK', { status: 200 });
-  } catch (error) {
+  } catch (error: unknown) {
     // Log error to error tracking service
-    await fetch(process.env.ERROR_TRACKING_URL!, {
+    await fetch(process.env.ERROR_TRACKING_URL ?? undefined, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

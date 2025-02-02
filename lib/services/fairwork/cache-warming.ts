@@ -66,8 +66,8 @@ export class FairWorkCacheWarming {
     const priority = this.config.priorities.currentRates;
 
     // Get active awards
-    fairWorkService.getActiveAwards().then((awards) => {
-      awards.forEach((award) => {
+    fairWorkService.getActiveAwards().then((awards: unknown) => {
+      awards.forEach((award: unknown) => {
         // Register warming for each award's current rates
         cacheWarming.register({
           key: `rates:${award.code}:current`,
@@ -84,7 +84,7 @@ export class FairWorkCacheWarming {
 
         cacheWarming.register({
           key: `classifications:${award.code}`,
-          factory: () => fairWorkService.getClassifications(params),
+          factory: () => fairWorkService.getClassifications(params: unknown),
           priority: this.config.priorities.classifications,
           ttl: this.config.awardRefreshInterval,
         });
@@ -97,16 +97,16 @@ export class FairWorkCacheWarming {
     const priority = this.config.priorities.futureRates;
 
     // Pre-warm rates for future dates
-    fairWorkService.getActiveAwards().then((awards) => {
+    fairWorkService.getActiveAwards().then((awards: unknown) => {
       const today = new Date();
-      const dates = Array.from({ length: this.config.daysAhead }, (_, i) => {
-        const date = new Date(today);
+      const dates = Array.from({ length: this.config.daysAhead }, (_: unknown, i) => {
+        const date = new Date(today: unknown);
         date.setDate(date.getDate() + i + 1);
         return date;
       });
 
-      awards.forEach((award) => {
-        dates.forEach((date) => {
+      awards.forEach((award: unknown) => {
+        dates.forEach((date: unknown) => {
           const dateStr = date.toISOString().split('T')[0];
           cacheWarming.register({
             key: `rates:${award.code}:${dateStr}`,
@@ -124,8 +124,8 @@ export class FairWorkCacheWarming {
     const priority = this.config.priorities.classifications;
 
     // Register warming for classification hierarchies
-    fairWorkService.getActiveAwards().then((awards) => {
-      awards.forEach((award) => {
+    fairWorkService.getActiveAwards().then((awards: unknown) => {
+      awards.forEach((award: unknown) => {
         cacheWarming.register({
           key: `classifications:hierarchy:${award.code}`,
           factory: () => fairWorkService.getClassificationHierarchy(award.code),
@@ -141,8 +141,8 @@ export class FairWorkCacheWarming {
     const priority = this.config.priorities.templates;
 
     // Register warming for rate templates
-    fairWorkService.getActiveAwards().then((awards) => {
-      awards.forEach((award) => {
+    fairWorkService.getActiveAwards().then((awards: unknown) => {
+      awards.forEach((award: unknown) => {
         cacheWarming.register({
           key: `templates:${award.code}`,
           factory: () => fairWorkService.getRateTemplates(award.code),

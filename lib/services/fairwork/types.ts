@@ -1,24 +1,37 @@
 export interface FairWorkConfig {
-  baseUrl: string;
   apiKey: string;
-  cacheConfig?: {
-    ttl?: number;
-    prefix?: string;
+  apiUrl: string;
+  baseUrl?: string;
+  environment?: 'sandbox' | 'production';
+  timeout?: number;
+  retryAttempts?: number;
+  cacheEnabled?: boolean;
+  cacheTTL?: number;
+  rateLimit?: {
+    maxRequests: number;
+    windowMs: number;
   };
+  logLevel?: 'debug' | 'info' | 'warn' | 'error';
 }
 
 export interface Award {
   code: string;
   name: string;
-  effectiveFrom: Date;
-  effectiveTo?: Date;
+  effectiveFrom: string;
+  effectiveTo?: string;
+  classifications: Classification[];
+  penalties?: Penalty[];
+  allowances?: Allowance[];
 }
 
 export interface Classification {
   code: string;
   name: string;
   level: string;
-  grade?: string;
+  baseRate: number;
+  effectiveFrom: string;
+  effectiveTo?: string;
+  parentCode?: string;
 }
 
 export interface ClassificationHierarchy {
@@ -27,114 +40,77 @@ export interface ClassificationHierarchy {
   children: ClassificationHierarchy[];
 }
 
+export interface Penalty {
+  code: string;
+  name: string;
+  description: string;
+  rate: number;
+  type: 'percentage' | 'fixed';
+  conditions?: string[];
+}
+
+export interface Allowance {
+  code: string;
+  name: string;
+  description: string;
+  amount: number;
+  type: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  conditions?: string[];
+}
+
 export interface RateTemplate {
   code: string;
   name: string;
   baseRate: number;
-  allowances: Array<{
-    code: string;
-    amount: number;
-  }>;
-  penalties: Array<{
-    code: string;
-    multiplier: number;
-  }>;
+  penalties: string[];
+  allowances: string[];
 }
 
-export interface AwardRate extends Rate {
+export interface RateValidationRequest {
+  rate: number;
   awardCode: string;
   classificationCode: string;
+  date?: string;
+  penalties?: string[];
+  allowances?: string[];
 }
 
-export interface Rate {
-  baseRate: number;
-  allowances: Array<{
-    code: string;
-    amount: number;
-  }>;
-  penalties: Array<{
-    code: string;
-    multiplier: number;
-  }>;
-  effectiveFrom: Date;
-  effectiveTo?: Date;
-}
-
-export interface GetBaseRateParams {
-  awardCode: string;
-  classificationCode: string;
-  date?: Date;
+export interface RateValidationResponse {
+  valid: boolean;
+  minimumRate: number;
+  error?: string;
+  details?: {
+    baseRate: number;
+    penalties: Array<{ code: string; amount: number }>;
+    allowances: Array<{ code: string; amount: number }>;
+    total: number;
+  };
 }
 
 export interface GetClassificationsParams {
   awardCode: string;
+  effectiveDate?: string;
   includeInactive?: boolean;
 }
 
-export interface GetFutureRatesParams {
-  awardCode: string;
-  classificationCode: string;
-  startDate: Date;
-  endDate: Date;
-}
-
-export interface GetRateHistoryParams {
-  awardCode: string;
-  classificationCode: string;
-  startDate: Date;
-  endDate: Date;
-}
-
-export interface RateCalculationRequest {
-  awardCode: string;
-  classificationCode: string;
-  employmentType: 'permanent' | 'casual' | 'fixed-term';
-  date: Date;
-  hours: number;
-  penalties?: Array<{
-    code: string;
-    multiplier: number;
-  }>;
-  allowances?: Array<{
-    code: string;
-    amount: number;
-  }>;
-}
-
-export interface RateCalculationResponse {
+export interface Rate {
   baseRate: number;
-  penalties: Array<{
-    code: string;
-    amount: number;
-  }>;
-  allowances: Array<{
-    code: string;
-    amount: number;
-  }>;
+  effectiveFrom: string;
+  effectiveTo?: string;
+  penalties?: Array<{ code: string; rate: number }>;
+  allowances?: Array<{ code: string; amount: number }>;
+}
+
+export interface Page<T> {
+  items: T[];
   total: number;
-  breakdown: {
-    base: number;
-    penalties: number;
-    allowances: number;
-  };
-  metadata: {
-    calculatedAt: Date;
-    effectiveDate: Date;
-    source: 'fairwork' | 'cached';
-  };
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
 }
 
-export interface ValidateRateParams {
-  awardCode: string;
-  classificationCode: string;
-  rate: number;
-  date?: Date;
-}
-
-export interface RateValidationResponse {
-  isValid: boolean;
-  minimumRate: number;
-  maximumRate?: number;
-  validationDate: Date;
-  messages?: string[];
+export interface ApiError extends Error {
+  code: string;
+  status: number;
+  details?: Record<string, unknown>;
 }

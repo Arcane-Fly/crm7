@@ -1,24 +1,31 @@
-import { LogOut, Settings, User } from 'lucide-react';
+'use client';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { LogOutIcon, UserIcon } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { type ReactElement } from 'react';
+
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useUser } from '@/lib/hooks/use-user';
 
-export function UserNav() {
-  const { user, signOut } = useUser();
+export function UserNav(): ReactElement {
+  const router = useRouter();
 
-  if (!user) {
-    return null;
-  }
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      router.push('/login');
+    } catch (error: unknown) {
+      console.error('Logout failed:', error);
+    }
+  };
 
   return (
     <DropdownMenu>
@@ -27,40 +34,28 @@ export function UserNav() {
           variant='ghost'
           className='relative h-8 w-8 rounded-full'
         >
-          <Avatar className='h-8 w-8'>
-            <AvatarImage
-              src={user.avatar_url || ''}
-              alt={user.full_name || ''}
-            />
-            <AvatarFallback>{user.full_name?.[0] || 'U'}</AvatarFallback>
-          </Avatar>
+          <UserIcon className='h-4 w-4' />
+          <span className='sr-only'>Open user menu</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className='w-56'
         align='end'
-        forceMount
+        className='w-56'
       >
-        <DropdownMenuLabel className='font-normal'>
-          <div className='flex flex-col space-y-1'>
-            <p className='text-sm font-medium leading-none'>{user.full_name}</p>
-            <p className='text-xs leading-none text-muted-foreground'>{user.email}</p>
-          </div>
-        </DropdownMenuLabel>
+        <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem>
-            <User className='mr-2 h-4 w-4' />
-            <span>Profile</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Settings className='mr-2 h-4 w-4' />
-            <span>Settings</span>
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
+        <DropdownMenuItem asChild>
+          <Link href='/profile'>Profile</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href='/settings'>Settings</Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => signOut()}>
-          <LogOut className='mr-2 h-4 w-4' />
+        <DropdownMenuItem
+          className='text-red-600'
+          onClick={handleLogout}
+        >
+          <LogOutIcon className='mr-2 h-4 w-4' />
           <span>Log out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>

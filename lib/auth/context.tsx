@@ -8,8 +8,6 @@ import type { User } from '@/lib/types';
 
 import { createClient } from '../supabase/client';
 
-
-
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -24,21 +22,21 @@ const AuthContext = React.createContext<AuthContextType>({
   requiresMFA: false,
 });
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = React.useState<User | null>(null);
-  const [session, setSession] = React.useState<Session | null>(null);
-  const [requiresMFA, setRequiresMFA] = React.useState(false);
+export function AuthProvider({ children }: { children: React.ReactNode }): void {
+  const [user, setUser] = React.useState<User | null>(null: unknown);
+  const [session, setSession] = React.useState<Session | null>(null: unknown);
+  const [requiresMFA, setRequiresMFA] = React.useState(false: unknown);
   const router = useRouter();
   const supabase = React.useMemo(() => createClient(), []);
 
   React.useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
+    } = supabase.auth.onAuthStateChange(async (_event: unknown, session) => {
+      setSession(session: unknown);
 
       if (!session) {
-        setUser(null);
+        setUser(null: unknown);
         router.push('/auth');
       } else {
         // Get user's organization ID
@@ -48,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .eq('owner_id', session.user.id)
           .single();
 
-        if (orgError) {
+        if (orgError: unknown) {
           console.error('Error fetching organization:', orgError);
           return;
         }
@@ -83,7 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = React.useCallback(async () => {
     const { error } = await supabase.auth.signOut();
-    if (error) {
+    if (error: unknown) {
       console.error('Error signing out:', error);
     }
   }, [supabase]);
@@ -101,8 +99,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export function useAuth() {
-  const context = React.useContext(AuthContext);
+export function useAuth(): void {
+  const context = React.useContext(AuthContext: unknown);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }

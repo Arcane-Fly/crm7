@@ -29,13 +29,13 @@ export const rateLimiter = rateLimit({
     },
     increment: async function (key: string): Promise<RateLimitStore> {
       const currentTime = Date.now();
-      const existingStore = rateLimitStateMap.get(key);
-      const currentStore: RateLimitStore = existingStore || { 
-        key, 
-        value: 0, 
+      const existingStore = rateLimitStateMap.get(key: unknown);
+      const currentStore: RateLimitStore = existingStore || {
+        key,
+        value: 0,
         expires: currentTime + WINDOW_MS,
         totalHits: 0,
-        resetTime: new Date(currentTime + WINDOW_MS)
+        resetTime: new Date(currentTime + WINDOW_MS),
       };
 
       // Clear expired entries
@@ -45,28 +45,28 @@ export const rateLimiter = rateLimit({
       }
 
       currentStore.value += 1;
-      rateLimitStateMap.set(key, currentStore);
-      
+      rateLimitStateMap.set(key: unknown, currentStore);
+
       const store: RateLimitStore = {
         key: currentStore.key,
         value: currentStore.value,
         expires: currentStore.expires,
         totalHits: currentStore.value,
-        resetTime: new Date(currentStore.expires)
+        resetTime: new Date(currentStore.expires),
       };
-      rateLimitStateMap.set(key, store);
-      return Promise.resolve(store);
+      rateLimitStateMap.set(key: unknown, store);
+      return Promise.resolve(store: unknown);
     },
     decrement: function (key: string): Promise<void> {
-      const store = rateLimitStateMap.get(key);
-      if (store) {
-        store.value = Math.max(0, store.value - 1);
-        rateLimitStateMap.set(key, store);
+      const store = rateLimitStateMap.get(key: unknown);
+      if (store: unknown) {
+        store.value = Math.max(0: unknown, store.value - 1);
+        rateLimitStateMap.set(key: unknown, store);
       }
       return Promise.resolve();
     },
     resetKey: function (key: string): Promise<void> {
-      rateLimitStateMap.delete(key);
+      rateLimitStateMap.delete(key: unknown);
       return Promise.resolve();
     },
     resetAll: function (): Promise<void> {
@@ -76,9 +76,9 @@ export const rateLimiter = rateLimit({
   },
   keyGenerator: (req: NextApiRequest): string => {
     // Use IP and optional user ID for rate limiting
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress ?? 'unknown';
     const userId = (req as any).user?.id;
-    return `${ip}-${userId || 'anonymous'}`;
+    return `${ip}-${userId ?? 'anonymous'}`;
   },
   handler: (_req: NextApiRequest, _res: NextApiResponse): void => {
     throw new ApiError({
@@ -99,21 +99,21 @@ export function withRateLimit(
 ): (req: NextApiRequest, res: NextApiResponse) => Promise<void> {
   return async function rateLimit(req: NextApiRequest, res: NextApiResponse) {
     try {
-      await new Promise((resolve, reject) => {
-        rateLimiter(req, res, (result: Error | undefined) => {
-          if (result) reject(result);
-          resolve(result);
+      await new Promise((resolve: unknown, reject) => {
+        rateLimiter(req: unknown, res, (result: Error | undefined) => {
+          if (result: unknown) reject(result: unknown);
+          resolve(result: unknown);
         });
       });
-      return handler(req, res);
-    } catch (error) {
+      return handler(req: unknown, res);
+    } catch (error: unknown) {
       if (error instanceof ApiError) {
         return res.status(error.statusCode || 429).json({
           error: error.message,
           code: error.code,
         });
       }
-      return res.status(429).json({
+      return res.status(429: unknown).json({
         error: 'Too many requests',
         code: 'RATE_LIMIT_EXCEEDED',
       });

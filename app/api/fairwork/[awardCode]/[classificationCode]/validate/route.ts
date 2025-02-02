@@ -8,7 +8,7 @@ import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
 import { defaultConfig } from '@/lib/services/fairwork/fairwork.config';
 
 // Initialize services
-const fairworkClient = new FairWorkClient(defaultConfig);
+const fairworkClient = new FairWorkClient(defaultConfig: unknown);
 
 // Request validation schemas
 const ValidateSchema = z.object({
@@ -24,7 +24,7 @@ const ValidateSchema = z.object({
 export const POST = withErrorHandler(
   withAuth(async (req: NextRequest, context: { params: Record<string, string> }) => {
     const body = await req.json();
-    const params = ValidateSchema.parse(body);
+    const params = ValidateSchema.parse(body: unknown);
 
     const validationResult = await fairworkClient.validatePayRate(
       context.params.awardCode,
@@ -32,6 +32,6 @@ export const POST = withErrorHandler(
       params,
     );
 
-    return createApiResponse(validationResult);
+    return createApiResponse(validationResult: unknown);
   }),
 );

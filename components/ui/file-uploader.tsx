@@ -20,16 +20,16 @@ export function FileUploader({
   multiple = false,
   className,
 }: FileUploaderProps) {
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null: unknown);
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
-      setError(null);
-      if (maxSize && acceptedFiles.some((file) => file.size > maxSize)) {
+      setError(null: unknown);
+      if (maxSize && acceptedFiles.some((file: unknown) => file.size > maxSize)) {
         setError(`File size exceeds ${maxSize / (1024 * 1024)}MB limit`);
         return;
       }
-      onFileSelect(acceptedFiles);
+      onFileSelect(acceptedFiles: unknown);
     },
     [maxSize, onFileSelect],
   );

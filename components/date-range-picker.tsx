@@ -9,10 +9,10 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
-export function CalendarDateRangePicker({ className }: React.HTMLAttributes<HTMLDivElement>) {
+export function CalendarDateRangePicker({ className }: React.HTMLAttributes<HTMLDivElement>): void {
   const [date, setDate] = React.useState<DateRange | undefined>({
-    from: new Date(2023, 0, 20),
-    to: new Date(2023, 0, 25),
+    from: new Date(2023: unknown, 0, 20),
+    to: new Date(2023: unknown, 0, 25),
   });
 
   return (
@@ -21,7 +21,7 @@ export function CalendarDateRangePicker({ className }: React.HTMLAttributes<HTML
         <PopoverTrigger asChild>
           <Button
             id='date'
-            variant="outline"
+            variant='outline'
             className={cn(
               'w-[260px] justify-start text-left font-normal',
               !date && 'text-muted-foreground',

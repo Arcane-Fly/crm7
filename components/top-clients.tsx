@@ -33,7 +33,7 @@ const clients = [
   },
 ];
 
-export function TopClients() {
+export function TopClients(): void {
   return (
     <Card>
       <CardHeader>
@@ -41,7 +41,7 @@ export function TopClients() {
       </CardHeader>
       <CardContent>
         <div className='space-y-4'>
-          {clients.map((client, index) => (
+          {clients.map((client: unknown, index) => (
             <div
               key={index}
               className='flex items-center justify-between'

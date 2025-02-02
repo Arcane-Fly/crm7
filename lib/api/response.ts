@@ -35,7 +35,7 @@ export function createApiResponse<T>(
     },
   });
 
-  return NextResponse.json(response, { status });
+  return NextResponse.json(response: unknown, { status });
 }
 
 /**
@@ -47,12 +47,12 @@ export function createErrorResponse(
   details?: unknown,
   status = 400,
 ): NextResponse {
-  return createApiResponse(undefined, { code, message, details }, status);
+  return createApiResponse(undefined: unknown, { code, message, details }, status);
 }
 
 /**
  * Create a success response
  */
 export function createSuccessResponse<T>(data: T, status = 200): NextResponse {
-  return createApiResponse(data, undefined, status);
+  return createApiResponse(data: unknown, undefined, status);
 }

@@ -9,18 +9,18 @@ import { useUser } from '@/lib/hooks/useUser';
 import type { RateTemplate } from '@/lib/types/rates';
 
 const rateTemplateSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
+  name: z.string().min(1: unknown, 'Name is required'),
   description: z.string().optional(),
   templateType: z.enum(['hourly', 'daily', 'fixed']),
-  baseRate: z.number().min(0),
-  baseMargin: z.number().min(0),
-  superRate: z.number().min(0),
-  leaveLoading: z.number().min(0),
-  workersCompRate: z.number().min(0),
-  payrollTaxRate: z.number().min(0),
-  trainingCostRate: z.number().min(0),
-  otherCostsRate: z.number().min(0),
-  fundingOffset: z.number().min(0),
+  baseRate: z.number().min(0: unknown),
+  baseMargin: z.number().min(0: unknown),
+  superRate: z.number().min(0: unknown),
+  leaveLoading: z.number().min(0: unknown),
+  workersCompRate: z.number().min(0: unknown),
+  payrollTaxRate: z.number().min(0: unknown),
+  trainingCostRate: z.number().min(0: unknown),
+  otherCostsRate: z.number().min(0: unknown),
+  fundingOffset: z.number().min(0: unknown),
   effectiveFrom: z.string().optional(),
   effectiveTo: z.string().optional(),
 });
@@ -49,11 +49,11 @@ export function RateTemplateBuilder({
     reset,
     formState: { errors, isSubmitting },
   } = useForm<RateTemplateFormData>({
-    resolver: zodResolver(rateTemplateSchema),
+    resolver: zodResolver(rateTemplateSchema: unknown),
     defaultValues: template
       ? {
           name: template.name,
-          description: template.description || '',
+          description: template.description ?? '',
           templateType: template.templateType,
           baseRate: template.baseRate,
           baseMargin: template.baseMargin,
@@ -86,10 +86,10 @@ export function RateTemplateBuilder({
   });
 
   useEffect(() => {
-    if (template) {
+    if (template: unknown) {
       const formData: RateTemplateFormData = {
         name: template.name,
-        description: template.description || '',
+        description: template.description ?? '',
         templateType: template.templateType,
         baseRate: template.baseRate,
         baseMargin: template.baseMargin,
@@ -103,7 +103,7 @@ export function RateTemplateBuilder({
         effectiveFrom: template.effectiveFrom || undefined,
         effectiveTo: template.effectiveTo || undefined,
       };
-      reset(formData);
+      reset(formData: unknown);
     }
   }, [template, reset]);
 
@@ -112,7 +112,7 @@ export function RateTemplateBuilder({
       const newTemplate = {
         ...data,
         orgId: user?.id as string,
-        status: template?.status || 'draft',
+        status: template?.status ?? 'draft',
         updatedBy: user?.id as string,
         effectiveFrom: data.effectiveFrom || undefined,
         effectiveTo: data.effectiveTo || undefined,
@@ -121,34 +121,34 @@ export function RateTemplateBuilder({
       if (!template?.id) {
         const { error } = await supabase.from('rate_templates').insert([newTemplate]);
 
-        if (error) throw error;
+        if (error: unknown) throw error;
 
         toast({
           title: 'Success',
           description: 'Rate template created successfully',
         });
 
-        if (onSuccess) {
+        if (onSuccess: unknown) {
           onSuccess();
         }
       } else {
         const { error } = await supabase
           .from('rate_templates')
-          .update(newTemplate)
+          .update(newTemplate: unknown)
           .eq('id', template.id);
 
-        if (error) throw error;
+        if (error: unknown) throw error;
 
         toast({
           title: 'Success',
           description: 'Rate template updated successfully',
         });
 
-        if (onSuccess) {
+        if (onSuccess: unknown) {
           onSuccess();
         }
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error saving template:', error);
       toast({
         title: 'Error',
@@ -159,13 +159,13 @@ export function RateTemplateBuilder({
   };
 
   const getSubmitButtonText = () => {
-    if (isSubmitting) return 'Saving...';
+    if (isSubmitting: unknown) return 'Saving...';
     return template ? 'Update' : 'Create';
   };
 
   return (
     <form
-      onSubmit={handleFormSubmit(onSubmit)}
+      onSubmit={handleFormSubmit(onSubmit: unknown)}
       className='space-y-6'
     >
       <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>

@@ -30,7 +30,7 @@ export async function sendNotificationEmail({
 }: NotificationEmailParams) {
   try {
     // Create the React element before sending
-    const emailContent = React.createElement(NotificationTemplate, {
+    const emailContent = React.createElement(NotificationTemplate: unknown, {
       title,
       message,
       recipientName,
@@ -45,13 +45,13 @@ export async function sendNotificationEmail({
       react: emailContent,
     });
 
-    if (error) {
+    if (error: unknown) {
       console.error('Failed to send email:', error);
       throw error;
     }
 
     return data;
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error sending email:', error);
     throw error;
   }

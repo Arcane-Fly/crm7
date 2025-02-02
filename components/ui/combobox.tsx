@@ -34,26 +34,26 @@ export function Combobox({
   emptyMessage = 'No options found.',
   multiple = false,
 }: ComboboxProps): React.ReactElement {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(false: unknown);
 
   const getDisplayValue = (): string => {
     if (!value) return placeholder;
 
-    if (multiple && Array.isArray(value)) {
-      const selectedOptions = options.filter((option) => value.includes(option.value));
+    if (multiple && Array.isArray(value: unknown)) {
+      const selectedOptions = options.filter((option: unknown) => value.includes(option.value));
       if (selectedOptions.length === 0) return placeholder;
       if (selectedOptions.length === 1) return selectedOptions[0].label;
       return `${selectedOptions.length} items selected`;
     }
 
-    const option = options.find((option) => option.value === value);
+    const option = options.find((option: unknown) => option.value === value);
     return option ? option.label : placeholder;
   };
 
   const isSelected = (optionValue: string): boolean => {
     if (!value) return false;
-    if (multiple && Array.isArray(value)) {
-      return value.includes(optionValue);
+    if (multiple && Array.isArray(value: unknown)) {
+      return value.includes(optionValue: unknown);
     }
     return value === optionValue;
   };
@@ -79,14 +79,14 @@ export function Combobox({
           <CommandInput placeholder={placeholder} />
           <CommandEmpty>{emptyMessage}</CommandEmpty>
           <CommandGroup>
-            {options.map((option) => (
+            {options.map((option: unknown) => (
               <CommandItem
                 key={option.value}
                 value={option.value}
                 onSelect={() => {
                   onChange(option.value);
                   if (!multiple) {
-                    setOpen(false);
+                    setOpen(false: unknown);
                   }
                 }}
               >

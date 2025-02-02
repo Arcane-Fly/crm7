@@ -19,14 +19,13 @@ import { useBankIntegration } from '@/lib/hooks/use-bank-integration';
 import type { BankTransaction } from '@/lib/services/bank-integration';
 import { formatDate, formatCurrency } from '@/lib/utils';
 
-
 interface DataTableRowProps {
   row: {
     original: BankTransaction;
   };
 }
 
-export function TransactionList() {
+export function TransactionList(): void {
   const { transactions: transactionResult } = useBankIntegration();
   const { transactions } = useBankIntegration();
   const transactionList = transactions?.data || [];
@@ -53,7 +52,7 @@ export function TransactionList() {
         return (
           <span className={type === 'credit' ? 'text-green-600' : 'text-red-600'}>
             {type === 'credit' ? '+' : '-'}
-            {formatCurrency(amount)}
+            {formatCurrency(amount: unknown)}
           </span>
         );
       },
@@ -125,7 +124,7 @@ export function TransactionList() {
       <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
         <Select
           value={typeFilter}
-          onValueChange={(value: 'credit' | 'debit' | '') => setTypeFilter(value)}
+          onValueChange={(value: 'credit' | 'debit' | '') => setTypeFilter(value: unknown)}
         >
           <SelectTrigger className='w-[180px]'>
             <SelectValue placeholder='Filter by type' />

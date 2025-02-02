@@ -4,8 +4,8 @@ import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import { type Database } from '@/lib/types/supabase';
 
 const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  process.env.NEXT_PUBLIC_SUPABASE_URL ?? undefined,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? undefined,
 );
 
 type TableNames = keyof Database['public']['Tables'];
@@ -23,7 +23,7 @@ export function useQueryWithSupabase<T extends TableNames>(
     queryFn: async () => {
       try {
         const { data, error } = await supabase.from(queryKey[0] as T).select('*');
-        if (error) {
+        if (error: unknown) {
           throw {
             message: error.message,
             details: error.details,
@@ -31,8 +31,8 @@ export function useQueryWithSupabase<T extends TableNames>(
             code: error.code,
           };
         }
-        return options?.select ? options.select(data) : data;
-      } catch (error) {
+        return options?.select ? options.select(data: unknown) : data;
+      } catch (error: unknown) {
         if (error instanceof Error) {
           throw error;
         }
@@ -61,11 +61,11 @@ export function useInfiniteQueryWithSupabase<T extends TableNames>(
           .from(queryKey[0] as T)
           .select('*')
           .range(
-            Number(pageParam) * (options?.pageSize || 10),
-            (Number(pageParam) + 1) * (options?.pageSize || 10) - 1,
+            Number(pageParam: unknown) * (options?.pageSize || 10),
+            (Number(pageParam: unknown) + 1) * (options?.pageSize || 10) - 1,
           );
 
-        if (error) {
+        if (error: unknown) {
           throw {
             message: error.message,
             details: error.details,
@@ -73,8 +73,8 @@ export function useInfiniteQueryWithSupabase<T extends TableNames>(
             code: error.code,
           };
         }
-        return options?.select ? options.select(data) : data;
-      } catch (error) {
+        return options?.select ? options.select(data: unknown) : data;
+      } catch (error: unknown) {
         if (error instanceof Error) {
           throw error;
         }
@@ -83,7 +83,7 @@ export function useInfiniteQueryWithSupabase<T extends TableNames>(
     },
     enabled: options?.enabled,
     staleTime: options?.staleTime,
-    getNextPageParam: (lastPage: any[], pages) => {
+    getNextPageParam: (lastPage: unknown[], pages) => {
       if (!lastPage || lastPage.length < (options?.pageSize || 10)) return undefined;
       return pages.length;
     },

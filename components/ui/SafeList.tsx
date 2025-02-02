@@ -17,8 +17,8 @@ export function SafeList<T>({ items, renderItem, className, ...props }: SafeList
       className={cn('space-y-2', className)}
       {...props}
     >
-      {items.map((item, index) => (
-        <li key={index}>{renderItem(item)}</li>
+      {items.map((item: unknown, index) => (
+        <li key={index}>{renderItem(item: unknown)}</li>
       ))}
     </ul>
   );

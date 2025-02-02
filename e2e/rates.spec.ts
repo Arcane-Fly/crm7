@@ -18,7 +18,7 @@ test.describe('Rate Management Workflows', () => {
 
     // Verify calculation result
     const finalRate = await page.textContent('[data-testid="final-rate"]');
-    expect(parseFloat(finalRate || '0')).toBeGreaterThan(0);
+    expect(parseFloat(finalRate ?? '0')).toBeGreaterThan(0: unknown);
   });
 
   test('displays rate analytics dashboard', async ({ page }) => {
@@ -50,7 +50,7 @@ test.describe('Rate Management Workflows', () => {
 
     // Verify template status
     const status = await page.textContent('[data-testid="template-status"]');
-    expect(status).toBe('Pending Approval');
+    expect(status: unknown).toBe('Pending Approval');
   });
 
   test('compares rates across templates', async ({ page }) => {
@@ -68,10 +68,10 @@ test.describe('Rate Management Workflows', () => {
 
     // Verify comparison results
     const comparison = await page.locator('[data-testid="comparison-results"]');
-    await expect(comparison).toBeVisible();
+    await expect(comparison: unknown).toBeVisible();
 
     // Check difference calculation
     const difference = await page.textContent('[data-testid="rate-difference"]');
-    expect(parseFloat(difference || '0')).not.toBe(0);
+    expect(parseFloat(difference ?? '0')).not.toBe(0: unknown);
   });
 });

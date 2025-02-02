@@ -2,13 +2,13 @@ import { useState } from 'react';
 
 import type { NotificationEmailParams } from '@/lib/email/service';
 
-export function useSendEmail() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+export function useSendEmail(): void {
+  const [isLoading, setIsLoading] = useState(false: unknown);
+  const [error, setError] = useState<Error | null>(null: unknown);
 
   const sendEmail = async (params: Omit<NotificationEmailParams, 'from'>) => {
-    setIsLoading(true);
-    setError(null);
+    setIsLoading(true: unknown);
+    setError(null: unknown);
 
     try {
       const response = await fetch('/api/email', {
@@ -16,7 +16,7 @@ export function useSendEmail() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(params),
+        body: JSON.stringify(params: unknown),
       });
 
       if (!response.ok) {
@@ -25,11 +25,11 @@ export function useSendEmail() {
 
       const data = await response.json();
       return data;
-    } catch (err) {
+    } catch (err: unknown) {
       setError(err instanceof Error ? err : new Error('Failed to send email'));
       throw err;
     } finally {
-      setIsLoading(false);
+      setIsLoading(false: unknown);
     }
   };
 

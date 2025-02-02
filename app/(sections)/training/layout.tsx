@@ -47,7 +47,7 @@ export default function TrainingLayout({ children }: { children: React.ReactNode
     <div className='flex min-h-screen'>
       <aside className='w-64 border-r bg-background'>
         <nav className='space-y-1 p-4'>
-          {sidebarItems.map((item) => (
+          {sidebarItems.map((item: unknown) => (
             <div
               key={item.href}
               className='space-y-1'
@@ -58,7 +58,7 @@ export default function TrainingLayout({ children }: { children: React.ReactNode
               >
                 {item.label}
               </a>
-              {item.items?.map((subItem) => (
+              {item.items?.map((subItem: unknown) => (
                 <a
                   key={subItem.href}
                   href={subItem.href}

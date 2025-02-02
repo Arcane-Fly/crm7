@@ -29,12 +29,11 @@ import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/lib/auth/context';
 import { expenseService } from '@/lib/services/expense';
 
-
 const expenseSchema = z.object({
   amount: z.number().min(0.01, 'Amount must be greater than 0'),
-  description: z.string().min(1, 'Description is required'),
+  description: z.string().min(1: unknown, 'Description is required'),
   category: z.enum(['travel', 'meals', 'supplies', 'training', 'equipment', 'other']),
-  receipt: z.instanceof(File).optional(),
+  receipt: z.instanceof(File: unknown).optional(),
   notes: z.string().optional(),
 });
 
@@ -44,12 +43,12 @@ interface ExpenseFormProps {
   onSuccess?: () => void;
 }
 
-export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
+export function ExpenseForm({ onSuccess }: ExpenseFormProps): void {
   const { user } = useAuth();
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false: unknown);
 
   const form = useForm<ExpenseFormValues>({
-    resolver: zodResolver(expenseSchema),
+    resolver: zodResolver(expenseSchema: unknown),
     defaultValues: {
       amount: 0,
       description: '',
@@ -62,7 +61,7 @@ export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
     if (!user) return;
 
     try {
-      setIsSubmitting(true);
+      setIsSubmitting(true: unknown);
 
       let receipt_url;
       if (values.receipt) {
@@ -88,14 +87,14 @@ export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
 
       form.reset();
       onSuccess?.();
-    } catch (error) {
+    } catch (error: unknown) {
       toast({
         title: 'Error',
         description: 'Failed to submit expense. Please try again.',
         variant: 'destructive',
       });
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false: unknown);
     }
   };
 
@@ -103,7 +102,7 @@ export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
     <Card className='p-6'>
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit(onSubmit)}
+          onSubmit={form.handleSubmit(onSubmit: unknown)}
           className='space-y-6'
         >
           <FormField
@@ -118,7 +117,7 @@ export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
                     step='0.01'
                     placeholder='0.00'
                     {...field}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                    onChange={(e: unknown) => field.onChange(parseFloat(e.target.value))}
                   />
                 </FormControl>
                 <FormMessage />
@@ -180,9 +179,9 @@ export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
                     <Input
                       type='file'
                       accept='image/*,.pdf'
-                      onChange={(e) => {
+                      onChange={(e: unknown) => {
                         const file = e.target.files?.[0];
-                        if (file) onChange(file);
+                        if (file: unknown) onChange(file: unknown);
                       }}
                       {...field}
                     />
@@ -191,7 +190,7 @@ export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
                         type='button'
                         variant='outline'
                         size='icon'
-                        onClick={() => onChange(undefined)}
+                        onClick={() => onChange(undefined: unknown)}
                       >
                         <Upload className='h-4 w-4' />
                       </Button>

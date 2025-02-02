@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import type { ReactElement } from 'react';
 
 import { useToast } from '@/components/ui/use-toast';
 import { useUser } from '@/lib/hooks/useUser';
@@ -11,25 +12,38 @@ interface RateApprovalProps {
   onReject?: (template: RateTemplate) => void;
 }
 
-export default function RateApproval({ org_id, onApprove, onReject }: RateApprovalProps) {
+export default function RateApproval({
+  org_id,
+  onApprove,
+  onReject,
+}: RateApprovalProps): ReactElement {
   const { supabase } = useSupabase();
   const { user } = useUser();
   const { toast } = useToast();
   const [templates, setTemplates] = useState<RateTemplate[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true: unknown);
+  const [error, setError] = useState<string | null>(null: unknown);
 
   const fetchPendingTemplates = useCallback(async () => {
     try {
-      const templates = await supabase
+      const { data, error } = await supabase
         .from('rate_templates')
         .select('*')
         .eq('org_id', org_id)
         .eq('status', 'draft')
         .order('created_at', { ascending: false });
 
-      setTemplates(templates.data as RateTemplate[]);
-    } catch (error) {
+      if (error: unknown) {
+        toast({
+          variant: 'destructive',
+          title: 'Fetch Error',
+          description: error.message,
+        });
+        return;
+      }
+
+      setTemplates(data as RateTemplate[]);
+    } catch (error: unknown) {
       console.error('Error fetching pending templates:', error);
       setError('Failed to load pending templates');
       toast({
@@ -38,7 +52,7 @@ export default function RateApproval({ org_id, onApprove, onReject }: RateApprov
         variant: 'destructive',
       });
     } finally {
-      setLoading(false);
+      setLoading(false: unknown);
     }
   }, [org_id, supabase, toast]);
 
@@ -58,9 +72,9 @@ export default function RateApproval({ org_id, onApprove, onReject }: RateApprov
           description: 'Rate template approved successfully',
         });
 
-        setTemplates((prev) => prev.filter((t) => t.id !== template.id));
-        onApprove?.(template);
-      } catch (error) {
+        setTemplates((prev: unknown) => prev.filter((t: unknown) => t.id !== template.id));
+        onApprove?.(template: unknown);
+      } catch (error: unknown) {
         console.error('Error approving template:', error);
         toast({
           title: 'Error',
@@ -88,9 +102,9 @@ export default function RateApproval({ org_id, onApprove, onReject }: RateApprov
           description: 'Rate template rejected successfully',
         });
 
-        setTemplates((prev) => prev.filter((t) => t.id !== template.id));
-        onReject?.(template);
-      } catch (error) {
+        setTemplates((prev: unknown) => prev.filter((t: unknown) => t.id !== template.id));
+        onReject?.(template: unknown);
+      } catch (error: unknown) {
         console.error('Error rejecting template:', error);
         toast({
           title: 'Error',
@@ -106,15 +120,15 @@ export default function RateApproval({ org_id, onApprove, onReject }: RateApprov
     fetchPendingTemplates();
   }, [org_id, fetchPendingTemplates]);
 
-  if (loading) return <div>Loading pending templates...</div>;
-  if (error) return <div className='text-red-500'>{error}</div>;
+  if (loading: unknown) return <div>Loading pending templates...</div>;
+  if (error: unknown) return <div className='text-red-500'>{error}</div>;
   if (!templates.length) return <div>No pending templates to approve</div>;
 
   return (
     <div className='space-y-6'>
       <h2 className='text-lg font-medium'>Pending Rate Templates</h2>
       <div className='divide-y'>
-        {templates.map((template) => (
+        {templates.map((template: unknown) => (
           <div
             key={template.id}
             className='py-4'
@@ -139,13 +153,13 @@ export default function RateApproval({ org_id, onApprove, onReject }: RateApprov
             </div>
             <div className='mt-4 flex justify-end space-x-4'>
               <button
-                onClick={() => handleReject(template)}
+                onClick={() => handleReject(template: unknown)}
                 className='rounded-md bg-red-100 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-200'
               >
                 Reject
               </button>
               <button
-                onClick={() => handleApprove(template)}
+                onClick={() => handleApprove(template: unknown)}
                 className='rounded-md bg-green-100 px-4 py-2 text-sm font-medium text-green-700 hover:bg-green-200'
               >
                 Approve

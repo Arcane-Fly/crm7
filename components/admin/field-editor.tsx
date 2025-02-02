@@ -21,14 +21,14 @@ interface FieldEditorProps {
   table: string;
   column: string;
   recordId: string;
-  value: any;
-  onUpdate: (newValue: any) => void;
+  value: unknown;
+  onUpdate: (newValue: unknown) => void;
 }
 
-export function FieldEditor({ table, column, recordId, value, onUpdate }: FieldEditorProps) {
+export function FieldEditor({ table, column, recordId, value, onUpdate }: FieldEditorProps): void {
   const { isAdmin } = useAdminAccess();
-  const [isOpen, setIsOpen] = useState(false);
-  const [editValue, setEditValue] = useState(value);
+  const [isOpen, setIsOpen] = useState(false: unknown);
+  const [editValue, setEditValue] = useState(value: unknown);
   const { toast } = useToast();
   const supabase = createClient();
 
@@ -37,19 +37,19 @@ export function FieldEditor({ table, column, recordId, value, onUpdate }: FieldE
   const handleSave = async () => {
     try {
       const { error } = await supabase
-        .from(table)
+        .from(table: unknown)
         .update({ [column]: editValue })
         .eq('id', recordId);
 
-      if (error) throw error;
+      if (error: unknown) throw error;
 
-      onUpdate(editValue);
-      setIsOpen(false);
+      onUpdate(editValue: unknown);
+      setIsOpen(false: unknown);
       toast({
         title: 'Field updated',
         description: 'The changes have been saved successfully.',
       });
-    } catch (error) {
+    } catch (error: unknown) {
       toast({
         title: 'Error',
         description: 'Failed to update field. Please try again.',
@@ -81,7 +81,7 @@ export function FieldEditor({ table, column, recordId, value, onUpdate }: FieldE
             <Label>Value</Label>
             <Input
               value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
+              onChange={(e: unknown) => setEditValue(e.target.value)}
             />
           </div>
           <Button onClick={handleSave}>Save Changes</Button>

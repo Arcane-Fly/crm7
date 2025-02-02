@@ -1,25 +1,30 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, type ReactElement } from 'react';
 
 import { supabase } from '@/lib/auth/config';
+import { logger } from '@/lib/services/logger';
 
-export default function LoginPage() {
+interface LoginError extends Error {
+  message: string;
+}
+
+export default function LoginPage(): ReactElement {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null: unknown);
+  const [loading, setLoading] = useState(false: unknown);
 
-  const handleAuth0Login = () => {
+  const handleAuth0Login = (): void => {
     window.location.href = `/api/auth/login?returnTo=${encodeURIComponent('/dashboard')}`;
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
-    setError(null);
-    setLoading(true);
+    setError(null: unknown);
+    setLoading(true: unknown);
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -27,14 +32,16 @@ export default function LoginPage() {
         password,
       });
 
-      if (error) throw error;
+      if (error: unknown) throw error;
       if (data.session) {
         router.push('/dashboard');
       }
-    } catch (err: any) {
-      setError(err.message || 'An error occurred during login');
+    } catch (err: unknown) {
+      const loginError = err as LoginError;
+      setError(loginError.message ?? 'An error occurred during login');
+      logger.error('Login failed', loginError);
     } finally {
-      setLoading(false);
+      setLoading(false: unknown);
     }
   };
 
@@ -79,7 +86,7 @@ export default function LoginPage() {
               id='email'
               type='email'
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e: unknown) => setEmail(e.target.value)}
               required
               className='mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500'
             />
@@ -96,7 +103,7 @@ export default function LoginPage() {
               id='password'
               type='password'
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e: unknown) => setPassword(e.target.value)}
               required
               className='mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500'
             />

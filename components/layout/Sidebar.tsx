@@ -223,9 +223,9 @@ function MenuItem({ href, icon, title }: MenuItem) {
   );
 }
 
-export function Sidebar() {
+export function Sidebar(): void {
   const pathname = usePathname();
-  const section = Object.keys(sidebarSections).find((key) => pathname?.startsWith(key) ?? false);
+  const section = Object.keys(sidebarSections: unknown).find((key: unknown) => pathname?.startsWith(key: unknown) ?? false);
   const sidebarSection = section ? sidebarSections[section] : null;
 
   if (!sidebarSection) return null;
@@ -236,7 +236,7 @@ export function Sidebar() {
         <div className='px-3 py-2'>
           <h2 className='mb-2 px-4 text-lg font-semibold tracking-tight'>{sidebarSection.title}</h2>
           <div className='space-y-1'>
-            {sidebarSection.items.map((item) => (
+            {sidebarSection.items.map((item: unknown) => (
               <MenuItem
                 key={item.href}
                 {...item}

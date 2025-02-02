@@ -19,7 +19,7 @@ const data = [
   { name: 'Dec', value: 700 },
 ];
 
-export function ActivityChart() {
+export function ActivityChart(): void {
   return (
     <Card className='col-span-4'>
       <CardHeader>
@@ -44,7 +44,7 @@ export function ActivityChart() {
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(value) => `${value}`}
+                tickFormatter={(value: unknown) => `${value}`}
               />
               <Tooltip />
               <Line

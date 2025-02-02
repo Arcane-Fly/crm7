@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 import { UserNav } from './user-nav';
 
-export function Header() {
+export function Header(): void {
   return (
     <header className='border-b'>
       <div className='flex h-16 items-center px-4'>

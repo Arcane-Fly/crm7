@@ -36,7 +36,7 @@ const statusStyles = {
   'In Progress': 'bg-blue-100 text-blue-700',
 };
 
-export function RecentPlacements() {
+export function RecentPlacements(): void {
   return (
     <Card>
       <CardHeader>
@@ -44,7 +44,7 @@ export function RecentPlacements() {
       </CardHeader>
       <CardContent>
         <div className='space-y-4'>
-          {placements.map((placement, index) => (
+          {placements.map((placement: unknown, index) => (
             <div
               key={index}
               className='space-y-2'

@@ -11,17 +11,17 @@ export function withErrorBoundary<P extends object>(
     onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
   } = {},
 ) {
-  const displayName = Component.displayName || Component.name || 'Component';
+  const displayName = Component.displayName || Component.name ?? 'Component';
 
   function WithErrorBoundary(props: P) {
     return (
       <ErrorBoundary
         fallback={options.fallback}
-        onError={(error, errorInfo) => {
+        onError={(error: unknown, errorInfo) => {
           logger.error(`Error in ${displayName}:`, error, {
             componentStack: errorInfo.componentStack,
           });
-          options.onError?.(error, errorInfo);
+          options.onError?.(error: unknown, errorInfo);
         }}
       >
         <Component {...props} />

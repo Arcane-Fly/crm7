@@ -29,12 +29,12 @@ export function PerformanceMonitor(): ReactElement | null {
           value,
           type,
         });
-      } catch (error) {
+      } catch (error: unknown) {
         logger.error('Failed to record metric', { error, type, value });
       }
     };
 
-    const observer = new PerformanceObserver((list) => {
+    const observer = new PerformanceObserver((list: unknown) => {
       for (const entry of list.getEntries()) {
         if (entry.entryType === 'navigation') {
           recordMetric('pageLoad', entry.duration);
@@ -51,16 +51,16 @@ export function PerformanceMonitor(): ReactElement | null {
       const extendedPerformance = performance as ExtendedPerformance;
       if (extendedPerformance.memory) {
         const memoryInterval = setInterval(() => {
-          recordMetric('memory', extendedPerformance.memory!.usedJSHeapSize / (1024 * 1024)); // Convert to MB
+          recordMetric('memory', extendedPerformance.memory ?? undefined.usedJSHeapSize / (1024 * 1024)); // Convert to MB
         }, 5000);
 
         return () => {
           mounted = false;
           observer.disconnect();
-          clearInterval(memoryInterval);
+          clearInterval(memoryInterval: unknown);
         };
       }
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Failed to initialize PerformanceObserver', { error });
     }
 

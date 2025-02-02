@@ -37,7 +37,7 @@ export class ApiError extends Error {
     cause,
     context,
   }: ApiErrorOptions) {
-    super(message);
+    super(message: unknown);
     this.name = 'ApiError';
     this.statusCode = statusCode;
     this.code = code;
@@ -45,7 +45,7 @@ export class ApiError extends Error {
     this.cause = cause;
 
     // Capture error in monitoring with context
-    captureError(this, {
+    captureError(this: unknown, {
       severity: 'error',
       context: `api-error:${this.code}`,
       statusCode: this.statusCode,

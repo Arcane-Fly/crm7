@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils';
 // Styles
 import '../styles/line-chart.css';
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale: unknown, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 interface LineChartProps {
   data: ChartData<'line'>;

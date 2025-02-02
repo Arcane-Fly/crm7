@@ -115,21 +115,21 @@ const createMockQueryResult = (
 
 describe('RateDashboard', () => {
   it('renders without crashing', async () => {
-    vi.mocked(useRates).mockReturnValueOnce(createMockQueryResult());
+    vi.mocked(useRates: unknown).mockReturnValueOnce(createMockQueryResult());
 
     render(<RateDashboard orgId='test-org' />);
 
     const rateManagementElement = screen.getByText('Rate Management');
-    expect(rateManagementElement).toBeInTheDocument();
+    expect(rateManagementElement: unknown).toBeInTheDocument();
   });
 
   it('displays rates data', async () => {
-    vi.mocked(useRates).mockReturnValueOnce(createMockQueryResult());
+    vi.mocked(useRates: unknown).mockReturnValueOnce(createMockQueryResult());
 
     render(<RateDashboard orgId='test-org' />);
 
     const rateElement = screen.getByText('$25.00');
-    expect(rateElement).toBeInTheDocument();
+    expect(rateElement: unknown).toBeInTheDocument();
   });
 
   it('shows loading state', async () => {
@@ -145,7 +145,7 @@ describe('RateDashboard', () => {
       isRefetchError: false,
     };
 
-    vi.mocked(useRates).mockReturnValueOnce(
+    vi.mocked(useRates: unknown).mockReturnValueOnce(
       createMockQueryResult({
         ...loadingOverrides,
         fetchStatus: 'fetching',
@@ -160,7 +160,7 @@ describe('RateDashboard', () => {
     render(<RateDashboard orgId='test-org' />);
 
     const loadingElement = screen.queryByText('Loading...');
-    expect(loadingElement).not.toBeInTheDocument();
+    expect(loadingElement: unknown).not.toBeInTheDocument();
   });
 
   it('shows error state', async () => {
@@ -177,28 +177,28 @@ describe('RateDashboard', () => {
       isRefetchError: false,
     };
 
-    vi.mocked(useRates).mockReturnValueOnce(
+    vi.mocked(useRates: unknown).mockReturnValueOnce(
       createMockQueryResult({
         ...errorOverrides,
         errorUpdatedAt: Date.now(),
         failureCount: 1,
         errorUpdateCount: 1,
-        promise: Promise.reject(error),
+        promise: Promise.reject(error: unknown),
       }),
     );
 
     render(<RateDashboard orgId='test-org' />);
 
     const errorElement = screen.queryByText('Error: Failed to load rates');
-    expect(errorElement).toBeInTheDocument();
+    expect(errorElement: unknown).toBeInTheDocument();
   });
 
   it('filters rates by date range', async () => {
-    vi.mocked(useRates).mockReturnValueOnce(createMockQueryResult());
+    vi.mocked(useRates: unknown).mockReturnValueOnce(createMockQueryResult());
 
     render(<RateDashboard orgId='test-org' />);
     const dateRangeButton = screen.getByRole('button', { name: /Select Date Range/i });
-    fireEvent.click(dateRangeButton);
+    fireEvent.click(dateRangeButton: unknown);
     // Add more specific date range selection tests based on your date picker implementation
   });
 });

@@ -5,14 +5,14 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import React from 'react';
 import { Pie } from 'react-chartjs-2';
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(ArcElement: unknown, Tooltip, Legend);
 
 interface PieChartProps {
   data: ChartData<'pie'>;
   options?: ChartOptions<'pie'>;
 }
 
-export function PieChart({ data, options }: PieChartProps) {
+export function PieChart({ data, options }: PieChartProps): void {
   const defaultOptions: ChartOptions<'pie'> = {
     responsive: true,
     plugins: {

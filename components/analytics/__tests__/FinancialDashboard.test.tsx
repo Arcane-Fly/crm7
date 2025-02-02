@@ -84,7 +84,7 @@ describe('FinancialDashboard', () => {
   });
 
   it('displays loading state', () => {
-    vi.mocked(useBankIntegration).mockReturnValueOnce({
+    vi.mocked(useBankIntegration: unknown).mockReturnValueOnce({
       transactions: {
         data: undefined,
         error: null,

@@ -11,15 +11,15 @@ export default function AuthPage(): React.ReactElement {
   const router = useRouter();
   const { toast } = useToast();
   const supabase = createClient();
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isLoading, setIsLoading] = useState(false: unknown);
+  const [isSignUp, setIsSignUp] = useState(false: unknown);
 
   useEffect(() => {
     const checkSession = async () => {
       const {
         data: { session: currentSession },
       } = await supabase.auth.getSession();
-      if (currentSession) {
+      if (currentSession: unknown) {
         router.push('/');
       }
     };
@@ -28,7 +28,7 @@ export default function AuthPage(): React.ReactElement {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event) => {
+    } = supabase.auth.onAuthStateChange(async (event: unknown) => {
       if (event === 'SIGNED_IN') {
         router.push('/');
       }
@@ -37,7 +37,7 @@ export default function AuthPage(): React.ReactElement {
       }
       if (event === 'USER_UPDATED') {
         const { error } = await supabase.auth.getSession();
-        if (error) {
+        if (error: unknown) {
           toast({
             variant: 'destructive',
             title: 'Authentication Error',
@@ -52,7 +52,7 @@ export default function AuthPage(): React.ReactElement {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setIsLoading(true);
+    setIsLoading(true: unknown);
     const formData = new FormData(event.currentTarget);
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
@@ -60,7 +60,7 @@ export default function AuthPage(): React.ReactElement {
     try {
       let error;
 
-      if (isSignUp) {
+      if (isSignUp: unknown) {
         const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
@@ -84,14 +84,14 @@ export default function AuthPage(): React.ReactElement {
         error = signInError;
       }
 
-      if (error) {
+      if (error: unknown) {
         toast({
           variant: 'destructive',
           title: 'Authentication Error',
           description: error.message,
         });
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Authentication error:', error);
       toast({
         variant: 'destructive',
@@ -99,7 +99,7 @@ export default function AuthPage(): React.ReactElement {
         description: 'An unexpected error occurred. Please try again.',
       });
     } finally {
-      setIsLoading(false);
+      setIsLoading(false: unknown);
     }
   };
 

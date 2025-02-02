@@ -40,10 +40,10 @@ const icons = {
   success: Award,
 };
 
-export function NotificationList() {
+export function NotificationList(): void {
   return (
     <div className='space-y-4'>
-      {notifications.map((notification) => {
+      {notifications.map((notification: unknown) => {
         const Icon = icons[notification.type];
 
         return (

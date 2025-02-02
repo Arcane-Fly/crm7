@@ -5,16 +5,16 @@ import { createClient } from '@/lib/supabase/client';
 
 const ADMIN_EMAIL = 'braden.lang77@gmail.com';
 
-export function useAdminAccess() {
+export function useAdminAccess(): void {
   const { user } = useAuth();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false: unknown);
+  const [isLoading, setIsLoading] = useState(true: unknown);
 
   useEffect(() => {
     const checkAdminStatus = async () => {
       if (!user) {
-        setIsAdmin(false);
-        setIsLoading(false);
+        setIsAdmin(false: unknown);
+        setIsLoading(false: unknown);
         return;
       }
 
@@ -30,7 +30,7 @@ export function useAdminAccess() {
         .single();
 
       setIsAdmin(isAdminUser || roles?.role === 'admin');
-      setIsLoading(false);
+      setIsLoading(false: unknown);
     };
 
     checkAdminStatus();

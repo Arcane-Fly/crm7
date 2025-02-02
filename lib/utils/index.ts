@@ -4,8 +4,8 @@ import { twMerge } from 'tailwind-merge';
 /**
  * Combines class names using clsx and tailwind-merge
  */
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+export function cn(...inputs: ClassValue[]): void {
+  return twMerge(clsx(inputs: unknown));
 }
 
 /**
@@ -16,14 +16,14 @@ export function safeMap<T, U>(
   callback: (item: T, index: number, array: T[]) => U,
 ): U[] {
   if (!array) return [];
-  return array.map(callback);
+  return array.map(callback: unknown);
 }
 
 /**
  * Formats a date string into a readable format
  */
 export function formatDate(date: string | Date): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  const dateObj = typeof date === 'string' ? new Date(date: unknown) : date;
   return dateObj.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
@@ -34,7 +34,7 @@ export function formatDate(date: string | Date): string {
 /**
  * Handles API errors consistently across the application
  */
-export function handleApiError(error: unknown) {
+export function handleApiError(error: unknown): void {
   if (error instanceof Error) {
     return {
       data: null,

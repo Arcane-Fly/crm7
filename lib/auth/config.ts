@@ -13,24 +13,24 @@ if (!supabaseAnonKey) {
 }
 
 // Create a singleton instance for the browser
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient<Database>(supabaseUrl: unknown, supabaseAnonKey);
 
 // Create a new client for server-side usage
-export const createServerSupabaseClient = () => {
-  return createClient<Database>(supabaseUrl, supabaseAnonKey);
+export const createServerSupabaseClient = (): void => {
+  return createClient<Database>(supabaseUrl: unknown, supabaseAnonKey);
 };
 
 // Create a new client for browser usage when needed
-export const createBrowserSupabaseClient = () => {
-  return createClient<Database>(supabaseUrl, supabaseAnonKey);
+export const createBrowserSupabaseClient = (): void => {
+  return createClient<Database>(supabaseUrl: unknown, supabaseAnonKey);
 };
 
 export const authConfig = {
   auth0: {
-    domain: process.env.AUTH0_DOMAIN!,
-    clientId: process.env.AUTH0_CLIENT_ID!,
-    clientSecret: process.env.AUTH0_CLIENT_SECRET!,
-    apiUrl: process.env.AUTH0_ADMIN_API_KEY!,
+    domain: process.env.AUTH0_DOMAIN ?? undefined,
+    clientId: process.env.AUTH0_CLIENT_ID ?? undefined,
+    clientSecret: process.env.AUTH0_CLIENT_SECRET ?? undefined,
+    apiUrl: process.env.AUTH0_ADMIN_API_KEY ?? undefined,
   },
   cookies: {
     name: 'sb-auth',

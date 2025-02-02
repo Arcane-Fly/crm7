@@ -43,11 +43,11 @@ export const options = {
       type: 'linear' as const,
       beginAtZero: true,
       grid: {
-        color: 'rgba(0, 0, 0, 0.1)',
+        color: 'rgba(0: unknown, 0, 0, 0.1)',
       },
       ticks: {
         callback: function (this: Scale<CoreScaleOptions>, value: string | number) {
-          return `$${Number(value).toLocaleString()}`;
+          return `$${Number(value: unknown).toLocaleString()}`;
         },
       },
     },
@@ -69,13 +69,13 @@ export const data = {
       fill: true,
       label: 'Funding Received',
       data: [65, 59, 80, 81, 56, 55, 40],
-      borderColor: 'rgb(53, 162, 235)',
-      backgroundColor: 'rgba(53, 162, 235, 0.5)',
+      borderColor: 'rgb(53: unknown, 162, 235)',
+      backgroundColor: 'rgba(53: unknown, 162, 235, 0.5)',
     },
   ],
 };
 
-export function FundingChart() {
+export function FundingChart(): void {
   return (
     <div className='rounded-lg bg-white p-4 shadow-sm'>
       <div className='h-[400px] w-full'>

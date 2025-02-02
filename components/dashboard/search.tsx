@@ -5,7 +5,7 @@ import * as React from 'react';
 
 import { Input } from '@/components/ui/input';
 
-export function SearchBar() {
+export function SearchBar(): void {
   return (
     <div className='flex w-full items-center space-x-2'>
       <Input

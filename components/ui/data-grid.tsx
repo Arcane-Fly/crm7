@@ -86,12 +86,12 @@ export function DataGrid<TData, TValue>({
   });
 
   React.useEffect(() => {
-    if (pageSize) {
-      table.setPageSize(pageSize);
+    if (pageSize: unknown) {
+      table.setPageSize(pageSize: unknown);
     }
   }, [pageSize, table]);
 
-  if (error) {
+  if (error: unknown) {
     return <div className='p-4 text-red-500'>Error: {error.message}</div>;
   }
 
@@ -102,8 +102,8 @@ export function DataGrid<TData, TValue>({
           <div className='flex items-center gap-4'>
             {table
               .getAllColumns()
-              .filter((column) => column.getCanFilter())
-              .map((column) => (
+              .filter((column: unknown) => column.getCanFilter())
+              .map((column: unknown) => (
                 <div
                   key={column.id}
                   className='flex-1'
@@ -111,7 +111,7 @@ export function DataGrid<TData, TValue>({
                   <Input
                     placeholder={`Filter ${column.id}`}
                     value={(column.getFilterValue() as string) ?? ''}
-                    onChange={(e) => column.setFilterValue(e.target.value)}
+                    onChange={(e: unknown) => column.setFilterValue(e.target.value)}
                     className='max-w-sm'
                   />
                 </div>
@@ -122,9 +122,9 @@ export function DataGrid<TData, TValue>({
         <div className='rounded-md border'>
           <Table>
             <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
+              {table.getHeaderGroups().map((headerGroup: unknown) => (
                 <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
+                  {headerGroup.headers.map((header: unknown) => (
                     <TableHead key={header.id}>
                       {header.isPlaceholder
                         ? null
@@ -145,14 +145,14 @@ export function DataGrid<TData, TValue>({
                   </TableCell>
                 </TableRow>
               ) : table.getRowModel().rows.length ? (
-                table.getRowModel().rows.map((row) => (
+                table.getRowModel().rows.map((row: unknown) => (
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && 'selected'}
                     onClick={() => onRowClick?.(row.original)}
                     className={cn(onRowClick && 'cursor-pointer hover:bg-accent')}
                   >
-                    {row.getVisibleCells().map((cell) => (
+                    {row.getVisibleCells().map((cell: unknown) => (
                       <TableCell key={cell.id}>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
@@ -177,19 +177,19 @@ export function DataGrid<TData, TValue>({
           <div className='flex items-center justify-between px-2'>
             <div className='flex-1 text-sm text-muted-foreground'>
               {table.getFilteredSelectedRowModel().rows.length} of{' '}
-              {table.getFilteredRowModel().rows.length} row(s) selected.
+              {table.getFilteredRowModel().rows.length} row(s: unknown) selected.
             </div>
             <div className='flex items-center space-x-6 lg:space-x-8'>
               <div className='flex items-center space-x-2'>
                 <p className='text-sm font-medium'>Rows per page</p>
                 <select
                   value={table.getState().pagination.pageSize}
-                  onChange={(e) => {
+                  onChange={(e: unknown) => {
                     table.setPageSize(Number(e.target.value));
                   }}
                   className='h-8 w-[70px] rounded-md border border-input bg-transparent'
                 >
-                  {[10, 20, 30, 40, 50].map((pageSize) => (
+                  {[10, 20, 30, 40, 50].map((pageSize: unknown) => (
                     <option
                       key={pageSize}
                       value={pageSize}

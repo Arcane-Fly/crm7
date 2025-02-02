@@ -1,52 +1,8 @@
-'use client';
-
-import { Plus } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-
-import { DataEnrichment } from '@/components/admin/data-enrichment';
-import { Breadcrumb, BreadcrumbItem } from '@/components/breadcrumb';
-import { Button } from '@/components/ui/button';
-import { DataTable } from '@/components/ui/data-table';
-import { useAdminAccess } from '@/lib/hooks/useAdminAccess';
-
-import { columns } from './columns';
-
-export default function ApprenticesPage() {
-  const router = useRouter();
-  const { isAdmin } = useAdminAccess();
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [data] = useState([]);
-
+export default function ApprenticesPage(): React.ReactElement {
   return (
-    <div className='space-y-6'>
-      <div className='flex items-center justify-between'>
-        <Breadcrumb>
-          <BreadcrumbItem href='/dashboard'>Dashboard</BreadcrumbItem>
-          <BreadcrumbItem>Apprentices</BreadcrumbItem>
-        </Breadcrumb>
-        <div className='flex items-center space-x-2'>
-          {isAdmin && selectedIds.length === 1 && (
-            <DataEnrichment
-              type='apprentice'
-              id={selectedIds[0]}
-              onComplete={() => {
-                // Refresh data
-              }}
-            />
-          )}
-          <Button onClick={() => router.push('/apprentices/new')}>
-            <Plus className='mr-2 h-4 w-4' /> Add Apprentice
-          </Button>
-        </div>
-      </div>
-      <DataTable
-        columns={columns}
-        data={data}
-        filterColumn='name'
-        enableRowSelection={true}
-        onSelectedIdsChange={setSelectedIds}
-      />
+    <div>
+      <h1>Apprentices</h1>
+      {/* Page content */}
     </div>
   );
 }

@@ -1,9 +1,7 @@
-import { Loader2 } from 'lucide-react';
-
-export default function Loading() {
+export default function Loading(): React.ReactElement {
   return (
-    <div className='flex min-h-screen items-center justify-center'>
-      <Loader2 className='h-8 w-8 animate-spin text-primary' />
+    <div className='flex h-screen items-center justify-center'>
+      <div className='h-32 w-32 animate-spin rounded-full border-b-2 border-gray-900'></div>
     </div>
   );
 }

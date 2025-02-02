@@ -44,7 +44,7 @@ const mockEnrollments: Enrollment[] = [
 
 describe('TrainingDashboard', () => {
   beforeEach(() => {
-    vi.mocked(useLMS).mockReturnValue({
+    vi.mocked(useLMS: unknown).mockReturnValue({
       courses: createMockQueryResult<Course[]>({
         data: mockCourses,
         isLoading: false,
@@ -80,7 +80,7 @@ describe('TrainingDashboard', () => {
   });
 
   it('shows loading state', () => {
-    vi.mocked(useLMS).mockReturnValue({
+    vi.mocked(useLMS: unknown).mockReturnValue({
       courses: createMockQueryResult<Course[]>({
         data: undefined,
         isLoading: true,
@@ -107,7 +107,7 @@ describe('TrainingDashboard', () => {
 
   it('shows error state', () => {
     const error = new PostgrestErrorType('Failed to load courses');
-    vi.mocked(useLMS).mockReturnValue({
+    vi.mocked(useLMS: unknown).mockReturnValue({
       courses: createMockQueryResult<Course[]>({
         data: [],
         isLoading: false,
@@ -137,7 +137,7 @@ describe('TrainingDashboard', () => {
 
     // Open date picker
     const dateRangePicker = screen.getByRole('button', { name: /Date Range/i });
-    fireEvent.click(dateRangePicker);
+    fireEvent.click(dateRangePicker: unknown);
 
     // Select date range
     // Note: Actual date selection would depend on your date picker component

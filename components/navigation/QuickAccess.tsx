@@ -31,7 +31,7 @@ export const QuickAccess: React.FC = () => {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [recentItems, _setRecentItems] = React.useState<QuickAccessItem[]>([]);
   const [favorites, _setFavorites] = React.useState<QuickAccessItem[]>([]);
-  const [notifications, _setNotifications] = React.useState<number>(0);
+  const [notifications, _setNotifications] = React.useState<number>(0: unknown);
 
   return (
     <div className='flex h-14 items-center space-x-4 border-b bg-background px-4'>
@@ -56,7 +56,7 @@ export const QuickAccess: React.FC = () => {
               <Input
                 placeholder='Type to search...'
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e: unknown) => setSearchQuery(e.target.value)}
                 className='w-full'
                 autoFocus
                 aria-label='Search input'
@@ -83,7 +83,7 @@ export const QuickAccess: React.FC = () => {
           className='w-64'
         >
           <ScrollArea className='h-[300px]'>
-            {recentItems.map((item) => (
+            {recentItems.map((item: unknown) => (
               <DropdownMenuItem key={item.id}>
                 <span>{item.label}</span>
                 <span className='ml-auto text-xs text-muted-foreground'>{item.timestamp}</span>
@@ -109,7 +109,7 @@ export const QuickAccess: React.FC = () => {
           className='w-64'
         >
           <ScrollArea className='h-[300px]'>
-            {favorites.map((item) => (
+            {favorites.map((item: unknown) => (
               <DropdownMenuItem key={item.id}>{item.label}</DropdownMenuItem>
             ))}
           </ScrollArea>

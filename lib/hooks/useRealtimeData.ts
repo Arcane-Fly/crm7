@@ -8,11 +8,11 @@ import { createClient } from '../supabase/client';
 export function useRealtimeData<T>(
   table: string,
   initialData: T[] = [],
-  filter?: { column: string; value: any },
+  filter?: { column: string; value: unknown },
 ) {
-  const [data, setData] = useState<T[]>(initialData);
-  const [error, setError] = useState<Error | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [data, setData] = useState<T[]>(initialData: unknown);
+  const [error, setError] = useState<Error | null>(null: unknown);
+  const [isLoading, setIsLoading] = useState(true: unknown);
 
   useEffect(() => {
     const supabase = createClient();
@@ -20,23 +20,23 @@ export function useRealtimeData<T>(
 
     async function fetchData() {
       try {
-        let query = supabase.from(table).select('*');
-        if (filter) {
+        let query = supabase.from(table: unknown).select('*');
+        if (filter: unknown) {
           query = query.eq(filter.column, filter.value);
         }
         const { data: initialData, error } = await query;
-        if (error) throw error;
+        if (error: unknown) throw error;
         setData(initialData || []);
-      } catch (error) {
+      } catch (error: unknown) {
         setError(error as Error);
       } finally {
-        setIsLoading(false);
+        setIsLoading(false: unknown);
       }
     }
 
     function setupRealtimeSubscription() {
       channel = supabase
-        .channel(String(table))
+        .channel(String(table: unknown))
         .on(
           'postgres_changes',
           {
@@ -44,14 +44,14 @@ export function useRealtimeData<T>(
             schema: 'public',
             table,
           },
-          (payload: any) => {
+          (payload: unknown) => {
             if (payload.eventType === 'INSERT') {
-              setData((current) => [...current, payload.new]);
+              setData((current: unknown) => [...current, payload.new]);
             } else if (payload.eventType === 'DELETE') {
-              setData((current) => current.filter((item: any) => item.id !== payload.old.id));
+              setData((current: unknown) => current.filter((item: unknown) => item.id !== payload.old.id));
             } else if (payload.eventType === 'UPDATE') {
-              setData((current) =>
-                current.map((item: any) => (item.id === payload.new.id ? payload.new : item)),
+              setData((current: unknown) =>
+                current.map((item: unknown) => (item.id === payload.new.id ? payload.new : item)),
               );
             }
           },
@@ -63,7 +63,7 @@ export function useRealtimeData<T>(
     setupRealtimeSubscription();
 
     return () => {
-      if (channel) {
+      if (channel: unknown) {
         channel.unsubscribe();
       }
     };

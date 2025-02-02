@@ -9,7 +9,7 @@ import { logger } from '@/lib/logger';
  * - Managing roles and permissions
  * - Managing organizations
  */
-export const createManagementClient = () => {
+export const createManagementClient = (): void => {
   if (!process.env.AUTH0_ADMIN_API_KEY || !process.env.AUTH0_API_TOKEN) {
     throw new Error('Missing required Auth0 environment variables');
   }
@@ -19,7 +19,7 @@ export const createManagementClient = () => {
       domain: 'dev-rkchrceel6xwqe2g.us.auth0.com',
       token: process.env.AUTH0_API_TOKEN,
     });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error('Failed to create Auth0 Management client', { error });
     throw error;
   }
@@ -41,8 +41,8 @@ export const AUTH0_ENDPOINTS = {
  * These values are used by the Auth0 SDK.
  */
 export const AUTH0_CONFIG = {
-  baseURL: process.env.AUTH0_BASE_URL || 'http://localhost:4200',
-  issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL || 'https://dev-rkchrceel6xwqe2g.us.auth0.com',
+  baseURL: process.env.AUTH0_BASE_URL ?? 'http://localhost:4200',
+  issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL ?? 'https://dev-rkchrceel6xwqe2g.us.auth0.com',
   clientID: process.env.AUTH0_CLIENT_ID,
   clientSecret: process.env.AUTH0_CLIENT_SECRET,
   secret: process.env.AUTH0_SECRET,

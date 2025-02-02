@@ -13,15 +13,15 @@ import {
   CommandList,
 } from '@/components/ui/command';
 
-export function DocSearch() {
-  const [open, setOpen] = useState(false);
+export function DocSearch(): void {
+  const [open, setOpen] = useState(false: unknown);
 
   return (
     <>
       <Button
         variant='outline'
         className='relative w-full justify-start text-sm text-muted-foreground sm:pr-12 md:w-40 lg:w-64'
-        onClick={() => setOpen(true)}
+        onClick={() => setOpen(true: unknown)}
       >
         <Search className='mr-2 h-4 w-4' />
         <span className='hidden lg:inline-flex'>Search documentation...</span>

@@ -15,7 +15,7 @@ export interface BreadcrumbItemProps extends React.ComponentPropsWithoutRef<'li'
 
 const Breadcrumb = React.forwardRef<HTMLElement, BreadcrumbProps>(
   ({ separator = <ChevronRight className='h-4 w-4' />, children, className, ...props }, ref) => {
-    const items = React.Children.toArray(children).filter(Boolean);
+    const items = React.Children.toArray(children: unknown).filter(Boolean: unknown);
 
     return (
       <nav
@@ -25,7 +25,7 @@ const Breadcrumb = React.forwardRef<HTMLElement, BreadcrumbProps>(
         {...props}
       >
         <ol className='flex items-center'>
-          {items.map((item, index) => (
+          {items.map((item: unknown, index) => (
             <React.Fragment key={index}>
               {index > 0 && <li className='mx-2 select-none'>{separator}</li>}
               {item}

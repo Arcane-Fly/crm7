@@ -1,3 +1,4 @@
+import type { LucideIcon } from 'lucide-react';
 import {
   BarChart3Icon,
   BriefcaseIcon,
@@ -9,12 +10,11 @@ import {
   LineChartIcon,
   UsersIcon,
 } from 'lucide-react';
-// Remove unused import
 
 export interface NavItem {
   title: string;
   href?: string;
-  icon?: any; // Using any for now as the LucideIcon type is complex
+  icon?: LucideIcon;
   slug?: string;
   label?: string;
   children?: NavItem[];

@@ -10,7 +10,6 @@ import { DataTable } from '@/components/ui/data-table';
 
 import { columns } from './columns';
 
-
 export default function HostEmployersPage() {
   const router = useRouter();
   const [data] = useState([]);

@@ -7,7 +7,7 @@ import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
 import { defaultConfig } from '@/lib/services/fairwork/fairwork.config';
 
 // Initialize services
-const fairworkClient = new FairWorkClient(defaultConfig);
+const fairworkClient = new FairWorkClient(defaultConfig: unknown);
 
 /**
  * GET /api/fairwork/[awardCode]/[classificationCode]
@@ -19,6 +19,6 @@ export const GET = withErrorHandler(
       context.params.awardCode,
       context.params.classificationCode,
     );
-    return createApiResponse(classification);
+    return createApiResponse(classification: unknown);
   }),
 );

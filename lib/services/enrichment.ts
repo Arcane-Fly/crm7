@@ -12,13 +12,13 @@ export class DataEnrichmentService {
   private supabase = createClient();
 
   constructor() {
-    this.together = new Together(process.env.TOGETHER_API_KEY!);
+    this.together = new Together(process.env.TOGETHER_API_KEY ?? undefined);
   }
 
   async enrichFromWebsite(url: string, options: EnrichmentOptions = {}) {
     try {
       // Fetch website content
-      const response = await fetch(url);
+      const response = await fetch(url: unknown);
       const html = await response.text();
 
       // Extract text content (basic implementation)
@@ -29,7 +29,7 @@ export class DataEnrichmentService {
 
       // Use Together AI to analyze
       const enrichedData = await this.together.chat.completions.create({
-        model: options.model || 'deepseek-ai/DeepSeek-V3',
+        model: options.model ?? 'deepseek-ai/DeepSeek-V3',
         messages: [
           {
             role: 'system',
@@ -46,7 +46,7 @@ export class DataEnrichmentService {
       });
 
       return enrichedData;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Enrichment error:', error);
       throw error;
     }
@@ -80,7 +80,7 @@ export class DataEnrichmentService {
       });
 
       return await response.json();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Perplexity API error:', error);
       throw error;
     }
@@ -95,7 +95,7 @@ export class DataEnrichmentService {
         .eq('id', apprenticeId)
         .single();
 
-      if (error) throw error;
+      if (error: unknown) throw error;
 
       // Enrich with industry insights
       const industryInsights = await this.enrichWithPerplexity(
@@ -113,10 +113,10 @@ export class DataEnrichmentService {
         })
         .eq('id', apprenticeId);
 
-      if (updateError) throw updateError;
+      if (updateError: unknown) throw updateError;
 
       return industryInsights;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Apprentice enrichment error:', error);
       throw error;
     }
@@ -131,7 +131,7 @@ export class DataEnrichmentService {
         .eq('id', qualificationId)
         .single();
 
-      if (error) throw error;
+      if (error: unknown) throw error;
 
       // Enrich with market data and requirements
       const marketData = await this.enrichWithPerplexity(
@@ -149,10 +149,10 @@ export class DataEnrichmentService {
         })
         .eq('id', qualificationId);
 
-      if (updateError) throw updateError;
+      if (updateError: unknown) throw updateError;
 
       return marketData;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Qualification enrichment error:', error);
       throw error;
     }

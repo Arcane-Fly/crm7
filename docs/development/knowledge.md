@@ -1,6 +1,43 @@
-### Type Safety Requirements
+### Linting and Code Quality
 
-1. Naming Conventions:
+1. Pre-commit Hooks:
+   - ESLint with strict TypeScript rules and auto-fixing
+   - Prettier for consistent formatting
+   - TypeScript type checking on staged files
+   - Jest tests for affected files
+   - Stylelint for CSS/SCSS
+   - Markdownlint for documentation
+   - Package.json sorting
+
+2. ESLint Configuration:
+   - Strict TypeScript checking with recommended-requiring-type-checking
+   - Security rules enabled
+   - SonarJS for code quality
+   - Import sorting and validation
+   - React and hooks best practices
+   - Accessibility checks
+   - Auto-fixes where possible
+
+3. CI/CD:
+   - Super-linter for comprehensive validation
+   - Configuration validation ensures consistency
+   - Multiple linters run in parallel
+   - Zero warnings policy
+
+2. Security Rules:
+   - Configure security rules individually rather than using extends
+   - Disable object-injection and non-literal-require checks
+   - Keep timing attack detection enabled
+   - Enforce CSRF protection
+   - Prevent unsafe regex patterns
+   - Monitor child process usage
+   - Validate buffer operations
+   - Avoid using plugin:security/recommended due to compatibility issues
+   - Run validate-configs script before committing
+
+2. Type Safety Requirements:
+
+   - Naming Conventions:
 
    - Use camelCase for props (e.g., orgId not org_id)
    - Be consistent with type names across the codebase
@@ -196,10 +233,22 @@
 
 ### Next.js Specific:
 
-- Always handle usePathname() null case with ?? '/'
+- Always handle usePathname() null case explicitly
 - Type test data to match database schema exactly
 - Use proper module augmentation for API routes
 - Keep test utilities in types/test-utils.d.ts
+- Use ReactElement return type for components
+- Handle hydration mismatches with useMounted hook
+- Type breadcrumb segments and navigation items
+- Provide fallback UI with Suspense
+- Define explicit interfaces for API responses
+- Use type-safe state management with useState
+- Handle loading and error states with proper types
+- Provide proper return types for all components
+- Use React.ReactElement for page components
+- Use React.ReactNode for layout children
+- Add explicit return types to all page components
+- Add explicit return types to all API route handlers
 
 ### React Query Patterns:
 
@@ -336,6 +385,9 @@
 - Use optional chaining (?.) with null coalescing (??) for safe navigation
 - Export interfaces alongside their implementations
 - Keep props interface with component
+- Prefer optional chaining over && for object properties
+- Use null coalescing over || for default values
+- Always handle undefined/null cases explicitly
 
 ### Banking Integration:
 
@@ -372,7 +424,33 @@
 - Use barrel exports for component collections
 - Maintain consistent file structure across components
 - Group related components in subdirectories
-- Export component interfaces alongside components### Next.js Client Components:
+- Export component interfaces alongside components
+- Export all subcomponents from UI components (e.g., Card.Header, Card.Content)
+- Always provide children prop for wrapper components
+- Export primitive components from Radix UI with their types
+
+### Navigation Structure:
+
+- Sidebar should handle both desktop and mobile views
+- Use motion animations for mobile sidebar transitions
+- Support collapsible state for desktop view
+- Maintain consistent active state styling
+- Handle nested navigation items
+- Use context for sidebar state management
+- Ensure proper type safety in navigation components
+- Keep navigation items configuration in separate config file
+
+### Navigation UX Requirements:
+
+- Close mobile menu after navigation
+- Provide clear visual feedback for active states
+- Support keyboard navigation
+- Include aria-labels for accessibility
+- Show visual indicators for expandable sections
+- Maintain header visibility during scroll
+- Ensure smooth transitions between states
+- Handle deep linking to nested routes
+- Preserve navigation state across page loads### Next.js Client Components:
 - Add 'use client' directive to client components
 - Handle null cases from hooks like usePathname with null coalescing (??)
 - Use optional chaining (?.) with null coalescing for safe navigation
@@ -396,6 +474,28 @@
 - Keep engines field up to date with project requirements
 - Document version constraints in deployment guides
 - Test with the exact versions specified in CI/CD
+
+### Dependency Management:
+
+1. Required Dependencies:
+   - Keep Radix UI components for planned UI implementations
+   - Maintain development tools (react-query-devtools) for debugging
+   - Keep testing dependencies (canvas for jsdom) even if flagged unused
+   - Redis required for caching layer
+   - Sentry packages needed for error monitoring
+
+2. Build Tools:
+   - PostCSS ecosystem (autoprefixer, cssnano) required for CSS processing
+   - All linting packages needed even if not directly imported
+   - Keep tsc-files for granular TypeScript checking
+   - Maintain sort-package-json for consistent package.json
+
+3. Dependency Checks:
+   - Run depcheck to identify unused packages
+   - Verify against feature roadmap before removing
+   - Check knowledge files for planned usage
+   - Consider peer dependencies before removal
+   - Local packages with "link:" prefix are ignored by depcheck
 
 ### TypeScript Configuration:
 

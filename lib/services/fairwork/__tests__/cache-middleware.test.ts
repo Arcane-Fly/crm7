@@ -28,40 +28,40 @@ describe('FairWorkCacheMiddleware', () => {
     const mockParams = {
       awardCode: 'TEST001',
       classificationCode: 'L1',
-      date: new Date('2025-01-29'),
+      date: new Date('2025-01-29').toISOString(),
     };
 
     it('should cache base rate calculations', async () => {
       const mockRate = 25.5;
-      const factory = jest.fn().mockResolvedValue(mockRate);
+      const factory = jest.fn().mockResolvedValue(mockRate: unknown);
 
-      mockCacheService.getOrSet.mockImplementation(async (_, fn) => fn());
+      mockCacheService.getOrSet.mockImplementation(async (_: unknown, fn) => fn());
 
-      const result = await cacheMiddleware.getBaseRate(mockParams, factory);
+      const result = await cacheMiddleware.getBaseRate(mockParams: unknown, factory);
 
-      expect(result).toBe(mockRate);
+      expect(result: unknown).toBe(mockRate: unknown);
       expect(mockCacheService.getOrSet).toHaveBeenCalledWith(
         expect.stringContaining('base-rate'),
-        expect.any(Function),
-        expect.any(Number),
+        expect.any(Function: unknown),
+        expect.any(Number: unknown),
       );
-      expect(factory).toHaveBeenCalledTimes(1);
+      expect(factory: unknown).toHaveBeenCalledTimes(1: unknown);
     });
 
     it('should return cached base rate without calling factory', async () => {
       const mockRate = 25.5;
       const factory = jest.fn().mockResolvedValue(30.0);
 
-      mockCacheService.getOrSet.mockResolvedValue(mockRate);
+      mockCacheService.getOrSet.mockResolvedValue(mockRate: unknown);
 
-      const result = await cacheMiddleware.getBaseRate(mockParams, factory);
+      const result = await cacheMiddleware.getBaseRate(mockParams: unknown, factory);
 
-      expect(result).toBe(mockRate);
-      expect(factory).not.toHaveBeenCalled();
+      expect(result: unknown).toBe(mockRate: unknown);
+      expect(factory: unknown).not.toHaveBeenCalled();
     });
 
     it('should invalidate base rate cache', async () => {
-      await cacheMiddleware.invalidateBaseRate(mockParams);
+      await cacheMiddleware.invalidateBaseRate(mockParams: unknown);
 
       expect(mockCacheService.delete).toHaveBeenCalledWith(expect.stringContaining('base-rate'));
     });
@@ -70,7 +70,7 @@ describe('FairWorkCacheMiddleware', () => {
   describe('Classifications Operations', () => {
     const mockParams = {
       awardCode: 'TEST001',
-      date: new Date('2025-01-29'),
+      date: new Date('2025-01-29').toISOString(),
     };
 
     it('should cache classifications', async () => {
@@ -78,23 +78,23 @@ describe('FairWorkCacheMiddleware', () => {
         { code: 'L1', name: 'Level 1' },
         { code: 'L2', name: 'Level 2' },
       ];
-      const factory = jest.fn().mockResolvedValue(mockClassifications);
+      const factory = jest.fn().mockResolvedValue(mockClassifications: unknown);
 
-      mockCacheService.getOrSet.mockImplementation(async (_, fn) => fn());
+      mockCacheService.getOrSet.mockImplementation(async (_: unknown, fn) => fn());
 
-      const result = await cacheMiddleware.getClassifications(mockParams, factory);
+      const result = await cacheMiddleware.getClassifications(mockParams: unknown, factory);
 
-      expect(result).toEqual(mockClassifications);
+      expect(result: unknown).toEqual(mockClassifications: unknown);
       expect(mockCacheService.getOrSet).toHaveBeenCalledWith(
         expect.stringContaining('classifications'),
-        expect.any(Function),
-        expect.any(Number),
+        expect.any(Function: unknown),
+        expect.any(Number: unknown),
       );
-      expect(factory).toHaveBeenCalledTimes(1);
+      expect(factory: unknown).toHaveBeenCalledTimes(1: unknown);
     });
 
     it('should invalidate classifications cache', async () => {
-      await cacheMiddleware.invalidateClassifications(mockParams);
+      await cacheMiddleware.invalidateClassifications(mockParams: unknown);
 
       expect(mockCacheService.delete).toHaveBeenCalledWith(
         expect.stringContaining('classifications'),
@@ -106,7 +106,7 @@ describe('FairWorkCacheMiddleware', () => {
     const mockParams: RateCalculationRequest = {
       awardCode: 'TEST001',
       classificationCode: 'L1',
-      date: new Date('2025-01-29'),
+      date: new Date('2025-01-29').toISOString(),
       employmentType: 'permanent',
       hours: 38,
     };
@@ -116,19 +116,19 @@ describe('FairWorkCacheMiddleware', () => {
         rate: 30.5,
         components: [{ type: 'base', amount: 25.5 }],
       };
-      const factory = jest.fn().mockResolvedValue(mockResult);
+      const factory = jest.fn().mockResolvedValue(mockResult: unknown);
 
-      mockCacheService.getOrSet.mockImplementation(async (_, fn) => fn());
+      mockCacheService.getOrSet.mockImplementation(async (_: unknown, fn) => fn());
 
-      const result = await cacheMiddleware.calculateRate(mockParams, factory);
+      const result = await cacheMiddleware.calculateRate(mockParams: unknown, factory);
 
-      expect(result).toEqual(mockResult);
+      expect(result: unknown).toEqual(mockResult: unknown);
       expect(mockCacheService.getOrSet).toHaveBeenCalledWith(
         expect.stringContaining('calculate-rate'),
-        expect.any(Function),
-        expect.any(Number),
+        expect.any(Function: unknown),
+        expect.any(Number: unknown),
       );
-      expect(factory).toHaveBeenCalledTimes(1);
+      expect(factory: unknown).toHaveBeenCalledTimes(1: unknown);
     });
   });
 
@@ -137,7 +137,7 @@ describe('FairWorkCacheMiddleware', () => {
       awardCode: 'TEST001',
       classificationCode: 'L1',
       rate: 25.5,
-      date: new Date('2025-01-29'),
+      date: new Date('2025-01-29').toISOString(),
     };
 
     it('should cache rate validations', async () => {
@@ -145,19 +145,19 @@ describe('FairWorkCacheMiddleware', () => {
         isValid: true,
         minimumRate: 20.5,
       };
-      const factory = jest.fn().mockResolvedValue(mockResult);
+      const factory = jest.fn().mockResolvedValue(mockResult: unknown);
 
-      mockCacheService.getOrSet.mockImplementation(async (_, fn) => fn());
+      mockCacheService.getOrSet.mockImplementation(async (_: unknown, fn) => fn());
 
-      const result = await cacheMiddleware.validateRate(mockParams, factory);
+      const result = await cacheMiddleware.validateRate(mockParams: unknown, factory);
 
-      expect(result).toEqual(mockResult);
+      expect(result: unknown).toEqual(mockResult: unknown);
       expect(mockCacheService.getOrSet).toHaveBeenCalledWith(
         expect.stringContaining('validate-rate'),
-        expect.any(Function),
-        expect.any(Number),
+        expect.any(Function: unknown),
+        expect.any(Number: unknown),
       );
-      expect(factory).toHaveBeenCalledTimes(1);
+      expect(factory: unknown).toHaveBeenCalledTimes(1: unknown);
     });
   });
 
@@ -165,10 +165,10 @@ describe('FairWorkCacheMiddleware', () => {
     const awardCode = 'TEST001';
 
     it('should invalidate all caches for an award', async () => {
-      await cacheMiddleware.invalidateAwardCache(awardCode);
+      await cacheMiddleware.invalidateAwardCache(awardCode: unknown);
 
       expect(mockCacheService.deletePattern).toHaveBeenCalledWith(
-        expect.stringContaining(awardCode),
+        expect.stringContaining(awardCode: unknown),
       );
       expect(logger.info).toHaveBeenCalledWith('Invalidated award cache:', {
         awardCode,
@@ -177,9 +177,9 @@ describe('FairWorkCacheMiddleware', () => {
 
     it('should handle errors during award cache invalidation', async () => {
       const error = new Error('Cache error');
-      mockCacheService.deletePattern.mockRejectedValue(error);
+      mockCacheService.deletePattern.mockRejectedValue(error: unknown);
 
-      await expect(cacheMiddleware.invalidateAwardCache(awardCode)).rejects.toThrow(error);
+      await expect(cacheMiddleware.invalidateAwardCache(awardCode: unknown)).rejects.toThrow(error: unknown);
       expect(logger.error).toHaveBeenCalled();
     });
   });
@@ -189,12 +189,12 @@ describe('FairWorkCacheMiddleware', () => {
       const params = {
         awardCode: 'TEST001',
         classificationCode: 'L1',
-        date: new Date('2025-01-29'),
+        date: new Date('2025-01-29').toISOString(),
       };
       const factory = jest.fn();
 
-      await cacheMiddleware.getBaseRate(params, factory);
-      await cacheMiddleware.getBaseRate(params, factory);
+      await cacheMiddleware.getBaseRate(params: unknown, factory);
+      await cacheMiddleware.getBaseRate(params: unknown, factory);
 
       const [firstCall, secondCall] = mockCacheService.getOrSet.mock.calls;
       expect(firstCall[0]).toBe(secondCall[0]);
@@ -205,16 +205,16 @@ describe('FairWorkCacheMiddleware', () => {
       const params1 = {
         awardCode: 'TEST001',
         classificationCode: 'L1',
-        date: new Date('2025-01-29'),
+        date: new Date('2025-01-29').toISOString(),
       };
       const params2 = {
         awardCode: 'TEST001',
         classificationCode: 'L2',
-        date: new Date('2025-01-29'),
+        date: new Date('2025-01-29').toISOString(),
       };
 
-      await cacheMiddleware.getBaseRate(params1, factory);
-      await cacheMiddleware.getBaseRate(params2, factory);
+      await cacheMiddleware.getBaseRate(params1: unknown, factory);
+      await cacheMiddleware.getBaseRate(params2: unknown, factory);
 
       const [firstCall, secondCall] = mockCacheService.getOrSet.mock.calls;
       expect(firstCall[0]).not.toBe(secondCall[0]);

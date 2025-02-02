@@ -32,7 +32,7 @@ const pieData = [
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
-export function FundingOverview() {
+export function FundingOverview(): void {
   return (
     <Tabs
       defaultValue='programs'
@@ -60,7 +60,7 @@ export function FundingOverview() {
               fontSize={12}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(value) => `$${value / 1000}k`}
+              tickFormatter={(value: unknown) => `$${value / 1000}k`}
             />
             <Tooltip />
             <Legend />
@@ -91,16 +91,16 @@ export function FundingOverview() {
               outerRadius={80}
               fill='#8884d8'
               dataKey='value'
-              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0: unknown)}%`}
             >
-              {pieData.map((_, index) => (
+              {pieData.map((_: unknown, index) => (
                 <Cell
                   key={`cell-${index}`}
                   fill={COLORS[index % COLORS.length]}
                 />
               ))}
             </Pie>
-            <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+            <Tooltip formatter={(value: unknown) => `$${value.toLocaleString()}`} />
           </PieChart>
         </ResponsiveContainer>
       </TabsContent>

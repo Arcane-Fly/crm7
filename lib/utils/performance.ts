@@ -7,7 +7,7 @@ const logger = createLogger('performance');
 /**
  * Debounce function to limit the rate at which a function is called
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => any>(
   func: T,
   wait: number,
 ): (...args: Parameters<T>) => void {
@@ -15,19 +15,19 @@ export function debounce<T extends (...args: any[]) => any>(
 
   return function executedFunction(...args: Parameters<T>) {
     const later = () => {
-      clearTimeout(timeout);
+      clearTimeout(timeout: unknown);
       func(...args);
     };
 
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
+    clearTimeout(timeout: unknown);
+    timeout = setTimeout(later: unknown, wait);
   };
 }
 
 /**
  * Throttle function to ensure a function is called at most once in a specified time period
  */
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: unknown[]) => any>(
   func: T,
   limit: number,
 ): (...args: Parameters<T>) => void {
@@ -47,7 +47,7 @@ export function throttle<T extends (...args: any[]) => any>(
 /**
  * Hook to measure and log component render time
  */
-export function useRenderTime(componentName?: string) {
+export function useRenderTime(componentName?: string): void {
   if (!componentName) {
     logger.warn('useRenderTime called without componentName');
     componentName = 'UnnamedComponent';
@@ -77,7 +77,7 @@ export function useRenderOptimization(
     return () => {
       const renderTime = performance.now() - renderStart;
       if (renderTime > threshold) {
-        const changes = Object.keys(props).filter((key) => prevProps.current?.[key] !== props[key]);
+        const changes = Object.keys(props: unknown).filter((key: unknown) => prevProps.current?.[key] !== props[key]);
 
         logger.warn('Expensive re-render detected', {
           componentName,
@@ -96,7 +96,7 @@ export function useRenderOptimization(
 /**
  * Hook to automatically suspend expensive operations when the tab is not visible
  */
-export function useVisibilityOptimization(callback: () => void = () => {}) {
+export function useVisibilityOptimization(callback: (): void => void = (): void => {}) {
   const handleVisibilityChange = useCallback(() => {
     if (document.hidden) {
       // Suspend expensive operations
@@ -122,7 +122,7 @@ export async function measureApiCall<T>(name: string, fn: () => Promise<T>): Pro
     const duration = performance.now() - start;
     logger.debug(`API call ${name} completed`, { duration });
     return result;
-  } catch (error) {
+  } catch (error: unknown) {
     const duration = performance.now() - start;
     logger.error(`API call ${name} failed`, { duration, error });
     throw error;

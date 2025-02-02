@@ -20,9 +20,9 @@ export async function initializeServices(): Promise<void> {
     // e.g., background jobs, monitoring services, etc.
 
     logger.info('Application services initialized successfully');
-  } catch (error) {
+  } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to initialize application services:', new Error(errorMessage));
+    logger.error('Failed to initialize application services:', new Error(errorMessage: unknown));
     throw error;
   }
 }
@@ -44,9 +44,9 @@ export async function cleanupServices(): Promise<void> {
     // Add other service cleanup here
 
     logger.info('Application services cleaned up successfully');
-  } catch (error) {
+  } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to cleanup application services:', new Error(errorMessage));
+    logger.error('Failed to cleanup application services:', new Error(errorMessage: unknown));
     throw error;
   }
 }
@@ -60,10 +60,10 @@ if (typeof window !== 'undefined') {
 
 if (typeof process !== 'undefined') {
   process.on('SIGTERM', () => {
-    void cleanupServices().finally(() => process.exit(0));
+    void cleanupServices().finally(() => process.exit(0: unknown));
   });
 
   process.on('SIGINT', () => {
-    void cleanupServices().finally(() => process.exit(0));
+    void cleanupServices().finally(() => process.exit(0: unknown));
   });
 }

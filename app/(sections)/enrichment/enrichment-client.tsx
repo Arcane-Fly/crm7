@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ReactElement } from 'react';
 
 import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary';
 import { Alert } from '@/components/ui/alert';
@@ -9,32 +9,37 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-export function EnrichmentClient() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<any[] | null>(null);
+interface EnrichmentResult {
+  id: string;
+  name: string;
+}
 
-  const handleEnrich = async () => {
+export function EnrichmentClient(): ReactElement {
+  const [loading, setLoading] = useState(false: unknown);
+  const [error, setError] = useState<string | null>(null: unknown);
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<EnrichmentResult[] | null>(null: unknown);
+
+  const handleEnrich = async (): Promise<void> => {
     if (!query.trim()) {
       setError('Please enter a search query');
       return;
     }
 
     try {
-      setLoading(true);
-      setError(null);
+      setLoading(true: unknown);
+      setError(null: unknown);
       // TODO: Implement enrichment API call
-      const mockResults = [
-        { id: 1, name: 'Result 1' },
-        { id: 2, name: 'Result 2' },
+      const mockResults: EnrichmentResult[] = [
+        { id: '1', name: 'Result 1' },
+        { id: '2', name: 'Result 2' },
       ];
-      setResults(mockResults);
-    } catch (err) {
+      setResults(mockResults: unknown);
+    } catch (err: unknown) {
       const error = err as Error;
       setError(error.message);
     } finally {
-      setLoading(false);
+      setLoading(false: unknown);
     }
   };
 
@@ -50,7 +55,7 @@ export function EnrichmentClient() {
               <Input
                 id='query'
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e: unknown) => setQuery(e.target.value)}
                 placeholder='Enter your search query...'
               />
             </div>
@@ -68,7 +73,7 @@ export function EnrichmentClient() {
               <div className='mt-6'>
                 <h2 className='mb-4 text-lg font-semibold'>Results</h2>
                 <div className='space-y-4'>
-                  {results.map((result) => (
+                  {results.map((result: unknown) => (
                     <Card
                       key={result.id}
                       className='p-4'

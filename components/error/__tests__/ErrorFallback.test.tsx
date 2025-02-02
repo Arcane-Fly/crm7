@@ -42,7 +42,7 @@ describe('ErrorFallback', () => {
     );
 
     fireEvent.click(screen.getByText('Try again'));
-    expect(mockResetErrorBoundary).toHaveBeenCalledTimes(1);
+    expect(mockResetErrorBoundary: unknown).toHaveBeenCalledTimes(1: unknown);
   });
 
   it('has correct ARIA attributes', () => {

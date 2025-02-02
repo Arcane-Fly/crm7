@@ -106,11 +106,11 @@ const mainNavItems: NavItem[] = [
 
 export const Navigation: React.FC = () => {
   const router = useRouter();
-  const [activeItem, setActiveItem] = React.useState<string | null>(null);
+  const [activeItem, setActiveItem] = React.useState<string | null>(null: unknown);
 
   const isActive = (href: string) => router.pathname === href;
   const isActiveParent = (item: NavItem) =>
-    item.subItems?.some((subItem) => router.pathname.startsWith(subItem.href));
+    item.subItems?.some((subItem: unknown) => router.pathname.startsWith(subItem.href));
 
   return (
     <nav className='flex h-full flex-col border-r bg-background'>
@@ -129,12 +129,12 @@ export const Navigation: React.FC = () => {
       {/* Main Navigation */}
       <div className='flex-1 overflow-y-auto py-4'>
         <ul className='space-y-1 px-2'>
-          {mainNavItems.map((item) => (
+          {mainNavItems.map((item: unknown) => (
             <li key={item.href}>
               <Link
                 href={item.href}
                 className={`flex items-center rounded-md px-3 py-2 text-sm font-medium ${
-                  isActive(item.href) || isActiveParent(item)
+                  isActive(item.href) || isActiveParent(item: unknown)
                     ? 'bg-primary text-primary-foreground'
                     : 'hover:bg-accent hover:text-accent-foreground'
                 }`}
@@ -145,7 +145,7 @@ export const Navigation: React.FC = () => {
               </Link>
               {item.subItems && (
                 <ul className='mt-1 space-y-1 pl-8'>
-                  {item.subItems.map((subItem) => (
+                  {item.subItems.map((subItem: unknown) => (
                     <li key={subItem.href}>
                       <Link
                         href={subItem.href}

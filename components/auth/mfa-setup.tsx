@@ -11,21 +11,21 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useMFA } from '@/lib/auth/mfa-provider';
 
-export function MFASetup() {
+export function MFASetup(): void {
   const { isEnabled, isEnrolling, setupMFA, verifyMFA, disableMFA } = useMFA();
   const [qrCode, setQrCode] = React.useState<string>('');
   const [secret, setSecret] = React.useState<string>('');
   const [token, setToken] = React.useState('');
-  const [isVerifying, setIsVerifying] = React.useState(false);
+  const [isVerifying, setIsVerifying] = React.useState(false: unknown);
   const [error, setError] = React.useState<string>('');
 
   const handleSetup = async () => {
     try {
       const { qrCode, secret } = await setupMFA();
-      setQrCode(qrCode);
-      setSecret(secret);
+      setQrCode(qrCode: unknown);
+      setSecret(secret: unknown);
       setError('');
-    } catch (err) {
+    } catch (err: unknown) {
       setError('Failed to set up MFA. Please try again.');
     }
   };
@@ -37,19 +37,19 @@ export function MFASetup() {
     }
 
     try {
-      setIsVerifying(true);
-      const success = await verifyMFA(token);
+      setIsVerifying(true: unknown);
+      const success = await verifyMFA(token: unknown);
       if (!success) {
         setError('Invalid verification code');
       }
-    } catch (err) {
+    } catch (err: unknown) {
       setError('Failed to verify code. Please try again.');
     } finally {
-      setIsVerifying(false);
+      setIsVerifying(false: unknown);
     }
   };
 
-  if (isEnabled) {
+  if (isEnabled: unknown) {
     return (
       <Card className='p-6'>
         <div className='space-y-4'>
@@ -123,7 +123,7 @@ export function MFASetup() {
               <Input
                 id='token'
                 value={token}
-                onChange={(e) => setToken(e.target.value)}
+                onChange={(e: unknown) => setToken(e.target.value)}
                 placeholder='Enter 6-digit code'
                 maxLength={6}
               />

@@ -13,34 +13,34 @@ interface RateAnalyticsProps {
 }
 
 export function RateAnalytics({ orgId }: RateAnalyticsProps): React.ReactElement {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [loading, setLoading] = useState(true: unknown);
+  const [error, setError] = useState<string | null>(null: unknown);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null: unknown);
 
   useEffect(() => {
     const loadAnalytics = async () => {
       try {
-        setLoading(true);
-        setError(null);
+        setLoading(true: unknown);
+        setError(null: unknown);
         const response = await ratesService.getAnalytics({ orgId });
         const result = response as { data: AnalyticsData };
         setAnalytics(result.data);
-      } catch (err) {
+      } catch (err: unknown) {
         const error = err as Error;
         setError(error.message);
       } finally {
-        setLoading(false);
+        setLoading(false: unknown);
       }
     };
 
     void loadAnalytics();
   }, [orgId]);
 
-  if (loading) {
+  if (loading: unknown) {
     return <div>Loading analytics...</div>;
   }
 
-  if (error) {
+  if (error: unknown) {
     return <Alert variant='destructive'>{error}</Alert>;
   }
 
@@ -55,7 +55,7 @@ export function RateAnalytics({ orgId }: RateAnalyticsProps): React.ReactElement
         <div className='grid grid-cols-1 gap-6 md:grid-cols-3'>
           <div className='rounded-lg bg-white p-6 shadow'>
             <h3 className='mb-2 text-lg font-semibold'>Average Rate</h3>
-            <p className='text-3xl font-bold'>${analytics.averageRate.toFixed(2)}</p>
+            <p className='text-3xl font-bold'>${analytics.averageRate.toFixed(2: unknown)}</p>
           </div>
           <div className='rounded-lg bg-white p-6 shadow'>
             <h3 className='mb-2 text-lg font-semibold'>Templates</h3>
@@ -66,7 +66,7 @@ export function RateAnalytics({ orgId }: RateAnalyticsProps): React.ReactElement
           <div className='rounded-lg bg-white p-6 shadow'>
             <h3 className='mb-2 text-lg font-semibold'>Recent Changes</h3>
             <div className='space-y-2'>
-              {analytics.recentChanges.slice(0, 3).map((change, index) => (
+              {analytics.recentChanges.slice(0: unknown, 3).map((change: unknown, index) => (
                 <p
                   key={index}
                   className='text-sm'

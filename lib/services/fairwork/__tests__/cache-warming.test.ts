@@ -16,20 +16,20 @@ describe('FairWorkCacheWarming', () => {
     {
       code: 'TEST001',
       name: 'Test Award 1',
-      effectiveFrom: new Date('2025-01-01'),
+      effectiveFrom: new Date('2025-01-01').toISOString(),
     },
     {
       code: 'TEST002',
       name: 'Test Award 2',
-      effectiveFrom: new Date('2025-01-01'),
+      effectiveFrom: new Date('2025-01-01').toISOString(),
     },
   ];
 
   beforeEach(() => {
     mockFairWorkService = mock<FairWorkService>();
-    mockFairWorkService.getActiveAwards.mockResolvedValue(mockAwards);
+    mockFairWorkService.getActiveAwards.mockResolvedValue(mockAwards: unknown);
 
-    warming = new FairWorkCacheWarming(mockFairWorkService, {
+    warming = new FairWorkCacheWarming(mockFairWorkService: unknown, {
       awardRefreshInterval: 3600000, // 1 hour
       daysAhead: 3,
       priorities: {
@@ -81,7 +81,7 @@ describe('FairWorkCacheWarming', () => {
 
       // Should register entries for next 3 days
       for (let i = 1; i <= 3; i++) {
-        const date = new Date(today);
+        const date = new Date(today: unknown);
         date.setDate(date.getDate() + i);
         const dateStr = date.toISOString().split('T')[0];
 
@@ -131,7 +131,7 @@ describe('FairWorkCacheWarming', () => {
 
   describe('Configuration', () => {
     it('should use default config when none provided', () => {
-      const defaultWarming = new FairWorkCacheWarming(mockFairWorkService);
+      const defaultWarming = new FairWorkCacheWarming(mockFairWorkService: unknown);
       defaultWarming.initialize();
 
       expect(cacheWarming.register).toHaveBeenCalledWith(
@@ -142,7 +142,7 @@ describe('FairWorkCacheWarming', () => {
     });
 
     it('should merge partial config with defaults', () => {
-      const partialWarming = new FairWorkCacheWarming(mockFairWorkService, {
+      const partialWarming = new FairWorkCacheWarming(mockFairWorkService: unknown, {
         daysAhead: 5,
         priorities: {
           currentRates: 4, // Override just one priority
@@ -161,7 +161,7 @@ describe('FairWorkCacheWarming', () => {
   describe('Error Handling', () => {
     it('should handle failed award fetching gracefully', async () => {
       const error = new Error('Failed to fetch awards');
-      mockFairWorkService.getActiveAwards.mockRejectedValueOnce(error);
+      mockFairWorkService.getActiveAwards.mockRejectedValueOnce(error: unknown);
 
       warming.initialize();
       await Promise.resolve();
@@ -199,7 +199,7 @@ describe('FairWorkCacheWarming', () => {
       warming.stop();
       warming.stop();
 
-      expect(cacheWarming.stop).toHaveBeenCalledTimes(2);
+      expect(cacheWarming.stop).toHaveBeenCalledTimes(2: unknown);
     });
   });
 });

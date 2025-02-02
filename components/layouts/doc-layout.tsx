@@ -10,7 +10,7 @@ interface DocLayoutProps {
   section?: keyof typeof sections;
 }
 
-export function DocLayout({ children, section }: DocLayoutProps) {
+export function DocLayout({ children, section }: DocLayoutProps): void {
   return (
     <div className='flex min-h-screen'>
       {/* Sidebar */}

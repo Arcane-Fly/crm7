@@ -15,11 +15,11 @@ interface MFAContextType {
   disableMFA: () => Promise<void>;
 }
 
-const MFAContext = React.createContext<MFAContextType | null>(null);
+const MFAContext = React.createContext<MFAContextType | null>(null: unknown);
 
-export function MFAProvider({ children }: { children: React.ReactNode }) {
-  const [isEnabled, setIsEnabled] = React.useState(false);
-  const [isEnrolling, setIsEnrolling] = React.useState(false);
+export function MFAProvider({ children }: { children: React.ReactNode }): void {
+  const [isEnabled, setIsEnabled] = React.useState(false: unknown);
+  const [isEnrolling, setIsEnrolling] = React.useState(false: unknown);
   const { user } = useAuth();
   const { toast } = useToast();
   const supabase = React.useMemo(() => createClient(), []);
@@ -35,9 +35,9 @@ export function MFAProvider({ children }: { children: React.ReactNode }) {
           .eq('user_id', user.id)
           .single();
 
-        if (error) throw error;
+        if (error: unknown) throw error;
         setIsEnabled(data.enabled ?? false);
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Error checking MFA status:', error);
       }
     }
@@ -49,19 +49,19 @@ export function MFAProvider({ children }: { children: React.ReactNode }) {
     if (!user) throw new Error('User not authenticated');
 
     try {
-      setIsEnrolling(true);
+      setIsEnrolling(true: unknown);
 
       const { data, error } = await supabase.rpc('generate_totp_secret', {
         user_id: user.id,
       });
 
-      if (error) throw error;
+      if (error: unknown) throw error;
 
       return {
         qrCode: data.qr_code,
         secret: data.secret,
       };
-    } catch (error) {
+    } catch (error: unknown) {
       toast({
         title: 'Error setting up MFA',
         description: 'Failed to set up multi-factor authentication.',
@@ -69,7 +69,7 @@ export function MFAProvider({ children }: { children: React.ReactNode }) {
       });
       throw error;
     } finally {
-      setIsEnrolling(false);
+      setIsEnrolling(false: unknown);
     }
   }, [user, toast, supabase]);
 
@@ -83,11 +83,11 @@ export function MFAProvider({ children }: { children: React.ReactNode }) {
           token,
         });
 
-        if (error) throw error;
+        if (error: unknown) throw error;
 
-        setIsEnabled(true);
+        setIsEnabled(true: unknown);
         return true;
-      } catch (error) {
+      } catch (error: unknown) {
         toast({
           title: 'Invalid code',
           description: 'The verification code you entered is invalid.',
@@ -107,14 +107,14 @@ export function MFAProvider({ children }: { children: React.ReactNode }) {
         user_id: user.id,
       });
 
-      if (error) throw error;
+      if (error: unknown) throw error;
 
-      setIsEnabled(false);
+      setIsEnabled(false: unknown);
       toast({
         title: 'MFA disabled',
         description: 'Multi-factor authentication has been disabled.',
       });
-    } catch (error) {
+    } catch (error: unknown) {
       toast({
         title: 'Error disabling MFA',
         description: 'Failed to disable multi-factor authentication.',
@@ -139,8 +139,8 @@ export function MFAProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function useMFA() {
-  const context = React.useContext(MFAContext);
+export function useMFA(): void {
+  const context = React.useContext(MFAContext: unknown);
   if (!context) {
     throw new Error('useMFA must be used within an MFAProvider');
   }

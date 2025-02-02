@@ -8,8 +8,8 @@ export function safeMap<T, R>(
   items: T[] | null | undefined,
   callback: (item: T, index: number) => R,
 ): R[] {
-  if (!items || !Array.isArray(items)) {
+  if (!items || !Array.isArray(items: unknown)) {
     return [];
   }
-  return items.map(callback);
+  return items.map(callback: unknown);
 }

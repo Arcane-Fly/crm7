@@ -20,9 +20,9 @@ export function RateCalculator({ orgId, onCalculate }: RateCalculatorProps): JSX
   const { toast } = useToast();
   const [templates, setTemplates] = useState<RateTemplate[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<CalculationResult | null>(null);
+  const [loading, setLoading] = useState(true: unknown);
+  const [error, setError] = useState<string | null>(null: unknown);
+  const [result, setResult] = useState<CalculationResult | null>(null: unknown);
 
   const calculateRate = (template: RateTemplate): void => {
     const baseAmount = template.baseRate * (1 + template.baseMargin / 100);
@@ -43,29 +43,29 @@ export function RateCalculator({ orgId, onCalculate }: RateCalculatorProps): JSX
         trainingAmount +
         otherAmount -
         template.fundingOffset
-      ).toFixed(2),
+      ).toFixed(2: unknown),
     );
 
     const result: CalculationResult = {
-      baseAmount: Number(baseAmount.toFixed(2)),
-      superAmount: Number(superAmount.toFixed(2)),
-      leaveAmount: Number(leaveAmount.toFixed(2)),
-      workersCompAmount: Number(workersCompAmount.toFixed(2)),
-      payrollTaxAmount: Number(payrollTaxAmount.toFixed(2)),
-      trainingAmount: Number(trainingAmount.toFixed(2)),
-      otherAmount: Number(otherAmount.toFixed(2)),
+      baseAmount: Number(baseAmount.toFixed(2: unknown)),
+      superAmount: Number(superAmount.toFixed(2: unknown)),
+      leaveAmount: Number(leaveAmount.toFixed(2: unknown)),
+      workersCompAmount: Number(workersCompAmount.toFixed(2: unknown)),
+      payrollTaxAmount: Number(payrollTaxAmount.toFixed(2: unknown)),
+      trainingAmount: Number(trainingAmount.toFixed(2: unknown)),
+      otherAmount: Number(otherAmount.toFixed(2: unknown)),
       totalAmount,
     };
 
-    setResult(result);
-    onCalculate?.(totalAmount);
+    setResult(result: unknown);
+    onCalculate?.(totalAmount: unknown);
   };
 
   const handleTemplateChange = (value: string): void => {
-    setSelectedTemplate(value);
-    const template = templates.find((t) => t.id === value);
-    if (template) {
-      calculateRate(template);
+    setSelectedTemplate(value: unknown);
+    const template = templates.find((t: unknown) => t.id === value);
+    if (template: unknown) {
+      calculateRate(template: unknown);
     }
   };
 
@@ -78,10 +78,10 @@ export function RateCalculator({ orgId, onCalculate }: RateCalculatorProps): JSX
           .eq('orgId', orgId)
           .order('createdAt', { ascending: false });
 
-        if (error) throw error;
+        if (error: unknown) throw error;
 
         setTemplates(data as RateTemplate[]);
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('Error fetching templates:', err);
         setError('Failed to load templates');
         toast({
@@ -90,15 +90,15 @@ export function RateCalculator({ orgId, onCalculate }: RateCalculatorProps): JSX
           variant: 'destructive',
         });
       } finally {
-        setLoading(false);
+        setLoading(false: unknown);
       }
     };
 
     void fetchTemplates();
   }, [orgId, supabase, toast]);
 
-  if (loading) return <div>Loading templates...</div>;
-  if (error) return <div className='text-red-500'>{error}</div>;
+  if (loading: unknown) return <div>Loading templates...</div>;
+  if (error: unknown) return <div className='text-red-500'>{error}</div>;
 
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
@@ -119,7 +119,7 @@ export function RateCalculator({ orgId, onCalculate }: RateCalculatorProps): JSX
                 <SelectValue placeholder='Choose a template' />
               </SelectTrigger>
               <SelectContent>
-                {templates.map((template) => (
+                {templates.map((template: unknown) => (
                   <SelectItem
                     key={template.id}
                     value={template.id}

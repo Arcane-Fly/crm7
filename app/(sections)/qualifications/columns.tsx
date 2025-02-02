@@ -2,6 +2,7 @@
 
 import type { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
+import type { ReactElement } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -21,23 +22,38 @@ export type Qualification = {
   level: number;
   duration: number;
   status: 'active' | 'archived';
-  market_data?: Record<string, any>;
+  market_data?: Record<string, unknown>;
+};
+
+interface SortableColumnProps {
+  column: {
+    toggleSorting: (descending: boolean) => void;
+    getIsSorted: () => 'asc' | 'desc' | false;
+  };
+  title: string;
+}
+
+const SortableColumnHeader = ({ column, title }: SortableColumnProps): ReactElement => {
+  return (
+    <Button
+      variant='ghost'
+      onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+    >
+      {title}
+      <ArrowUpDown className='ml-2 h-4 w-4' />
+    </Button>
+  );
 };
 
 export const columns: ColumnDef<Qualification>[] = [
   {
     accessorKey: 'title',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant='ghost'
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Title
-          <ArrowUpDown className='ml-2 h-4 w-4' />
-        </Button>
-      );
-    },
+    header: ({ column }) => (
+      <SortableColumnHeader
+        column={column}
+        title='Title'
+      />
+    ),
   },
   {
     accessorKey: 'code',
@@ -49,12 +65,12 @@ export const columns: ColumnDef<Qualification>[] = [
   },
   {
     accessorKey: 'duration',
-    header: 'Duration (months)',
+    header: 'Duration (months: unknown)',
   },
   {
     accessorKey: 'status',
     header: 'Status',
-    cell: ({ row }) => {
+    cell: ({ row }): ReactElement => {
       const status = row.getValue('status') as 'active' | 'archived';
       return <Badge variant={status === 'active' ? 'default' : 'secondary'}>{status}</Badge>;
     },
@@ -62,14 +78,14 @@ export const columns: ColumnDef<Qualification>[] = [
   {
     id: 'market_data',
     header: 'Market Data',
-    cell: ({ row }) => {
+    cell: ({ row }): ReactElement | null => {
       const marketData = row.original.market_data;
       return marketData ? <Badge variant='outline'>Enriched</Badge> : null;
     },
   },
   {
     id: 'actions',
-    cell: ({ row }) => {
+    cell: ({ row }): ReactElement => {
       const qualification = row.original;
 
       return (

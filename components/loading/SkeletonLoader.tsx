@@ -6,14 +6,14 @@ type SkeletonLoaderProps = {
   lineClassName?: string;
 };
 
-export function SkeletonLoader({ lines = 3, className, lineClassName }: SkeletonLoaderProps) {
+export function SkeletonLoader({ lines = 3, className, lineClassName }: SkeletonLoaderProps): void {
   return (
     <div
       role='status'
       aria-label='Loading content'
       className={cn('animate-pulse space-y-2', className)}
     >
-      {Array.from({ length: lines }).map((_, i) => (
+      {Array.from({ length: lines }).map((_: unknown, i) => (
         <div
           key={i}
           className={cn(

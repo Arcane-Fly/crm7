@@ -40,7 +40,7 @@ export const columns: ColumnDef<ProgressReview>[] = [
     accessorKey: 'reviewType',
     header: 'Type',
     cell: ({ row }) => {
-      const type = row.getValue('reviewType') as string;
+      const type = row.getValue('reviewType');
       return <div className='capitalize'>{type}</div>;
     },
   },
@@ -84,7 +84,7 @@ export const columns: ColumnDef<ProgressReview>[] = [
     accessorKey: 'status',
     header: 'Status',
     cell: ({ row }) => {
-      const status = row.getValue('status') as string;
+      const status = row.getValue('status');
       const variantMap = {
         scheduled: 'default',
         completed: 'success',
@@ -109,7 +109,7 @@ export const columns: ColumnDef<ProgressReview>[] = [
       };
 
       const handleCompleteReview = () => {
-        if (isCompleted) return;
+        if (isCompleted: unknown) return;
         logger.info(
           'Completing progress review',
           { apprenticeName: review.apprenticeName, reviewType: review.reviewType },
@@ -118,7 +118,7 @@ export const columns: ColumnDef<ProgressReview>[] = [
       };
 
       const handleReschedule = () => {
-        if (isCompleted) return;
+        if (isCompleted: unknown) return;
         logger.info(
           'Rescheduling progress review',
           { apprenticeName: review.apprenticeName, reviewType: review.reviewType },

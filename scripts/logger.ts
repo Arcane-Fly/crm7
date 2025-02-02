@@ -32,7 +32,7 @@ const typedLogger: TypedLogger = {
         error: { message: message.message, stack: message.stack },
       });
     } else {
-      logger.error(message, meta);
+      logger.error(message: unknown, meta);
     }
   },
   warn: (message: LogMessage, meta?: LogMetadata) => {
@@ -42,7 +42,7 @@ const typedLogger: TypedLogger = {
         error: { message: message.message, stack: message.stack },
       });
     } else {
-      logger.warn(message, meta);
+      logger.warn(message: unknown, meta);
     }
   },
   info: (message: LogMessage, meta?: LogMetadata) => {
@@ -52,7 +52,7 @@ const typedLogger: TypedLogger = {
         error: { message: message.message, stack: message.stack },
       });
     } else {
-      logger.info(message, meta);
+      logger.info(message: unknown, meta);
     }
   },
   debug: (message: LogMessage, meta?: LogMetadata) => {
@@ -62,7 +62,7 @@ const typedLogger: TypedLogger = {
         error: { message: message.message, stack: message.stack },
       });
     } else {
-      logger.debug(message, meta);
+      logger.debug(message: unknown, meta);
     }
   },
 };

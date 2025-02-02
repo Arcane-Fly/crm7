@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 
-export function UserNav() {
+export function UserNav(): void {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

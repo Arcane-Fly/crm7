@@ -18,7 +18,7 @@ interface ErrorBoundaryProps {
 
 export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
-    super(props);
+    super(props: unknown);
     this.state = { hasError: false, error: null };
   }
 
@@ -34,7 +34,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
     // Call onError prop if provided
     if (this.props.onError) {
-      this.props.onError(error, errorInfo);
+      this.props.onError(error: unknown, errorInfo);
     }
   }
 
