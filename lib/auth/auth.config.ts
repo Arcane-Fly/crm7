@@ -1,81 +1,53 @@
-import { Auth0Client } from '@auth0/auth0-spa-js';
-import { createClient } from '@supabase/supabase-js';
-import { logger } from '@/lib/utils/logger';
+import { logger } from '@/lib/logger';
 
 interface AuthConfig {
-  supabaseUrl: string;
-  supabaseAnonKey: string;
-  auth0Domain: string;
-  auth0ClientId: string;
-  auth0Audience?: string;
+  apiUrl: string;
+  clientId: string;
+  clientSecret: string;
+  redirectUri: string;
+  scope: string;
 }
 
-function validateConfig(): AuthConfig {
-  const config: Partial<AuthConfig> = {
-    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    auth0Domain: process.env.NEXT_PUBLIC_AUTH0_DOMAIN,
-    auth0ClientId: process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID,
-    auth0Audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-  };
-
-  const missingVars = Object.entries(config: unknown)
-    .filter(([key, value]) => !value && key !== 'auth0Audience')
-    .map(([key]) => key);
-
-  if (missingVars.length > 0) {
-    const error = `Missing required environment variables: ${missingVars.join(', ')}`;
-    logger.error(error: unknown);
-    throw new Error(error: unknown);
-  }
-
-  return config as AuthConfig;
-}
-
-class AuthService {
+export class AuthService {
   private static instance: AuthService;
-  public readonly supabase;
-  public readonly auth0;
+  private config: AuthConfig;
 
   private constructor(config: AuthConfig) {
-    // Initialize Supabase client
-    this.supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
-      auth: {
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: true,
-      },
-    });
+    this.config = config;
+  }
 
-    // Initialize Auth0 client
-    this.auth0 = new Auth0Client({
-      domain: config.auth0Domain,
-      clientId: config.auth0ClientId,
-      authorizationParams: {
-        redirect_uri: typeof window !== 'undefined' ? window.location.origin : '',
-        audience: config.auth0Audience,
-        scope: 'openid profile email',
-      },
-      cacheLocation: 'localstorage',
-      useRefreshTokens: true,
-    });
+  public static validateConfig(config: AuthConfig): string | null {
+    const missingVars = Object.entries(config)
+      .filter(([_, value]) => !value)
+      .map(([key]) => key);
 
-    // Log initialization
-    logger.info('Auth service initialized', {
-      supabaseUrl: config.supabaseUrl,
-      auth0Domain: config.auth0Domain,
-    });
+    if (missingVars.length > 0) {
+      const error = `Missing required auth configuration: ${missingVars.join(', ')}`;
+      logger.error(error);
+      throw new Error(error);
+    }
+
+    return null;
   }
 
   public static getInstance(): AuthService {
     if (!AuthService.instance) {
-      const config = validateConfig();
-      AuthService.instance = new AuthService(config: unknown);
+      const config = {
+        apiUrl: process.env.AUTH_API_URL ?? '',
+        clientId: process.env.AUTH_CLIENT_ID ?? '',
+        clientSecret: process.env.AUTH_CLIENT_SECRET ?? '',
+        redirectUri: process.env.AUTH_REDIRECT_URI ?? '',
+        scope: process.env.AUTH_SCOPE ?? '',
+      };
+
+      AuthService.validateConfig(config);
+      AuthService.instance = new AuthService(config);
     }
+
     return AuthService.instance;
   }
-}
 
-// Export singleton instance
-const authService = AuthService.getInstance();
-export const { supabase, auth0 } = authService;
+  public getConfig(): AuthConfig {
+    return this.config;
+  }
+}

@@ -6,6 +6,8 @@ import { prisma } from '@/lib/prisma';
 import type { ApiResponse } from '@/lib/types/api';
 import { logger } from '@/lib/utils/logger';
 
+const log = logger.createLogger('auth-middleware');
+
 /**
  * Authentication middleware for API routes
  */
@@ -40,7 +42,7 @@ export async function withAuth<T>(
   ) => Promise<NextResponse<ApiResponse<T>>>,
 ): Promise<NextResponse<ApiResponse<T>>> {
   try {
-    const session = await getSession(req);
+    const session = await getSession();
 
     if (!session?.user?.email) {
       throw new AuthError('Unauthorized access attempt', 401, {
@@ -66,13 +68,13 @@ export async function withAuth<T>(
     return handler(authenticatedReq, context);
   } catch (error) {
     if (error instanceof AuthError) {
-      logger.warn(error.message, error.context);
+      log.warn(error.message, error.context);
       return NextResponse.json({ error: error.message } as ApiResponse<T>, {
         status: error.statusCode,
       });
     }
 
-    logger.error('Authentication error', { error });
+    log.error('Authentication error', { error });
     return NextResponse.json({ error: 'Internal server error' } as ApiResponse<T>, { status: 500 });
   }
 }

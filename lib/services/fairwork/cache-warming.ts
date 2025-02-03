@@ -1,162 +1,107 @@
-import { cacheWarming } from '@/lib/services/cache/warming';
+import { type FairWorkService } from '../fairwork';
+import { CacheService } from '../cache/cache-service';
+import { logger } from '@/lib/logger';
 
-import { FairWorkService } from './fairwork-service';
-import type { GetClassificationsParams } from './types';
-
-interface WarmingConfig {
-  // How often to refresh award rates (in milliseconds)
-  awardRefreshInterval?: number;
-  // How many days ahead to pre-warm daily rates
-  daysAhead?: number;
-  // Priority for different types of cache entries
-  priorities?: {
-    currentRates?: number;
-    futureRates?: number;
-    classifications?: number;
-    templates?: number;
-  };
+interface CacheWarmingConfig {
+  interval: number;
+  maxConcurrent: number;
+  retryDelay: number;
 }
 
-const DEFAULT_CONFIG: Required<WarmingConfig> = {
-  awardRefreshInterval: 24 * 60 * 60 * 1000, // 24 hours
-  daysAhead: 7, // Pre-warm a week ahead
-  priorities: {
-    currentRates: 3, // Highest priority
-    futureRates: 2,
-    classifications: 2,
-    templates: 1,
-  },
-};
-
 export class FairWorkCacheWarming {
+  private readonly cache: CacheService;
   private readonly fairWorkService: FairWorkService;
-  private readonly config: Required<WarmingConfig>;
+  private isWarming = false;
+  private lastWarmTime = 0;
 
-  constructor(fairWorkService: FairWorkService, config: WarmingConfig = {}) {
+  constructor(
+    fairWorkService: FairWorkService,
+    private readonly config: CacheWarmingConfig
+  ) {
     this.fairWorkService = fairWorkService;
-    this.config = {
-      ...DEFAULT_CONFIG,
-      ...config,
-      priorities: {
-        ...DEFAULT_CONFIG.priorities,
-        ...config.priorities,
-      },
+    this.cache = new CacheService({
+      keyPrefix: 'fairwork',
+      defaultTtl: 3600,
+    });
+  }
+
+  async warmCache(): Promise<void> {
+    if (this.isWarming) {
+      logger.warn('Cache warming already in progress');
+      return;
+    }
+
+    try {
+      this.isWarming = true;
+
+      const params = this.getDateRange();
+      await Promise.all([
+        this.warmClassifications(params),
+        this.warmRates(params),
+        this.warmFutureRates(params),
+      ]);
+
+      this.lastWarmTime = Date.now();
+    } catch (error) {
+      logger.error('Failed to warm cache:', error);
+    } finally {
+      this.isWarming = false;
+    }
+  }
+
+  private async warmClassifications(params: Record<string, unknown>): Promise<void> {
+    try {
+      await this.cache.set(
+        'classifications',
+        await this.fairWorkService.getClassifications(params),
+        3600
+      );
+    } catch (error) {
+      logger.error('Failed to warm classifications cache:', error);
+    }
+  }
+
+  private async warmRates(params: Record<string, unknown>): Promise<void> {
+    try {
+      await this.cache.set(
+        'rates',
+        await this.fairWorkService.getRates(params),
+        3600
+      );
+    } catch (error) {
+      logger.error('Failed to warm rates cache:', error);
+    }
+  }
+
+  private async warmFutureRates(params: Record<string, unknown>): Promise<void> {
+    try {
+      await this.cache.set(
+        'future-rates',
+        await this.fairWorkService.getFutureRates(params),
+        3600
+      );
+    } catch (error) {
+      logger.error('Failed to warm future rates cache:', error);
+    }
+  }
+
+  private getDateRange(): Record<string, string> {
+    const today = new Date();
+    const date = new Date();
+    date.setMonth(date.getMonth() + 3);
+
+    return {
+      startDate: today.toISOString(),
+      endDate: date.toISOString(),
     };
   }
 
-  public initialize(): void {
-    // Register cache warming for current rates
-    this.registerCurrentRates();
-
-    // Register cache warming for future rates
-    this.registerFutureRates();
-
-    // Register cache warming for classifications
-    this.registerClassifications();
-
-    // Register cache warming for templates
-    this.registerTemplates();
-
-    // Start the warming process
-    cacheWarming.start();
+  start(): void {
+    void this.warmCache();
+    setInterval(() => void this.warmCache(), this.config.interval);
   }
 
-  private registerCurrentRates(): void {
-    const { fairWorkService } = this;
-    const priority = this.config.priorities.currentRates;
-
-    // Get active awards
-    fairWorkService.getActiveAwards().then((awards: unknown) => {
-      awards.forEach((award: unknown) => {
-        // Register warming for each award's current rates
-        cacheWarming.register({
-          key: `rates:${award.code}:current`,
-          factory: () => fairWorkService.getCurrentRates(award.code),
-          priority,
-          ttl: this.config.awardRefreshInterval,
-        });
-
-        // Register warming for each award's classifications
-        const params: GetClassificationsParams = {
-          awardCode: award.code,
-          includeInactive: false,
-        };
-
-        cacheWarming.register({
-          key: `classifications:${award.code}`,
-          factory: () => fairWorkService.getClassifications(params: unknown),
-          priority: this.config.priorities.classifications,
-          ttl: this.config.awardRefreshInterval,
-        });
-      });
-    });
-  }
-
-  private registerFutureRates(): void {
-    const { fairWorkService } = this;
-    const priority = this.config.priorities.futureRates;
-
-    // Pre-warm rates for future dates
-    fairWorkService.getActiveAwards().then((awards: unknown) => {
-      const today = new Date();
-      const dates = Array.from({ length: this.config.daysAhead }, (_: unknown, i) => {
-        const date = new Date(today: unknown);
-        date.setDate(date.getDate() + i + 1);
-        return date;
-      });
-
-      awards.forEach((award: unknown) => {
-        dates.forEach((date: unknown) => {
-          const dateStr = date.toISOString().split('T')[0];
-          cacheWarming.register({
-            key: `rates:${award.code}:${dateStr}`,
-            factory: () => fairWorkService.getRatesForDate(award.code, date),
-            priority,
-            ttl: this.config.awardRefreshInterval,
-          });
-        });
-      });
-    });
-  }
-
-  private registerClassifications(): void {
-    const { fairWorkService } = this;
-    const priority = this.config.priorities.classifications;
-
-    // Register warming for classification hierarchies
-    fairWorkService.getActiveAwards().then((awards: unknown) => {
-      awards.forEach((award: unknown) => {
-        cacheWarming.register({
-          key: `classifications:hierarchy:${award.code}`,
-          factory: () => fairWorkService.getClassificationHierarchy(award.code),
-          priority,
-          ttl: this.config.awardRefreshInterval,
-        });
-      });
-    });
-  }
-
-  private registerTemplates(): void {
-    const { fairWorkService } = this;
-    const priority = this.config.priorities.templates;
-
-    // Register warming for rate templates
-    fairWorkService.getActiveAwards().then((awards: unknown) => {
-      awards.forEach((award: unknown) => {
-        cacheWarming.register({
-          key: `templates:${award.code}`,
-          factory: () => fairWorkService.getRateTemplates(award.code),
-          priority,
-          ttl: this.config.awardRefreshInterval,
-        });
-      });
-    });
-  }
-
-  public stop(): void {
-    cacheWarming.stop();
+  stop(): void {
+    this.isWarming = false;
   }
 }
-
-// Export singleton instance
-export const fairWorkCacheWarming = new FairWorkCacheWarming(new FairWorkService());

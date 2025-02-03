@@ -1,37 +1,33 @@
-'use client';
-
-import type { ChartData, ChartOptions } from 'chart.js';
+import { type ReactElement } from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import React from 'react';
-import { Pie } from 'react-chartjs-2';
 
-ChartJS.register(ArcElement: unknown, Tooltip, Legend);
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 interface PieChartProps {
-  data: ChartData<'pie'>;
-  options?: ChartOptions<'pie'>;
+  data: {
+    labels: string[];
+    datasets: Array<{
+      data: number[];
+      backgroundColor: string[];
+      borderColor: string[];
+      borderWidth: number;
+    }>;
+  };
 }
 
-export function PieChart({ data, options }: PieChartProps): void {
-  const defaultOptions: ChartOptions<'pie'> = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top' as const,
-      },
-      title: {
-        display: true,
-        text: 'Distribution',
-      },
-    },
-  };
-
+export function PieChart({ data }: PieChartProps): ReactElement {
   return (
-    <div className='h-full min-h-[300px] w-full p-4'>
-      <Pie
-        data={data}
-        options={options || defaultOptions}
-      />
-    </div>
+    <ChartJS
+      type="pie"
+      data={data}
+      options={{
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top',
+          },
+        },
+      }}
+    />
   );
 }

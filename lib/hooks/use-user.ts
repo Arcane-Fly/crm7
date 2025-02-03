@@ -1,84 +1,79 @@
-'use client';
+import { useState, useEffect } from 'react';
+import { type User } from '@/types/auth';
+import { createClient } from '@/lib/supabase/client';
 
-import { createClient } from '@supabase/supabase-js';
-import { useState, useEffect, useCallback } from 'react';
-
-import type { Database } from '@/types/supabase';
-
-export interface User {
-  id: string;
-  org_id: string;
-  email: string;
-  role: string;
-  avatar_url?: string;
-  full_name?: string;
-  metadata?: Record<string, any>;
+interface UseUserReturn {
+  user: User | null;
+  loading: boolean;
+  error: Error | null;
+  refreshUser: () => Promise<void>;
+  logout: () => Promise<void>;
 }
 
-export function useUser(): void {
-  const [user, setUser] = useState<User | null>(null: unknown);
-  const [loading, setLoading] = useState(true: unknown);
-  const [error, setError] = useState<Error | null>(null: unknown);
-
-  const supabase = createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL ?? undefined,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? undefined,
-  );
-
-  const fetchUser = useCallback(async () => {
-    try {
-      const {
-        data: { user: authUser },
-        error: authError,
-      } = await supabase.auth.getUser();
-
-      if (authError: unknown) throw authError;
-
-      if (authUser: unknown) {
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', authUser.id)
-          .single();
-
-        if (userError: unknown) throw userError;
-
-        setUser(userData: unknown);
-      }
-    } catch (err: unknown) {
-      setError(err as Error);
-      setUser(null: unknown);
-    } finally {
-      setLoading(false: unknown);
-    }
-  }, [supabase]);
-
-  const signOut = useCallback(async () => {
-    try {
-      await supabase.auth.signOut();
-      setUser(null: unknown);
-    } catch (error: unknown) {
-      setError(error as Error);
-    }
-  }, [supabase]);
+export function useUser(): UseUserReturn {
+  const supabase = createClient();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    fetchUser();
+    const fetchUser = async () => {
+      try {
+        const {
+          data: { user: authUser },
+          error: authError,
+        } = await supabase.auth.getUser();
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event: unknown, session) => {
-      if (session?.user) {
-        fetchUser();
-      } else {
-        setUser(null: unknown);
+        if (authError) throw authError;
+
+        if (authUser) {
+          const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', authUser.id)
+            .single();
+
+          if (userError) throw userError;
+
+          setUser(userData);
+        }
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error('Failed to fetch user');
+        setError(error);
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
-    });
-
-    return () => {
-      subscription.unsubscribe();
     };
-  }, [supabase, fetchUser]);
 
-  return { user, loading, error, signOut };
+    void fetchUser();
+  }, [supabase]);
+
+  const refreshUser = async () => {
+    try {
+      setUser(null);
+      await supabase.auth.refreshSession();
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Failed to refresh user');
+      setError(error);
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Failed to logout');
+      setError(error);
+    }
+  };
+
+  return {
+    user,
+    loading,
+    error,
+    refreshUser,
+    logout,
+  };
 }

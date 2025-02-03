@@ -8,40 +8,54 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { MAIN_NAV_ITEMS, SECTIONS } from '@/config/navigation';
 import { useMounted } from '@/lib/hooks/use-mounted';
 
-interface BreadcrumbSegment {
+export interface BreadcrumbSegment {
   title: string;
   href: string;
+}
+
+interface MainNavItem {
+  slug: string;
+  href: string;
+  label?: string;
+  title?: string;
+}
+
+interface SectionItem {
+  title: string;
+  href?: string;
 }
 
 function getBreadcrumbSegments(pathname: string | null): BreadcrumbSegment[] {
   if (!pathname) return [];
 
-  const segments = pathname.split('/').filter(Boolean: unknown);
+  const segments = pathname.split('/').filter(Boolean);
   const breadcrumbs: BreadcrumbSegment[] = [];
 
   let currentPath = '';
   for (const segment of segments) {
     currentPath += `/${segment}`;
 
-    // Find main nav item
-    if (segments.indexOf(segment: unknown) === 0) {
-      const mainItem = MAIN_NAV_ITEMS.find((item: unknown) => item.slug === segment);
-      if (mainItem?.href) {
+    // For the main nav item (first segment)
+    if (segments.indexOf(segment) === 0) {
+      const mainItem = (MAIN_NAV_ITEMS as MainNavItem[]).find(
+        (item) => item.slug === segment
+      );
+      if (mainItem && mainItem.href) {
         breadcrumbs.push({
-          title: mainItem.label ?? mainItem.title,
+          title: mainItem.label ?? mainItem.title ?? segment,
           href: mainItem.href,
         });
         continue;
       }
     }
 
-    // Find section item
-    const sectionItems = SECTIONS[segments[0]] ?? [];
-    const sectionItem = sectionItems.find((item: unknown) => item.href === currentPath);
-    if (sectionItem?.href) {
+    // For section items based on first segment
+    const sectionItems = ((SECTIONS[segments[0]] as SectionItem[]) ?? []);
+    const sectionItem = sectionItems.find((item) => item.href === currentPath);
+    if (sectionItem && sectionItem.href) {
       breadcrumbs.push({
         title: sectionItem.title,
-        href: sectionItem.href ?? '#',
+        href: sectionItem.href,
       });
     }
   }
@@ -56,11 +70,8 @@ function LoadingSkeleton(): ReactElement {
       <div className='grid gap-4'>
         <Skeleton className='h-[200px] w-full' />
         <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
-          {Array.from({ length: 4 }).map((_: unknown, i) => (
-            <Skeleton
-              key={i}
-              className='h-[100px] w-full'
-            />
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className='h-[100px] w-full' />
           ))}
         </div>
       </div>
@@ -71,7 +82,7 @@ function LoadingSkeleton(): ReactElement {
 export default function SectionsLayout({ children }: { children: ReactNode }): ReactElement {
   const pathname = usePathname();
   const mounted = useMounted();
-  const segments = getBreadcrumbSegments(pathname: unknown);
+  const segments = getBreadcrumbSegments(pathname);
 
   // Prevent hydration mismatch
   if (!mounted) {
@@ -83,11 +94,8 @@ export default function SectionsLayout({ children }: { children: ReactNode }): R
       <div className='container flex-1 space-y-4 py-8'>
         <Breadcrumb>
           <BreadcrumbItem href='/'>Home</BreadcrumbItem>
-          {segments.map((segment: unknown, i) => (
-            <BreadcrumbItem
-              key={i}
-              href={segment.href}
-            >
+          {segments.map((segment: BreadcrumbSegment, i: number) => (
+            <BreadcrumbItem key={i} href={segment.href}>
               {segment.title}
             </BreadcrumbItem>
           ))}

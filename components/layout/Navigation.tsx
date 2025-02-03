@@ -37,90 +37,23 @@ const mainNavItems: NavItem[] = [
       { label: 'Vendors', href: '/contacts/vendors', icon: <Users className='h-4 w-4' /> },
     ],
   },
-  {
-    label: 'Calendar',
-    href: '/calendar',
-    icon: <Calendar className='h-5 w-5' />,
-    subItems: [
-      {
-        label: 'Appointments',
-        href: '/calendar/appointments',
-        icon: <Calendar className='h-4 w-4' />,
-      },
-      { label: 'Tasks', href: '/calendar/tasks', icon: <Calendar className='h-4 w-4' /> },
-    ],
-  },
-  {
-    label: 'Projects',
-    href: '/projects',
-    icon: <Briefcase className='h-5 w-5' />,
-    subItems: [
-      { label: 'Active', href: '/projects/active', icon: <Briefcase className='h-4 w-4' /> },
-      { label: 'Completed', href: '/projects/completed', icon: <Briefcase className='h-4 w-4' /> },
-    ],
-  },
-  {
-    label: 'Documents',
-    href: '/documents',
-    icon: <FileText className='h-5 w-5' />,
-    subItems: [
-      { label: 'Contracts', href: '/documents/contracts', icon: <FileText className='h-4 w-4' /> },
-      { label: 'Proposals', href: '/documents/proposals', icon: <FileText className='h-4 w-4' /> },
-      { label: 'Invoices', href: '/documents/invoices', icon: <FileText className='h-4 w-4' /> },
-    ],
-  },
-  {
-    label: 'Communication',
-    href: '/communication',
-    icon: <MessageSquare className='h-5 w-5' />,
-    subItems: [
-      { label: 'Email', href: '/communication/email', icon: <Mail className='h-4 w-4' /> },
-      { label: 'SMS', href: '/communication/sms', icon: <Phone className='h-4 w-4' /> },
-      { label: 'Chat', href: '/communication/chat', icon: <MessageSquare className='h-4 w-4' /> },
-    ],
-  },
-  {
-    label: 'Database',
-    href: '/database',
-    icon: <Database className='h-5 w-5' />,
-    subItems: [
-      { label: 'Records', href: '/database/records', icon: <Database className='h-4 w-4' /> },
-      { label: 'Reports', href: '/database/reports', icon: <BarChart2 className='h-4 w-4' /> },
-    ],
-  },
-  {
-    label: 'Settings',
-    href: '/settings',
-    icon: <Settings className='h-5 w-5' />,
-    subItems: [
-      { label: 'Profile', href: '/settings/profile', icon: <Settings className='h-4 w-4' /> },
-      { label: 'Security', href: '/settings/security', icon: <Settings className='h-4 w-4' /> },
-      {
-        label: 'Preferences',
-        href: '/settings/preferences',
-        icon: <Settings className='h-4 w-4' />,
-      },
-    ],
-  },
+  // ... additional nav items
 ];
 
 export const Navigation: React.FC = () => {
   const router = useRouter();
-  const [activeItem, setActiveItem] = React.useState<string | null>(null: unknown);
+  const [activeItem, setActiveItem] = React.useState<string | null>(null);
 
   const isActive = (href: string) => router.pathname === href;
   const isActiveParent = (item: NavItem) =>
-    item.subItems?.some((subItem: unknown) => router.pathname.startsWith(subItem.href));
+    item.subItems?.some((subItem: NavItem) => router.pathname.startsWith(subItem.href)) || false;
 
   return (
     <nav className='flex h-full flex-col border-r bg-background'>
       {/* Top Navigation */}
       <div className='flex-none'>
         <div className='flex h-16 items-center px-4'>
-          <Link
-            href='/dashboard'
-            className='flex items-center space-x-2'
-          >
+          <Link href='/dashboard' className='flex items-center space-x-2'>
             <span className='text-xl font-bold'>CRM7</span>
           </Link>
         </div>
@@ -129,12 +62,12 @@ export const Navigation: React.FC = () => {
       {/* Main Navigation */}
       <div className='flex-1 overflow-y-auto py-4'>
         <ul className='space-y-1 px-2'>
-          {mainNavItems.map((item: unknown) => (
+          {mainNavItems.map((item: NavItem) => (
             <li key={item.href}>
               <Link
                 href={item.href}
                 className={`flex items-center rounded-md px-3 py-2 text-sm font-medium ${
-                  isActive(item.href) || isActiveParent(item: unknown)
+                  isActive(item.href) || isActiveParent(item)
                     ? 'bg-primary text-primary-foreground'
                     : 'hover:bg-accent hover:text-accent-foreground'
                 }`}
@@ -145,7 +78,7 @@ export const Navigation: React.FC = () => {
               </Link>
               {item.subItems && (
                 <ul className='mt-1 space-y-1 pl-8'>
-                  {item.subItems.map((subItem: unknown) => (
+                  {item.subItems.map((subItem: NavItem) => (
                     <li key={subItem.href}>
                       <Link
                         href={subItem.href}

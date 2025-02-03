@@ -1,106 +1,87 @@
-import { useUser } from '@auth0/nextjs-auth0/client';
-import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
-
-import { AUTH0_ENDPOINTS } from '@/lib/auth0/client';
-import { logger } from '@/lib/logger';
+import { useState, useEffect } from 'react';
+import { type AuthUser } from '@/types/auth';
 import { createClient } from '@/lib/supabase/client';
 
-export type AuthUser = {
-  id: string;
-  email?: string;
-  name?: string;
-  avatar_url?: string;
-  provider: 'supabase' | 'auth0';
-};
+interface UseAuthReturn {
+  user: AuthUser | null;
+  loading: boolean;
+  error: Error | null;
+  login: () => Promise<void>;
+  logout: () => Promise<void>;
+}
 
-export function useAuth(): void {
-  const router = useRouter();
+export function useAuth(): UseAuthReturn {
   const supabase = createClient();
-  const { user: auth0User, error: auth0Error, isLoading: auth0Loading } = useUser();
-  const [user, setUser] = useState<AuthUser | null>(null: unknown);
-  const [loading, setLoading] = useState(true: unknown);
-  const [error, setError] = useState<Error | null>(null: unknown);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event: unknown, session) => {
-      if (session?.user) {
-        setUser({
-          id: session.user.id,
-          email: session.user.email || undefined,
-          name: session.user.user_metadata.name || undefined,
-          avatar_url: session.user.user_metadata.avatar_url || undefined,
-          provider: 'supabase',
-        });
-      } else if (auth0User: unknown) {
-        setUser({
-          id: auth0User.sub ?? undefined,
-          email: auth0User.email || undefined,
-          name: auth0User.name || undefined,
-          avatar_url: auth0User.picture || undefined,
-          provider: 'auth0',
-        });
-      } else {
-        setUser(null: unknown);
-      }
-      setLoading(false: unknown);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [supabase, auth0User]);
-
-  useEffect(() => {
-    if (auth0Error: unknown) {
-      logger.error('Auth0 error', { error: auth0Error });
-      setError(auth0Error: unknown);
-    }
-  }, [auth0Error]);
-
-  const signOut = useCallback(async () => {
-    try {
-      if (user?.provider === 'supabase') {
-        await supabase.auth.signOut();
-      } else if (user?.provider === 'auth0') {
-        router.push(AUTH0_ENDPOINTS.LOGOUT);
-      }
-    } catch (error: unknown) {
-      logger.error('Sign out error', { error });
-      setError(error as Error);
-    }
-  }, [user, supabase, router]);
-
-  const signInWithSupabase = useCallback(
-    async (provider: 'github' | 'google') => {
+    const checkAuth = async () => {
       try {
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider,
-          options: {
-            redirectTo: `${window.location.origin}/api/auth/callback`,
-          },
-        });
-        if (error: unknown) throw error;
-      } catch (error: unknown) {
-        logger.error('Supabase sign in error', { error, provider });
-        setError(error as Error);
-      }
-    },
-    [supabase],
-  );
+        const { data: { user: auth0User }, error: auth0Error } = await supabase.auth.getUser();
 
-  const signInWithAuth0 = useCallback(() => {
-    router.push(AUTH0_ENDPOINTS.LOGIN);
-  }, [router]);
+        if (auth0Error) {
+          throw auth0Error;
+        }
+
+        if (auth0User) {
+          setUser({
+            id: auth0User.id,
+            email: auth0User.email ?? '',
+            name: auth0User.user_metadata?.name ?? '',
+            role: auth0User.user_metadata?.role ?? 'user',
+          });
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        const errorObj = error instanceof Error ? error : new Error('Authentication error');
+        setError(errorObj);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void checkAuth();
+  }, [supabase]);
+
+  const login = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'auth0',
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+    } catch (error) {
+      const errorObj = error instanceof Error ? error : new Error('Login failed');
+      setError(errorObj);
+      throw errorObj;
+    }
+  };
+
+  const logout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      setUser(null);
+    } catch (error) {
+      const errorObj = error instanceof Error ? error : new Error('Logout failed');
+      setError(errorObj);
+      throw errorObj;
+    }
+  };
 
   return {
     user,
-    loading: loading || auth0Loading,
+    loading,
     error,
-    signOut,
-    signInWithSupabase,
-    signInWithAuth0,
+    login,
+    logout,
   };
 }

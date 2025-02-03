@@ -1,229 +1,91 @@
-'use client';
-
-import type {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-} from '@tanstack/react-table';
+import { type ReactElement } from 'react';
 import {
+  type ColumnDef,
   flexRender,
   getCoreRowModel,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
   useReactTable,
+  getPaginationRowModel,
 } from '@tanstack/react-table';
-import * as React from 'react';
 
-import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { cn } from '@/lib/utils';
-
-interface DataGridProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
+interface DataGridProps<TData> {
   data: TData[];
-  loading?: boolean;
-  error?: Error | null;
-  onRowClick?: (row: TData) => void;
-  enableSelection?: boolean;
-  enableFiltering?: boolean;
-  enableSorting?: boolean;
-  enablePagination?: boolean;
+  columns: ColumnDef<TData>[];
   pageSize?: number;
-  className?: string;
+  error?: Error | null;
 }
 
-export function DataGrid<TData, TValue>({
-  columns,
+export function DataGrid<TData>({
   data,
-  loading = false,
-  error = null,
-  onRowClick,
-  enableSelection = false,
-  enableFiltering = true,
-  enableSorting = true,
-  enablePagination = true,
-  pageSize = 10,
-  className,
-}: DataGridProps<TData, TValue>) {
-  const [rowSelection, setRowSelection] = React.useState({});
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-
+  columns,
+  pageSize,
+  error,
+}: DataGridProps<TData>): ReactElement {
   const table = useReactTable({
     data,
     columns,
-    state: {
-      sorting,
-      columnVisibility,
-      rowSelection,
-      columnFilters,
-    },
-    enableRowSelection: enableSelection,
-    onRowSelectionChange: setRowSelection,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: enableFiltering ? getFilteredRowModel() : undefined,
-    getPaginationRowModel: enablePagination ? getPaginationRowModel() : undefined,
-    getSortedRowModel: enableSorting ? getSortedRowModel() : undefined,
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
+    getPaginationRowModel: getPaginationRowModel(),
   });
 
   React.useEffect(() => {
-    if (pageSize: unknown) {
-      table.setPageSize(pageSize: unknown);
+    if (pageSize) {
+      table.setPageSize(pageSize);
     }
   }, [pageSize, table]);
 
-  if (error: unknown) {
-    return <div className='p-4 text-red-500'>Error: {error.message}</div>;
+  if (error) {
+    return (
+      <div className="rounded-md bg-red-50 p-4">
+        <div className="flex">
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-red-800">Error loading data</h3>
+            <div className="mt-2 text-sm text-red-700">
+              {error.message}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <ErrorBoundary>
-      <div className={cn('space-y-4', className)}>
-        {enableFiltering && (
-          <div className='flex items-center gap-4'>
-            {table
-              .getAllColumns()
-              .filter((column: unknown) => column.getCanFilter())
-              .map((column: unknown) => (
-                <div
-                  key={column.id}
-                  className='flex-1'
+    <div className="rounded-md border">
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-gray-50">
+          {table.getHeaderGroups().map(headerGroup => (
+            <tr key={headerGroup.id}>
+              {headerGroup.headers.map(header => (
+                <th
+                  key={header.id}
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
-                  <Input
-                    placeholder={`Filter ${column.id}`}
-                    value={(column.getFilterValue() as string) ?? ''}
-                    onChange={(e: unknown) => column.setFilterValue(e.target.value)}
-                    className='max-w-sm'
-                  />
-                </div>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                </th>
               ))}
-          </div>
-        )}
-
-        <div className='rounded-md border'>
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup: unknown) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header: unknown) => (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  ))}
-                </TableRow>
+            </tr>
+          ))}
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200">
+          {table.getRowModel().rows.map(row => (
+            <tr key={row.id}>
+              {row.getVisibleCells().map(cell => (
+                <td
+                  key={cell.id}
+                  className="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                >
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </td>
               ))}
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className='h-24 text-center'
-                  >
-                    Loading...
-                  </TableCell>
-                </TableRow>
-              ) : table.getRowModel().rows.length ? (
-                table.getRowModel().rows.map((row: unknown) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && 'selected'}
-                    onClick={() => onRowClick?.(row.original)}
-                    className={cn(onRowClick && 'cursor-pointer hover:bg-accent')}
-                  >
-                    {row.getVisibleCells().map((cell: unknown) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className='h-24 text-center'
-                  >
-                    No results.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-
-        {enablePagination && (
-          <div className='flex items-center justify-between px-2'>
-            <div className='flex-1 text-sm text-muted-foreground'>
-              {table.getFilteredSelectedRowModel().rows.length} of{' '}
-              {table.getFilteredRowModel().rows.length} row(s: unknown) selected.
-            </div>
-            <div className='flex items-center space-x-6 lg:space-x-8'>
-              <div className='flex items-center space-x-2'>
-                <p className='text-sm font-medium'>Rows per page</p>
-                <select
-                  value={table.getState().pagination.pageSize}
-                  onChange={(e: unknown) => {
-                    table.setPageSize(Number(e.target.value));
-                  }}
-                  className='h-8 w-[70px] rounded-md border border-input bg-transparent'
-                >
-                  {[10, 20, 30, 40, 50].map((pageSize: unknown) => (
-                    <option
-                      key={pageSize}
-                      value={pageSize}
-                    >
-                      {pageSize}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className='flex w-[100px] items-center justify-center text-sm font-medium'>
-                Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
-              </div>
-              <div className='flex items-center space-x-2'>
-                <Button
-                  variant='outline'
-                  className='h-8 w-8 p-0'
-                  onClick={() => table.previousPage()}
-                  disabled={!table.getCanPreviousPage()}
-                >
-                  {'<'}
-                </Button>
-                <Button
-                  variant='outline'
-                  className='h-8 w-8 p-0'
-                  onClick={() => table.nextPage()}
-                  disabled={!table.getCanNextPage()}
-                >
-                  {'>'}
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </ErrorBoundary>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }

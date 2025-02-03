@@ -1,218 +1,133 @@
-import type { Redis } from 'ioredis';
-
-import { logger } from '@/lib/services/logger';
-
+import { type RedisClient } from './redis-client';
 import { cacheMonitoring } from './monitoring';
-import RedisClient from './redis-client';
-
-class LogError extends Error {
-  constructor(
-    message: string,
-    public readonly details: {
-      error?: string;
-      key?: string;
-      pattern?: string;
-      [key: string]: unknown;
-    },
-  ) {
-    super(message: unknown);
-    this.name = 'LogError';
-  }
-}
-
-export interface CacheConfig {
-  ttl?: number; // Time to live in seconds
-  prefix?: string; // Key prefix for namespacing
-  retryCount?: number; // Number of retries for failed operations
-}
+import { logger } from '@/lib/logger';
 
 export class CacheError extends Error {
-  constructor(
-    message: string,
-    public readonly code: string,
-    public readonly cause?: unknown,
-  ) {
-    super(message: unknown);
+  constructor(message: string) {
+    super(message);
     this.name = 'CacheError';
   }
 }
 
-const DEFAULT_CONFIG: Required<CacheConfig> = {
-  ttl: 3600, // 1 hour default TTL
-  prefix: '',
-  retryCount: 3,
-};
+export class CacheTimeoutError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'CacheTimeoutError';
+  }
+}
+
+interface CacheConfig {
+  defaultTtl?: number;
+  keyPrefix?: string;
+}
 
 export class CacheService {
-  private redis: Redis | null = null;
-  private readonly config: Required<CacheConfig>;
+  private readonly defaultTtl: number;
+  private readonly keyPrefix: string;
 
-  constructor(config: CacheConfig = {}) {
-    this.config = { ...DEFAULT_CONFIG, ...config };
+  constructor(
+    private readonly client: RedisClient,
+    config: CacheConfig = {}
+  ) {
+    this.defaultTtl = config.defaultTtl ?? 3600;
+    this.keyPrefix = config.keyPrefix ?? '';
   }
 
   private getKey(key: string): string {
-    return `${this.config.prefix}${key}`;
-  }
-
-  private async getClient(): Promise<Redis> {
-    if (!this.redis) {
-      this.redis = await RedisClient.getInstance();
-    }
-    return this.redis;
+    return this.keyPrefix ? `${this.keyPrefix}:${key}` : key;
   }
 
   async get<T>(key: string): Promise<T | null> {
-    const start = process.hrtime.bigint();
+    const startTime = Date.now();
     try {
-      const client = await this.getClient();
-      const data = await client.get(this.getKey(key: unknown));
-
-      const end = process.hrtime.bigint();
-      const latencyMs = Number(end - start) / 1_000_000;
+      const data = await this.client.get(this.getKey(key));
+      const latencyMs = Date.now() - startTime;
 
       if (!data) {
-        cacheMonitoring.recordMiss();
+        cacheMonitoring.recordMiss(latencyMs);
         return null;
       }
 
-      cacheMonitoring.recordHit(latencyMs: unknown);
-      return JSON.parse(data: unknown) as T;
-    } catch (error: unknown) {
-      const logError = new LogError('Cache get error', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        key,
-      });
-      logger.error('Cache get error:', logError);
-      cacheMonitoring.recordError();
-      throw new CacheError('Failed to get cached data', 'CACHE_GET_ERROR', error);
+      cacheMonitoring.recordHit(latencyMs);
+      return JSON.parse(data) as T;
+    } catch (error) {
+      logger.error('Cache get error:', error);
+      throw new CacheError(`Failed to get cache key ${key}`);
     }
   }
 
-  async set<T>(key: string, value: T, ttl?: number): Promise<void> {
-    const start = process.hrtime.bigint();
+  async set<T>(
+    key: string,
+    value: T,
+    ttl?: number
+  ): Promise<void> {
+    const startTime = Date.now();
     try {
-      const client = await this.getClient();
-      const serializedValue = JSON.stringify(value: unknown);
-      const effectiveTtl = ttl ?? this.config.ttl;
+      const serializedValue = JSON.stringify(value);
+      const effectiveTtl = ttl ?? this.defaultTtl;
 
       if (effectiveTtl > 0) {
-        await client.setex(this.getKey(key: unknown), effectiveTtl, serializedValue);
+        await this.client.setex(this.getKey(key), effectiveTtl, serializedValue);
       } else {
-        await client.set(this.getKey(key: unknown), serializedValue);
+        await this.client.set(this.getKey(key), serializedValue);
       }
 
-      const end = process.hrtime.bigint();
-      const latencyMs = Number(end - start) / 1_000_000;
-      cacheMonitoring.recordHit(latencyMs: unknown);
-    } catch (error: unknown) {
-      const logError = new LogError('Cache set error', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        key,
-      });
-      logger.error('Cache set error:', logError);
-      cacheMonitoring.recordError();
-      throw new CacheError('Failed to set cached data', 'CACHE_SET_ERROR', error);
+      const latencyMs = Date.now() - startTime;
+      cacheMonitoring.recordHit(latencyMs);
+    } catch (error) {
+      logger.error('Cache set error:', error);
+      throw new CacheError(`Failed to set cache key ${key}`);
     }
   }
 
   async delete(key: string): Promise<void> {
     try {
-      const client = await this.getClient();
-      await client.del(this.getKey(key: unknown));
-      cacheMonitoring.recordEviction();
-    } catch (error: unknown) {
-      const logError = new LogError('Cache delete error', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        key,
-      });
-      logger.error('Cache delete error:', logError);
-      cacheMonitoring.recordError();
-      throw new CacheError('Failed to delete cached data', 'CACHE_DELETE_ERROR', error);
+      await this.client.del(this.getKey(key));
+    } catch (error) {
+      logger.error('Cache delete error:', error);
+      throw new CacheError(`Failed to delete cache key ${key}`);
     }
   }
 
   async deletePattern(pattern: string): Promise<void> {
     try {
-      const client = await this.getClient();
-      const keys = await client.keys(this.getKey(pattern: unknown));
+      const keys = await this.client.keys(this.getKey(pattern));
       if (keys.length > 0) {
-        await client.del(...keys);
-        keys.forEach(() => cacheMonitoring.recordEviction());
+        await this.client.del(...keys);
       }
-    } catch (error: unknown) {
-      const logError = new LogError('Cache delete pattern error', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        pattern,
-      });
-      logger.error('Cache delete pattern error:', logError);
-      cacheMonitoring.recordError();
-      throw new CacheError(
-        'Failed to delete cached data by pattern',
-        'CACHE_DELETE_PATTERN_ERROR',
-        error,
-      );
+    } catch (error) {
+      logger.error('Cache delete pattern error:', error);
+      throw new CacheError(`Failed to delete cache pattern ${pattern}`);
     }
   }
 
-  async getOrSet<T>(key: string, factory: () => Promise<T>, ttl?: number): Promise<T> {
-    let retries = this.config.retryCount;
-    let lastError: unknown;
-
-    while (retries >= 0) {
-      try {
-        // Try to get from cache first
-        const cached = await this.get<T>(key: unknown);
-        if (cached !== null) {
-          return cached;
-        }
-
-        // If not in cache, generate value
-        const value = await factory();
-
-        // Store in cache
-        await this.set(key: unknown, value, ttl);
-
-        return value;
-      } catch (error: unknown) {
-        lastError = error;
-        retries--;
-
-        if (retries >= 0) {
-          await new Promise((resolve: unknown) => setTimeout(resolve: unknown, 100));
-          continue;
-        }
-      }
-    }
-
-    cacheMonitoring.recordError();
-    throw new CacheError('Failed to get or set cached data', 'CACHE_GET_OR_SET_ERROR', lastError);
-  }
-
-  async clear(): Promise<void> {
+  async getOrSet<T>(
+    key: string,
+    getter: () => Promise<T>,
+    ttl?: number
+  ): Promise<T> {
     try {
-      const client = await this.getClient();
-      const keys = await client.keys(this.getKey('*'));
-      if (keys.length > 0) {
-        await client.del(...keys);
-        keys.forEach(() => cacheMonitoring.recordEviction());
+      const cached = await this.get<T>(key);
+      if (cached !== null) {
+        return cached;
       }
-    } catch (error: unknown) {
-      const logError = new LogError('Cache clear error', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-      logger.error('Cache clear error:', logError);
-      cacheMonitoring.recordError();
-      throw new CacheError('Failed to clear cache', 'CACHE_CLEAR_ERROR', error);
+
+      const value = await getter();
+      await this.set(key, value, ttl);
+      return value;
+    } catch (error) {
+      logger.error('Cache getOrSet error:', error);
+      throw new CacheError(`Failed to get or set cache key ${key}`);
     }
   }
 
-  async close(): Promise<void> {
-    if (this.redis) {
-      await RedisClient.close();
-      this.redis = null;
+  async waitForLock(key: string, maxWaitMs = 5000): Promise<void> {
+    const startTime = Date.now();
+    while (await this.get(key)) {
+      if (Date.now() - startTime > maxWaitMs) {
+        throw new CacheTimeoutError(`Timeout waiting for lock on key ${key}`);
+      }
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
   }
 }
-
-export default CacheService;

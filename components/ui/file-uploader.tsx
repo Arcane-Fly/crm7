@@ -1,70 +1,60 @@
-import { useCallback, useState } from 'react';
+import { useState, type ReactElement } from 'react';
 import { useDropzone } from 'react-dropzone';
 
-import { cn } from '@/lib/utils';
-
-import { Button } from './button';
-
-export interface FileUploaderProps {
-  accept?: string;
-  maxSize?: number;
+interface FileUploaderProps {
   onFileSelect: (files: File[]) => void;
-  multiple?: boolean;
-  className?: string;
+  accept?: Record<string, string[]>;
+  maxSize?: number;
+  maxFiles?: number;
 }
 
 export function FileUploader({
-  accept,
-  maxSize = 10 * 1024 * 1024, // 10MB default
   onFileSelect,
-  multiple = false,
-  className,
-}: FileUploaderProps) {
-  const [error, setError] = useState<string | null>(null: unknown);
+  accept,
+  maxSize = 5242880, // 5MB
+  maxFiles = 1,
+}: FileUploaderProps): ReactElement {
+  const [error, setError] = useState<string | null>(null);
 
-  const onDrop = useCallback(
-    (acceptedFiles: File[]) => {
-      setError(null: unknown);
-      if (maxSize && acceptedFiles.some((file: unknown) => file.size > maxSize)) {
-        setError(`File size exceeds ${maxSize / (1024 * 1024)}MB limit`);
-        return;
+  const onDrop = (acceptedFiles: File[]) => {
+    try {
+      setError(null);
+      if (acceptedFiles.length > maxFiles) {
+        throw new Error(`Maximum ${maxFiles} files allowed`);
       }
-      onFileSelect(acceptedFiles: unknown);
-    },
-    [maxSize, onFileSelect],
-  );
+      onFileSelect(acceptedFiles);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      }
+    }
+  };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: accept ? { [accept]: [] } : undefined,
-    multiple,
+    accept,
+    maxSize,
+    maxFiles,
   });
 
   return (
-    <div className='space-y-2'>
+    <div>
       <div
         {...getRootProps()}
-        className={cn(
-          'cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors hover:border-primary',
-          isDragActive && 'border-primary bg-primary/10',
-          className,
-        )}
+        className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer
+          ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}
+        `}
       >
         <input {...getInputProps()} />
-        <p className='text-sm text-gray-600'>
-          {isDragActive
-            ? 'Drop the files here...'
-            : 'Drag and drop files here, or click to select files'}
-        </p>
-        <Button
-          type='button'
-          variant='outline'
-          className='mt-2'
-        >
-          Select Files
-        </Button>
+        {isDragActive ? (
+          <p>Drop the files here...</p>
+        ) : (
+          <p>Drag & drop files here, or click to select files</p>
+        )}
       </div>
-      {error && <p className='text-sm text-red-500'>{error}</p>}
+      {error && (
+        <p className="mt-2 text-sm text-red-600">{error}</p>
+      )}
     </div>
   );
 }

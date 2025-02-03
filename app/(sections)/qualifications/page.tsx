@@ -1,50 +1,42 @@
-'use client';
-
-import { Plus } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-
+import { Breadcrumb, BreadcrumbItem } from '@/components/ui/breadcrumb';
 import { DataEnrichment } from '@/components/admin/data-enrichment';
-import { Breadcrumb, BreadcrumbItem } from '@/components/breadcrumb';
-import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
-import { useAdminAccess } from '@/lib/hooks/useAdminAccess';
-
 import { columns } from './columns';
 
-export default function QualificationsPage() {
-  const router = useRouter();
-  const { isAdmin } = useAdminAccess();
+export default function QualificationsPage(): React.ReactElement {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [data] = useState([]);
 
   return (
-    <div className='space-y-6'>
-      <div className='flex items-center justify-between'>
-        <Breadcrumb>
-          <BreadcrumbItem href='/dashboard'>Dashboard</BreadcrumbItem>
-          <BreadcrumbItem>Qualifications</BreadcrumbItem>
-        </Breadcrumb>
-        <div className='flex items-center space-x-2'>
-          {isAdmin && selectedIds.length === 1 && (
-            <DataEnrichment
-              type='qualification'
-              id={selectedIds[0]}
-              onComplete={() => {
-                // Refresh data
-              }}
-            />
-          )}
-          <Button onClick={() => router.push('/qualifications/new')}>
-            <Plus className='mr-2 h-4 w-4' /> Add Qualification
-          </Button>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Qualifications</h1>
+          <Breadcrumb>
+            <BreadcrumbItem href="/">Home</BreadcrumbItem>
+            <BreadcrumbItem href="/qualifications">Qualifications</BreadcrumbItem>
+          </Breadcrumb>
         </div>
       </div>
+
+      {selectedIds.length > 0 && (
+        <div className="rounded-lg border p-4">
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold">Bulk Actions</h2>
+            <DataEnrichment
+              type="qualification"
+              id={selectedIds[0] ?? ''}
+              onComplete={() => setSelectedIds([])}
+            />
+          </div>
+        </div>
+      )}
+
       <DataTable
         columns={columns}
-        data={data}
-        filterColumn='name'
-        enableRowSelection={true}
+        data={[]}
+        filterColumn="title"
+        enableRowSelection
         onSelectedIdsChange={setSelectedIds}
       />
     </div>

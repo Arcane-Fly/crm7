@@ -135,3 +135,6 @@ github_conf/
 
 # windsurf rules
 .windsurfrules
+
+# Documentation archives
+docs/archive/

@@ -1,43 +1,37 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export const runtime = 'edge';
+export async function POST(request: NextRequest): Promise<NextResponse> {
+  const authHeader = request.headers.get('Authorization');
+  const expectedToken = process.env['DEPLOYMENT_WEBHOOK_TOKEN'];
 
-export async function POST(request: NextRequest): Promise<void> {
+  if (authHeader !== `Bearer ${expectedToken}`) {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
+
   try {
-    const payload = await request.json();
-
-    // Verify webhook signature
-    const signature = request.headers.get('x-vercel-signature');
-    if (!signature) {
-      return new NextResponse('Unauthorized', { status: 401 });
+    const monitoringUrl = process.env['MONITORING_WEBHOOK_URL'];
+    if (monitoringUrl) {
+      await fetch(monitoringUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event: 'deployment_started' }),
+      });
     }
 
-    // Send deployment status to monitoring service
-    await fetch(process.env.MONITORING_WEBHOOK_URL ?? undefined, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        id: payload.id,
-        name: payload.name,
-        url: payload.url,
-        state: payload.state,
-        createdAt: payload.createdAt,
-      }),
-    });
+    // Process deployment
+    // ... deployment logic here ...
 
     return new NextResponse('OK', { status: 200 });
-  } catch (error: unknown) {
-    // Log error to error tracking service
-    await fetch(process.env.ERROR_TRACKING_URL ?? undefined, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ error }),
-    });
+  } catch (error) {
+    const errorTrackingUrl = process.env['ERROR_TRACKING_URL'];
+    if (errorTrackingUrl) {
+      await fetch(errorTrackingUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: error instanceof Error ? error.message : String(error) }),
+      });
+    }
 
     return new NextResponse('Internal Server Error', { status: 500 });
   }

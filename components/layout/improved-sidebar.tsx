@@ -9,6 +9,15 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { MAIN_NAV_ITEMS } from '@/config/navigation';
 import { cn } from '@/lib/utils';
 
+export interface NavItem {
+  label: string;
+  href?: string;
+  icon?: React.ReactNode;
+  children?: NavItem[];
+  slug?: string;
+  title?: string;
+}
+
 interface SidebarContextType {
   isCollapsed: boolean;
   setIsCollapsed: (value: boolean) => void;
@@ -16,11 +25,11 @@ interface SidebarContextType {
   setIsMobileOpen: (value: boolean) => void;
 }
 
-const SidebarContext = createContext<SidebarContextType | undefined>(undefined: unknown);
+const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
 export function SidebarProvider({ children }: { children: ReactNode }): ReactElement {
-  const [isCollapsed, setIsCollapsed] = useState(false: unknown);
-  const [isMobileOpen, setIsMobileOpen] = useState(false: unknown);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   return (
     <SidebarContext.Provider value={{ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen }}>
@@ -30,7 +39,7 @@ export function SidebarProvider({ children }: { children: ReactNode }): ReactEle
 }
 
 export function useSidebar(): SidebarContextType {
-  const context = useContext(SidebarContext: unknown);
+  const context = useContext(SidebarContext);
   if (context === undefined) {
     throw new Error('useSidebar must be used within a SidebarProvider');
   }
@@ -42,8 +51,8 @@ export const Sidebar = (): ReactElement => {
   const pathname = usePathname();
 
   const handleLinkClick = (): void => {
-    if (isMobileOpen: unknown) {
-      setIsMobileOpen(false: unknown);
+    if (isMobileOpen) {
+      setIsMobileOpen(false);
     }
   };
 
@@ -54,34 +63,31 @@ export const Sidebar = (): ReactElement => {
         className={cn(
           'hidden lg:fixed lg:inset-y-0 lg:flex lg:flex-col',
           isCollapsed ? 'lg:w-16' : 'lg:w-64',
-          'border-r bg-background transition-all duration-300',
+          'border-r bg-background transition-all duration-300'
         )}
       >
         <ScrollArea className='flex-1'>
           <nav className='space-y-1 px-2 py-4'>
-            {MAIN_NAV_ITEMS.map((item: unknown) => {
+            {MAIN_NAV_ITEMS.map((item: NavItem) => {
               const isActive = item.href ? pathname?.startsWith(item.href) : false;
               return (
-                <div
-                  key={item.slug}
-                  className='space-y-1'
-                >
+                <div key={item.slug || item.href} className='space-y-1'>
                   <Link
                     href={item.href ?? '#'}
                     className={cn(
                       'flex items-center rounded-lg px-3 py-2 text-sm font-medium',
                       isActive
                         ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                     )}
                     onClick={handleLinkClick}
                   >
-                    {item.icon && <item.icon className='mr-3 h-5 w-5' />}
+                    {item.icon}
                     {!isCollapsed && <span>{item.label ?? item.title}</span>}
                   </Link>
                   {!isCollapsed && item.children && isActive && (
                     <div className='ml-4 space-y-1'>
-                      {item.children.map((child: unknown) => (
+                      {item.children.map((child: NavItem) => (
                         <Link
                           key={child.href}
                           href={child.href ?? '#'}
@@ -89,7 +95,7 @@ export const Sidebar = (): ReactElement => {
                             'flex items-center rounded-lg px-3 py-2 text-sm font-medium',
                             pathname === child.href
                               ? 'bg-accent text-accent-foreground'
-                              : 'text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground',
+                              : 'text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground'
                           )}
                           onClick={handleLinkClick}
                         >
@@ -114,29 +120,26 @@ export const Sidebar = (): ReactElement => {
       >
         <ScrollArea className='flex-1'>
           <nav className='space-y-1 px-2 py-4'>
-            {MAIN_NAV_ITEMS.map((item: unknown) => {
+            {MAIN_NAV_ITEMS.map((item: NavItem) => {
               const isActive = item.href ? pathname?.startsWith(item.href) : false;
               return (
-                <div
-                  key={item.slug}
-                  className='space-y-1'
-                >
+                <div key={item.slug || item.href} className='space-y-1'>
                   <Link
                     href={item.href ?? '#'}
                     className={cn(
                       'flex items-center rounded-lg px-3 py-2 text-sm font-medium',
                       isActive
                         ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                     )}
                     onClick={handleLinkClick}
                   >
-                    {item.icon && <item.icon className='mr-3 h-5 w-5' />}
+                    {item.icon}
                     <span>{item.label ?? item.title}</span>
                   </Link>
                   {item.children && isActive && (
                     <div className='ml-4 space-y-1'>
-                      {item.children.map((child: unknown) => (
+                      {item.children.map((child: NavItem) => (
                         <Link
                           key={child.href}
                           href={child.href ?? '#'}
@@ -144,7 +147,7 @@ export const Sidebar = (): ReactElement => {
                             'flex items-center rounded-lg px-3 py-2 text-sm font-medium',
                             pathname === child.href
                               ? 'bg-accent text-accent-foreground'
-                              : 'text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground',
+                              : 'text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground'
                           )}
                           onClick={handleLinkClick}
                         >

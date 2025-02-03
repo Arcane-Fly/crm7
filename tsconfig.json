@@ -38,7 +38,8 @@
       "node",
       "jest",
       "react",
-      "@testing-library/jest-dom"
+      "@testing-library/jest-dom",
+      "vitest"
     ],
     "noUnusedLocals": true,
     "noUnusedParameters": true,

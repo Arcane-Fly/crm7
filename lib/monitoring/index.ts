@@ -1,233 +1,88 @@
 import * as Sentry from '@sentry/nextjs';
-import type { EventHint } from '@sentry/types';
-import type { NextApiHandler } from 'next';
+import { type SpanContext, type Transaction } from '@sentry/types';
+import { env } from '@/lib/config/environment';
 
-import { logger } from '@/lib/services/logger';
+interface EventHint {
+  originalException: Error;
+  syntheticException: Error;
+}
 
-import { env } from '../config/environment';
-
-import type {
-  SentrySpan as Span,
-  SentryTransaction as Transaction,
-  SentryHub,
-  SentryScope,
-  SpanContext,
-} from './types';
-import { SpanStatus } from './types';
-
-export type ErrorSeverity = 'fatal' | 'error' | 'warning' | 'info' | 'debug';
-
-interface MonitoringOptions {
-  sampleRate?: number;
-  environment?: string;
+interface MonitoringConfig {
+  dsn: string;
+  environment: string;
   release?: string;
   debug?: boolean;
+  tracesSampleRate?: number;
 }
 
-/**
- * Initialize monitoring services with configuration
- */
-export function initializeMonitoring(_options: MonitoringOptions = {}): void {
-  if (env.SENTRY_DSN) {
-    initSentry();
-  }
-
-  // Initialize other monitoring services if configured
-  if (env.DATADOG_API_KEY) {
-    // Initialize Datadog
-    // TODO: Add Datadog initialization
-  }
-}
-
-function initSentry() {
+export function initializeMonitoring(config: MonitoringConfig): void {
   Sentry.init({
-    dsn: env.SENTRY_DSN,
-    tracesSampleRate: env.NODE_ENV === 'production' ? 0.1 : 1.0,
-    environment: env.NODE_ENV,
-    debug: env.NODE_ENV === 'development',
-    integrations: [
-      // These integrations are now handled by @sentry/nextjs automatically
-      // when using their Next.js SDK
-    ],
+    dsn: config.dsn,
+    environment: config.environment,
+    release: config.release,
+    debug: config.debug ?? env.NODE_ENV === 'development',
+    tracesSampleRate: config.tracesSampleRate ?? 1.0,
   });
 }
 
-// Capture and report errors with context
-interface ErrorOptions {
-  severity?: ErrorSeverity;
-  context?: string;
-  url?: string;
-  [key: string]: unknown;
-}
-
-export function captureError(error: Error, options: ErrorOptions = {}): void {
-  const { severity = 'error', ...context } = options;
-
+export function captureError(error: unknown, context?: Record<string, unknown>): void {
   const eventHint: EventHint = {
-    originalException: error,
-    data: context,
+    originalException: error instanceof Error ? error : new Error(String(error)),
+    syntheticException: new Error(),
   };
 
-  Sentry.captureException(error: unknown, eventHint);
-  const errorInfo = {
-    message: error.message,
-    stack: error.stack,
-    name: error.name,
-    severity,
+  Sentry.captureException(error, {
+    ...eventHint,
     ...context,
-  };
-  logger.error('Error captured', errorInfo);
-}
-
-// Set user context for error tracking
-export function setUserContext(user: {
-  id: string;
-  email?: string;
-  role?: string;
-  organization?: string;
-}) {
-  Sentry.setUser({
-    id: user.id,
-    email: user.email,
-    role: user.role,
-    organization: user.organization,
   });
 }
 
-// Start a new transaction for performance monitoring
 export function startTransaction(
   name: string,
   op: string,
-  context?: Record<string, unknown>,
-): Transaction | undefined {
-  try {
-    const hub = Sentry.getCurrentHub() as unknown as SentryHub;
-    const transaction = (Sentry as any).startTransaction({
-      name,
-      op,
-      ...context,
-    }) as Transaction;
+  data?: Record<string, unknown>
+): Transaction {
+  const transaction = Sentry.startTransaction({
+    name,
+    op,
+    data,
+  });
 
-    hub.configureScope((scope: SentryScope) => {
-      scope.setTransactionName(name: unknown);
-    });
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+    scope.setTransactionName(name);
+  });
 
-    return transaction;
-  } catch (error: unknown) {
-    const err = error instanceof Error ? error : new Error(String(error: unknown));
-    const errorInfo = {
-      message: err.message,
-      stack: err.stack,
-      name: err.name,
-      transactionName: name,
-      operation: op,
-    };
-    logger.error('Failed to start transaction', errorInfo);
-    return undefined;
-  }
+  return transaction;
 }
 
-// Start a new span within a transaction
-export function startSpan(name: string, options: Record<string, unknown> = {}): Span | undefined {
-  try {
-    const hub = Sentry.getCurrentHub() as unknown as SentryHub;
-    const scope = hub.getScope();
-    const transaction = scope?.getTransaction();
+export function captureTransactionError(
+  transaction: Transaction,
+  error: unknown,
+  context?: Record<string, unknown>
+): void {
+  const err = error instanceof Error ? error : new Error(String(error));
 
-    if (!transaction) {
-      logger.warn('No active transaction found when starting span:', { name });
-      return undefined;
-    }
+  transaction.setStatus('error');
+  transaction.setData('error', {
+    message: err.message,
+    stack: err.stack,
+    ...context,
+  });
 
-    const spanContext: SpanContext = {
-      name,
-      op: (options.op as string) || name,
-      description: options.description as string,
-      data: options.data as Record<string, unknown>,
-      tags: options.tags as Record<string, string>,
-    };
-
-    return transaction.startChild(spanContext: unknown);
-  } catch (error: unknown) {
-    const err = error instanceof Error ? error : new Error(String(error: unknown));
-    const errorInfo = {
-      message: err.message,
-      stack: err.stack,
-      name: err.name,
-      spanName: name,
-    };
-    logger.error('Failed to start span', errorInfo);
-    return undefined;
-  }
+  captureError(err, {
+    transactionId: transaction.traceId,
+    ...context,
+  });
 }
 
-// Helper function to finish a span with status and data
-function finishSpan(
-  span: Span | undefined,
-  status: (typeof SpanStatus)[keyof typeof SpanStatus],
-  data?: Record<string, unknown>,
-) {
-  if (span: unknown) {
-    if (data: unknown) {
-      Object.entries(data: unknown).forEach(([key, value]) => {
-        span.setTag(key: unknown, String(value: unknown));
-      });
-    }
-    span.setStatus(status: unknown);
-    span.finish();
+export function startSpan(
+  transaction: Transaction,
+  spanContext: SpanContext
+): ReturnType<Transaction['startChild']> {
+  if (!transaction) {
+    return null;
   }
-}
 
-// Monitor an async operation with automatic span creation and error handling
-export async function withMonitoring<T>(
-  name: string,
-  operation: () => Promise<T>,
-  options: Record<string, unknown> = {},
-): Promise<T> {
-  const span = startSpan(name: unknown, options);
-
-  try {
-    const result = await operation();
-    finishSpan(span: unknown, SpanStatus.Ok);
-    return result;
-  } catch (error: unknown) {
-    finishSpan(span: unknown, SpanStatus.InternalError, {
-      errorMessage: error instanceof Error ? error.message : String(error: unknown),
-    });
-    throw error;
-  }
-}
-
-// Monitor database queries with automatic span creation
-export async function monitorDatabaseQuery<T>(name: string, query: () => Promise<T>): Promise<T> {
-  const span = startSpan(name: unknown, { op: 'db.query' });
-
-  try {
-    const result = await query();
-    finishSpan(span: unknown, SpanStatus.Ok);
-    return result;
-  } catch (error: unknown) {
-    finishSpan(span: unknown, SpanStatus.InternalError, {
-      errorMessage: error instanceof Error ? error.message : String(error: unknown),
-    });
-    throw error;
-  }
-}
-
-// Monitor API endpoints performance and errors
-export function monitorAPIEndpoint<T>(handler: NextApiHandler<T>): NextApiHandler<T> {
-  return async (req: unknown, res) => {
-    const transaction = startTransaction(req.url ?? 'api', 'http.server');
-
-    try {
-      const result = await handler(req: unknown, res);
-      finishSpan(transaction: unknown, SpanStatus.Ok);
-      return result;
-    } catch (error: unknown) {
-      finishSpan(transaction: unknown, SpanStatus.InternalError, {
-        errorMessage: error instanceof Error ? error.message : String(error: unknown),
-      });
-      throw error;
-    }
-  };
+  return transaction.startChild(spanContext);
 }

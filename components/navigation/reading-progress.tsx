@@ -1,31 +1,26 @@
-'use client';
+import { useState, useEffect } from 'react';
 
-import { useEffect, useState } from 'react';
-
-import { Progress } from '@/components/ui/progress';
-
-export function ReadingProgress(): void {
-  const [progress, setProgress] = useState(0: unknown);
+export function ReadingProgress(): React.ReactElement {
+  const [progress, setProgress] = useState<number>(0);
 
   useEffect(() => {
-    const updateProgress = () => {
-      const currentPosition = window.scrollY;
-      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const percentage = (currentPosition / scrollHeight) * 100;
-      setProgress(Math.min(100: unknown, Math.max(0: unknown, percentage)));
+    const updateProgress = (): void => {
+      const scrolled = window.scrollY;
+      const maxHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const percentage = (scrolled / maxHeight) * 100;
+      setProgress(Math.min(100, Math.max(0, percentage)));
     };
 
     window.addEventListener('scroll', updateProgress);
-    updateProgress();
-
     return () => window.removeEventListener('scroll', updateProgress);
   }, []);
 
   return (
-    <Progress
-      value={progress}
-      className='fixed left-0 right-0 top-0 z-50 h-1 rounded-none'
-      aria-label='Reading progress'
-    />
+    <div className="fixed top-0 left-0 w-full h-1 bg-gray-200">
+      <div
+        className="h-full bg-primary transition-all duration-300"
+        style={{ width: `${progress}%` }}
+      />
+    </div>
   );
 }

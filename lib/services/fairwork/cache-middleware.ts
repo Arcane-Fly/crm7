@@ -1,139 +1,79 @@
-import { CacheService } from '@/lib/services/cache/cache-service';
-import { logger } from '@/lib/services/logger';
-
-import type {
-  GetBaseRateParams,
-  GetClassificationsParams,
-  GetFutureRatesParams,
-  GetRateHistoryParams,
-  RateCalculationRequest,
-  ValidateRateParams,
-} from './types';
-
-class LogError extends Error {
-  constructor(
-    message: string,
-    public readonly details: {
-      error?: string;
-      awardCode?: string;
-      [key: string]: unknown;
-    },
-  ) {
-    super(message: unknown);
-    this.name = 'LogError';
-  }
-}
-
-const CACHE_CONFIG = {
-  ttl: 24 * 60 * 60, // 24 hours default TTL
-  prefix: 'fairwork:',
-  retryCount: 3,
-};
+import { CacheService } from '../cache/cache-service';
+import { type FairWorkApiClient } from './api-client';
+import { logger } from '@/lib/logger';
 
 const TTL_CONFIG = {
-  baseRate: 24 * 60 * 60, // 24 hours
-  classifications: 7 * 24 * 60 * 60, // 7 days
-  futureRates: 24 * 60 * 60, // 24 hours
-  rateHistory: 7 * 24 * 60 * 60, // 7 days
-  validation: 24 * 60 * 60, // 24 hours
-  calculation: 24 * 60 * 60, // 24 hours
+  baseRate: 3600, // 1 hour
+  classifications: 7200, // 2 hours
+  futureRates: 14400, // 4 hours
+  allowances: 3600, // 1 hour
+  penalties: 3600, // 1 hour
+  leaveEntitlements: 7200, // 2 hours
 };
+
+const CACHE_CONFIG = {
+  keyPrefix: 'fairwork',
+  defaultTtl: TTL_CONFIG.baseRate,
+};
+
+export class FairWorkCacheError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'FairWorkCacheError';
+  }
+}
 
 export class FairWorkCacheMiddleware {
   private readonly cache: CacheService;
+  private readonly client: FairWorkApiClient;
 
-  constructor() {
-    this.cache = new CacheService(CACHE_CONFIG: unknown);
+  constructor(client: FairWorkApiClient) {
+    this.client = client;
+    this.cache = new CacheService(CACHE_CONFIG);
   }
 
-  private generateKey(prefix: string, params: Record<string, any>): string {
-    const sortedParams = Object.entries(params: unknown)
-      .filter(([, value]) => value !== undefined)
-      .sort(([a], [b]) => a.localeCompare(b: unknown))
-      .map(([key, value]) => `${key}:${JSON.stringify(value: unknown)}`)
-      .join('|');
+  private getCacheKey(endpoint: string, params: Record<string, unknown>): string {
+    const sortedParams = Object.entries(params)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, value]) => `${key}:${JSON.stringify(value)}`)
+      .join(',');
 
-    return `${prefix}:${sortedParams}`;
+    return `${endpoint}:${sortedParams}`;
   }
 
-  async getBaseRate<T>(params: GetBaseRateParams, factory: () => Promise<T>): Promise<T> {
-    const key = this.generateKey('base-rate', params);
-    return this.cache.getOrSet(key: unknown, factory, TTL_CONFIG.baseRate);
+  async getBaseRate(params: Record<string, unknown>, factory: () => Promise<unknown>): Promise<unknown> {
+    const key = this.getCacheKey('base-rate', params);
+    return this.cache.getOrSet(key, factory, TTL_CONFIG.baseRate);
   }
 
-  async getClassifications<T>(
-    params: GetClassificationsParams,
-    factory: () => Promise<T>,
-  ): Promise<T> {
-    const key = this.generateKey('classifications', params);
-    return this.cache.getOrSet(key: unknown, factory, TTL_CONFIG.classifications);
+  async getClassifications(
+    params: Record<string, unknown>,
+    factory: () => Promise<unknown>
+  ): Promise<unknown> {
+    const key = this.getCacheKey('classifications', params);
+    return this.cache.getOrSet(key, factory, TTL_CONFIG.classifications);
   }
 
-  async getFutureRates<T>(params: GetFutureRatesParams, factory: () => Promise<T>): Promise<T> {
-    const key = this.generateKey('future-rates', params);
-    return this.cache.getOrSet(key: unknown, factory, TTL_CONFIG.futureRates);
+  async getFutureRates(params: Record<string, unknown>, factory: () => Promise<unknown>): Promise<unknown> {
+    const key = this.getCacheKey('future-rates', params);
+    return this.cache.getOrSet(key, factory, TTL_CONFIG.futureRates);
   }
 
-  async getRateHistory<T>(params: GetRateHistoryParams, factory: () => Promise<T>): Promise<T> {
-    const key = this.generateKey('rate-history', params);
-    return this.cache.getOrSet(key: unknown, factory, TTL_CONFIG.rateHistory);
+  async getAllowances(params: Record<string, unknown>, factory: () => Promise<unknown>): Promise<unknown> {
+    const key = this.getCacheKey('allowances', params);
+    return this.cache.getOrSet(key, factory, TTL_CONFIG.allowances);
   }
 
-  async validateRate<T>(params: ValidateRateParams, factory: () => Promise<T>): Promise<T> {
-    const key = this.generateKey('validate-rate', params);
-    return this.cache.getOrSet(key: unknown, factory, TTL_CONFIG.validation);
+  async getPenalties(params: Record<string, unknown>, factory: () => Promise<unknown>): Promise<unknown> {
+    const key = this.getCacheKey('penalties', params);
+    return this.cache.getOrSet(key, factory, TTL_CONFIG.penalties);
   }
 
-  private toRecord(obj: unknown): Record<string, unknown> {
-    if (obj && typeof obj === 'object') {
-      return Object.entries(obj: unknown).reduce(
-        (acc: unknown, [key, value]) => {
-          acc[key] = value;
-          return acc;
-        },
-        {} as Record<string, unknown>,
-      );
-    }
-    return {};
-  }
-
-  async calculateRate<T>(params: RateCalculationRequest, factory: () => Promise<T>): Promise<T> {
-    const key = this.generateKey('calculate-rate', this.toRecord(params: unknown));
-    return this.cache.getOrSet(key: unknown, factory, TTL_CONFIG.calculation);
-  }
-
-  async invalidateBaseRate(params: GetBaseRateParams): Promise<void> {
-    const key = this.generateKey('base-rate', params);
-    await this.cache.delete(key: unknown);
-  }
-
-  async invalidateClassifications(params: GetClassificationsParams): Promise<void> {
-    const key = this.generateKey('classifications', params);
-    await this.cache.delete(key: unknown);
-  }
-
-  async invalidateAwardCache(awardCode: string): Promise<void> {
-    try {
-      // Invalidate all caches related to this award
-      await this.cache.deletePattern(`*${awardCode}*`);
-      logger.info('Invalidated award cache:', { awardCode });
-    } catch (error: unknown) {
-      const logError = new LogError('Failed to invalidate award cache', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        awardCode,
-      });
-      logger.error('Failed to invalidate award cache:', logError);
-      throw error;
-    }
-  }
-
-  async invalidateAll(): Promise<void> {
-    await this.cache.clear();
-  }
-
-  async close(): Promise<void> {
-    await this.cache.close();
+  async getLeaveEntitlements(
+    params: Record<string, unknown>,
+    factory: () => Promise<unknown>
+  ): Promise<unknown> {
+    const key = this.getCacheKey('leave-entitlements', params);
+    return this.cache.getOrSet(key, factory, TTL_CONFIG.leaveEntitlements);
   }
 }
-
-export default FairWorkCacheMiddleware;

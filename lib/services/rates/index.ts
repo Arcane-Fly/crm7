@@ -28,9 +28,9 @@ export class RateService implements RatesService {
 
   async getTemplates({ orgId }: { orgId: string }): Promise<{ data: RateTemplate[] }> {
     try {
-      const templates = await this.rateManagementService.getRateTemplates(orgId: unknown);
+      const templates = await this.rateManagementService.getRateTemplates(orgId);
       return { data: templates };
-    } catch (error: unknown) {
+    } catch (error) {
       logger.error('Failed to get templates', { error, orgId });
       throw new RateError('Failed to get templates', { cause: error });
     }
@@ -38,12 +38,12 @@ export class RateService implements RatesService {
 
   async getRateTemplate(id: string): Promise<RateTemplate> {
     try {
-      const template = await this.rateManagementService.getRateTemplate(id: unknown);
+      const template = await this.rateManagementService.getRateTemplate(id);
       if (!template) {
         throw new RateError(`Template ${id} not found`);
       }
       return template;
-    } catch (error: unknown) {
+    } catch (error) {
       logger.error('Failed to get template', { error, id });
       throw error instanceof RateError
         ? error
@@ -53,9 +53,9 @@ export class RateService implements RatesService {
 
   async createRateTemplate(template: Partial<RateTemplate>): Promise<RateTemplate> {
     try {
-      const newTemplate = await this.rateManagementService.createRateTemplate(template: unknown);
+      const newTemplate = await this.rateManagementService.createRateTemplate(template);
       return newTemplate;
-    } catch (error: unknown) {
+    } catch (error) {
       logger.error('Failed to create template', { error });
       throw new RateError('Failed to create template', { cause: error });
     }
@@ -63,9 +63,9 @@ export class RateService implements RatesService {
 
   async updateRateTemplate(id: string, template: Partial<RateTemplate>): Promise<RateTemplate> {
     try {
-      const updatedTemplate = await this.rateManagementService.updateRateTemplate(id: unknown, template);
+      const updatedTemplate = await this.rateManagementService.updateRateTemplate(id, template);
       return updatedTemplate;
-    } catch (error: unknown) {
+    } catch (error) {
       logger.error('Failed to update template', { error, id });
       throw new RateError('Failed to update template', { cause: error });
     }
@@ -77,8 +77,8 @@ export class RateService implements RatesService {
     updatedBy: string,
   ): Promise<void> {
     try {
-      await this.rateManagementService.updateRateTemplateStatus(id: unknown, status, updatedBy);
-    } catch (error: unknown) {
+      await this.rateManagementService.updateRateTemplateStatus(id, status, updatedBy);
+    } catch (error) {
       logger.error('Failed to update template status', { error, id });
       throw new RateError('Failed to update template status', { cause: error });
     }
@@ -86,8 +86,8 @@ export class RateService implements RatesService {
 
   async deleteRateTemplate(id: string): Promise<void> {
     try {
-      await this.rateManagementService.deleteRateTemplate(id: unknown);
-    } catch (error: unknown) {
+      await this.rateManagementService.deleteRateTemplate(id);
+    } catch (error) {
       logger.error('Failed to delete template', { error, id });
       throw new RateError('Failed to delete template', { cause: error });
     }
@@ -95,9 +95,9 @@ export class RateService implements RatesService {
 
   async getRateTemplateHistory(id: string): Promise<{ data: RateTemplateHistory[] }> {
     try {
-      const history = await this.rateManagementService.getRateTemplateHistory(id: unknown);
+      const history = await this.rateManagementService.getRateTemplateHistory(id);
       return { data: history };
-    } catch (error: unknown) {
+    } catch (error) {
       logger.error('Failed to get template history', { error, id });
       throw new RateError('Failed to get template history', { cause: error });
     }
@@ -105,9 +105,9 @@ export class RateService implements RatesService {
 
   async getRateCalculations(id: string): Promise<{ data: RateCalculation[] }> {
     try {
-      const calculations = await this.rateManagementService.getRateCalculations(id: unknown);
+      const calculations = await this.rateManagementService.getRateCalculations(id);
       return { data: calculations };
-    } catch (error: unknown) {
+    } catch (error) {
       logger.error('Failed to get rate calculations', { error, id });
       throw new RateError('Failed to get rate calculations', { cause: error });
     }
@@ -115,9 +115,9 @@ export class RateService implements RatesService {
 
   async validateRateTemplate(template: RateTemplate): Promise<RateValidationResult> {
     try {
-      const result = await this.rateManagementService.validateRateTemplate(template: unknown);
+      const result = await this.rateManagementService.validateRateTemplate(template);
       return result;
-    } catch (error: unknown) {
+    } catch (error) {
       logger.error('Failed to validate template', { error });
       throw new RateError('Failed to validate template', { cause: error });
     }
@@ -125,9 +125,9 @@ export class RateService implements RatesService {
 
   async calculateRate(template: RateTemplate): Promise<RateCalculationResult> {
     try {
-      const result = await this.rateManagementService.calculateRate(template: unknown);
+      const result = await this.rateManagementService.calculateRate(template);
       return result;
-    } catch (error: unknown) {
+    } catch (error) {
       logger.error('Failed to calculate rate', { error });
       throw new RateError('Failed to calculate rate', { cause: error });
     }
@@ -135,9 +135,9 @@ export class RateService implements RatesService {
 
   async getBulkCalculations(orgId: string): Promise<{ data: BulkCalculation[] }> {
     try {
-      const calculations = await this.rateManagementService.getBulkCalculations(orgId: unknown);
+      const calculations = await this.rateManagementService.getBulkCalculations(orgId);
       return { data: calculations };
-    } catch (error: unknown) {
+    } catch (error) {
       logger.error('Failed to get bulk calculations', { error, orgId });
       throw new RateError('Failed to get bulk calculations', { cause: error });
     }
@@ -145,9 +145,9 @@ export class RateService implements RatesService {
 
   async createBulkCalculation(params: BulkCalculationParams): Promise<{ data: BulkCalculation }> {
     try {
-      const result = await this.rateManagementService.createBulkCalculation(params: unknown);
+      const result = await this.rateManagementService.createBulkCalculation(params);
       return { data: result };
-    } catch (error: unknown) {
+    } catch (error) {
       logger.error('Failed to create bulk calculation', { error });
       throw new RateError('Failed to create bulk calculation', { cause: error });
     }
@@ -155,9 +155,9 @@ export class RateService implements RatesService {
 
   async getAnalytics({ orgId }: { orgId: string }): Promise<{ data: RateAnalytics }> {
     try {
-      const analytics = await this.rateManagementService.getAnalytics(orgId: unknown);
+      const analytics = await this.rateManagementService.getAnalytics(orgId);
       return { data: analytics };
-    } catch (error: unknown) {
+    } catch (error) {
       logger.error('Failed to get analytics', { error, orgId });
       throw new RateError('Failed to get analytics', { cause: error });
     }

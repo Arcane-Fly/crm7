@@ -85,9 +85,9 @@ export class LMSService {
 
       const { data, error } = await query;
 
-      if (error: unknown) throw error;
+      if (error) throw error;
       return { data: data as Course[] };
-    } catch (error: unknown) {
+    } catch (error) {
       logger.error('Failed to fetch courses', error as Error);
       throw error;
     }
@@ -97,9 +97,9 @@ export class LMSService {
     try {
       const { data, error } = await this.supabase.from('courses').select('*').eq('id', id).single();
 
-      if (error: unknown) throw error;
+      if (error) throw error;
       return { data: data as Course };
-    } catch (error: unknown) {
+    } catch (error) {
       logger.error('Failed to fetch course', error as Error, { id });
       throw error;
     }
@@ -120,9 +120,9 @@ export class LMSService {
         .select()
         .single();
 
-      if (error: unknown) throw error;
+      if (error) throw error;
       return { data: data as Enrollment };
-    } catch (error: unknown) {
+    } catch (error) {
       logger.error('Failed to enroll user', error as Error, { userId, courseId });
       throw error;
     }
@@ -141,9 +141,9 @@ export class LMSService {
         .select()
         .single();
 
-      if (error: unknown) throw error;
+      if (error) throw error;
       return { data: data as Enrollment };
-    } catch (error: unknown) {
+    } catch (error) {
       logger.error('Failed to update progress', error as Error, { enrollmentId, progress });
       throw error;
     }
@@ -157,9 +157,9 @@ export class LMSService {
         .select('*')
         .eq('course_id', courseId);
 
-      if (error: unknown) throw error;
+      if (error) throw error;
       return { data: data as Assessment[] };
-    } catch (error: unknown) {
+    } catch (error) {
       logger.error('Failed to fetch assessments', error as Error, { courseId });
       throw error;
     }
@@ -168,7 +168,7 @@ export class LMSService {
   async submitAssessment(params: {
     enrollment_id: string;
     assessment_id: string;
-    answers: Record<string, any>;
+    answers: Record<string, unknown>;
     grade: number;
   }) {
     try {
@@ -181,7 +181,7 @@ export class LMSService {
         .select()
         .single();
 
-      if (error: unknown) throw error;
+      if (error) throw error;
 
       // Update enrollment if grade is passing
       const assessment = await this.getAssessmentById(params.assessment_id);
@@ -190,7 +190,7 @@ export class LMSService {
       }
 
       return { data };
-    } catch (error: unknown) {
+    } catch (error) {
       logger.error('Failed to submit assessment', error as Error, { params });
       throw error;
     }
@@ -203,7 +203,7 @@ export class LMSService {
       .eq('id', id)
       .single();
 
-    if (error: unknown) throw error;
+    if (error) throw error;
     return { data: data as Assessment };
   }
 
@@ -214,9 +214,9 @@ export class LMSService {
         course_id: courseId,
       });
 
-      if (error: unknown) throw error;
+      if (error) throw error;
       return { data };
-    } catch (error: unknown) {
+    } catch (error) {
       logger.error('Failed to fetch enrollment stats', error as Error, { courseId });
       throw error;
     }
@@ -228,9 +228,9 @@ export class LMSService {
         user_id: userId,
       });
 
-      if (error: unknown) throw error;
+      if (error) throw error;
       return { data };
-    } catch (error: unknown) {
+    } catch (error) {
       logger.error('Failed to fetch user progress', error as Error, { userId });
       throw error;
     }

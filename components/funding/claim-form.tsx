@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-
 import { Button } from '@/components/ui/button';
 import { FileUploader } from '@/components/ui/file-uploader';
 import { Input } from '@/components/ui/input';
@@ -33,10 +32,10 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
   const [referenceNumber, setReferenceNumber] = useState('');
   const [notes, setNotes] = useState('');
   const [files, setFiles] = useState<File[]>([]);
-  const [isLoading, setIsLoading] = useState(false: unknown);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!programId || !employeeId || !amountClaimed) {
       toast({
@@ -48,13 +47,12 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
     }
 
     try {
-      setIsLoading(true: unknown);
-
+      setIsLoading(true);
       // Create the funding claim
       const claim = await fundingService.createClaim({
         org_id: user.org_id,
         claim_number: referenceNumber,
-        amount: parseFloat(amountClaimed: unknown),
+        amount: parseFloat(amountClaimed),
         metadata: {
           program_id: programId,
           employee_id: employeeId,
@@ -66,13 +64,13 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
       // Upload documents if any
       if (files.length > 0) {
         await Promise.all(
-          files.map((file: unknown) =>
+          files.map((file: File) =>
             fundingService.uploadDocument({
               fundingClaimId: claim.id,
               documentType: 'supporting_document',
               file,
-            }),
-          ),
+            })
+          )
         );
       }
 
@@ -82,7 +80,7 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
       });
 
       onSuccess?.();
-    } catch (error: unknown) {
+    } catch (error) {
       console.error('Error creating funding claim:', error);
       toast({
         title: 'Error',
@@ -90,31 +88,22 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
         variant: 'destructive',
       });
     } finally {
-      setIsLoading(false: unknown);
+      setIsLoading(false);
     }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className='space-y-6'
-    >
+    <form onSubmit={handleSubmit} className='space-y-6'>
       <div className='grid grid-cols-2 gap-4'>
         <div className='space-y-2'>
           <Label>Funding Program</Label>
-          <Select
-            value={programId}
-            onValueChange={setProgramId}
-          >
+          <Select value={programId} onValueChange={setProgramId}>
             <SelectTrigger>
               <SelectValue placeholder='Select a program' />
             </SelectTrigger>
             <SelectContent>
-              {programs.map((program: unknown) => (
-                <SelectItem
-                  key={program.id}
-                  value={program.id}
-                >
+              {programs.map((program) => (
+                <SelectItem key={program.id} value={program.id}>
                   {program.name}
                 </SelectItem>
               ))}
@@ -124,19 +113,13 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
 
         <div className='space-y-2'>
           <Label>Employee</Label>
-          <Select
-            value={employeeId}
-            onValueChange={setEmployeeId}
-          >
+          <Select value={employeeId} onValueChange={setEmployeeId}>
             <SelectTrigger>
               <SelectValue placeholder='Select an employee' />
             </SelectTrigger>
             <SelectContent>
-              {employees.map((employee: unknown) => (
-                <SelectItem
-                  key={employee.id}
-                  value={employee.id}
-                >
+              {employees.map((employee) => (
+                <SelectItem key={employee.id} value={employee.id}>
                   {employee.firstName} {employee.lastName}
                 </SelectItem>
               ))}
@@ -148,19 +131,13 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
       <div className='grid grid-cols-2 gap-4'>
         <div className='space-y-2'>
           <Label>Host Employer</Label>
-          <Select
-            value={hostEmployerId}
-            onValueChange={setHostEmployerId}
-          >
+          <Select value={hostEmployerId} onValueChange={setHostEmployerId}>
             <SelectTrigger>
               <SelectValue placeholder='Select a host employer' />
             </SelectTrigger>
             <SelectContent>
-              {hostEmployers.map((employer: unknown) => (
-                <SelectItem
-                  key={employer.id}
-                  value={employer.id}
-                >
+              {hostEmployers.map((employer) => (
+                <SelectItem key={employer.id} value={employer.id}>
                   {employer.name}
                 </SelectItem>
               ))}
@@ -173,7 +150,7 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
           <Input
             type='number'
             value={amountClaimed}
-            onChange={(e: unknown) => setAmountClaimed(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAmountClaimed(e.target.value)}
             placeholder='Enter amount'
             min='0'
             step='0.01'
@@ -185,7 +162,7 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
         <Label>Reference Number</Label>
         <Input
           value={referenceNumber}
-          onChange={(e: unknown) => setReferenceNumber(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setReferenceNumber(e.target.value)}
           placeholder='Optional reference number'
         />
       </div>
@@ -194,7 +171,7 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
         <Label>Notes</Label>
         <Textarea
           value={notes}
-          onChange={(e: unknown) => setNotes(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNotes(e.target.value)}
           placeholder='Additional notes or comments'
         />
       </div>
@@ -203,16 +180,13 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
         <Label>Supporting Documents</Label>
         <FileUploader
           accept='.pdf,.doc,.docx,.jpg,.jpeg,.png'
-          maxSize={5 * 1024 * 1024} // 5MB
-          onFileSelect={(files: unknown) => setFiles(files: unknown)}
+          maxSize={5 * 1024 * 1024}
+          onFileSelect={(files: File[]) => setFiles(files)}
           multiple={true}
         />
       </div>
 
-      <Button
-        type='submit'
-        disabled={isLoading}
-      >
+      <Button type='submit' disabled={isLoading}>
         Submit Claim
       </Button>
     </form>

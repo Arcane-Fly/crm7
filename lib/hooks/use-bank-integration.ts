@@ -1,67 +1,29 @@
-import type { UseQueryResult } from '@tanstack/react-query';
+import { useState } from 'react';
+import { type BankIntegrationService } from '@/lib/services/bank-integration';
 
-import type { BankAccount, BankTransaction, PaymentRequest } from '@/lib/types/bank';
+export function useBankIntegration(bankIntegrationService: BankIntegrationService) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-export interface BankIntegrationResult {
-  accounts: UseQueryResult<BankAccount[]>;
-  transactions: UseQueryResult<BankTransaction[]>;
-  createPayment: (
-    payment: Omit<PaymentRequest, 'id' | 'created_at' | 'updated_at'>,
-  ) => Promise<void>;
-  isCreatingPayment: boolean;
-}
+  const handleIntegration = async (data: unknown) => {
+    setIsLoading(true);
+    setError(null);
 
-const createQueryResult = <T>(data: T[]): UseQueryResult<T[]> => {
-  const promise = Promise.resolve(data: unknown);
-
-  const result: UseQueryResult<T[]> = {
-    data,
-    isLoading: false,
-    error: null,
-    isError: false,
-    isPending: false,
-    isSuccess: true,
-    status: 'success',
-    isLoadingError: false,
-    isRefetchError: false,
-    isStale: false,
-    isFetched: true,
-    isFetchedAfterMount: true,
-    isFetching: false,
-    isInitialLoading: false,
-    isPaused: false,
-    isPlaceholderData: false,
-    isRefetching: false,
-    dataUpdatedAt: Date.now(),
-    errorUpdatedAt: 0,
-    failureCount: 0,
-    failureReason: null,
-    errorUpdateCount: 0,
-    fetchStatus: 'idle',
-    promise,
-    refetch: async () => ({
-      ...result,
-      promise,
-    }),
-  };
-
-  return result;
-};
-
-export function useBankIntegration(): BankIntegrationResult {
-  const accounts = createQueryResult<BankAccount>([]);
-  const transactions = createQueryResult<BankTransaction>([]);
-
-  const createPayment = async (
-    _payment: Omit<PaymentRequest, 'id' | 'created_at' | 'updated_at'>,
-  ): Promise<void> => {
-    // Implementation
+    try {
+      const promise = Promise.resolve(data);
+      return await promise;
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Bank integration failed');
+      setError(error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return {
-    accounts,
-    transactions,
-    createPayment,
-    isCreatingPayment: false,
+    isLoading,
+    error,
+    handleIntegration,
   };
 }

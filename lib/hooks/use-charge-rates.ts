@@ -1,49 +1,46 @@
-import { useMutation } from '@tanstack/react-query';
+import { useState } from 'react';
+import { type RatesCalculator } from '@/lib/services/rates-calc';
 
-import type { ChargeConfig, ChargeResult } from '@/lib/services/charge-calculation/types';
-import { ApiError } from '@/lib/utils/error';
-
-interface ChargeRateResponse {
-  success: boolean;
-  data?: {
-    result: ChargeResult;
-    rates: {
-      weeklyCharge: number;
-      hourlyCharge: number;
-    };
-    summary: string;
-  };
-  error?: {
-    message: string;
-    details?: unknown;
-  };
+interface ChargeRatesConfig {
+  baseRate: number;
+  margin: number;
+  adjustments: Record<string, number>;
 }
 
-/**
- * Hook for calculating charge rates
- */
-export function useChargeRates(): void {
-  return useMutation<ChargeRateResponse, ApiError, ChargeConfig>({
-    mutationFn: async (config: unknown) => {
-      const response = await fetch('/api/charge-rates', {
+export function useChargeRates(ratesCalculator: RatesCalculator) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const calculateRate = async (config: ChargeRatesConfig) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/charge-rates/calculate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(config: unknown),
+        body: JSON.stringify(config),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new ApiError({
-          message: data.error?.message ?? 'Failed to calculate charge rates',
-          statusCode: response.status,
-          context: data.error?.details,
-        });
+        throw new Error('Failed to calculate charge rate');
       }
 
-      return data;
-    },
-  });
+      return await response.json();
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Rate calculation failed');
+      setError(error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return {
+    isLoading,
+    error,
+    calculateRate,
+  };
 }

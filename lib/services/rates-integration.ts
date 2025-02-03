@@ -23,8 +23,8 @@ export interface SyncResult {
 
 export class RatesIntegrationService {
   private supabase = createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL ?? undefined,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? undefined,
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '',
   );
 
   async getIntegrations(org_id: string): Promise<IntegrationConfig[]> {
@@ -34,7 +34,7 @@ export class RatesIntegrationService {
       .eq('org_id', org_id)
       .eq('is_active', true);
 
-    if (error: unknown) throw error;
+    if (error) throw error;
     return data;
   }
 
@@ -47,7 +47,7 @@ export class RatesIntegrationService {
     options?: Record<string, any>;
   }): Promise<SyncResult> {
     const { data, error } = await this.supabase.rpc('sync_rates', params);
-    if (error: unknown) throw error;
+    if (error) throw error;
     return data;
   }
 
@@ -58,7 +58,7 @@ export class RatesIntegrationService {
     const { data, error } = await this.supabase.rpc('validate_integration', {
       config: config,
     });
-    if (error: unknown) throw error;
+    if (error) throw error;
     return data;
   }
 
@@ -68,7 +68,7 @@ export class RatesIntegrationService {
     options?: Record<string, any>;
   }): Promise<SyncResult> {
     const { data, error } = await this.supabase.rpc('import_rates', params);
-    if (error: unknown) throw error;
+    if (error) throw error;
     return data;
   }
 
@@ -79,7 +79,7 @@ export class RatesIntegrationService {
     options?: Record<string, any>;
   }): Promise<SyncResult> {
     const { data, error } = await this.supabase.rpc('export_rates', params);
-    if (error: unknown) throw error;
+    if (error) throw error;
     return data;
   }
 
@@ -93,7 +93,7 @@ export class RatesIntegrationService {
     next_run: Date;
   }> {
     const { data, error } = await this.supabase.rpc('schedule_rate_sync', params);
-    if (error: unknown) throw error;
+    if (error) throw error;
     return data;
   }
 
@@ -121,19 +121,19 @@ export class RatesIntegrationService {
     const { org_id, integration_id, start_date, end_date, status, is_active } = params;
     const query = this.supabase.from('integration_sync_history').select('*').eq('org_id', org_id);
 
-    if (integration_id: unknown) {
+    if (integration_id) {
       query.eq('integration_id', integration_id);
     }
 
-    if (start_date: unknown) {
+    if (start_date) {
       query.gte('started_at', start_date.toISOString());
     }
 
-    if (end_date: unknown) {
+    if (end_date) {
       query.lte('started_at', end_date.toISOString());
     }
 
-    if (status: unknown) {
+    if (status) {
       query.eq('status', status);
     }
 
@@ -143,7 +143,7 @@ export class RatesIntegrationService {
 
     const { data, error } = await query.order('started_at', { ascending: false });
 
-    if (error: unknown) throw error;
+    if (error) throw error;
     return data;
   }
 
@@ -157,7 +157,7 @@ export class RatesIntegrationService {
     const { data, error } = await this.supabase.rpc('get_integration_status', {
       integration_id,
     });
-    if (error: unknown) throw error;
+    if (error) throw error;
     return data;
   }
 
@@ -187,7 +187,7 @@ export class RatesIntegrationService {
       .select()
       .single();
 
-    if (error: unknown) {
+    if (error) {
       throw error;
     }
 
@@ -223,7 +223,7 @@ export class RatesIntegrationService {
       .select()
       .single();
 
-    if (error: unknown) {
+    if (error) {
       throw error;
     }
 

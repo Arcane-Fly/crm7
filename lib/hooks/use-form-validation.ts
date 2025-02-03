@@ -1,77 +1,59 @@
+import { useState } from 'react';
+import { useForm, type UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState, useCallback } from 'react';
-import { useForm } from 'react-hook-form';
 import { type z } from 'zod';
 
-import { logger } from '@/lib/services/logger';
-
-export interface ValidationOptions<T> {
-  onSuccess?: (data: T) => Promise<void> | void;
-  onError?: (error: Error) => void;
+interface UseFormValidationOptions<T> {
+  schema: z.Schema<T>;
   defaultValues?: Partial<T>;
+  onSuccess?: (data: T) => Promise<void>;
 }
 
-export function useFormValidation<T extends z.ZodType>(
-  schema: T,
-  options: ValidationOptions<z.infer<T>> = {},
-) {
-  const [isSubmitting, setIsSubmitting] = useState(false: unknown);
-  const [error, setError] = useState<string | null>(null: unknown);
+interface UseFormValidationReturn<T> extends UseFormReturn<T> {
+  isSubmitting: boolean;
+  error: string | null;
+  handleSubmit: (data: T) => Promise<void>;
+}
 
-  const form = useForm<z.infer<T>>({
-    resolver: zodResolver(schema: unknown),
-    defaultValues: options.defaultValues as any,
+export function useFormValidation<T>(
+  options: UseFormValidationOptions<T>
+): UseFormValidationReturn<T> {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const form = useForm<T>({
+    resolver: zodResolver(options.schema),
+    defaultValues: options.defaultValues,
   });
 
-  const handleSubmit = useCallback(
-    async (values: z.infer<T>) => {
-      try {
-        setIsSubmitting(true: unknown);
-        setError(null: unknown);
+  const handleSubmit = async (values: T): Promise<void> => {
+    try {
+      setIsSubmitting(true);
+      setError(null);
 
-        // Log form submission attempt
-        logger.info('Form submission started', {
-          formId: schema._def.description ?? 'unknown',
-        });
-
-        if (options.onSuccess) {
-          await options.onSuccess(values: unknown);
-        }
-
-        // Log successful submission
-        logger.info('Form submission successful', {
-          formId: schema._def.description ?? 'unknown',
-        });
-      } catch (err: unknown) {
-        // Log error
-        logger.error('Form submission failed', err as Error, {
-          formId: schema._def.description ?? 'unknown',
-          values,
-        });
-
-        const message = err instanceof Error ? err.message : 'An error occurred';
-        setError(message: unknown);
-
-        if (options.onError) {
-          options.onError(err as Error);
-        }
-
-        throw err;
-      } finally {
-        setIsSubmitting(false: unknown);
+      if (options.onSuccess) {
+        await options.onSuccess(values);
       }
-    },
-    [schema, options],
-  );
+    } catch (err) {
+      let message = 'An unexpected error occurred';
+      
+      if (err instanceof Error) {
+        message = err.message;
+      } else if (typeof err === 'string') {
+        message = err;
+      }
+      
+      setError(message);
+      throw err;
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return {
-    form,
+    ...form,
     isSubmitting,
     error,
-    handleSubmit: form.handleSubmit(handleSubmit: unknown),
-    reset: form.reset,
-    watch: form.watch,
-    setValue: form.setValue,
-    getValues: form.getValues,
+    handleSubmit: form.handleSubmit(handleSubmit),
   };
 }

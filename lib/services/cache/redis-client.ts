@@ -1,83 +1,85 @@
 import Redis from 'ioredis';
+import { logger } from '@/lib/logger';
 
-import { logger } from '@/lib/services/logger';
-
-class LogError extends Error {
+export class RedisError extends Error {
   constructor(message: string) {
-    super(message: unknown);
-    this.name = 'LogError';
+    super(message);
+    this.name = 'RedisError';
   }
-  error?: string;
-  stack?: string;
-  [key: string]: unknown;
 }
 
-const REDIS_CONFIG = {
-  host: process.env.REDIS_HOST ?? 'localhost',
-  port: parseInt(process.env.REDIS_PORT ?? '6379', 10),
-  password: process.env.REDIS_PASSWORD,
-  keyPrefix: 'fairwork:',
-  retryStrategy: (times: number) => {
-    const delay = Math.min(times * 50, 2000);
-    return delay;
-  },
-};
+export interface RedisClient {
+  get(key: string): Promise<string | null>;
+  set(key: string, value: string): Promise<void>;
+  setex(key: string, seconds: number, value: string): Promise<void>;
+  del(...keys: string[]): Promise<void>;
+  keys(pattern: string): Promise<string[]>;
+}
 
-class RedisClient {
-  private static instance: Redis | null = null;
-  private static isConnecting = false;
+export class RedisClientImpl implements RedisClient {
+  private client: Redis | null = null;
+  private connecting = false;
+  private readonly maxRetries = 3;
+  private retryCount = 0;
 
-  private constructor() {}
+  constructor(private readonly config: Redis.RedisOptions) {}
 
-  public static async getInstance(): Promise<Redis> {
-    if (RedisClient.instance) {
-      return RedisClient.instance;
-    }
-
-    if (RedisClient.isConnecting) {
-      // Wait for connection to complete
-      while (RedisClient.isConnecting) {
-        await new Promise((resolve: unknown) => setTimeout(resolve: unknown, 100));
+  private async connect(): Promise<void> {
+    if (this.client) return;
+    if (this.connecting) {
+      while (this.connecting && !this.client) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
-      return RedisClient.instance ?? undefined;
+      return;
     }
-
-    RedisClient.isConnecting = true;
 
     try {
-      const redis = new Redis(REDIS_CONFIG: unknown);
+      this.connecting = true;
+      this.retryCount++;
 
-      redis.on('error', (error: Error) => {
-        const logError = new LogError('Redis connection error');
-        logError.error = error.message;
-        logError.stack = error.stack;
-        logger.error('Redis connection error:', logError);
+      const redis = new Redis(this.config);
+
+      redis.on('error', (error) => {
+        logger.error('Redis connection error:', error);
       });
 
-      redis.on('connect', () => {
-        logger.info('Redis connected successfully');
-      });
+      this.client = redis;
+      this.connecting = false;
+      this.retryCount = 0;
+    } catch (error) {
+      this.connecting = false;
+      logger.error('Redis connection failed:', error);
 
-      await redis.ping();
-      RedisClient.instance = redis;
-      return redis;
-    } catch (error: unknown) {
-      const logError = new LogError('Failed to initialize Redis');
-      logError.error = error instanceof Error ? error.message : 'Unknown error';
-      logError.stack = error instanceof Error ? error.stack : undefined;
-      logger.error('Failed to initialize Redis:', logError);
-      throw error;
-    } finally {
-      RedisClient.isConnecting = false;
+      if (this.retryCount < this.maxRetries) {
+        await this.connect();
+      } else {
+        throw new RedisError('Failed to connect to Redis after max retries');
+      }
     }
   }
 
-  public static async close(): Promise<void> {
-    if (RedisClient.instance) {
-      await RedisClient.instance.quit();
-      RedisClient.instance = null;
-    }
+  async get(key: string): Promise<string | null> {
+    await this.connect();
+    return this.client!.get(key);
+  }
+
+  async set(key: string, value: string): Promise<void> {
+    await this.connect();
+    await this.client!.set(key, value);
+  }
+
+  async setex(key: string, seconds: number, value: string): Promise<void> {
+    await this.connect();
+    await this.client!.setex(key, seconds, value);
+  }
+
+  async del(...keys: string[]): Promise<void> {
+    await this.connect();
+    await this.client!.del(...keys);
+  }
+
+  async keys(pattern: string): Promise<string[]> {
+    await this.connect();
+    return this.client!.keys(pattern);
   }
 }
-
-export default RedisClient;

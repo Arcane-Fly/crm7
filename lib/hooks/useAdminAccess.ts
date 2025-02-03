@@ -1,39 +1,32 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useUser } from './use-user';
 
-import { useAuth } from '@/lib/auth/context';
-import { createClient } from '@/lib/supabase/client';
-
-const ADMIN_EMAIL = 'braden.lang77@gmail.com';
-
-export function useAdminAccess(): void {
-  const { user } = useAuth();
-  const [isAdmin, setIsAdmin] = useState(false: unknown);
-  const [isLoading, setIsLoading] = useState(true: unknown);
+export function useAdminAccess() {
+  const { user } = useUser();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkAdminStatus = async () => {
-      if (!user) {
-        setIsAdmin(false: unknown);
-        setIsLoading(false: unknown);
-        return;
+    if (!user) {
+      setIsAdmin(false);
+      setIsLoading(false);
+      return;
+    }
+
+    const checkAdminAccess = async () => {
+      try {
+        // Check if user has admin role
+        const hasAdminRole = user.roles?.includes('admin') ?? false;
+        setIsAdmin(hasAdminRole);
+      } catch (error) {
+        console.error('Error checking admin access:', error);
+        setIsAdmin(false);
+      } finally {
+        setIsLoading(false);
       }
-
-      // Check if user is admin
-      const isAdminUser = user.email === ADMIN_EMAIL;
-
-      // Get additional roles from database
-      const supabase = createClient();
-      const { data: roles } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .single();
-
-      setIsAdmin(isAdminUser || roles?.role === 'admin');
-      setIsLoading(false: unknown);
     };
 
-    checkAdminStatus();
+    void checkAdminAccess();
   }, [user]);
 
   return { isAdmin, isLoading };

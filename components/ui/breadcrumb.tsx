@@ -1,55 +1,43 @@
-'use client';
-
+import { type ReactElement, type ReactNode } from 'react';
 import { ChevronRight } from 'lucide-react';
-import Link from 'next/link';
-import * as React from 'react';
 
-import { cn } from '@/lib/utils';
-
-export interface BreadcrumbProps extends React.HTMLAttributes<HTMLElement> {
-  children: React.ReactNode;
+interface BreadcrumbProps {
+  children: ReactNode;
 }
 
-export interface BreadcrumbItemProps extends React.HTMLAttributes<HTMLElement> {
+interface BreadcrumbItemProps {
   href?: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
-export function Breadcrumb({ className, children, ...props }: BreadcrumbProps): void {
+export function Breadcrumb({ children }: BreadcrumbProps): ReactElement {
   return (
-    <nav
-      aria-label='breadcrumb'
-      className={cn('flex items-center space-x-2', className)}
-      {...props}
-    >
-      {React.Children.map(children: unknown, (child: unknown, index) => (
-        <>
-          {child}
-          {index < React.Children.count(children: unknown) - 1 && <ChevronRight className='h-4 w-4' />}
-        </>
-      ))}
+    <nav aria-label="Breadcrumb">
+      <ol className="flex items-center space-x-2">
+        {React.Children.map(children, (child, index) => (
+          <li key={index} className="flex items-center">
+            {child}
+            {index < React.Children.count(children) - 1 && (
+              <ChevronRight className="h-4 w-4" />
+            )}
+          </li>
+        ))}
+      </ol>
     </nav>
   );
 }
 
-export function BreadcrumbItem({ href, children, className, ...props }: BreadcrumbItemProps): void {
-  if (href: unknown) {
+export function BreadcrumbItem({ href, children }: BreadcrumbItemProps): ReactElement {
+  if (href) {
     return (
-      <Link
-        href={href}
-        className={cn('text-sm text-muted-foreground hover:text-foreground', className)}
-        {...props}
-      >
+      <a href={href} className="text-sm font-medium text-gray-500 hover:text-gray-700">
         {children}
-      </Link>
+      </a>
     );
   }
 
   return (
-    <span
-      className={cn('text-sm font-medium text-foreground', className)}
-      {...props}
-    >
+    <span className="text-sm font-medium text-gray-900">
       {children}
     </span>
   );

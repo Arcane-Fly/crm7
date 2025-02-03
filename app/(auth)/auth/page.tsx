@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import type { FormEvent } from 'react';
 import { useState, useEffect } from 'react';
+import type { Session, AuthChangeEvent } from '@supabase/supabase-js';
 
 import { useToast } from '@/components/ui/use-toast';
 import { createClient } from '@/lib/supabase/client';
@@ -11,48 +12,48 @@ export default function AuthPage(): React.ReactElement {
   const router = useRouter();
   const { toast } = useToast();
   const supabase = createClient();
-  const [isLoading, setIsLoading] = useState(false: unknown);
-  const [isSignUp, setIsSignUp] = useState(false: unknown);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isSignUp, setIsSignUp] = useState<boolean>(false);
 
   useEffect(() => {
-    const checkSession = async () => {
+    const checkSession = async (): Promise<void> => {
       const {
         data: { session: currentSession },
       } = await supabase.auth.getSession();
-      if (currentSession: unknown) {
+      if (currentSession) {
         router.push('/');
       }
     };
 
     void checkSession();
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event: unknown) => {
-      if (event === 'SIGNED_IN') {
-        router.push('/');
-      }
-      if (event === 'SIGNED_OUT') {
-        router.push('/auth');
-      }
-      if (event === 'USER_UPDATED') {
-        const { error } = await supabase.auth.getSession();
-        if (error: unknown) {
-          toast({
-            variant: 'destructive',
-            title: 'Authentication Error',
-            description: error.message,
-          });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event: AuthChangeEvent) => {  // Remove unused session parameter
+        if (event === 'SIGNED_IN') {
+          router.push('/');
+        }
+        if (event === 'SIGNED_OUT') {
+          router.push('/auth');
+        }
+        if (event === 'USER_UPDATED') {
+          const { error } = await supabase.auth.getSession();
+          if (error) {
+            toast({
+              variant: 'destructive',
+              title: 'Authentication Error',
+              description: error.message,
+            });
+          }
         }
       }
-    });
+    );
 
     return () => subscription.unsubscribe();
-  }, [router, toast, supabase.auth]);
+  }, [router, toast, supabase]);
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
-    setIsLoading(true: unknown);
+    setIsLoading(true);
     const formData = new FormData(event.currentTarget);
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
@@ -60,7 +61,7 @@ export default function AuthPage(): React.ReactElement {
     try {
       let error;
 
-      if (isSignUp: unknown) {
+      if (isSignUp) {
         const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
@@ -84,7 +85,7 @@ export default function AuthPage(): React.ReactElement {
         error = signInError;
       }
 
-      if (error: unknown) {
+      if (error) {
         toast({
           variant: 'destructive',
           title: 'Authentication Error',
@@ -99,7 +100,7 @@ export default function AuthPage(): React.ReactElement {
         description: 'An unexpected error occurred. Please try again.',
       });
     } finally {
-      setIsLoading(false: unknown);
+      setIsLoading(false);
     }
   };
 
@@ -119,10 +120,7 @@ export default function AuthPage(): React.ReactElement {
             {isSignUp ? 'Enter your details to sign up' : 'Enter your credentials to continue'}
           </p>
         </div>
-        <form
-          onSubmit={handleSubmit}
-          className='space-y-4'
-        >
+        <form onSubmit={handleSubmit} className='space-y-4'>
           <div className='space-y-2'>
             <label
               htmlFor='email'
@@ -136,7 +134,7 @@ export default function AuthPage(): React.ReactElement {
               type='email'
               placeholder='m@example.com'
               required
-              className='flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50'
+              className='flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50'
             />
           </div>
           <div className='space-y-2'>
@@ -151,7 +149,7 @@ export default function AuthPage(): React.ReactElement {
               name='password'
               type='password'
               required
-              className='flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50'
+              className='flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50'
             />
           </div>
           <button

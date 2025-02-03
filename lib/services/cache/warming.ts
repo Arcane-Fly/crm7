@@ -1,157 +1,128 @@
-import { logger } from '@/lib/services/logger';
-
-import { CacheService } from './cache-service';
+import { type CacheService } from './cache-service';
 import { cacheMonitoring } from './monitoring';
+import { logger } from '@/lib/logger';
 
-interface WarmingConfig {
-  interval?: number; // Refresh interval in milliseconds
-  maxConcurrent?: number; // Maximum concurrent warming operations
-  retryDelay?: number; // Delay between retries in milliseconds
-}
-
-interface WarmingEntry<T> {
+interface CacheEntry {
   key: string;
-  factory: () => Promise<T>;
+  getter: () => Promise<unknown>;
   ttl?: number;
-  priority?: number; // Higher number = higher priority
-  lastAccessed?: number;
-  accessCount?: number;
+  lastWarmed?: number;
 }
 
-const DEFAULT_CONFIG: Required<WarmingConfig> = {
-  interval: 5 * 60 * 1000, // 5 minutes
-  maxConcurrent: 5,
-  retryDelay: 1000, // 1 second
-};
+interface CacheWarmingConfig {
+  interval: number;
+  maxConcurrent: number;
+  retryDelay: number;
+}
 
 export class CacheWarming {
-  private readonly cache: CacheService;
-  private readonly config: Required<WarmingConfig>;
-  private entries: Map<string, WarmingEntry<unknown>> = new Map();
-  private warmerInterval?: NodeJS.Timeout;
-  private isWarming = false;
+  private entries = new Map<string, CacheEntry>();
   private lastWarmTime = 0;
+  private isWarming = false;
 
-  constructor(cache: CacheService, config: WarmingConfig = {}) {
-    this.cache = cache;
-    this.config = { ...DEFAULT_CONFIG, ...config };
+  constructor(
+    private readonly cache: CacheService,
+    private readonly config: CacheWarmingConfig
+  ) {}
+
+  register(
+    key: string,
+    getter: () => Promise<unknown>,
+    ttl?: number
+  ): void {
+    this.entries.set(key, { key, getter, ttl });
   }
 
-  public register<T>(entry: WarmingEntry<T>): void {
-    this.entries.set(entry.key, {
-      ...entry,
-      priority: entry.priority ?? 1,
-      accessCount: 0,
-    });
+  unregister(key: string): void {
+    this.entries.delete(key);
   }
 
-  public unregister(key: string): void {
-    this.entries.delete(key: unknown);
-  }
-
-  public recordAccess(key: string): void {
-    const entry = this.entries.get(key: unknown);
-    if (entry: unknown) {
-      entry.lastAccessed = Date.now();
-      entry.accessCount = (entry.accessCount ?? 0) + 1;
+  getEntry(key: string): CacheEntry | undefined {
+    const entry = this.entries.get(key);
+    if (entry) {
+      return entry;
     }
+    return undefined;
   }
 
-  public start(): void {
-    if (this.warmerInterval) return;
-
-    this.warmerInterval = setInterval(() => {
-      void this.warmCache();
-    }, this.config.interval);
-
-    // Initial warming
-    void this.warmCache();
-  }
-
-  public stop(): void {
-    if (this.warmerInterval) {
-      clearInterval(this.warmerInterval);
-      this.warmerInterval = undefined;
+  async warmAll(): Promise<void> {
+    if (this.isWarming) {
+      logger.warn('Cache warming already in progress');
+      return;
     }
-  }
-
-  private async warmCache(): Promise<void> {
-    if (this.isWarming) return;
-    this.isWarming = true;
-    this.lastWarmTime = Date.now();
 
     try {
-      const sortedEntries = Array.from(this.entries.values()).sort(
-        (a: unknown, b) => (b.priority ?? 0) - (a.priority ?? 0),
-      );
+      this.isWarming = true;
 
-      // Process entries in batches to respect maxConcurrent
+      const sortedEntries = Array.from(this.entries.values()).sort((a, b) => {
+        const aLastWarmed = a.lastWarmed ?? 0;
+        const bLastWarmed = b.lastWarmed ?? 0;
+        return aLastWarmed - bLastWarmed;
+      });
+
       for (let i = 0; i < sortedEntries.length; i += this.config.maxConcurrent) {
-        const batch = sortedEntries.slice(i: unknown, i + this.config.maxConcurrent);
+        const batch = sortedEntries.slice(i, i + this.config.maxConcurrent);
         await Promise.all(
-          batch.map(async (entry: unknown) => {
+          batch.map(async (entry) => {
             try {
-              await this.warmEntry(entry: unknown);
-            } catch (error: unknown) {
+              await this.warmEntry(entry);
+            } catch (error) {
               const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-              logger.error(`Failed to warm cache entry ${entry.key}:`, new Error(errorMessage: unknown));
-              cacheMonitoring.recordError();
+              logger.error(`Failed to warm cache entry ${entry.key}:`, new Error(errorMessage));
             }
-          }),
+          })
         );
       }
+
+      this.lastWarmTime = Date.now();
     } finally {
       this.isWarming = false;
     }
   }
 
-  private async warmEntry(entry: WarmingEntry<unknown>): Promise<void> {
-    let retries = 3;
-    while (retries > 0) {
-      try {
-        const start = process.hrtime.bigint();
-        const value = await entry.factory();
-        await this.cache.set(entry.key, value, entry.ttl);
+  private async warmEntry(entry: CacheEntry): Promise<void> {
+    const startTime = Date.now();
 
-        const end = process.hrtime.bigint();
-        const latencyMs = Number(end - start) / 1_000_000;
-        cacheMonitoring.recordHit(latencyMs: unknown);
+    try {
+      const value = await entry.getter();
+      await this.cache.set(entry.key, value, entry.ttl);
 
-        logger.debug('Warmed cache entry:', { key: entry.key, latencyMs });
-        return;
-      } catch (error: unknown) {
-        retries--;
-        if (retries > 0) {
-          await new Promise((resolve: unknown) => setTimeout(resolve: unknown, this.config.retryDelay));
+      const latencyMs = Date.now() - startTime;
+      cacheMonitoring.recordHit(latencyMs);
+
+      entry.lastWarmed = Date.now();
+    } catch (error) {
+      const retries = 3;
+      for (let i = 0; i < retries; i++) {
+        try {
+          await new Promise((resolve) => setTimeout(resolve, this.config.retryDelay));
+          const value = await entry.getter();
+          await this.cache.set(entry.key, value, entry.ttl);
+          entry.lastWarmed = Date.now();
+          return;
+        } catch {
           continue;
         }
-        throw error;
       }
+      throw error;
     }
   }
 
-  public getStats(): Record<string, unknown> {
+  async start(): Promise<void> {
+    await this.warmAll();
+    this.scheduleNextWarm();
+  }
+
+  private scheduleNextWarm(): void {
     const now = Date.now();
-    return {
-      totalEntries: this.entries.size,
-      activeEntries: Array.from(this.entries.values()).filter(
-        (entry: unknown) => entry.lastAccessed && now - entry.lastAccessed < this.config.interval,
-      ).length,
-      entriesByPriority: Array.from(this.entries.values()).reduce(
-        (acc: unknown, entry) => {
-          const priority = entry.priority ?? 1;
-          acc[priority] = (acc[priority] ?? 0) + 1;
-          return acc;
-        },
-        {} as Record<number, number>,
-      ),
-      isWarming: this.isWarming,
-      nextWarmingIn: this.warmerInterval
-        ? Math.max(0: unknown, this.config.interval - (now - this.lastWarmTime))
-        : 0,
-    };
+    const delay = this.lastWarmTime === 0
+      ? 0
+      : Math.max(0, this.config.interval - (now - this.lastWarmTime));
+
+    setTimeout(() => {
+      void this.warmAll().then(() => {
+        this.scheduleNextWarm();
+      });
+    }, delay);
   }
 }
-
-// Export singleton instance
-export const cacheWarming = new CacheWarming(new CacheService());

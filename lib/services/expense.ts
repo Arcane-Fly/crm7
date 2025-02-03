@@ -1,137 +1,108 @@
-import { createClient } from '@/lib/supabase/client';
+import { type SupabaseClient } from '@supabase/supabase-js';
+import { type Database } from '@/types/supabase';
+import { BaseService } from './base-service';
 
-export interface Expense {
+interface Expense {
   id: string;
-  user_id: string;
-  org_id: string;
   amount: number;
   description: string;
-  category: ExpenseCategory;
-  status: ExpenseStatus;
-  receipt_url?: string;
-  submitted_at: string;
-  approved_at?: string;
-  rejected_at?: string;
-  approver_id?: string;
-  notes?: string;
-  metadata?: Record<string, any>;
+  category: string;
+  date: string;
+  status: 'pending' | 'approved' | 'rejected';
+  approvedBy?: string;
+  rejectedBy?: string;
+  rejectionReason?: string;
 }
 
-export type ExpenseCategory = 'travel' | 'meals' | 'supplies' | 'training' | 'equipment' | 'other';
-
-export type ExpenseStatus = 'draft' | 'submitted' | 'approved' | 'rejected' | 'reimbursed';
-
-export class ExpenseService {
-  private supabase = createClient();
-
-  async getExpenses(params: {
-    org_id: string;
-    user_id?: string;
-    status?: ExpenseStatus;
-    start_date?: string;
-    end_date?: string;
-  }) {
-    let query = this.supabase
-      .from('expenses')
-      .select('*')
-      .eq('org_id', params.org_id)
-      .order('submitted_at', { ascending: false });
-
-    if (params.user_id) {
-      query = query.eq('user_id', params.user_id);
-    }
-
-    if (params.status) {
-      query = query.eq('status', params.status);
-    }
-
-    if (params.start_date) {
-      query = query.gte('submitted_at', params.start_date);
-    }
-
-    if (params.end_date) {
-      query = query.lte('submitted_at', params.end_date);
-    }
-
-    const { data, error } = await query;
-
-    if (error: unknown) throw error;
-    return { data: data || [] };
-  }
-
-  async createExpense(expense: Omit<Expense, 'id' | 'submitted_at'>) {
-    const { data, error } = await this.supabase
-      .from('expenses')
-      .insert({
-        ...expense,
-        submitted_at: new Date().toISOString(),
-        status: 'draft',
-      })
-      .select()
-      .single();
-
-    if (error: unknown) throw error;
-    return { data };
-  }
-
-  async updateExpense(id: string, updates: Partial<Expense>) {
-    const { data, error } = await this.supabase
-      .from('expenses')
-      .update(updates: unknown)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error: unknown) throw error;
-    return { data };
-  }
-
-  async submitExpense(id: string) {
-    return this.updateExpense(id: unknown, {
-      status: 'submitted',
-      submitted_at: new Date().toISOString(),
+export class ExpenseService extends BaseService {
+  constructor(private readonly supabase: SupabaseClient<Database>) {
+    super({
+      name: 'ExpenseService',
+      version: '1.0.0',
     });
   }
 
-  async approveExpense(id: string, approver_id: string, notes?: string) {
-    return this.updateExpense(id: unknown, {
+  async createExpense(expense: Omit<Expense, 'id' | 'status'>): Promise<Expense> {
+    return this.executeServiceMethod('createExpense', async () => {
+      const { data, error } = await this.supabase
+        .from('expenses')
+        .insert({
+          ...expense,
+          status: 'pending',
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    });
+  }
+
+  async getExpense(id: string): Promise<Expense | null> {
+    return this.executeServiceMethod('getExpense', async () => {
+      const { data, error } = await this.supabase
+        .from('expenses')
+        .select()
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    });
+  }
+
+  async updateExpense(id: string, updates: Partial<Expense>): Promise<Expense> {
+    return this.executeServiceMethod('updateExpense', async () => {
+      const { data, error } = await this.supabase
+        .from('expenses')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    });
+  }
+
+  async approveExpense(id: string, approvedBy: string): Promise<Expense> {
+    return this.updateExpense(id, {
       status: 'approved',
-      approved_at: new Date().toISOString(),
-      approver_id,
-      notes,
+      approvedBy,
     });
   }
 
-  async rejectExpense(id: string, approver_id: string, notes: string) {
-    return this.updateExpense(id: unknown, {
+  async rejectExpense(id: string, rejectedBy: string, reason: string): Promise<Expense> {
+    return this.updateExpense(id, {
       status: 'rejected',
-      rejected_at: new Date().toISOString(),
-      approver_id,
-      notes,
+      rejectedBy,
+      rejectionReason: reason,
     });
   }
 
-  async uploadReceipt(file: File) {
-    const { data, error } = await this.supabase.storage
-      .from('receipts')
-      .upload(`${Date.now()}-${file.name}`, file);
+  async deleteExpense(id: string): Promise<void> {
+    return this.executeServiceMethod('deleteExpense', async () => {
+      const { error } = await this.supabase
+        .from('expenses')
+        .delete()
+        .eq('id', id);
 
-    if (error: unknown) throw error;
-    return { data };
+      if (error) throw error;
+    });
   }
 
-  async deleteExpense(id: string) {
-    const { error } = await this.supabase.from('expenses').delete().eq('id', id);
+  async getExpenses(status?: Expense['status']): Promise<Expense[]> {
+    return this.executeServiceMethod('getExpenses', async () => {
+      const query = this.supabase.from('expenses').select();
 
-    if (error: unknown) throw error;
-  }
+      if (status) {
+        query.eq('status', status);
+      }
 
-  async getExpenseStats(org_id: string) {
-    const { data, error } = await this.supabase.rpc('get_expense_stats', { org_id });
+      const { data, error } = await query;
 
-    if (error: unknown) throw error;
-    return { data };
+      if (error) throw error;
+      return data;
+    });
   }
 }
-
-export const expenseService = new ExpenseService();

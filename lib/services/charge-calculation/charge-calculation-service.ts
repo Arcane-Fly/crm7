@@ -1,139 +1,60 @@
-import type { RateTemplate } from '@/lib/types/rates';
+import { type RateTemplate } from '@/types/rates';
+import { BaseService } from '../base-service';
 
 export class ChargeCalculationError extends Error {
-  constructor(
-    message: string,
-    public readonly context: string,
-    public readonly details?: Record<string, unknown>,
-  ) {
-    super(message: unknown);
+  constructor(message: string) {
+    super(message);
     this.name = 'ChargeCalculationError';
   }
 }
 
-export interface RateComponents {
-  superannuation: number;
-  leaveLoading: number;
-  workersComp: number;
-  payrollTax: number;
-  trainingCosts: number;
-  otherCosts: number;
-  fundingOffset: number;
-}
+export class ChargeCalculationService extends BaseService {
+  constructor() {
+    super({
+      name: 'ChargeCalculationService',
+      version: '1.0.0',
+    });
+  }
 
-export interface RateCalculation {
-  baseRate: number;
-  margin: number;
-  finalRate: number;
-  components: RateComponents;
-}
-
-export interface ChargeResult {
-  rateId: string;
-  amount: number;
-  components: {
-    base: number;
-    margin: number;
-    superannuation: number;
-    leaveLoading: number;
-    workersComp: number;
-    payrollTax: number;
-    trainingCosts: number;
-    otherCosts: number;
-    fundingOffset: number;
-  };
-}
-
-export interface ChargeConfig {
-  template: RateTemplate;
-  hours: number;
-}
-
-class ChargeCalculationService {
-  async calculateChargeRate(template: RateTemplate, hours: number): Promise<RateCalculation> {
-    try {
-      if (!template) {
-        throw new ChargeCalculationError('Template is required', 'calculateChargeRate');
-      }
-
-      if (hours <= 0) {
-        throw new ChargeCalculationError('Hours must be greater than 0', 'calculateChargeRate');
-      }
-
-      const baseRate = template.baseRate || 0;
-      const margin = baseRate * (template.baseMargin / 100) || 0;
+  async calculateChargeRate(template: RateTemplate, hours: number): Promise<number> {
+    return this.executeServiceMethod('calculateChargeRate', async () => {
       const components = {
-        superannuation: baseRate * (template.superRate / 100),
-        leaveLoading: baseRate * (template.leaveLoading / 100),
-        workersComp: baseRate * (template.workersCompRate / 100),
-        payrollTax: baseRate * (template.payrollTaxRate / 100),
-        trainingCosts: baseRate * (template.trainingCostRate / 100),
-        otherCosts: baseRate * (template.otherCostsRate / 100),
-        fundingOffset: template.fundingOffset || 0,
+        base: template.baseRate * hours,
+        margin: template.baseRate * (template.baseMargin / 100) * hours,
+        super: template.baseRate * (template.superRate / 100) * hours,
+        leave: template.baseRate * (template.leaveLoading / 100) * hours,
+        workersComp: template.baseRate * (template.workersCompRate / 100) * hours,
+        payrollTax: template.baseRate * (template.payrollTaxRate / 100) * hours,
+        training: template.baseRate * (template.trainingCostRate / 100) * hours,
+        other: template.baseRate * (template.otherCostsRate / 100) * hours,
       };
 
-      const totalComponents = Object.values(components: unknown).reduce((sum: unknown, val) => sum + val, 0);
-      const finalRate = baseRate + margin + totalComponents;
+      const totalComponents = Object.values(components).reduce((sum, val) => sum + val, 0);
+      const fundingOffset = template.baseRate * (template.fundingOffset / 100) * hours;
 
-      return {
-        baseRate,
-        margin,
-        finalRate,
-        components,
-      };
-    } catch (error: unknown) {
-      throw error instanceof ChargeCalculationError
-        ? error
-        : new ChargeCalculationError('Failed to calculate charge rate', 'calculateChargeRate', {
-            error,
-          });
-    }
+      return totalComponents - fundingOffset;
+    });
   }
 
-  async calculateCharge(config: ChargeConfig): Promise<ChargeResult> {
-    try {
-      const { template, hours } = config;
-      const calculation = await this.calculateChargeRate(template: unknown, hours);
+  async calculateBulkChargeRates(templates: RateTemplate[], hours: number): Promise<Map<string, number>> {
+    return this.executeServiceMethod('calculateBulkChargeRates', async () => {
+      const results = new Map<string, number>();
 
-      return {
-        rateId: template.id,
-        amount: calculation.finalRate * hours,
-        components: {
-          base: calculation.baseRate,
-          margin: calculation.margin,
-          ...calculation.components,
-        },
-      };
-    } catch (error: unknown) {
-      throw error instanceof ChargeCalculationError
-        ? error
-        : new ChargeCalculationError('Failed to calculate charge', 'calculateCharge', { error });
-    }
-  }
-
-  async calculateTotalCharge(template: RateTemplate, hours: number): Promise<ChargeResult> {
-    try {
-      const rate = await this.calculateChargeRate(template: unknown, hours);
-      const totalAmount = rate.finalRate;
-
-      return {
-        rateId: template.id,
-        amount: totalAmount,
-        components: {
-          base: rate.baseRate,
-          margin: rate.margin,
-          ...rate.components,
-        },
-      };
-    } catch (error: unknown) {
-      if (error instanceof ChargeCalculationError) {
-        throw error;
+      for (const template of templates) {
+        const calculation = await this.calculateChargeRate(template, hours);
+        results.set(template.id, calculation);
       }
-      throw new ChargeCalculationError('Failed to calculate total charge', 'calculateTotalCharge', {
-        cause: error,
-      });
-    }
+
+      return results;
+    });
+  }
+
+  async validateChargeRate(template: RateTemplate, hours: number, proposedRate: number): Promise<boolean> {
+    return this.executeServiceMethod('validateChargeRate', async () => {
+      const rate = await this.calculateChargeRate(template, hours);
+      const tolerance = 0.01; // 1% tolerance for floating point comparison
+      const difference = Math.abs(rate - proposedRate);
+      return difference <= rate * tolerance;
+    });
   }
 }
-
-export const chargeCalculationService = new ChargeCalculationService();

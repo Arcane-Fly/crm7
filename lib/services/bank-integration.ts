@@ -1,240 +1,155 @@
-import { logger } from '@/lib/services/logger';
-import { createClient } from '@/lib/supabase/client';
+import { type SupabaseClient } from '@supabase/supabase-js';
+import { type Database } from '@/types/supabase';
+import { logger } from '@/lib/logger';
 
-export interface BankAccount {
+interface BankAccount {
   id: string;
-  org_id: string;
-  bank_name: string;
-  account_name: string;
-  account_number: string;
+  accountNumber: string;
   bsb: string;
-  status: 'active' | 'inactive' | 'pending_verification';
-  is_default: boolean;
-  metadata?: Record<string, any>;
+  name: string;
+  isActive: boolean;
 }
 
-export interface BankTransaction {
+interface BankTransaction {
   id: string;
-  org_id: string;
-  account_id: string;
+  accountId: string;
   type: 'credit' | 'debit';
   amount: number;
-  description: string;
   reference: string;
-  status: 'pending' | 'completed' | 'failed';
-  transaction_date: string;
-  metadata?: Record<string, any>;
-}
-
-export interface PaymentRequest {
-  id: string;
-  org_id: string;
-  account_id: string;
-  recipient_name: string;
-  recipient_account: string;
-  recipient_bsb: string;
-  amount: number;
-  description: string;
-  status: 'pending' | 'approved' | 'processed' | 'failed';
-  due_date?: string;
-  processed_date?: string;
-  metadata?: Record<string, any>;
+  date: string;
 }
 
 export class BankIntegrationService {
-  private supabase = createClient();
+  constructor(private readonly supabase: SupabaseClient<Database>) {}
 
-  // Account Management
-  async getBankAccounts(orgId: string) {
+  async createBankAccount(account: Omit<BankAccount, 'id'>): Promise<BankAccount> {
     try {
       const { data, error } = await this.supabase
         .from('bank_accounts')
-        .select('*')
-        .eq('org_id', orgId)
-        .order('is_default', { ascending: false });
-
-      if (error: unknown) throw error;
-      return { data: data as BankAccount[] };
-    } catch (error: unknown) {
-      logger.error('Failed to fetch bank accounts', error as Error, { orgId });
-      throw error;
-    }
-  }
-
-  async addBankAccount(account: Omit<BankAccount, 'id' | 'status'>) {
-    try {
-      const { data, error } = await this.supabase
-        .from('bank_accounts')
-        .insert({
-          ...account,
-          status: 'pending_verification',
-        })
+        .insert(account)
         .select()
         .single();
 
-      if (error: unknown) throw error;
-      return { data: data as BankAccount };
-    } catch (error: unknown) {
-      logger.error('Failed to add bank account', error as Error, { account });
+      if (error) {
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      logger.error('Failed to create bank account:', error);
       throw error;
     }
   }
 
-  async verifyBankAccount(id: string) {
+  async getBankAccount(id: string): Promise<BankAccount | null> {
     try {
       const { data, error } = await this.supabase
         .from('bank_accounts')
-        .update({ status: 'active' })
+        .select()
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      logger.error('Failed to get bank account:', error);
+      throw error;
+    }
+  }
+
+  async updateBankAccount(id: string, updates: Partial<BankAccount>): Promise<BankAccount> {
+    try {
+      const { data, error } = await this.supabase
+        .from('bank_accounts')
+        .update(updates)
         .eq('id', id)
         .select()
         .single();
 
-      if (error: unknown) throw error;
-      return { data: data as BankAccount };
-    } catch (error: unknown) {
-      logger.error('Failed to verify bank account', error as Error, { id });
+      if (error) {
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      logger.error('Failed to update bank account:', error);
       throw error;
     }
   }
 
-  // Transaction Management
-  async getTransactions(params: {
-    org_id: string;
-    account_id?: string;
-    start_date?: string;
-    end_date?: string;
-    type?: BankTransaction['type'];
-  }) {
+  async deleteBankAccount(id: string): Promise<void> {
     try {
-      let query = this.supabase
-        .from('bank_transactions')
-        .select('*')
-        .eq('org_id', params.org_id)
-        .order('transaction_date', { ascending: false });
+      const { error } = await this.supabase
+        .from('bank_accounts')
+        .delete()
+        .eq('id', id);
 
-      if (params.account_id) {
-        query = query.eq('account_id', params.account_id);
+      if (error) {
+        throw error;
       }
-      if (params.type) {
-        query = query.eq('type', params.type);
-      }
-      if (params.start_date) {
-        query = query.gte('transaction_date', params.start_date);
-      }
-      if (params.end_date) {
-        query = query.lte('transaction_date', params.end_date);
-      }
-
-      const { data, error } = await query;
-
-      if (error: unknown) throw error;
-      return { data: data as BankTransaction[] };
-    } catch (error: unknown) {
-      logger.error('Failed to fetch transactions', error as Error, { params });
+    } catch (error) {
+      logger.error('Failed to delete bank account:', error);
       throw error;
     }
   }
 
-  // Payment Processing
-  async createPaymentRequest(payment: Omit<PaymentRequest, 'id' | 'status'>) {
+  async createTransaction(transaction: Omit<BankTransaction, 'id'>): Promise<BankTransaction> {
     try {
       const { data, error } = await this.supabase
-        .from('payment_requests')
-        .insert({
-          ...payment,
-          status: 'pending',
-        })
+        .from('bank_transactions')
+        .insert(transaction)
         .select()
         .single();
 
-      if (error: unknown) throw error;
-      return { data: data as PaymentRequest };
-    } catch (error: unknown) {
-      logger.error('Failed to create payment request', error as Error, { payment });
+      if (error) {
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      logger.error('Failed to create transaction:', error);
       throw error;
     }
   }
 
-  async approvePaymentRequest(id: string) {
+  async getTransaction(id: string): Promise<BankTransaction | null> {
     try {
       const { data, error } = await this.supabase
-        .from('payment_requests')
-        .update({
-          status: 'approved',
-          processed_date: new Date().toISOString(),
-        })
+        .from('bank_transactions')
+        .select()
         .eq('id', id)
-        .select()
         .single();
 
-      if (error: unknown) throw error;
-      return { data: data as PaymentRequest };
-    } catch (error: unknown) {
-      logger.error('Failed to approve payment request', error as Error, { id });
+      if (error) {
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      logger.error('Failed to get transaction:', error);
       throw error;
     }
   }
 
-  async processPayment(paymentId: string) {
+  async getTransactions(accountId: string): Promise<BankTransaction[]> {
     try {
-      // Here you would integrate with your actual payment gateway
-      // This is just a mock implementation
-      const { data: payment } = await this.supabase
-        .from('payment_requests')
-        .select()
-        .eq('id', paymentId)
-        .single();
-
-      if (!payment) throw new Error('Payment request not found');
-
-      // Create transaction record
-      const { data: transaction, error } = await this.supabase
+      const { data, error } = await this.supabase
         .from('bank_transactions')
-        .insert({
-          org_id: payment.org_id,
-          account_id: payment.account_id,
-          type: 'debit',
-          amount: payment.amount,
-          description: payment.description,
-          reference: `PAY-${paymentId}`,
-          status: 'completed',
-          transaction_date: new Date().toISOString(),
-        })
         .select()
-        .single();
+        .eq('accountId', accountId)
+        .order('date', { ascending: false });
 
-      if (error: unknown) throw error;
+      if (error) {
+        throw error;
+      }
 
-      // Update payment request status
-      await this.supabase
-        .from('payment_requests')
-        .update({
-          status: 'processed',
-          processed_date: new Date().toISOString(),
-        })
-        .eq('id', paymentId);
-
-      return { data: transaction as BankTransaction };
-    } catch (error: unknown) {
-      logger.error('Failed to process payment', error as Error, { paymentId });
-      throw error;
-    }
-  }
-
-  // Analytics
-  async getTransactionStats(orgId: string) {
-    try {
-      const { data, error } = await this.supabase.rpc('get_transaction_stats', {
-        org_id: orgId,
-      });
-
-      if (error: unknown) throw error;
-      return { data };
-    } catch (error: unknown) {
-      logger.error('Failed to fetch transaction stats', error as Error, { orgId });
+      return data;
+    } catch (error) {
+      logger.error('Failed to get transactions:', error);
       throw error;
     }
   }
 }
-
-export const bankIntegrationService = new BankIntegrationService();

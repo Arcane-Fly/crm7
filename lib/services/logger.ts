@@ -60,36 +60,36 @@ export class Logger {
   private logToConsole(entry: LogEntry) {
     if (!this.shouldLogLevel(entry.level)) return;
 
-    const formattedMessage = this.formatMessage(entry: unknown);
+    const formattedMessage = this.formatMessage(entry);
     // Only log errors and warnings in production
     if (process.env.NODE_ENV === 'production') {
       switch (entry.level) {
         case 'warn':
-          console.warn(formattedMessage: unknown);
+          console.warn(formattedMessage);
           break;
         case 'error':
-          console.error(formattedMessage: unknown, entry.error);
+          console.error(formattedMessage, entry.error);
           break;
       }
     } else {
       switch (entry.level) {
         case 'debug':
-          console.debug(formattedMessage: unknown);
+          console.debug(formattedMessage);
           break;
         case 'info':
-          console.info(formattedMessage: unknown);
+          console.info(formattedMessage);
           break;
         case 'warn':
-          console.warn(formattedMessage: unknown);
+          console.warn(formattedMessage);
           break;
         case 'error':
-          console.error(formattedMessage: unknown, entry.error);
+          console.error(formattedMessage, entry.error);
           break;
       }
     }
   }
 
-  private logToExternalService(_entry: LogEntry) {
+  private logToExternalService(entry: LogEntry) {
     // TODO: Implement external logging service integration
     // This could be Sentry, LogRocket, or another service
     if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
@@ -106,9 +106,9 @@ export class Logger {
   ) {
     if (!this.shouldLog) return;
 
-    const entry = this.createLogEntry(level: unknown, message, context, component, error);
-    this.logToConsole(entry: unknown);
-    this.logToExternalService(entry: unknown);
+    const entry = this.createLogEntry(level, message, context, component, error);
+    this.logToConsole(entry);
+    this.logToExternalService(entry);
   }
 
   debug(message: string, context?: Record<string, unknown>, component?: string) {

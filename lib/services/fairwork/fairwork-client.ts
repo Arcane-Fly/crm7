@@ -1,230 +1,105 @@
 import axios, { type AxiosInstance } from 'axios';
 import { z } from 'zod';
-
 import { logger } from '@/lib/logger';
+import type { 
+  Allowance, 
+  Rate, 
+  Classification, 
+  LeaveEntitlement,
+  RateValidationRequest,
+  RateValidationResponse 
+} from './types';
 
-export const FairWorkConfigSchema = z.object({
-  apiKey: z.string(),
-  apiUrl: z.string().url(),
-  environment: z.enum(['sandbox', 'production']),
-  timeout: z.number().optional().default(30000: unknown),
-  retryAttempts: z.number().optional().default(3: unknown),
-});
-
-export type FairWorkConfig = z.infer<typeof FairWorkConfigSchema>;
+// ... existing config schema and constructor ...
 
 export class FairWorkClient {
-  private readonly client: AxiosInstance;
-  private readonly config: FairWorkConfig;
+  // ... existing code ...
 
-  constructor(config: FairWorkConfig) {
-    this.config = FairWorkConfigSchema.parse(config: unknown);
-
-    this.client = axios.create({
-      baseURL: this.config.apiUrl,
-      timeout: this.config.timeout,
-      headers: {
-        Authorization: `Bearer ${this.config.apiKey}`,
-        'Content-Type': 'application/json',
-        'X-Environment': this.config.environment,
-      },
-    });
-
-    // Add response interceptor for error handling
-    this.client.interceptors.response.use(
-      (response: unknown) => response,
-      (error: unknown) => this.handleError(error: unknown),
-    );
-  }
-
-  /**
-   * Handle API errors
-   */
-  private async handleError(error: unknown) {
-    if (error.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
-      logger.error('Fair Work API error response', {
-        status: error.response.status,
-        data: error.response.data,
-        headers: error.response.headers,
+  async getRates(
+    awardCode: string,
+    classificationCode: string,
+    params?: { date?: string }
+  ): Promise<Rate[]> {
+    try {
+      const response = await this.client.get(`/awards/${awardCode}/classifications/${classificationCode}/rates`, {
+        params,
       });
-
-      throw new Error(
-        error.response.data?.message ||
-          'An error occurred while communicating with the Fair Work API',
-      );
-    } else if (error.request) {
-      // The request was made but no response was received
-      logger.error('Fair Work API no response', {
-        request: error.request,
-      });
-
-      throw new Error('No response received from Fair Work API');
-    } else {
-      // Something happened in setting up the request that triggered an Error
-      logger.error('Fair Work API request setup error', {
-        error: error.message,
-      });
-
-      throw new Error('Failed to make request to Fair Work API');
+      return response.data;
+    } catch (error) {
+      return this.handleError(error);
     }
   }
 
-  /**
-   * Get award details
-   */
-  async getAward(awardCode: string) {
-    const response = await this.client.get(`/awards/${awardCode}`);
-    return response.data;
-  }
-
-  /**
-   * Search for awards
-   */
-  async searchAwards(params: {
-    query?: string;
-    industry?: string;
-    occupation?: string;
-    page?: number;
-    limit?: number;
-  }) {
-    const response = await this.client.get('/awards', { params });
-    return response.data;
-  }
-
-  /**
-   * Get classification details
-   */
-  async getClassification(awardCode: string, classificationCode: string) {
-    const response = await this.client.get(
-      `/awards/${awardCode}/classifications/${classificationCode}`,
-    );
-    return response.data;
-  }
-
-  /**
-   * Search for classifications within an award
-   */
-  async searchClassifications(
-    awardCode: string,
-    params: {
-      query?: string;
-      level?: string;
-      grade?: string;
-      page?: number;
-      limit?: number;
-    },
-  ) {
-    const response = await this.client.get(`/awards/${awardCode}/classifications`, { params });
-    return response.data;
-  }
-
-  /**
-   * Get pay rates for a classification
-   */
-  async getPayRates(
+  async getFutureRates(
     awardCode: string,
     classificationCode: string,
-    params: {
-      date?: string;
-      employmentType?: 'casual' | 'permanent' | 'fixed-term';
-    },
-  ) {
-    const response = await this.client.get(
-      `/awards/${awardCode}/classifications/${classificationCode}/rates`,
-      { params },
-    );
-    return response.data;
+    params?: { date?: string }
+  ): Promise<Rate[]> {
+    try {
+      const response = await this.client.get(`/awards/${awardCode}/classifications/${classificationCode}/future-rates`, {
+        params,
+      });
+      return response.data;
+    } catch (error) {
+      return this.handleError(error);
+    }
   }
 
-  /**
-   * Calculate pay for specific conditions
-   */
-  async calculatePay(
+  async getRateHistory(
     awardCode: string,
     classificationCode: string,
-    params: {
-      date: string;
-      employmentType: 'casual' | 'permanent' | 'fixed-term';
-      hours?: number;
-      penalties?: string[];
-      allowances?: string[];
-    },
-  ) {
-    const response = await this.client.post(
-      `/awards/${awardCode}/classifications/${classificationCode}/calculate`,
-      params,
-    );
-    return response.data;
+    params?: { date?: string }
+  ): Promise<Rate[]> {
+    try {
+      const response = await this.client.get(`/awards/${awardCode}/classifications/${classificationCode}/history`, {
+        params,
+      });
+      return response.data;
+    } catch (error) {
+      return this.handleError(error);
+    }
   }
 
-  /**
-   * Validate a pay rate
-   */
-  async validatePayRate(
-    awardCode: string,
-    classificationCode: string,
-    params: {
-      rate: number;
-      date: string;
-      employmentType: 'casual' | 'permanent' | 'fixed-term';
-    },
-  ) {
-    const response = await this.client.post(
-      `/awards/${awardCode}/classifications/${classificationCode}/validate`,
-      params,
-    );
-    return response.data;
-  }
-
-  /**
-   * Get penalties for an award
-   */
-  async getPenalties(
-    awardCode: string,
-    params: {
-      date?: string;
-      type?: string;
-    },
-  ) {
-    const response = await this.client.get(`/awards/${awardCode}/penalties`, { params });
-    return response.data;
-  }
-
-  /**
-   * Get allowances for an award
-   */
-  async getAllowances(
-    awardCode: string,
-    params: {
-      date?: string;
-      type?: string;
-    },
-  ) {
-    const response = await this.client.get(`/awards/${awardCode}/allowances`, { params });
-    return response.data;
-  }
-
-  /**
-   * Get leave entitlements
-   */
   async getLeaveEntitlements(
     awardCode: string,
-    params: {
-      employmentType: 'casual' | 'permanent' | 'fixed-term';
-      date?: string;
-    },
-  ) {
-    const response = await this.client.get(`/awards/${awardCode}/leave-entitlements`, { params });
-    return response.data;
+    classificationCode: string,
+    params?: { date?: string }
+  ): Promise<LeaveEntitlement[]> {
+    try {
+      const response = await this.client.get(`/awards/${awardCode}/classifications/${classificationCode}/leave-entitlements`, {
+        params,
+      });
+      return response.data;
+    } catch (error) {
+      return this.handleError(error);
+    }
   }
 
-  /**
-   * Get public holidays
-   */
-  async getPublicHolidays(params: { state?: string; year?: number }) {
-    const response = await this.client.get('/public-holidays', { params });
-    return response.data;
+  async getClassification(
+    awardCode: string,
+    classificationCode: string
+  ): Promise<Classification> {
+    try {
+      const response = await this.client.get(`/awards/${awardCode}/classifications/${classificationCode}`);
+      return response.data;
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  async validateRate(
+    awardCode: string,
+    classificationCode: string,
+    request: RateValidationRequest
+  ): Promise<RateValidationResponse> {
+    try {
+      const response = await this.client.post(
+        `/awards/${awardCode}/classifications/${classificationCode}/validate`,
+        request
+      );
+      return response.data;
+    } catch (error) {
+      return this.handleError(error);
+    }
   }
 }

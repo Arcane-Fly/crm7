@@ -1,7 +1,7 @@
 #!/usr/bin/env node
+import { glob } from 'glob';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { glob } from 'glob';
 
 interface FileTransformation {
   pattern: RegExp;
@@ -14,7 +14,7 @@ const FUNCTION_TRANSFORMATIONS: FileTransformation[] = [
   // Fix missing return types on functions
   {
     pattern: /export (async )?function (\w+)\((.*?)\)(?! *:)/g,
-    replacement: (_match: string, isAsync: string, name: string, params: string) => 
+    replacement: (_match: string, isAsync: string, name: string, params: string) =>
       `export ${isAsync ?? ''}function ${name}(${params}): ${isAsync ? 'Promise<void>' : 'void'}`
   },
   // Fix missing return types on arrow functions
@@ -23,9 +23,9 @@ const FUNCTION_TRANSFORMATIONS: FileTransformation[] = [
     replacement: (_match: string, isAsync: string, name: string, params: string) =>
       `export ${isAsync ?? ''}const ${name} = (${params}): ${isAsync ? 'Promise<void>' : 'void'} =>`
   },
-  // Fix missing parameter types in function declarations
+  // Fix missing parameter types in function declarations (excluding destructured params)
   {
-    pattern: /\((\w+)(?!:)([,)])/g,
+    pattern: /\((?!{)(\w+)(?![:,)])([,)])/g,
     replacement: '($1: unknown$2'
   }
 ];
@@ -33,7 +33,7 @@ const FUNCTION_TRANSFORMATIONS: FileTransformation[] = [
 const TYPE_TRANSFORMATIONS: FileTransformation[] = [
   // Replace any with unknown
   {
-    pattern: /: unknown(?![a-zA-Z])/g,
+    pattern: /: any(?![a-zA-Z])/g,
     replacement: ': unknown'
   },
   // Fix non-null assertions
@@ -44,41 +44,48 @@ const TYPE_TRANSFORMATIONS: FileTransformation[] = [
 ];
 
 const CONDITION_TRANSFORMATIONS: FileTransformation[] = [
-  // Fix unnecessary conditions
+  // Fix unnecessary conditions (excluding common patterns)
   {
-    pattern: /if \((\w+)\)/g,
-    replacement: 'if (typeof $1 !== "undefined" && $1 !== null && $1 !== "")'
+    pattern: /if \((\w+)(?! (?:instanceof|===|!==|>=|<=|>|<|&&|\|\|))\)/g,
+    replacement: 'if (typeof $1 !== "undefined" && $1 !== null)'
   }
 ];
 
 function applyTransformations(content: string, transformations: FileTransformation[]): string {
-  return transformations.reduce((text: unknown, { pattern, replacement }) => {
-    return text.replace(pattern: unknown, replacement as string);
+  return transformations.reduce((text: string, { pattern, replacement }) => {
+    if (typeof replacement === 'string') {
+      return text.replace(pattern, replacement);
+    }
+
+    return text.replace(pattern, (match: string, ...args: string[]) => {
+      return replacement(match, ...args);
+    });
   }, content);
 }
 
 function fixTypeScriptFile(filePath: string): void {
   try {
     console.log(`Processing ${filePath}...`);
-    const content = readFileSync(filePath: unknown, 'utf8');
+    const content = readFileSync(filePath, 'utf8');
 
     let updatedContent = content;
-    updatedContent = applyTransformations(updatedContent: unknown, FUNCTION_TRANSFORMATIONS);
-    updatedContent = applyTransformations(updatedContent: unknown, TYPE_TRANSFORMATIONS);
-    updatedContent = applyTransformations(updatedContent: unknown, CONDITION_TRANSFORMATIONS);
+    updatedContent = applyTransformations(updatedContent, FUNCTION_TRANSFORMATIONS);
+    updatedContent = applyTransformations(updatedContent, TYPE_TRANSFORMATIONS);
+    updatedContent = applyTransformations(updatedContent, CONDITION_TRANSFORMATIONS);
 
     if (updatedContent !== content) {
-      writeFileSync(filePath: unknown, updatedContent, 'utf8');
+      writeFileSync(filePath, updatedContent, 'utf8');
       console.log(`Updated ${filePath}`);
     }
-  } catch (error: unknown) {
-    console.error(`Error processing ${filePath}:`, error);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    console.error(`Error processing ${filePath}:`, errorMessage);
   }
 }
 
 async function fixTypeScriptFiles(): Promise<void> {
   try {
-    const files = await glob('**/*.{ts,tsx}', {
+    const files: string[] = await glob('**/*.{ts,tsx}', {
       cwd: ROOT_DIR,
       ignore: [
         'node_modules/**',
@@ -94,18 +101,21 @@ async function fixTypeScriptFiles(): Promise<void> {
       ],
     });
 
-    files.forEach((file: unknown) => {
-      const fullPath = join(ROOT_DIR: unknown, file);
-      fixTypeScriptFile(fullPath: unknown);
-    });
+    for (const file of files) {
+      const fullPath = join(ROOT_DIR, file);
+      fixTypeScriptFile(fullPath);
+    }
 
     console.log('Finished processing TypeScript files');
-  } catch (error: unknown) {
-    console.error('Error finding TypeScript files:', error);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    console.error('Error finding TypeScript files:', errorMessage);
+    process.exit(1);
   }
 }
 
 fixTypeScriptFiles().catch((error: unknown) => {
-  console.error('Script failed:', error);
-  process.exit(1: unknown);
+  const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+  console.error('Script failed:', errorMessage);
+  process.exit(1);
 });

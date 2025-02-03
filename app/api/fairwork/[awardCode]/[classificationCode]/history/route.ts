@@ -1,41 +1,27 @@
 import { type NextRequest } from 'next/server';
-import { z } from 'zod';
-
-import { withAuth } from '@/lib/api/auth';
-import { withErrorHandler } from '@/lib/api/error-handler';
-import { createApiResponse } from '@/lib/api/response';
 import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
 import { defaultConfig } from '@/lib/services/fairwork/fairwork.config';
+import { createApiResponse } from '@/lib/api/response';
+import { DateParamsSchema } from '@/lib/schemas/fairwork';
 
-// Initialize services
-const fairworkClient = new FairWorkClient(defaultConfig: unknown);
+const fairworkClient = new FairWorkClient(defaultConfig);
 
-// Request validation schemas
-const DateParamsSchema = z.object({
-  date: z.string().datetime().optional(),
-  employmentType: z.enum(['casual', 'permanent', 'fixed-term']).optional(),
-});
-
-/**
- * GET /api/fairwork/[awardCode]/[classificationCode]/history
- * Get historical rates for a classification
- */
-export const GET = withErrorHandler(
-  withAuth(async (req: NextRequest, context: { params: Record<string, string> }) => {
+export async function GET(
+  req: NextRequest,
+  context: { params: { awardCode: string; classificationCode: string } }
+): Promise<Response> {
+  try {
     const { searchParams } = new URL(req.url);
-    const params = DateParamsSchema.parse(Object.fromEntries(searchParams: unknown));
-
-    // Get historical rates by setting date to 1 year ago
-    const pastDate = new Date();
-    pastDate.setFullYear(pastDate.getFullYear() - 1);
-    params.date = pastDate.toISOString();
-
-    const rates = await fairworkClient.getPayRates(
+    const params = DateParamsSchema.parse(Object.fromEntries(searchParams));
+    
+    const rates = await fairworkClient.getRateHistory(
       context.params.awardCode,
       context.params.classificationCode,
-      params,
+      params
     );
-
-    return createApiResponse(rates: unknown);
-  }),
-);
+    
+    return createApiResponse(rates);
+  } catch (error) {
+    return createApiResponse({ error: 'Failed to fetch rate history' }, { status: 500 });
+  }
+}

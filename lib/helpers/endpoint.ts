@@ -1,61 +1,32 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-
+import { type NextRequest } from 'next/server';
 import { logger } from '@/lib/logger';
 
-export type APIHandler<_T extends string> = (
-  req: NextApiRequest,
-  res: NextApiResponse,
-) => Promise<void>;
+export function monitorAPIEndpoint<T extends (...args: any[]) => Promise<any>>(
+  originalMethod: T,
+  endpointName: string
+): T {
+  return async function monitoredMethod(this: any, ...args: Parameters<T>): Promise<ReturnType<T>> {
+    const startTime = Date.now();
 
-export function monitorAPIEndpoint<_T extends string>(
-  path: string,
-  operation?: string,
-  options?: {
-    logRequest?: boolean;
-    logResponse?: boolean;
-  },
-) {
-  return function (_target: unknown, _propertyKey: string, descriptor: PropertyDescriptor) {
-    const originalMethod = descriptor.value;
+    try {
+      const result = await originalMethod.apply(this, args);
+      const duration = Date.now() - startTime;
 
-    descriptor.value = async function (...args: unknown[]) {
-      const startTime = Date.now();
-      const [req, res] = args;
+      logger.info(`API endpoint ${endpointName} completed`, {
+        duration,
+        success: true,
+      });
 
-      if (options?.logRequest) {
-        logger.info(`API Request: ${path}`, {
-          method: req.method,
-          query: req.query,
-          body: req.body,
-        });
-      }
+      return result;
+    } catch (error) {
+      const duration = Date.now() - startTime;
 
-      try {
-        const result = await originalMethod.apply(this: unknown, args);
+      logger.error(`API endpoint ${endpointName} failed`, {
+        duration,
+        error,
+      });
 
-        const duration = Date.now() - startTime;
-        logger.info(`API Response: ${path}`, {
-          duration,
-          operation,
-          status: res.statusCode,
-        });
-
-        if (options?.logResponse) {
-          logger.info(`API Response Data: ${path}`, { result });
-        }
-
-        return result;
-      } catch (error: unknown) {
-        const duration = Date.now() - startTime;
-        logger.error(`API Error: ${path}`, {
-          duration,
-          operation,
-          error,
-        });
-        throw error;
-      }
-    };
-
-    return descriptor;
-  };
+      throw error;
+    }
+  } as T;
 }

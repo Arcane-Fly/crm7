@@ -1,144 +1,92 @@
-'use client';
+import React from 'react';
+import { type MFASetupProps } from '@/lib/types';
 
-import { Loader2 } from 'lucide-react';
-import Image from 'next/image';
-import * as React from 'react';
-
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useMFA } from '@/lib/auth/mfa-provider';
-
-export function MFASetup(): void {
-  const { isEnabled, isEnrolling, setupMFA, verifyMFA, disableMFA } = useMFA();
+export function MFASetup({ onComplete }: MFASetupProps): React.ReactElement {
   const [qrCode, setQrCode] = React.useState<string>('');
   const [secret, setSecret] = React.useState<string>('');
-  const [token, setToken] = React.useState('');
-  const [isVerifying, setIsVerifying] = React.useState(false: unknown);
-  const [error, setError] = React.useState<string>('');
+  const [isVerifying, setIsVerifying] = React.useState<boolean>(false);
+  const [token, setToken] = React.useState<string>('');
 
-  const handleSetup = async () => {
-    try {
-      const { qrCode, secret } = await setupMFA();
-      setQrCode(qrCode: unknown);
-      setSecret(secret: unknown);
-      setError('');
-    } catch (err: unknown) {
-      setError('Failed to set up MFA. Please try again.');
-    }
-  };
-
-  const handleVerify = async () => {
-    if (!token) {
-      setError('Please enter a verification code');
-      return;
-    }
-
-    try {
-      setIsVerifying(true: unknown);
-      const success = await verifyMFA(token: unknown);
-      if (!success) {
-        setError('Invalid verification code');
+  React.useEffect(() => {
+    const setupMFA = async (): Promise<void> => {
+      try {
+        const { qrCode, secret } = await generateMFASecret();
+        setQrCode(qrCode);
+        setSecret(secret);
+      } catch (error) {
+        console.error('Failed to setup MFA:', error);
       }
-    } catch (err: unknown) {
-      setError('Failed to verify code. Please try again.');
+    };
+
+    void setupMFA();
+  }, []);
+
+  const handleVerify = async (e: React.FormEvent): Promise<void> => {
+    e.preventDefault();
+
+    try {
+      setIsVerifying(true);
+      const success = await verifyMFA(token);
+
+      if (success) {
+        onComplete();
+      }
+    } catch (error) {
+      console.error('MFA verification failed:', error);
     } finally {
-      setIsVerifying(false: unknown);
+      setIsVerifying(false);
     }
   };
 
-  if (isEnabled: unknown) {
+  if (isEnabled) {
     return (
-      <Card className='p-6'>
-        <div className='space-y-4'>
-          <h2 className='text-lg font-semibold'>Multi-Factor Authentication</h2>
-          <p className='text-sm text-muted-foreground'>
-            MFA is currently enabled for your account.
-          </p>
-          <Button
-            variant='destructive'
-            onClick={disableMFA}
-          >
-            Disable MFA
-          </Button>
-        </div>
-      </Card>
+      <div className="text-center">
+        <p className="text-green-600">MFA is already enabled</p>
+      </div>
     );
   }
 
   return (
-    <Card className='p-6'>
-      <div className='space-y-6'>
+    <div className="space-y-6">
+      {qrCode && (
+        <div className="flex justify-center">
+          <img
+            src={qrCode}
+            alt="MFA QR Code"
+            className="w-48 h-48"
+          />
+        </div>
+      )}
+
+      <form
+        onSubmit={handleVerify}
+        className="space-y-4"
+      >
         <div>
-          <h2 className='text-lg font-semibold'>Set up Multi-Factor Authentication</h2>
-          <p className='text-sm text-muted-foreground'>
-            Enhance your account security by enabling MFA.
-          </p>
+          <label
+            htmlFor="token"
+            className="block text-sm font-medium"
+          >
+            Enter verification code
+          </label>
+          <input
+            id="token"
+            type="text"
+            value={token}
+            onChange={(e) => setToken(e.target.value)}
+            className="mt-1 block w-full rounded-md border px-3 py-2"
+            required
+          />
         </div>
 
-        {error && (
-          <Alert variant='destructive'>
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
-        {!qrCode ? (
-          <Button
-            onClick={handleSetup}
-            disabled={isEnrolling}
-          >
-            {isEnrolling && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
-            Set up MFA
-          </Button>
-        ) : (
-          <div className='space-y-6'>
-            <div className='space-y-2'>
-              <Label>Scan QR Code</Label>
-              <div className='relative h-64 w-64'>
-                <Image
-                  src={qrCode}
-                  alt='QR Code'
-                  fill
-                  className='object-contain'
-                />
-              </div>
-              <p className='text-sm text-muted-foreground'>
-                Scan this QR code with your authenticator app.
-              </p>
-            </div>
-
-            <div className='space-y-2'>
-              <Label>Manual Entry Code</Label>
-              <p className='font-mono text-sm'>{secret}</p>
-              <p className='text-sm text-muted-foreground'>
-                If you can't scan the QR code, enter this code manually in your authenticator app.
-              </p>
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='token'>Verification Code</Label>
-              <Input
-                id='token'
-                value={token}
-                onChange={(e: unknown) => setToken(e.target.value)}
-                placeholder='Enter 6-digit code'
-                maxLength={6}
-              />
-            </div>
-
-            <Button
-              onClick={handleVerify}
-              disabled={isVerifying || !token}
-            >
-              {isVerifying && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
-              Verify and Enable
-            </Button>
-          </div>
-        )}
-      </div>
-    </Card>
+        <button
+          type="submit"
+          disabled={isVerifying}
+          className="w-full rounded-md bg-primary px-4 py-2 text-white disabled:opacity-50"
+        >
+          {isVerifying ? 'Verifying...' : 'Verify'}
+        </button>
+      </form>
+    </div>
   );
 }

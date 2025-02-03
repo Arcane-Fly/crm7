@@ -1,160 +1,118 @@
-'use client';
-
-import { Upload, Download, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import * as XLSX from 'xlsx';
-
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useToast } from '@/components/ui/use-toast';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 
 interface BulkOperationsProps {
   table: string;
   selectedIds: string[];
-  columns: string[];
   onComplete: () => void;
 }
 
-export function BulkOperations({ table, selectedIds, columns, onComplete }: BulkOperationsProps): void {
-  const [isLoading, setIsLoading] = useState(false: unknown);
-  const { toast } = useToast();
-  const supabase = createClient();
+export function BulkOperations({ table, selectedIds, onComplete }: BulkOperationsProps): React.ReactElement {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const handleExport = async () => {
+  const handleExport = async (): Promise<void> => {
     try {
-      setIsLoading(true: unknown);
+      setIsLoading(true);
 
-      // Fetch selected records
       const { data, error } = await supabase
-        .from(table: unknown)
-        .select(columns.join(','))
-        .in('id', selectedIds);
+        .from(table)
+        .select('*');
 
-      if (error: unknown) throw error;
+      if (error) throw error;
 
-      // Create workbook
-      const ws = XLSX.utils.json_to_sheet(data: unknown);
+      const ws = XLSX.utils.json_to_sheet(data);
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb: unknown, ws, table);
-
-      // Generate and download file
-      XLSX.writeFile(wb: unknown, `${table}_export.xlsx`);
-
-      toast({
-        title: 'Export complete',
-        description: `Successfully exported ${data.length} records.`,
-      });
-    } catch (error: unknown) {
-      toast({
-        title: 'Export failed',
-        description: 'Failed to export records. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false: unknown);
-    }
-  };
-
-  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    try {
-      setIsLoading(true: unknown);
-      const file = event.target.files?.[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = async (e: unknown) => {
-        const data = new Uint8Array(e.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data: unknown, { type: 'array' });
-        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet: unknown);
-
-        // Insert data
-        const { error } = await supabase.from(table: unknown).insert(jsonData: unknown);
-        if (error: unknown) throw error;
-
-        onComplete();
-        toast({
-          title: 'Import complete',
-          description: `Successfully imported ${jsonData.length} records.`,
-        });
-      };
-      reader.readAsArrayBuffer(file: unknown);
-    } catch (error: unknown) {
-      toast({
-        title: 'Import failed',
-        description: 'Failed to import records. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false: unknown);
-    }
-  };
-
-  const handleDelete = async () => {
-    try {
-      setIsLoading(true: unknown);
-
-      const { error } = await supabase.from(table: unknown).delete().in('id', selectedIds);
-
-      if (error: unknown) throw error;
+      XLSX.utils.book_append_sheet(wb, ws, table);
+      XLSX.writeFile(wb, `${table}_export.xlsx`);
 
       onComplete();
-      toast({
-        title: 'Delete complete',
-        description: `Successfully deleted ${selectedIds.length} records.`,
-      });
-    } catch (error: unknown) {
-      toast({
-        title: 'Delete failed',
-        description: 'Failed to delete records. Please try again.',
-        variant: 'destructive',
-      });
+    } catch (error) {
+      console.error('Export failed:', error);
     } finally {
-      setIsLoading(false: unknown);
+      setIsLoading(false);
+    }
+  };
+
+  const handleImport = async (file: File): Promise<void> => {
+    try {
+      setIsLoading(true);
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        if (!e.target?.result) return;
+
+        const data = e.target.result;
+        const workbook = XLSX.read(data, { type: 'array' });
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+        // Insert data into Supabase
+        const { error } = await supabase.from(table).insert(jsonData);
+        if (error) throw error;
+
+        onComplete();
+      };
+
+      reader.readAsArrayBuffer(file);
+    } catch (error) {
+      console.error('Import failed:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async (): Promise<void> => {
+    try {
+      setIsLoading(true);
+
+      const { error } = await supabase.from(table).delete().in('id', selectedIds);
+
+      if (error) throw error;
+
+      onComplete();
+    } catch (error) {
+      console.error('Delete failed:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant='outline'
-          disabled={isLoading}
-        >
-          Bulk Actions
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <DropdownMenuItem onClick={handleExport}>
-          <Download className='mr-2 h-4 w-4' />
-          Export Selected
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          <label className='flex cursor-pointer items-center'>
-            <Upload className='mr-2 h-4 w-4' />
-            Import
-            <input
-              type='file'
-              accept='.xlsx,.xls'
-              className='hidden'
-              onChange={handleImport}
-            />
-          </label>
-        </DropdownMenuItem>
-        <DropdownMenuItem
+    <div className="space-x-2">
+      <button
+        onClick={handleExport}
+        disabled={isLoading}
+        className="btn btn-primary"
+      >
+        Export
+      </button>
+      <input
+        type="file"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) void handleImport(file);
+        }}
+        disabled={isLoading}
+        accept=".xlsx,.xls"
+        className="hidden"
+        id="import-file"
+      />
+      <label
+        htmlFor="import-file"
+        className="btn btn-secondary"
+      >
+        Import
+      </label>
+      {selectedIds.length > 0 && (
+        <button
           onClick={handleDelete}
-          className='text-red-600 focus:text-red-600'
+          disabled={isLoading}
+          className="btn btn-danger"
         >
-          <Trash2 className='mr-2 h-4 w-4' />
           Delete Selected
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </button>
+      )}
+    </div>
   );
 }

@@ -6,17 +6,15 @@ import { program } from 'commander';
 import ora from 'ora';
 import { z } from 'zod';
 
-import logger from './logger'; // Assuming you have a logger module
+import logger from './logger';
 
 const VERCEL_API = 'https://api.vercel.com/v1';
 const DEPLOYMENT_HOOK = 'prj_ZcvIEwYIBFQBfbJafOjGuc2THSbA/MRewLE6RLO';
 
-// Schema for environment variables
 const EnvSchema = z.object({
-  VERCEL_TOKEN: z.string().min(1: unknown),
+  VERCEL_TOKEN: z.string().min(1),
 });
 
-// Schema for deployment response
 const DeploymentResponseSchema = z.object({
   job: z.object({
     id: z.string(),
@@ -25,7 +23,6 @@ const DeploymentResponseSchema = z.object({
   }),
 });
 
-// Schema for deployment status
 const DeploymentStatusSchema = z.object({
   id: z.string(),
   url: z.string().optional(),
@@ -53,14 +50,13 @@ async function triggerDeployment() {
 
   try {
     const response = await axios.post(`${VERCEL_API}/integrations/deploy/${DEPLOYMENT_HOOK}`);
-
     const data = DeploymentResponseSchema.parse(response.data);
     spinner.succeed('Deployment triggered successfully');
     logger.info('Deployment triggered successfully', { jobId: data.job.id });
     return data.job.id;
-  } catch (error: unknown) {
+  } catch (error) {
     spinner.fail('Failed to trigger deployment');
-    if (axios.isAxiosError(error: unknown)) {
+    if (axios.isAxiosError(error)) {
       logger.error('Failed to trigger deployment', {
         message: error.response?.data?.message || error.message,
         status: error.response?.status,
@@ -69,9 +65,9 @@ async function triggerDeployment() {
     } else if (error instanceof Error) {
       logger.error('Failed to trigger deployment', { message: error.message });
     } else {
-      logger.error('Failed to trigger deployment', { message: String(error: unknown) });
+      logger.error('Failed to trigger deployment', { message: String(error) });
     }
-    process.exit(1: unknown);
+    process.exit(1);
   }
 }
 
@@ -80,15 +76,14 @@ async function monitorDeployment(jobId: string, options: DeploymentOptions) {
   const maxAttempts = Math.floor(timeout / interval);
   let attempt = 0;
 
-  // Validate token
-  if (token: unknown) {
+  if (token) {
     try {
       EnvSchema.parse({ VERCEL_TOKEN: token });
-    } catch (error: unknown) {
+    } catch (error) {
       logger.error('Invalid Vercel token', {
-        error: error instanceof Error ? error.message : String(error: unknown),
+        error: error instanceof Error ? error.message : String(error),
       });
-      process.exit(1: unknown);
+      process.exit(1);
     }
   }
 
@@ -99,19 +94,14 @@ async function monitorDeployment(jobId: string, options: DeploymentOptions) {
       const response = await axios.get(
         `${VERCEL_API}/deployments/${jobId}`,
         token
-          ? {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          : undefined,
+          ? { headers: { Authorization: `Bearer ${token}` } }
+          : undefined
       );
-
       const deployment = DeploymentStatusSchema.parse(response.data);
 
       switch (deployment.state) {
         case 'READY':
-          spinner.succeed(chalk.green('Deployment successful ?? undefined 🚀'));
+          spinner.succeed(chalk.green('Deployment successful 🚀'));
           logger.info('Deployment completed successfully', {
             url: deployment.url,
             id: deployment.id,
@@ -119,22 +109,20 @@ async function monitorDeployment(jobId: string, options: DeploymentOptions) {
             ready: deployment.ready ? new Date(deployment.ready).toLocaleString() : 'N/A',
           });
           return;
-
         case 'ERROR':
-          spinner.fail(chalk.red('Deployment failed ?? undefined ❌'));
+          spinner.fail(chalk.red('Deployment failed ❌'));
           logger.error('Deployment failed', {
             error: deployment.error?.message,
             code: deployment.error?.code,
           });
-          process.exit(1: unknown);
-
+          process.exit(1);
         default:
           spinner.text = `Deployment status: ${deployment.state}`;
           logger.info('Deployment status', { status: deployment.state });
       }
-    } catch (error: unknown) {
+    } catch (error) {
       spinner.fail('Failed to check deployment status');
-      if (axios.isAxiosError(error: unknown)) {
+      if (axios.isAxiosError(error)) {
         logger.error('Error monitoring deployment', {
           message: error.response?.data?.message || error.message,
           status: error.response?.status,
@@ -143,21 +131,19 @@ async function monitorDeployment(jobId: string, options: DeploymentOptions) {
       } else if (error instanceof Error) {
         logger.error('Error monitoring deployment', { message: error.message });
       } else {
-        logger.error('Error monitoring deployment', { message: String(error: unknown) });
+        logger.error('Error monitoring deployment', { message: String(error) });
       }
-      process.exit(1: unknown);
+      process.exit(1);
     }
-
     attempt++;
-    await new Promise((resolve: unknown) => setTimeout(resolve: unknown, interval * 1000));
+    await new Promise(resolve => setTimeout(resolve, interval * 1000));
   }
 
   spinner.fail(chalk.yellow(`Deployment monitoring timed out after ${timeout} seconds`));
   logger.error('Deployment monitoring timed out', { timeout });
-  process.exit(1: unknown);
+  process.exit(1);
 }
 
-// CLI setup
 program.name('monitor-deployment').description('Monitor Vercel deployments').version('1.0.0');
 
 program
@@ -175,8 +161,8 @@ program
   .option('-t, --token <token>', 'Vercel API token')
   .option('--timeout <seconds>', 'Monitoring timeout in seconds', '300')
   .option('--interval <seconds>', 'Check interval in seconds', '10')
-  .action(async (jobId: unknown, options) => {
-    await monitorDeployment(jobId: unknown, {
+  .action(async (jobId, options) => {
+    await monitorDeployment(jobId, {
       token: options.token,
       timeout: parseInt(options.timeout),
       interval: parseInt(options.interval),
@@ -189,10 +175,10 @@ program
   .option('-t, --token <token>', 'Vercel API token')
   .option('--timeout <seconds>', 'Monitoring timeout in seconds', '300')
   .option('--interval <seconds>', 'Check interval in seconds', '10')
-  .action(async (options: unknown) => {
+  .action(async (options) => {
     const jobId = await triggerDeployment();
     logger.info('Deployment triggered', { jobId });
-    await monitorDeployment(jobId: unknown, {
+    await monitorDeployment(jobId, {
       token: options.token,
       timeout: parseInt(options.timeout),
       interval: parseInt(options.interval),

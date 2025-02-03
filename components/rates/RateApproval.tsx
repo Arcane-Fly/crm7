@@ -21,8 +21,8 @@ export default function RateApproval({
   const { user } = useUser();
   const { toast } = useToast();
   const [templates, setTemplates] = useState<RateTemplate[]>([]);
-  const [loading, setLoading] = useState(true: unknown);
-  const [error, setError] = useState<string | null>(null: unknown);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchPendingTemplates = useCallback(async () => {
     try {
@@ -33,7 +33,7 @@ export default function RateApproval({
         .eq('status', 'draft')
         .order('created_at', { ascending: false });
 
-      if (error: unknown) {
+      if (error) {
         toast({
           variant: 'destructive',
           title: 'Fetch Error',
@@ -43,7 +43,7 @@ export default function RateApproval({
       }
 
       setTemplates(data as RateTemplate[]);
-    } catch (error: unknown) {
+    } catch (error) {
       console.error('Error fetching pending templates:', error);
       setError('Failed to load pending templates');
       toast({
@@ -52,7 +52,7 @@ export default function RateApproval({
         variant: 'destructive',
       });
     } finally {
-      setLoading(false: unknown);
+      setLoading(false);
     }
   }, [org_id, supabase, toast]);
 
@@ -72,9 +72,9 @@ export default function RateApproval({
           description: 'Rate template approved successfully',
         });
 
-        setTemplates((prev: unknown) => prev.filter((t: unknown) => t.id !== template.id));
-        onApprove?.(template: unknown);
-      } catch (error: unknown) {
+        setTemplates((prev) => prev.filter((t) => t.id !== template.id));
+        onApprove?.(template);
+      } catch (error) {
         console.error('Error approving template:', error);
         toast({
           title: 'Error',
@@ -102,9 +102,9 @@ export default function RateApproval({
           description: 'Rate template rejected successfully',
         });
 
-        setTemplates((prev: unknown) => prev.filter((t: unknown) => t.id !== template.id));
-        onReject?.(template: unknown);
-      } catch (error: unknown) {
+        setTemplates((prev) => prev.filter((t) => t.id !== template.id));
+        onReject?.(template);
+      } catch (error) {
         console.error('Error rejecting template:', error);
         toast({
           title: 'Error',
@@ -120,47 +120,44 @@ export default function RateApproval({
     fetchPendingTemplates();
   }, [org_id, fetchPendingTemplates]);
 
-  if (loading: unknown) return <div>Loading pending templates...</div>;
-  if (error: unknown) return <div className='text-red-500'>{error}</div>;
+  if (loading) return <div>Loading pending templates...</div>;
+  if (error) return <div className="text-red-500">{error}</div>;
   if (!templates.length) return <div>No pending templates to approve</div>;
 
   return (
-    <div className='space-y-6'>
-      <h2 className='text-lg font-medium'>Pending Rate Templates</h2>
-      <div className='divide-y'>
-        {templates.map((template: unknown) => (
-          <div
-            key={template.id}
-            className='py-4'
-          >
-            <div className='grid grid-cols-2 gap-4'>
+    <div className="space-y-6">
+      <h2 className="text-lg font-medium">Pending Rate Templates</h2>
+      <div className="divide-y">
+        {templates.map((template) => (
+          <div key={template.id} className="py-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <h3 className='font-medium'>{template.name}</h3>
-                <p className='text-sm text-gray-500'>{template.description}</p>
+                <h3 className="font-medium">{template.name}</h3>
+                <p className="text-sm text-gray-500">{template.description}</p>
               </div>
               <div>
-                <div className='grid grid-cols-2 gap-2 text-sm'>
-                  <span className='text-gray-500'>Base Rate:</span>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <span className="text-gray-500">Base Rate:</span>
                   <span>${template.baseRate}</span>
-                  <span className='text-gray-500'>Base Margin:</span>
+                  <span className="text-gray-500">Base Margin:</span>
                   <span>{template.baseMargin}%</span>
-                  <span className='text-gray-500'>Super Rate:</span>
+                  <span className="text-gray-500">Super Rate:</span>
                   <span>{template.superRate}%</span>
-                  <span className='text-gray-500'>Template Type:</span>
-                  <span className='capitalize'>{template.templateType}</span>
+                  <span className="text-gray-500">Template Type:</span>
+                  <span className="capitalize">{template.templateType}</span>
                 </div>
               </div>
             </div>
-            <div className='mt-4 flex justify-end space-x-4'>
+            <div className="mt-4 flex justify-end space-x-4">
               <button
-                onClick={() => handleReject(template: unknown)}
-                className='rounded-md bg-red-100 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-200'
+                onClick={() => handleReject(template)}
+                className="rounded-md bg-red-100 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-200"
               >
                 Reject
               </button>
               <button
-                onClick={() => handleApprove(template: unknown)}
-                className='rounded-md bg-green-100 px-4 py-2 text-sm font-medium text-green-700 hover:bg-green-200'
+                onClick={() => handleApprove(template)}
+                className="rounded-md bg-green-100 px-4 py-2 text-sm font-medium text-green-700 hover:bg-green-200"
               >
                 Approve
               </button>

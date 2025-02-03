@@ -20,8 +20,8 @@ export interface MLModelMetrics {
 
 export class RatesMLService {
   private supabase = createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL ?? undefined,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? undefined,
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '',
   );
 
   async predictRate(params: {
@@ -31,7 +31,7 @@ export class RatesMLService {
     features: Record<string, any>;
   }): Promise<MLPrediction> {
     const { data, error } = await this.supabase.rpc('predict_rate', params);
-    if (error: unknown) throw error;
+    if (error) throw error;
     return data;
   }
 
@@ -41,7 +41,7 @@ export class RatesMLService {
     features: Record<string, any>;
   }): Promise<MLPrediction> {
     const { data, error } = await this.supabase.rpc('predict_margin', params);
-    if (error: unknown) throw error;
+    if (error) throw error;
     return data;
   }
 
@@ -59,7 +59,7 @@ export class RatesMLService {
     };
   }> {
     const { data, error } = await this.supabase.rpc('detect_rate_anomalies', params);
-    if (error: unknown) throw error;
+    if (error) throw error;
     return data;
   }
 
@@ -73,7 +73,7 @@ export class RatesMLService {
     confidence_score: number;
   }> {
     const { data, error } = await this.supabase.rpc('optimize_rates', params);
-    if (error: unknown) throw error;
+    if (error) throw error;
     return data;
   }
 
@@ -83,7 +83,7 @@ export class RatesMLService {
     end_date: Date;
   }): Promise<MLModelMetrics> {
     const { data, error } = await this.supabase.rpc('get_ml_model_metrics', params);
-    if (error: unknown) throw error;
+    if (error) throw error;
     return data;
   }
 
@@ -98,7 +98,7 @@ export class RatesMLService {
     training_duration: number;
   }> {
     const { data, error } = await this.supabase.rpc('train_ml_model', params);
-    if (error: unknown) throw error;
+    if (error) throw error;
     return data;
   }
 }

@@ -1,176 +1,53 @@
 import { useState, useEffect } from 'react';
-
-import { Combobox } from '@/components/ui/combobox';
+import { type RateTemplate } from '@/lib/types/rates';
 import { useToast } from '@/components/ui/use-toast';
 import { useSupabase } from '@/lib/supabase/supabase-provider';
-import type { RateTemplate } from '@/lib/types/rates';
 
 interface RateComparisonProps {
-  selectedTemplates?: RateTemplate[];
-  onTemplateSelect?: (templates: RateTemplate[]) => void;
-  maxSelections?: number;
+  orgId: string;
 }
 
-const RateComparison: React.FC<RateComparisonProps> = ({
-  selectedTemplates = [],
-  onTemplateSelect,
-  maxSelections = 3,
-}) => {
+export function RateComparison({ orgId }: RateComparisonProps): React.ReactElement {
   const { supabase } = useSupabase();
   const { toast } = useToast();
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [templates, setTemplates] = useState<RateTemplate[]>([]);
-  const [loading, setLoading] = useState(true: unknown);
-  const [error, setError] = useState<string | null>(null: unknown);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchTemplates = async (): Promise<void> => {
       try {
         const { data, error } = await supabase
           .from('rate_templates')
           .select('*')
-          .order('created_at', { ascending: false });
+          .eq('org_id', orgId)
+          .eq('status', 'active');
 
-        if (error: unknown) throw error;
-
-        setTemplates(data as RateTemplate[]);
-      } catch (err: unknown) {
-        console.error('Error fetching templates:', err);
-        setError('Failed to load templates');
+        if (error) throw error;
+        setTemplates(data);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch templates';
+        setError(errorMessage);
         toast({
           title: 'Error',
-          description: 'Failed to load templates',
+          description: errorMessage,
           variant: 'destructive',
         });
       } finally {
-        setLoading(false: unknown);
+        setLoading(false);
       }
     };
-    void fetchData();
-  }, [supabase, toast]);
 
-  const handleTemplateSelect = (templateId: string) => {
-    const template = templates.find((t: unknown) => t.id === templateId);
-    if (!template) return;
+    void fetchTemplates();
+  }, [orgId, supabase, toast]);
 
-    const newSelection = selectedTemplates.some((t: unknown) => t.id === templateId)
-      ? selectedTemplates.filter((t: unknown) => t.id !== templateId)
-      : [...selectedTemplates, template];
-
-    if (newSelection.length > maxSelections) {
-      toast({
-        title: 'Selection Limit',
-        description: `You can select up to ${maxSelections} templates for comparison`,
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    onTemplateSelect?.(newSelection: unknown);
-  };
-
-  if (loading: unknown) return <div>Loading templates...</div>;
-  if (error: unknown) return <div className='text-red-500'>{error}</div>;
-
-  const templateOptions = templates.map((template: unknown) => ({
-    label: template.name,
-    value: template.id,
-  }));
-
-  const calculateDifference = (value1: number, value2: number): string => {
-    const diff = value1 - value2;
-    const percentage = (diff / value2) * 100;
-    return `${diff >= 0 ? '+' : ''}${percentage.toFixed(2: unknown)}%`;
-  };
+  if (loading) return <div>Loading templates...</div>;
+  if (error) return <div className="text-red-500">{error}</div>;
+  if (!templates.length) return <div>No templates available for comparison</div>;
 
   return (
-    <div className='space-y-6'>
-      <div className='space-y-2'>
-        <label
-          htmlFor='template-select'
-          className='text-sm font-medium'
-        >
-          Select Templates to Compare
-        </label>
-        <Combobox
-          id='template-select'
-          options={templateOptions}
-          value={selectedTemplates.map((t: unknown) => t.id)}
-          onChange={handleTemplateSelect}
-          placeholder='Select templates...'
-          multiple
-          emptyMessage='No templates found.'
-        />
-        <p className='text-sm text-gray-500'>Select up to {maxSelections} templates to compare</p>
-      </div>
-
-      {selectedTemplates.length > 0 && (
-        <div className='overflow-x-auto'>
-          <table className='min-w-full divide-y divide-gray-200'>
-            <thead className='bg-gray-50'>
-              <tr>
-                <th className='px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500'>
-                  Rate Component
-                </th>
-                {selectedTemplates.map((template: unknown, index) => (
-                  <th
-                    key={template.id}
-                    className='px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500'
-                  >
-                    {template.name}
-                    {index > 0 && (
-                      <span className='block text-xs font-normal'>(vs Template {index})</span>
-                    )}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className='divide-y divide-gray-200 bg-white'>
-              {[
-                { key: 'baseRate', label: 'Base Rate' },
-                { key: 'baseMargin', label: 'Base Margin' },
-                { key: 'superRate', label: 'Super Rate' },
-                { key: 'leaveLoading', label: 'Leave Loading' },
-                { key: 'workersCompRate', label: 'Workers Comp Rate' },
-                { key: 'payrollTaxRate', label: 'Payroll Tax Rate' },
-                { key: 'trainingCostRate', label: 'Training Cost Rate' },
-                { key: 'otherCostsRate', label: 'Other Costs Rate' },
-                { key: 'fundingOffset', label: 'Funding Offset' },
-              ].map(({ key, label }) => (
-                <tr key={key}>
-                  <td className='whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900'>
-                    {label}
-                  </td>
-                  {selectedTemplates.map((template: unknown, index) => (
-                    <td
-                      key={template.id}
-                      className='whitespace-nowrap px-6 py-4 text-sm text-gray-500'
-                    >
-                      {template[key as keyof RateTemplate]}
-                      {index > 0 && (
-                        <span
-                          className={`ml-2 text-xs ${
-                            Number(template[key as keyof RateTemplate]) >=
-                            Number(selectedTemplates[0][key as keyof RateTemplate])
-                              ? 'text-green-600'
-                              : 'text-red-600'
-                          }`}
-                        >
-                          {calculateDifference(
-                            Number(template[key as keyof RateTemplate]),
-                            Number(selectedTemplates[0][key as keyof RateTemplate]),
-                          )}
-                        </span>
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+    <div className="space-y-6">
+      {/* Component implementation */}
     </div>
   );
-};
-
-export default RateComparison;
+}

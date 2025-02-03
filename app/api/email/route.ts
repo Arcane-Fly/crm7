@@ -17,22 +17,23 @@ interface NotificationEmailRequest {
 
 const notificationEmailSchema = z.object({
   to: z.string().email(),
-  subject: z.string().min(1: unknown),
-  title: z.string().min(1: unknown),
-  message: z.string().min(1: unknown),
-  recipientName: z.string().min(1: unknown),
+  subject: z.string().min(1),
+  title: z.string().min(1),
+  message: z.string().min(1),
+  recipientName: z.string().min(1),
   actionUrl: z.string().url(),
-  actionText: z.string().min(1: unknown),
+  actionText: z.string().min(1),
 });
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  if (!process.env.RESEND_API_KEY) {
+  const resendApiKey = process.env['RESEND_API_KEY'];
+  if (!resendApiKey) {
     return NextResponse.json({ error: 'Resend API key not configured' }, { status: 500 });
   }
 
   try {
     const body = (await request.json()) as unknown;
-    const validatedData = notificationEmailSchema.parse(body: unknown);
+    const validatedData = notificationEmailSchema.parse(body);
 
     const emailData: NotificationEmailRequest = {
       to: validatedData.to,
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       actionText: validatedData.actionText,
     };
 
-    await sendNotificationEmail(emailData: unknown);
+    await sendNotificationEmail(emailData);
 
     return NextResponse.json({ success: true });
   } catch (error: unknown) {

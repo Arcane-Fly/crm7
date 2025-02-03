@@ -1,69 +1,59 @@
-import { fairWorkCacheWarming } from '@/lib/services/fairwork/cache-warming';
-import { logger } from '@/lib/services/logger';
+import { logger } from '@/lib/logger';
+import { ServiceFactory } from './service-factory';
+import { ServiceRegistry } from './service-registry';
 
-/**
- * Initialize all application services that need to be started when the app boots.
- * This includes:
- * - Cache warming for frequently accessed data
- * - Monitoring services
- * - Background jobs
- */
+let isInitialized = false;
+
 export async function initializeServices(): Promise<void> {
+  if (isInitialized) {
+    return;
+  }
+
+  const factory = ServiceFactory.getInstance();
+  const registry = new ServiceRegistry(factory);
+
   try {
-    logger.info('Initializing application services...');
-
-    // Initialize cache warming
-    logger.info('Starting cache warming service...');
-    fairWorkCacheWarming.initialize();
-
-    // Add other service initializations here
-    // e.g., background jobs, monitoring services, etc.
-
+    // Register services
+    registry.validateDependencies();
+    registry.initialize();
+    isInitialized = true;
     logger.info('Application services initialized successfully');
-  } catch (error: unknown) {
+  } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to initialize application services:', new Error(errorMessage: unknown));
+    logger.error('Failed to initialize application services:', new Error(errorMessage));
     throw error;
   }
 }
 
-/**
- * Cleanup all application services during shutdown.
- * This ensures graceful shutdown of services like:
- * - Cache warming
- * - Background jobs
- * - Database connections
- */
 export async function cleanupServices(): Promise<void> {
+  if (!isInitialized) {
+    return;
+  }
+
+  const factory = ServiceFactory.getInstance();
+
   try {
-    logger.info('Cleaning up application services...');
+    // Reset metrics and perform cleanup
+    factory.resetAllMetrics();
 
-    // Stop cache warming
-    fairWorkCacheWarming.stop();
+    // Additional cleanup tasks can be added here
 
-    // Add other service cleanup here
-
+    isInitialized = false;
     logger.info('Application services cleaned up successfully');
-  } catch (error: unknown) {
+  } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to cleanup application services:', new Error(errorMessage: unknown));
+    logger.error('Failed to cleanup application services:', new Error(errorMessage));
     throw error;
   }
 }
 
-// Register cleanup handlers
-if (typeof window !== 'undefined') {
-  window.addEventListener('beforeunload', () => {
-    void cleanupServices();
-  });
-}
+// Handle process termination
+process.on('SIGTERM', () => {
+  logger.info('SIGTERM received. Starting graceful shutdown...');
+  void cleanupServices().finally(() => process.exit(0));
+});
 
-if (typeof process !== 'undefined') {
-  process.on('SIGTERM', () => {
-    void cleanupServices().finally(() => process.exit(0: unknown));
-  });
-
-  process.on('SIGINT', () => {
-    void cleanupServices().finally(() => process.exit(0: unknown));
-  });
-}
+process.on('SIGINT', () => {
+  logger.info('SIGINT received. Starting graceful shutdown...');
+  void cleanupServices().finally(() => process.exit(0));
+});

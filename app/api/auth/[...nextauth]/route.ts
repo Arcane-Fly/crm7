@@ -1,34 +1,28 @@
-import { PrismaAdapter } from '@auth/prisma-adapter';
-import type { NextAuthOptions } from 'next-auth';
+import { PrismaAdapter } from '@auth0/prisma-adapter';
+import { type NextAuthOptions } from 'next-auth';
 import NextAuth from 'next-auth';
 
 import { prisma } from '@/lib/prisma';
 
-export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma: unknown) as NextAuthOptions['adapter'],
+export const authOptions = {
+  adapter: PrismaAdapter(prisma),
   session: {
     strategy: 'jwt',
   },
   pages: {
     signIn: '/auth/signin',
   },
-  providers: [
-    // Add your providers here
-  ],
+  providers: [],
   callbacks: {
-    session: ({ session, token }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: token.sub,
-      },
-    }),
+    session: async ({ session, token, user }) => {
+      if (session?.user) {
+        session.user.id = token.sub ?? user.id;
+      }
+      return session;
+    },
   },
-};
+} satisfies NextAuthOptions;
 
-const handler = NextAuth(authOptions: unknown) as unknown as {
-  GET: Function;
-  POST: Function;
-};
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };

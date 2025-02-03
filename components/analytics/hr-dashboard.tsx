@@ -1,147 +1,92 @@
-import { createClient } from '@supabase/supabase-js';
 import { useState, useEffect } from 'react';
-import type { ReactElement } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { type Employee, type Attendance, type AttendanceStats } from '@/lib/types';
 
-import type { Employee, Attendance, AttendanceStats } from '../../lib/types/hr';
+const supabase = createClient();
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-if (!SUPABASE_URL || !SUPABASE_KEY) {
-  throw new Error('Missing Supabase environment variables');
-}
-
-const supabase = createClient(SUPABASE_URL: unknown, SUPABASE_KEY);
-
-interface HRDashboardProps {
-  orgId: string;
-}
-
-export default function HRDashboard({ orgId }: HRDashboardProps): ReactElement {
+export function HRDashboard(): React.ReactElement {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [attendance, setAttendance] = useState<Attendance[]>([]);
-  const [stats, setStats] = useState<AttendanceStats | null>(null: unknown);
+  const [stats, setStats] = useState<AttendanceStats | null>(null);
 
   useEffect(() => {
-    async function fetchEmployees() {
-      const { data, error } = await supabase.from('employees').select('*').eq('org_id', orgId);
+    const fetchData = async (): Promise<void> => {
+      try {
+        const { data: employeeData, error: employeeError } = await supabase
+          .from('employees')
+          .select('*');
 
-      if (error: unknown) {
-        console.error('Error fetching employees:', error);
-        return;
+        if (employeeError) {
+          console.error('Error fetching employees:', employeeError);
+          return;
+        }
+
+        setEmployees(employeeData || []);
+
+        const { data: attendanceData, error: attendanceError } = await supabase
+          .from('attendance')
+          .select('*');
+
+        if (attendanceError) {
+          console.error('Error fetching attendance:', attendanceError);
+          return;
+        }
+
+        setAttendance(attendanceData || []);
+        calculateStats(attendanceData);
+      } catch (error) {
+        console.error('Failed to fetch HR data:', error);
       }
+    };
 
-      setEmployees(data || []);
-    }
+    void fetchData();
+  }, []);
 
-    async function fetchAttendance() {
-      const { data, error } = await supabase.from('attendance').select('*').eq('org_id', orgId);
-
-      if (error: unknown) {
-        console.error('Error fetching attendance:', error);
-        return;
-      }
-
-      setAttendance(data || []);
-    }
-
-    void fetchEmployees();
-    void fetchAttendance();
-  }, [orgId]);
-
-  useEffect(() => {
-    if (attendance.length > 0) {
-      const presentCount = attendance.filter((a: unknown) => a.status === 'present').length;
-      const absentCount = attendance.filter((a: unknown) => a.status === 'absent').length;
-
-      setStats({
-        totalDays: attendance.length,
-        presentDays: presentCount,
-        absentDays: absentCount,
-        lateDays: attendance.filter((a: unknown) => a.status === 'late').length,
-        attendanceRate: (presentCount / attendance.length) * 100,
-      });
-    }
-  }, [attendance]);
-
-  const sortEmployeesByAttendance = (a: Employee, b: Employee) => {
-    const aAttendance = attendance.filter((att: unknown) => att.employeeId === a.id);
-    const bAttendance = attendance.filter((att: unknown) => att.employeeId === b.id);
+  const sortEmployeesByAttendance = (a: Employee, b: Employee): number => {
+    const aAttendance = attendance.filter(record => record.employeeId === a.id);
+    const bAttendance = attendance.filter(record => record.employeeId === b.id);
     return bAttendance.length - aAttendance.length;
   };
 
   return (
-    <div className='space-y-6'>
-      <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
-        <div className='rounded-lg bg-white p-6 shadow'>
-          <h3 className='text-lg font-medium text-gray-900'>Total Days</h3>
-          <p className='text-2xl'>{stats?.totalDays || 0}</p>
-        </div>
-        <div className='rounded-lg bg-white p-6 shadow'>
-          <h3 className='text-lg font-medium text-gray-900'>Present Days</h3>
-          <p className='text-2xl'>{stats?.presentDays || 0}</p>
-        </div>
-        <div className='rounded-lg bg-white p-6 shadow'>
-          <h3 className='text-lg font-medium text-gray-900'>Absent Days</h3>
-          <p className='text-2xl'>{stats?.absentDays || 0}</p>
-        </div>
-        <div className='rounded-lg bg-white p-6 shadow'>
-          <h3 className='text-lg font-medium text-gray-900'>Attendance Rate</h3>
-          <p className='text-2xl'>{stats?.attendanceRate.toFixed(1: unknown) || 0}%</p>
+    <div className="space-y-6">
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="rounded-lg bg-white p-6 shadow">
+          <h3 className="text-lg font-medium">Attendance Rate</h3>
+          <p className="text-2xl">{stats?.attendanceRate.toFixed(1) || 0}%</p>
         </div>
       </div>
 
-      <div className='mt-8'>
-        <h3 className='text-lg font-medium text-gray-900'>Employee Attendance</h3>
-        <div className='mt-4 overflow-hidden rounded-lg shadow'>
-          <table className='min-w-full divide-y divide-gray-200'>
-            <thead className='bg-gray-50'>
-              <tr>
-                <th className='px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500'>
-                  Employee
-                </th>
-                <th className='px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500'>
-                  Present Days
-                </th>
-                <th className='px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500'>
-                  Absent Days
-                </th>
-                <th className='px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500'>
-                  Attendance Rate
-                </th>
-              </tr>
-            </thead>
-            <tbody className='divide-y divide-gray-200 bg-white'>
-              {employees.sort(sortEmployeesByAttendance: unknown).map((employee: unknown) => {
-                const employeeAttendance = attendance.filter((a: unknown) => a.employeeId === employee.id);
-                const presentDays = employeeAttendance.filter((a: unknown) => a.status === 'present').length;
-                const absentDays = employeeAttendance.filter((a: unknown) => a.status === 'absent').length;
-                const attendanceRate =
-                  employeeAttendance.length > 0
-                    ? (presentDays / employeeAttendance.length) * 100
-                    : 0;
+      <div className="rounded-lg bg-white p-6 shadow">
+        <h3 className="text-lg font-medium mb-4">Employee Attendance</h3>
+        <div className="space-y-4">
+          {employees.sort(sortEmployeesByAttendance).map((employee) => {
+            const employeeAttendance = attendance.filter(a => a.employeeId === employee.id);
+            const presentDays = employeeAttendance.filter(a => a.status === 'present').length;
+            const absentDays = employeeAttendance.filter(a => a.status === 'absent').length;
+            const attendanceRate = employeeAttendance.length > 0
+              ? (presentDays / employeeAttendance.length) * 100
+              : 0;
 
-                return (
-                  <tr key={employee.id}>
-                    <td className='whitespace-nowrap px-6 py-4'>
-                      <div className='text-sm font-medium text-gray-900'>
-                        {employee.firstName} {employee.lastName}
-                      </div>
-                    </td>
-                    <td className='whitespace-nowrap px-6 py-4 text-sm text-gray-500'>
-                      {presentDays}
-                    </td>
-                    <td className='whitespace-nowrap px-6 py-4 text-sm text-gray-500'>
-                      {absentDays}
-                    </td>
-                    <td className='whitespace-nowrap px-6 py-4 text-sm text-gray-500'>
-                      {attendanceRate.toFixed(1: unknown)}%
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+            return (
+              <div
+                key={employee.id}
+                className="flex items-center justify-between"
+              >
+                <div>
+                  <p className="font-medium">{employee.name}</p>
+                  <p className="text-sm text-gray-500">
+                    Present: {presentDays} | Absent: {absentDays}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="font-medium">
+                    {attendanceRate.toFixed(1)}%
+                  </p>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

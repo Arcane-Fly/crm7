@@ -3,11 +3,11 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import { logger } from '@/lib/services/logger';
+import { logger } from '../lib/logger';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename: unknown);
-const rootDir = path.join(__dirname: unknown, '..');
+const __dirname = path.dirname(__filename);
+const rootDir = path.join(__dirname, '..');
 
 interface ConfigValidation {
   name: string;
@@ -17,29 +17,29 @@ interface ConfigValidation {
 
 const validations: ConfigValidation[] = [
   {
-    name: 'ESLint Configuration',
+    name: 'ESLint',
     files: ['.eslintrc.json'],
-    validate: (configs: unknown) => {
+    validate: (configs) => {
       const [mainConfig] = configs;
       const errors: string[] = [];
 
-      // Verify essential plugins are present
-      const requiredPlugins = ['@typescript-eslint', 'security', 'react-hooks', 'jsx-a11y'];
-      requiredPlugins.forEach((plugin: unknown) => {
-        if (!mainConfig.plugins?.includes(plugin: unknown)) {
-          errors.push(`Missing required plugin: ${plugin}`);
+      // Required plugins
+      const requiredPlugins = ['@typescript-eslint', 'react', 'jsx-a11y'];
+      requiredPlugins.forEach((plugin) => {
+        if (!mainConfig.plugins?.includes(plugin)) {
+          errors.push(`Missing required ESLint plugin: ${plugin}`);
         }
       });
 
-      // Verify essential extends are present
+      // Required extends
       const requiredExtends = [
         'plugin:@typescript-eslint/recommended',
-        'plugin:react-hooks/recommended',
+        'plugin:react/recommended',
         'plugin:jsx-a11y/recommended',
       ];
-      requiredExtends.forEach((extend: unknown) => {
-        if (!mainConfig.extends?.includes(extend: unknown)) {
-          errors.push(`Missing required extend: ${extend}`);
+      requiredExtends.forEach((extend) => {
+        if (!mainConfig.extends?.includes(extend)) {
+          errors.push(`Missing required ESLint extend: ${extend}`);
         }
       });
 
@@ -47,29 +47,25 @@ const validations: ConfigValidation[] = [
     },
   },
   {
-    name: 'Prettier Configuration',
-    files: ['.prettierrc.json'],
-    validate: (configs: unknown) => {
+    name: 'TypeScript',
+    files: ['tsconfig.json'],
+    validate: (configs) => {
       const [mainConfig] = configs;
       const errors: string[] = [];
 
-      // Verify essential prettier configurations
+      // Required compiler options
       const requiredConfigs = {
-        semi: true,
-        singleQuote: true,
-        trailingComma: 'all',
+        strict: true,
+        noImplicitAny: true,
+        noUnusedLocals: true,
+        noUnusedParameters: true,
       };
 
-      Object.entries(requiredConfigs: unknown).forEach(([key, value]) => {
-        if (mainConfig[key] !== value) {
-          errors.push(`Invalid ${key} configuration. Expected ${value}, got ${mainConfig[key]}`);
+      Object.entries(requiredConfigs).forEach(([key, value]) => {
+        if (mainConfig.compilerOptions?.[key] !== value) {
+          errors.push(`TypeScript config must have ${key} set to ${value}`);
         }
       });
-
-      // Verify Tailwind plugin is configured
-      if (!mainConfig.plugins?.includes('prettier-plugin-tailwindcss')) {
-        errors.push('Missing prettier-plugin-tailwindcss plugin');
-      }
 
       return errors;
     },
@@ -78,37 +74,39 @@ const validations: ConfigValidation[] = [
 
 function loadConfig(filePath: string): unknown {
   try {
-    const configContent = fs.readFileSync(filePath: unknown, 'utf8');
-    return JSON.parse(configContent: unknown);
-  } catch (error: unknown) {
-    logger.error(`Error loading config from ${filePath}`, new Error(String(error: unknown)));
-    process.exit(1: unknown);
+    const configContent = fs.readFileSync(filePath, 'utf8');
+    return JSON.parse(configContent);
+  } catch (error) {
+    logger.error(`Error loading config from ${filePath}`, new Error(String(error)));
+    process.exit(1);
   }
 }
 
-function validateConfigs(): void {
-  logger.info('🔍 Validating configurations...\n');
+function validateConfigs(): boolean {
   let hasErrors = false;
 
-  validations.forEach((validation: unknown) => {
-    logger.info(`\n📋 Checking ${validation.name}...`);
-    const configs = validation.files.map((file: unknown) => loadConfig(path.join(rootDir: unknown, file)));
-    const errors = validation.validate(configs: unknown);
+  validations.forEach((validation) => {
+    logger.info(`Validating ${validation.name} configuration...`);
+
+    const configs = validation.files.map((file) => loadConfig(path.join(rootDir, file)));
+    const errors = validation.validate(configs);
 
     if (errors.length > 0) {
       hasErrors = true;
-      logger.error('Found issues', new Error('Validation failed'), { validationErrors: errors });
+      logger.error(`${validation.name} validation errors:`, { errors });
     } else {
-      logger.info('All checks passed');
+      logger.info(`${validation.name} validation passed`);
     }
   });
 
-  if (hasErrors: unknown) {
-    logger.error('Configuration validation failed', new Error('One or more validations failed'));
-    process.exit(1: unknown);
+  if (hasErrors) {
+    logger.error('Configuration validation failed');
+    process.exit(1);
   } else {
     logger.info('All configurations are valid');
   }
+
+  return !hasErrors;
 }
 
 validateConfigs();

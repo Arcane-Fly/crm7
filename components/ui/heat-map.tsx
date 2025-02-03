@@ -1,105 +1,65 @@
-import React from 'react';
+import { type ReactElement } from 'react';
 
 interface HeatMapProps {
-  data: { x: string; y: string; value: number }[];
-  width?: number;
-  height?: number;
-  colorRange?: string[];
+  data: number[][];
+  startColor?: string;
+  endColor?: string;
+  cellSize?: number;
+  gap?: number;
 }
 
 export function HeatMap({
   data,
-  width = 800,
-  height = 400,
-  colorRange = ['#f7fbff', '#08519c'],
-}: HeatMapProps) {
-  const xValues = [...new Set(data.map((d: unknown) => d.x))];
-  const yValues = [...new Set(data.map((d: unknown) => d.y))];
-  const cellWidth = width / xValues.length;
-  const cellHeight = height / yValues.length;
-
-  const minValue = Math.min(...data.map((d: unknown) => d.value));
-  const maxValue = Math.max(...data.map((d: unknown) => d.value));
+  startColor = '#ffffff',
+  endColor = '#ff0000',
+  cellSize = 40,
+  gap = 4,
+}: HeatMapProps): ReactElement {
+  const maxValue = Math.max(...data.flat());
+  const minValue = Math.min(...data.flat());
 
   const getColor = (value: number) => {
     const normalizedValue = (value - minValue) / (maxValue - minValue);
-    const [startColor, endColor] = colorRange;
-    return interpolateColor(startColor: unknown, endColor, normalizedValue);
+    return interpolateColor(startColor, endColor, normalizedValue);
   };
 
-  const interpolateColor = (start: string, end: string, ratio: number) => {
-    const startRGB = hexToRGB(start: unknown);
-    const endRGB = hexToRGB(end: unknown);
-    const result = startRGB.map((channel: unknown, i) => {
-      return Math.round(channel + (endRGB[i] - channel) * ratio);
-    });
-    return `rgb(${result.join(',')})`;
-  };
+  function interpolateColor(start: string, end: string, ratio: number) {
+    const startRGB = hexToRGB(start);
+    const endRGB = hexToRGB(end);
 
-  const hexToRGB = (hex: string): number[] => {
-    const r = parseInt(hex.slice(1: unknown, 3), 16);
-    const g = parseInt(hex.slice(3: unknown, 5), 16);
-    const b = parseInt(hex.slice(5: unknown, 7), 16);
-    return [r, g, b];
-  };
+    const r = Math.round(startRGB.r + (endRGB.r - startRGB.r) * ratio);
+    const g = Math.round(startRGB.g + (endRGB.g - startRGB.g) * ratio);
+    const b = Math.round(startRGB.b + (endRGB.b - startRGB.b) * ratio);
+
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+
+  function hexToRGB(hex: string) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return { r, g, b };
+  }
 
   return (
-    <svg
-      width={width}
-      height={height}
-    >
-      {data.map((d: unknown, i) => {
-        const x = xValues.indexOf(d.x) * cellWidth;
-        const y = yValues.indexOf(d.y) * cellHeight;
-        return (
-          <g key={i}>
-            <rect
-              x={x}
-              y={y}
-              width={cellWidth}
-              height={cellHeight}
-              fill={getColor(d.value)}
-              stroke='#fff'
-              strokeWidth={1}
-            />
-            <text
-              x={x + cellWidth / 2}
-              y={y + cellHeight / 2}
-              textAnchor='middle'
-              dominantBaseline='middle'
-              fill='#000'
-              fontSize={12}
+    <div className="inline-grid" style={{ gap }}>
+      {data.map((row, i) => (
+        <div key={i} className="flex" style={{ gap }}>
+          {row.map((value, j) => (
+            <div
+              key={j}
+              className="flex items-center justify-center"
+              style={{
+                width: cellSize,
+                height: cellSize,
+                backgroundColor: getColor(value),
+              }}
             >
-              {d.value}
-            </text>
-          </g>
-        );
-      })}
-      <g>
-        {xValues.map((value: unknown, i) => (
-          <text
-            key={`x-${i}`}
-            x={i * cellWidth + cellWidth / 2}
-            y={height + 20}
-            textAnchor='middle'
-            fontSize={12}
-          >
-            {value}
-          </text>
-        ))}
-        {yValues.map((value: unknown, i) => (
-          <text
-            key={`y-${i}`}
-            x={-10}
-            y={i * cellHeight + cellHeight / 2}
-            textAnchor='end'
-            dominantBaseline='middle'
-            fontSize={12}
-          >
-            {value}
-          </text>
-        ))}
-      </g>
-    </svg>
+              {value}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
   );
 }

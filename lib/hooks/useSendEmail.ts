@@ -1,14 +1,18 @@
 import { useState } from 'react';
 
-import type { NotificationEmailParams } from '@/lib/email/service';
+interface UseSendEmailReturn {
+  sendEmail: (params: Record<string, unknown>) => Promise<void>;
+  isLoading: boolean;
+  error: Error | null;
+}
 
-export function useSendEmail(): void {
-  const [isLoading, setIsLoading] = useState(false: unknown);
-  const [error, setError] = useState<Error | null>(null: unknown);
+export function useSendEmail(): UseSendEmailReturn {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-  const sendEmail = async (params: Omit<NotificationEmailParams, 'from'>) => {
-    setIsLoading(true: unknown);
-    setError(null: unknown);
+  const sendEmail = async (params: Record<string, unknown>) => {
+    setIsLoading(true);
+    setError(null);
 
     try {
       const response = await fetch('/api/email', {
@@ -16,20 +20,18 @@ export function useSendEmail(): void {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(params: unknown),
+        body: JSON.stringify(params),
       });
 
       if (!response.ok) {
         throw new Error('Failed to send email');
       }
-
-      const data = await response.json();
-      return data;
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err : new Error('Failed to send email'));
-      throw err;
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Failed to send email');
+      setError(error);
+      throw error;
     } finally {
-      setIsLoading(false: unknown);
+      setIsLoading(false);
     }
   };
 

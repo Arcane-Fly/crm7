@@ -1,24 +1,24 @@
-'use client';
+import { type ReactElement } from 'react';
 
-import { cn } from '@/lib/utils';
-
-interface SafeListProps<T> extends React.HTMLAttributes<HTMLUListElement> {
-  items: T[] | null | undefined;
-  renderItem: (item: T) => React.ReactNode;
+interface SafeListProps<T> {
+  items: T[];
+  renderItem: (item: T) => ReactElement;
+  emptyMessage?: string;
 }
 
-export function SafeList<T>({ items, renderItem, className, ...props }: SafeListProps<T>) {
-  if (!items || items.length === 0) {
-    return null;
+export function SafeList<T>({ 
+  items, 
+  renderItem, 
+  emptyMessage = 'No items to display'
+}: SafeListProps<T>): ReactElement {
+  if (!items.length) {
+    return <p className="text-gray-500">{emptyMessage}</p>;
   }
 
   return (
-    <ul
-      className={cn('space-y-2', className)}
-      {...props}
-    >
-      {items.map((item: unknown, index) => (
-        <li key={index}>{renderItem(item: unknown)}</li>
+    <ul className="space-y-2">
+      {items.map((item, index) => (
+        <li key={index}>{renderItem(item)}</li>
       ))}
     </ul>
   );

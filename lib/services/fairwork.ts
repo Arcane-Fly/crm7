@@ -1,124 +1,113 @@
-import { createClient } from '@/lib/supabase/client';
+import { type SupabaseClient } from '@supabase/supabase-js';
+import { type Database } from '@/types/supabase';
+import { BaseService } from './base-service';
 
-export interface AwardRate {
+interface FairWorkTemplate {
   id: string;
-  award_id: string;
-  classification: string;
-  level: string;
-  base_rate: number;
-  casual_loading: number;
-  leave_loading: number;
-  effective_from: string;
-  effective_to?: string;
-  metadata?: Record<string, any>;
+  name: string;
+  baseRate: number;
+  effectiveFrom: string;
+  effectiveTo?: string;
 }
 
-class FairWorkService {
-  private supabase = createClient();
-
-  async getAwards() {
-    const { data, error } = await this.supabase
-      .from('awards')
-      .select('*')
-      .order('name', { ascending: true });
-
-    if (error: unknown) {
-      throw error;
-    }
-
-    return data;
+export class FairWorkService extends BaseService {
+  constructor(private readonly supabase: SupabaseClient<Database>) {
+    super({
+      name: 'FairWorkService',
+      version: '1.0.0',
+    });
   }
 
-  async getAwardRates(awardId: string) {
-    const { data, error } = await this.supabase
-      .from('award_rates')
-      .select('*')
-      .eq('award_id', awardId)
-      .order('effective_from', { ascending: false });
+  async getTemplates(): Promise<FairWorkTemplate[]> {
+    return this.executeServiceMethod('getTemplates', async () => {
+      const { data, error } = await this.supabase
+        .from('fairwork_templates')
+        .select();
 
-    if (error: unknown) {
-      throw error;
-    }
+      if (error) {
+        throw error;
+      }
 
-    return data as AwardRate[];
+      return data;
+    });
   }
 
-  async updateAwardRates(awardId: string, rates: Partial<AwardRate>[]) {
-    const { error } = await this.supabase.from('award_rates').upsert(
-      rates.map((rate: unknown) => ({
-        ...rate,
-        award_id: awardId,
-        updated_at: new Date().toISOString(),
-      })),
-    );
+  async getTemplate(id: string): Promise<FairWorkTemplate | null> {
+    return this.executeServiceMethod('getTemplate', async () => {
+      const { data, error } = await this.supabase
+        .from('fairwork_templates')
+        .select()
+        .eq('id', id)
+        .single();
 
-    if (error: unknown) {
-      throw error;
-    }
+      if (error) {
+        throw error;
+      }
+
+      return data;
+    });
   }
 
-  async validateAwardCompliance(params: {
-    org_id: string;
-    template_id: string;
-    start_date: Date;
-    end_date: Date;
-  }) {
-    const { data: _data, error: _error } = await this.supabase
-      .from('award_compliance')
-      .insert(params: unknown)
-      .select()
-      .single();
+  async createTemplate(template: Omit<FairWorkTemplate, 'id'>): Promise<FairWorkTemplate> {
+    return this.executeServiceMethod('createTemplate', async () => {
+      const { data, error } = await this.supabase
+        .from('fairwork_templates')
+        .insert(template)
+        .select()
+        .single();
 
-    if (_error: unknown) {
-      throw _error;
-    }
+      if (error) {
+        throw error;
+      }
 
-    return _data;
+      return data;
+    });
   }
 
-  async getComplianceReport(reportId: string) {
-    const { data, error } = await this.supabase
-      .from('compliance_reports')
-      .select('*')
-      .eq('id', reportId)
-      .single();
+  async updateTemplate(id: string, updates: Partial<FairWorkTemplate>): Promise<FairWorkTemplate> {
+    return this.executeServiceMethod('updateTemplate', async () => {
+      const { data, error } = await this.supabase
+        .from('fairwork_templates')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
 
-    if (error: unknown) {
-      throw error;
-    }
+      if (error) {
+        throw error;
+      }
 
-    return data;
+      return data;
+    });
   }
 
-  async getComplianceHistory(params: {
-    org_id: string;
+  async getRates(params: {
     template_id?: string;
-    start_date?: Date;
-    end_date?: Date;
-  }) {
-    const { org_id, template_id, start_date, end_date } = params;
-    const query = this.supabase.from('compliance_history').select('*').eq('org_id', org_id);
+    start_date?: string;
+    end_date?: string;
+  }): Promise<FairWorkTemplate[]> {
+    return this.executeServiceMethod('getRates', async () => {
+      let query = this.supabase.from('fairwork_templates').select();
 
-    if (template_id: unknown) {
-      query.eq('template_id', template_id);
-    }
+      if (params.template_id) {
+        query = query.eq('id', params.template_id);
+      }
 
-    if (start_date: unknown) {
-      query.gte('check_date', start_date.toISOString());
-    }
+      if (params.start_date) {
+        query = query.gte('effectiveFrom', params.start_date);
+      }
 
-    if (end_date: unknown) {
-      query.lte('check_date', end_date.toISOString());
-    }
+      if (params.end_date) {
+        query = query.lte('effectiveTo', params.end_date);
+      }
 
-    const { data, error } = await query.order('check_date', { ascending: false });
+      const { data, error } = await query;
 
-    if (error: unknown) {
-      throw error;
-    }
+      if (error) {
+        throw error;
+      }
 
-    return data;
+      return data;
+    });
   }
 }
-
-export const fairWorkService = new FairWorkService();

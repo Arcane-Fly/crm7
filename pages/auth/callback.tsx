@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL ?? undefined,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? undefined,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? undefined
 );
 
 export default function AuthCallbackPage() {
@@ -16,15 +16,15 @@ export default function AuthCallbackPage() {
       const code = searchParams.get('code');
       const next = searchParams.get('next') ?? '/';
 
-      if (code: unknown) {
-        await supabase.auth.exchangeCodeForSession(code: unknown);
+      if (code) {
+        await supabase.auth.exchangeCodeForSession(code);
       }
 
-      router.push(next: unknown);
+      router.push(next);
     };
 
     handleAuthCallback();
-  }, [router]); // Only depend on router since supabase is constant
+  }, [router]);
 
   return null;
 }

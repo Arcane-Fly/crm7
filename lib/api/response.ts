@@ -1,58 +1,46 @@
-import { NextResponse } from 'next/server';
-import { z } from 'zod';
+import { type NextResponse } from 'next/server';
 
-// API response schema
-export const ApiResponse = z.object({
-  data: z.unknown().optional(),
-  error: z
-    .object({
-      code: z.string(),
-      message: z.string(),
-      details: z.unknown().optional(),
-    })
-    .optional(),
-  meta: z.object({
-    timestamp: z.date(),
-    requestId: z.string().optional(),
-  }),
-});
-export type ApiResponse = z.infer<typeof ApiResponse>;
-
-/**
- * Create a standardized API response
- */
-export function createApiResponse<T>(
-  data?: T,
-  error?: { code: string; message: string; details?: unknown },
-  status = 200,
-): NextResponse {
-  const response = ApiResponse.parse({
-    data,
-    error,
-    meta: {
-      timestamp: new Date(),
-      requestId: crypto.randomUUID(),
-    },
-  });
-
-  return NextResponse.json(response: unknown, { status });
+interface ApiError {
+  code: string;
+  message: string;
+  details?: unknown;
 }
 
-/**
- * Create an error response
- */
+interface ApiResponse<T> {
+  data?: T;
+  error?: ApiError;
+}
+
+export function createApiResponse<T>(
+  data?: T,
+  error?: ApiError,
+  status = 200
+): NextResponse<ApiResponse<T>> {
+  const response: ApiResponse<T> = {};
+  
+  if (data !== undefined) {
+    response.data = data;
+  }
+  
+  if (error) {
+    response.error = error;
+  }
+
+  return NextResponse.json(response, { status });
+}
+
 export function createErrorResponse(
   code: string,
   message: string,
   details?: unknown,
-  status = 400,
+  status = 400
 ): NextResponse {
-  return createApiResponse(undefined: unknown, { code, message, details }, status);
+  return createApiResponse(undefined, { code, message, details }, status);
 }
 
-/**
- * Create a success response
- */
-export function createSuccessResponse<T>(data: T, status = 200): NextResponse {
-  return createApiResponse(data: unknown, undefined, status);
+export function createSuccessResponse<T>(
+  data: T,
+  status = 200
+): NextResponse<ApiResponse<T>> {
+  return createApiResponse(data, undefined, status);
 }

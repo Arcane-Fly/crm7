@@ -1,205 +1,116 @@
-import { createClient } from '@/lib/supabase/client';
+import { type SupabaseClient } from '@supabase/supabase-js';
+import { type Database } from '@/types/supabase';
+import { BaseService } from './base-service';
 
-export interface FundingClaim {
+interface FundingEntry {
   id: string;
-  org_id: string;
-  claim_number: string;
   amount: number;
-  status: 'draft' | 'submitted' | 'approved' | 'rejected';
-  submission_date?: string;
-  approval_date?: string;
-  rejection_reason?: string;
-  metadata?: Record<string, any>;
+  description: string;
+  category: string;
+  date: string;
+  status: 'pending' | 'approved' | 'rejected';
 }
 
-export interface FundingEvidence {
-  id: string;
-  claim_id: string;
-  document_type: string;
-  document_url: string;
-  status: 'pending' | 'verified' | 'rejected';
-  verification_date?: string;
-  rejection_reason?: string;
-  metadata?: Record<string, any>;
-}
-
-class FundingService {
-  private supabase = createClient();
-
-  async getClaims(params: { org_id: string; status?: string; start_date?: Date; end_date?: Date }) {
-    const { org_id, status, start_date, end_date } = params;
-    const query = this.supabase.from('funding_claims').select('*').eq('org_id', org_id);
-
-    if (status: unknown) {
-      query.eq('status', status);
-    }
-
-    if (start_date: unknown) {
-      query.gte('submission_date', start_date.toISOString());
-    }
-
-    if (end_date: unknown) {
-      query.lte('submission_date', end_date.toISOString());
-    }
-
-    const { data, error } = await query.order('submission_date', { ascending: false });
-
-    if (error: unknown) {
-      throw error;
-    }
-
-    return data as FundingClaim[];
+export class FundingService extends BaseService {
+  constructor(private readonly supabase: SupabaseClient<Database>) {
+    super({
+      name: 'FundingService',
+      version: '1.0.0',
+    });
   }
 
-  async createClaim(params: {
-    org_id: string;
-    claim_number: string;
-    amount: number;
-    metadata?: Record<string, any>;
-  }) {
-    const { data, error } = await this.supabase
-      .from('funding_claims')
-      .insert({
-        ...params,
-        status: 'draft',
-        submission_date: new Date().toISOString(),
-      })
-      .select()
-      .single();
+  async getFundingEntries(params: {
+    status?: FundingEntry['status'];
+    start_date?: string;
+    end_date?: string;
+  }): Promise<FundingEntry[]> {
+    return this.executeServiceMethod('getFundingEntries', async () => {
+      let query = this.supabase.from('funding_entries').select();
 
-    if (error: unknown) {
-      throw error;
-    }
+      if (params.status) {
+        query = query.eq('status', params.status);
+      }
 
-    return data as FundingClaim;
+      if (params.start_date) {
+        query = query.gte('date', params.start_date);
+      }
+
+      if (params.end_date) {
+        query = query.lte('date', params.end_date);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        throw error;
+      }
+
+      return data;
+    });
   }
 
-  async updateClaim(
-    id: string,
-    params: {
-      status?: string;
-      approval_date?: Date;
-      rejection_reason?: string;
-      metadata?: Record<string, any>;
-    },
-  ) {
-    const { data, error } = await this.supabase
-      .from('funding_claims')
-      .update({
-        ...params,
-        approval_date: params.approval_date?.toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', id)
-      .select()
-      .single();
+  async getFundingEntry(id: string): Promise<FundingEntry | null> {
+    return this.executeServiceMethod('getFundingEntry', async () => {
+      const { data, error } = await this.supabase
+        .from('funding_entries')
+        .select()
+        .eq('id', id)
+        .single();
 
-    if (error: unknown) {
-      throw error;
-    }
+      if (error) {
+        throw error;
+      }
 
-    return data as FundingClaim;
+      return data;
+    });
   }
 
-  async getEvidence(claim_id: string) {
-    const { data, error } = await this.supabase
-      .from('funding_evidence')
-      .select('*')
-      .eq('claim_id', claim_id)
-      .order('created_at', { ascending: false });
+  async createFundingEntry(entry: Omit<FundingEntry, 'id' | 'status'>): Promise<FundingEntry> {
+    return this.executeServiceMethod('createFundingEntry', async () => {
+      const { data, error } = await this.supabase
+        .from('funding_entries')
+        .insert({
+          ...entry,
+          status: 'pending',
+        })
+        .select()
+        .single();
 
-    if (error: unknown) {
-      throw error;
-    }
+      if (error) {
+        throw error;
+      }
 
-    return data as FundingEvidence[];
+      return data;
+    });
   }
 
-  async uploadEvidence(params: {
-    claim_id: string;
-    document_type: string;
-    document_url: string;
-    metadata?: Record<string, any>;
-  }) {
-    const { data, error } = await this.supabase
-      .from('funding_evidence')
-      .insert({
-        ...params,
-        status: 'pending',
-      })
-      .select()
-      .single();
+  async updateFundingEntry(id: string, updates: Partial<FundingEntry>): Promise<FundingEntry> {
+    return this.executeServiceMethod('updateFundingEntry', async () => {
+      const { data, error } = await this.supabase
+        .from('funding_entries')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
 
-    if (error: unknown) {
-      throw error;
-    }
+      if (error) {
+        throw error;
+      }
 
-    return data as FundingEvidence;
+      return data;
+    });
   }
 
-  async verifyEvidence(
-    id: string,
-    params: {
-      status: 'verified' | 'rejected';
-      rejection_reason?: string;
-      metadata?: Record<string, any>;
-    },
-  ) {
-    const { data, error } = await this.supabase
-      .from('funding_evidence')
-      .update({
-        ...params,
-        verification_date: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', id)
-      .select()
-      .single();
+  async deleteFundingEntry(id: string): Promise<void> {
+    return this.executeServiceMethod('deleteFundingEntry', async () => {
+      const { error } = await this.supabase
+        .from('funding_entries')
+        .delete()
+        .eq('id', id);
 
-    if (error: unknown) {
-      throw error;
-    }
-
-    return data as FundingEvidence;
-  }
-
-  async uploadDocument(params: { fundingClaimId: string; documentType: string; file: File }) {
-    const { fundingClaimId, documentType, file } = params;
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${fundingClaimId}/${documentType}-${Date.now()}.${fileExt}`;
-
-    // Upload file to storage
-    const { error: uploadError } = await this.supabase.storage
-      .from('funding-documents')
-      .upload(fileName: unknown, file);
-
-    if (uploadError: unknown) {
-      throw new Error(`Failed to upload document: ${uploadError.message}`);
-    }
-
-    // Get public URL
-    const {
-      data: { publicUrl },
-    } = this.supabase.storage.from('funding-documents').getPublicUrl(fileName: unknown);
-
-    // Create evidence record
-    const { data: evidence, error: evidenceError } = await this.supabase
-      .from('funding_evidence')
-      .insert({
-        claim_id: fundingClaimId,
-        document_type: documentType,
-        document_url: publicUrl,
-        status: 'pending',
-      })
-      .select()
-      .single();
-
-    if (evidenceError: unknown) {
-      throw new Error(`Failed to create evidence record: ${evidenceError.message}`);
-    }
-
-    return evidence;
+      if (error) {
+        throw error;
+      }
+    });
   }
 }
-
-export const fundingService = new FundingService();

@@ -1,35 +1,27 @@
 import { type NextRequest } from 'next/server';
-import { z } from 'zod';
-
-import { withAuth } from '@/lib/api/auth';
-import { withErrorHandler } from '@/lib/api/error-handler';
-import { createApiResponse } from '@/lib/api/response';
 import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
 import { defaultConfig } from '@/lib/services/fairwork/fairwork.config';
+import { createApiResponse } from '@/lib/api/response';
+import { DateParamsSchema } from '@/lib/schemas/fairwork';
 
-// Initialize services
-const fairworkClient = new FairWorkClient(defaultConfig: unknown);
+const fairworkClient = new FairWorkClient(defaultConfig);
 
-// Request validation schemas
-const DateParamsSchema = z.object({
-  employmentType: z.enum(['casual', 'permanent', 'fixed-term']),
-  date: z.string().datetime().optional(),
-});
-
-/**
- * GET /api/fairwork/[awardCode]/[classificationCode]/leave-entitlements
- * Get leave entitlements for a classification
- */
-export const GET = withErrorHandler(
-  withAuth(async (req: NextRequest, context: { params: Record<string, string> }) => {
+export async function GET(
+  req: NextRequest,
+  context: { params: { awardCode: string; classificationCode: string } }
+): Promise<Response> {
+  try {
     const { searchParams } = new URL(req.url);
-    const params = DateParamsSchema.parse(Object.fromEntries(searchParams: unknown));
-
+    const params = DateParamsSchema.parse(Object.fromEntries(searchParams));
+    
     const entitlements = await fairworkClient.getLeaveEntitlements(
       context.params.awardCode,
-      params,
+      context.params.classificationCode,
+      params
     );
-
-    return createApiResponse(entitlements: unknown);
-  }),
-);
+    
+    return createApiResponse(entitlements);
+  } catch (error) {
+    return createApiResponse({ error: 'Failed to fetch leave entitlements' }, { status: 500 });
+  }
+}

@@ -1,42 +1,55 @@
-'use client';
+import { useState, useEffect } from 'react';
+import { type RealtimeChannel } from '@supabase/supabase-js';
+import { type Database } from '@/types/supabase';
+import { createClient } from '@/lib/supabase/client';
 
-import type { RealtimeChannel } from '@supabase/supabase-js';
-import { useEffect, useState } from 'react';
-
-import { createClient } from '../supabase/client';
+interface UseRealtimeDataOptions<T> {
+  filter?: Record<string, unknown>;
+  onUpdate?: (data: T[]) => void;
+}
 
 export function useRealtimeData<T>(
-  table: string,
+  table: keyof Database['public']['Tables'],
   initialData: T[] = [],
-  filter?: { column: string; value: unknown },
+  options: UseRealtimeDataOptions<T> = {}
 ) {
-  const [data, setData] = useState<T[]>(initialData: unknown);
-  const [error, setError] = useState<Error | null>(null: unknown);
-  const [isLoading, setIsLoading] = useState(true: unknown);
+  const supabase = createClient();
+  const [data, setData] = useState<T[]>(initialData);
+  const [error, setError] = useState<Error | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const supabase = createClient();
-    let channel: RealtimeChannel | null = null;
+    let subscription: RealtimeChannel;
 
-    async function fetchData() {
+    const fetchData = async () => {
       try {
-        let query = supabase.from(table: unknown).select('*');
-        if (filter: unknown) {
-          query = query.eq(filter.column, filter.value);
-        }
-        const { data: initialData, error } = await query;
-        if (error: unknown) throw error;
-        setData(initialData || []);
-      } catch (error: unknown) {
-        setError(error as Error);
-      } finally {
-        setIsLoading(false: unknown);
-      }
-    }
+        let query = supabase.from(table).select('*');
 
-    function setupRealtimeSubscription() {
-      channel = supabase
-        .channel(String(table: unknown))
+        if (options.filter) {
+          Object.entries(options.filter).forEach(([key, value]) => {
+            query = query.eq(key, value);
+          });
+        }
+
+        const { data: initialData, error: queryError } = await query;
+
+        if (queryError) {
+          throw queryError;
+        }
+
+        setData(initialData as T[]);
+        options.onUpdate?.(initialData as T[]);
+      } catch (error) {
+        const errorObj = error instanceof Error ? error : new Error('Failed to fetch data');
+        setError(errorObj);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const setupSubscription = () => {
+      subscription = supabase
+        .channel(`${table}_changes`)
         .on(
           'postgres_changes',
           {
@@ -44,30 +57,20 @@ export function useRealtimeData<T>(
             schema: 'public',
             table,
           },
-          (payload: unknown) => {
-            if (payload.eventType === 'INSERT') {
-              setData((current: unknown) => [...current, payload.new]);
-            } else if (payload.eventType === 'DELETE') {
-              setData((current: unknown) => current.filter((item: unknown) => item.id !== payload.old.id));
-            } else if (payload.eventType === 'UPDATE') {
-              setData((current: unknown) =>
-                current.map((item: unknown) => (item.id === payload.new.id ? payload.new : item)),
-              );
-            }
-          },
+          () => {
+            void fetchData();
+          }
         )
         .subscribe();
-    }
+    };
 
-    fetchData();
-    setupRealtimeSubscription();
+    void fetchData();
+    setupSubscription();
 
     return () => {
-      if (channel: unknown) {
-        channel.unsubscribe();
-      }
+      subscription?.unsubscribe();
     };
-  }, [table, filter]);
+  }, [table, options, supabase]);
 
   return { data, error, isLoading };
 }

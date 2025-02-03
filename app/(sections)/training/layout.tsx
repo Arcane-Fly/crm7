@@ -1,77 +1,64 @@
-import type { Metadata } from 'next';
+import Link from 'next/link';
+import { type ReactNode } from 'react';
 
-export const metadata: Metadata = {
-  title: 'Training & Development - CRM7',
-  description: 'Training and development management system',
-};
-
-interface SidebarItem {
-  label: string;
+interface NavItem {
   href: string;
-  items?: SidebarItem[];
+  label: string;
+  items?: NavItem[];
 }
 
-const sidebarItems: SidebarItem[] = [
-  {
-    label: 'Overview',
-    href: '/training',
-  },
-  {
-    label: 'Courses',
-    href: '/training/courses',
-    items: [
-      { label: 'Catalog', href: '/training/courses/catalog' },
-      { label: 'Management', href: '/training/courses/management' },
-    ],
-  },
-  {
-    label: 'Certifications',
-    href: '/training/certifications',
-    items: [
-      { label: 'Active', href: '/training/certifications/active' },
-      { label: 'Expired', href: '/training/certifications/expired' },
-    ],
-  },
-  {
-    label: 'Skills Matrix',
-    href: '/training/skills',
-  },
-  {
-    label: 'Assessment',
-    href: '/training/assessment',
-  },
-];
+interface NavSection {
+  items: NavItem[];
+}
 
-export default function TrainingLayout({ children }: { children: React.ReactNode }) {
+const TRAINING_NAV: Record<string, NavSection> = {
+  Overview: {
+    items: [
+      { href: '/training', label: 'Dashboard' },
+      { href: '/training/reports', label: 'Reports' },
+    ],
+  },
+  Management: {
+    items: [
+      { href: '/training/courses', label: 'Courses' },
+      { href: '/training/assessments', label: 'Assessments' },
+      { href: '/training/certifications', label: 'Certifications' },
+    ],
+  },
+};
+
+export default function TrainingLayout({ children }: { children: ReactNode }): React.ReactElement {
   return (
-    <div className='flex min-h-screen'>
-      <aside className='w-64 border-r bg-background'>
-        <nav className='space-y-1 p-4'>
-          {sidebarItems.map((item: unknown) => (
-            <div
-              key={item.href}
-              className='space-y-1'
-            >
-              <a
-                href={item.href}
-                className='block rounded-lg px-4 py-2 text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground'
-              >
-                {item.label}
-              </a>
-              {item.items?.map((subItem: unknown) => (
-                <a
-                  key={subItem.href}
-                  href={subItem.href}
-                  className='block rounded-lg py-2 pl-8 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                >
-                  {subItem.label}
-                </a>
+    <div className="flex min-h-screen">
+      <nav className="w-64 border-r bg-background">
+        {Object.entries(TRAINING_NAV).map(([section, { items }]) => (
+          <div key={section} className="px-3 py-2">
+            <h2 className="mb-2 px-4 text-lg font-semibold">{section}</h2>
+            <div className="space-y-1">
+              {items.map((item) => (
+                <div key={item.href}>
+                  <Link
+                    href={item.href}
+                    className="block rounded-md px-4 py-2 text-sm font-medium hover:bg-accent"
+                  >
+                    {item.label}
+                  </Link>
+                  {item.items?.map((subItem) => (
+                    <Link
+                      key={subItem.href}
+                      href={subItem.href}
+                      className="block rounded-md px-8 py-2 text-sm font-medium hover:bg-accent"
+                    >
+                      {subItem.label}
+                    </Link>
+                  ))}
+                </div>
               ))}
             </div>
-          ))}
-        </nav>
-      </aside>
-      <main className='flex-1 p-8'>{children}</main>
+          </div>
+        ))}
+      </nav>
+      <main className="flex-1 p-6">{children}</main>
     </div>
   );
 }

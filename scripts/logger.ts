@@ -23,7 +23,6 @@ const logger = winston.createLogger({
   ],
 });
 
-// Type-safe logger wrapper
 const typedLogger: TypedLogger = {
   error: (message: LogMessage, meta?: LogMetadata) => {
     if (message instanceof Error) {
@@ -32,7 +31,7 @@ const typedLogger: TypedLogger = {
         error: { message: message.message, stack: message.stack },
       });
     } else {
-      logger.error(message: unknown, meta);
+      logger.error(message, meta);
     }
   },
   warn: (message: LogMessage, meta?: LogMetadata) => {
@@ -42,7 +41,7 @@ const typedLogger: TypedLogger = {
         error: { message: message.message, stack: message.stack },
       });
     } else {
-      logger.warn(message: unknown, meta);
+      logger.warn(message, meta);
     }
   },
   info: (message: LogMessage, meta?: LogMetadata) => {
@@ -52,7 +51,7 @@ const typedLogger: TypedLogger = {
         error: { message: message.message, stack: message.stack },
       });
     } else {
-      logger.info(message: unknown, meta);
+      logger.info(message, meta);
     }
   },
   debug: (message: LogMessage, meta?: LogMetadata) => {
@@ -62,7 +61,7 @@ const typedLogger: TypedLogger = {
         error: { message: message.message, stack: message.stack },
       });
     } else {
-      logger.debug(message: unknown, meta);
+      logger.debug(message, meta);
     }
   },
 };

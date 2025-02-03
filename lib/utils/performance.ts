@@ -1,13 +1,6 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
-import { createLogger } from '@/lib/utils/logger';
-
-const logger = createLogger('performance');
-
-/**
- * Debounce function to limit the rate at which a function is called
- */
-export function debounce<T extends (...args: unknown[]) => any>(
+export function debounce<T extends (...args: any[]) => void>(
   func: T,
   wait: number,
 ): (...args: Parameters<T>) => void {
@@ -15,91 +8,73 @@ export function debounce<T extends (...args: unknown[]) => any>(
 
   return function executedFunction(...args: Parameters<T>) {
     const later = () => {
-      clearTimeout(timeout: unknown);
+      clearTimeout(timeout);
       func(...args);
     };
 
-    clearTimeout(timeout: unknown);
-    timeout = setTimeout(later: unknown, wait);
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
   };
 }
 
-/**
- * Throttle function to ensure a function is called at most once in a specified time period
- */
-export function throttle<T extends (...args: unknown[]) => any>(
+export function throttle<T extends (...args: any[]) => void>(
   func: T,
   limit: number,
 ): (...args: Parameters<T>) => void {
   let inThrottle: boolean;
-  let lastResult: ReturnType<T>;
+  let lastFunc: NodeJS.Timeout;
+  let lastRan: number;
 
-  return function executedFunction(...args: Parameters<T>): ReturnType<T> {
+  return function executedFunction(...args: Parameters<T>) {
     if (!inThrottle) {
-      lastResult = func(...args);
+      func(...args);
+      lastRan = Date.now();
       inThrottle = true;
-      setTimeout(() => (inThrottle = false), limit);
+    } else {
+      clearTimeout(lastFunc);
+      lastFunc = setTimeout(() => {
+        if (Date.now() - lastRan >= limit) {
+          func(...args);
+          lastRan = Date.now();
+        }
+      }, limit - (Date.now() - lastRan));
     }
-    return lastResult;
   };
 }
 
-/**
- * Hook to measure and log component render time
- */
-export function useRenderTime(componentName?: string): void {
-  if (!componentName) {
-    logger.warn('useRenderTime called without componentName');
-    componentName = 'UnnamedComponent';
-  }
-
-  const renderStart = useRef(performance.now());
+export function useRenderTime(componentName: string): void {
+  const startTime = useRef(performance.now());
 
   useEffect(() => {
-    const renderTime = performance.now() - renderStart.current;
-    logger.debug(`${componentName} render time:`, { renderTime });
-  }, [componentName]);
+    const endTime = performance.now();
+    const renderTime = endTime - startTime.current;
+    console.log(`${componentName} render time: ${renderTime.toFixed(2)}ms`);
+  });
 }
 
-/**
- * Hook to detect and warn about expensive re-renders
- */
-export function useRenderOptimization(
+export function useRenderOptimization<T extends Record<string, unknown>>(
+  props: T,
   componentName: string,
-  props: Record<string, unknown>,
-  threshold = 16, // ~1 frame at 60fps
-) {
-  const prevProps = useRef<Record<string, unknown>>();
+): void {
+  const prevProps = useRef<T>();
 
   useEffect(() => {
-    const renderStart = performance.now();
-
-    return () => {
-      const renderTime = performance.now() - renderStart;
-      if (renderTime > threshold) {
-        const changes = Object.keys(props: unknown).filter((key: unknown) => prevProps.current?.[key] !== props[key]);
-
-        logger.warn('Expensive re-render detected', {
-          componentName,
-          renderTime,
-          changes,
-        });
+    if (prevProps.current) {
+      const changes = Object.keys(props).filter((key) => prevProps.current?.[key] !== props[key]);
+      if (changes.length > 0) {
+        console.log(`${componentName} re-rendered due to changes in:`, changes);
       }
-    };
-  }, [componentName, props, threshold]);
-
-  useEffect(() => {
+    }
     prevProps.current = props;
-  }, [props]);
+  });
 }
 
-/**
- * Hook to automatically suspend expensive operations when the tab is not visible
- */
-export function useVisibilityOptimization(callback: (): void => void = (): void => {}) {
+export function useVisibilityOptimization(callback = () => {}): void {
+  const isVisible = useRef(true);
+
   const handleVisibilityChange = useCallback(() => {
-    if (document.hidden) {
-      // Suspend expensive operations
+    isVisible.current = document.visibilityState === 'visible';
+    if (isVisible.current) {
       callback();
     }
   }, [callback]);
@@ -112,19 +87,19 @@ export function useVisibilityOptimization(callback: (): void => void = (): void 
   }, [handleVisibilityChange]);
 }
 
-/**
- * Measure and log API call performance
- */
-export async function measureApiCall<T>(name: string, fn: () => Promise<T>): Promise<T> {
+export async function measureApiCall<T>(
+  apiCall: () => Promise<T>,
+  name: string,
+): Promise<T> {
   const start = performance.now();
   try {
-    const result = await fn();
-    const duration = performance.now() - start;
-    logger.debug(`API call ${name} completed`, { duration });
+    const result = await apiCall();
+    const end = performance.now();
+    console.log(`${name} took ${(end - start).toFixed(2)}ms`);
     return result;
-  } catch (error: unknown) {
-    const duration = performance.now() - start;
-    logger.error(`API call ${name} failed`, { duration, error });
+  } catch (error) {
+    const end = performance.now();
+    console.error(`${name} failed after ${(end - start).toFixed(2)}ms`, error);
     throw error;
   }
 }

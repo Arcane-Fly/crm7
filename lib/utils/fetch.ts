@@ -1,5 +1,7 @@
 import { logger } from './logger';
 
+const log = logger.createLogger('fetch-utility');
+
 export interface RetryConfig {
   maxRetries: number;
   initialDelay: number;
@@ -14,6 +16,8 @@ const DEFAULT_RETRY_CONFIG: RetryConfig = {
   backoffFactor: 2,
 };
 
+const NON_RETRYABLE_ERRORS = new Set(['AbortError', 'TypeError']);
+
 export async function fetch(
   url: string | URL | Request,
   init?: RequestInit & { retry?: Partial<RetryConfig> }
@@ -25,6 +29,12 @@ export async function fetch(
   while (attempt <= retryConfig.maxRetries) {
     try {
       const response = await globalThis.fetch(url, init);
+      
+      // Don't retry 4xx errors as they are client errors
+      if (response.status >= 400 && response.status < 500) {
+        return response;
+      }
+      
       if (response.ok || attempt === retryConfig.maxRetries) {
         return response;
       }
@@ -32,6 +42,11 @@ export async function fetch(
       lastError = new Error(`HTTP ${response.status}: ${response.statusText}`);
     } catch (error) {
       lastError = error instanceof Error ? error : new Error('Unknown error occurred');
+      
+      // Don't retry if the request was aborted or if it's a network error
+      if (NON_RETRYABLE_ERRORS.has(lastError.name)) {
+        throw lastError;
+      }
     }
 
     attempt += 1;
@@ -41,7 +56,7 @@ export async function fetch(
         retryConfig.maxDelay
       );
 
-      logger.warning('Request failed, retrying', {
+      log.warn('Request failed, retrying', {
         url: url.toString(),
         attempt,
         delay,

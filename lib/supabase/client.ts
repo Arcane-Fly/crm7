@@ -2,6 +2,7 @@
 
 import { createBrowserClient } from '@supabase/ssr';
 import type { CookieOptions } from '@supabase/ssr';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database } from '../types/database';
 
@@ -12,20 +13,22 @@ export type { CookieOptions };
  * This client is used for real-time subscriptions, file storage operations,
  * and any client-side database queries.
  */
-export const createClient = (): void => {
+export const createClient = (): SupabaseClient<Database> => {
   return createBrowserClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL ?? undefined,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? undefined,
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
     {
       cookies: {
-        get(name: string) {
+        get(name: string): string {
           if (typeof document === 'undefined') return '';
-          return document.cookie
-            .split('; ')
-            .find((row: unknown) => row.startsWith(`${name}=`))
-            ?.split('=')[1];
+          return (
+            document.cookie
+              .split('; ')
+              .find((row) => row.startsWith(`${name}=`))
+              ?.split('=')[1] ?? ''
+          );
         },
-        set(name: string, value: string, options: CookieOptions) {
+        set(name: string, value: string, options: CookieOptions): void {
           if (typeof document === 'undefined') return;
           let cookie = `${name}=${value}`;
           if (options.path) cookie += `; path=${options.path}`;
@@ -35,7 +38,7 @@ export const createClient = (): void => {
           if (options.sameSite) cookie += `; samesite=${options.sameSite}`;
           document.cookie = cookie;
         },
-        remove(name: string, options: CookieOptions) {
+        remove(name: string, options: CookieOptions): void {
           if (typeof document === 'undefined') return;
           const path = options.path ? `; path=${options.path}` : '';
           const domain = options.domain ? `; domain=${options.domain}` : '';
@@ -49,6 +52,6 @@ export const createClient = (): void => {
         detectSessionInUrl: true,
         persistSession: true,
       },
-    },
+    }
   );
 };

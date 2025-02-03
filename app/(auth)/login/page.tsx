@@ -14,8 +14,8 @@ export default function LoginPage(): ReactElement {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null: unknown);
-  const [loading, setLoading] = useState(false: unknown);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleAuth0Login = (): void => {
     window.location.href = `/api/auth/login?returnTo=${encodeURIComponent('/dashboard')}`;
@@ -23,8 +23,8 @@ export default function LoginPage(): ReactElement {
 
   const handleLogin = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
-    setError(null: unknown);
-    setLoading(true: unknown);
+    setError(null);
+    setLoading(true);
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -32,7 +32,7 @@ export default function LoginPage(): ReactElement {
         password,
       });
 
-      if (error: unknown) throw error;
+      if (error) throw error;
       if (data.session) {
         router.push('/dashboard');
       }
@@ -41,7 +41,7 @@ export default function LoginPage(): ReactElement {
       setError(loginError.message ?? 'An error occurred during login');
       logger.error('Login failed', loginError);
     } finally {
-      setLoading(false: unknown);
+      setLoading(false);
     }
   };
 
@@ -69,41 +69,32 @@ export default function LoginPage(): ReactElement {
           </div>
         </div>
 
-        <form
-          onSubmit={handleLogin}
-          className='space-y-4'
-        >
+        <form onSubmit={handleLogin} className='space-y-4'>
           {error && <div className='rounded-md bg-red-50 p-4 text-sm text-red-700'>{error}</div>}
 
           <div>
-            <label
-              htmlFor='email'
-              className='block text-sm font-medium text-gray-700'
-            >
+            <label htmlFor='email' className='block text-sm font-medium text-gray-700'>
               Email
             </label>
             <input
               id='email'
               type='email'
               value={email}
-              onChange={(e: unknown) => setEmail(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
               required
               className='mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500'
             />
           </div>
 
           <div>
-            <label
-              htmlFor='password'
-              className='block text-sm font-medium text-gray-700'
-            >
+            <label htmlFor='password' className='block text-sm font-medium text-gray-700'>
               Password
             </label>
             <input
               id='password'
               type='password'
               value={password}
-              onChange={(e: unknown) => setPassword(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
               required
               className='mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500'
             />

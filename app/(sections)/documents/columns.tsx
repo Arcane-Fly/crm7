@@ -51,7 +51,7 @@ const formatFileSize = (bytes: number): string => {
     unitIndex++;
   }
 
-  return `${size.toFixed(1: unknown)} ${units[unitIndex]}`;
+  return `${size.toFixed(1)} ${units[unitIndex]}`;
 };
 
 const renderActions = (document: Document): JSX.Element => {

@@ -1,29 +1,33 @@
-'use client';
+import { type ReactElement } from 'react';
 
-import { cn } from '@/lib/utils';
-
-interface TabProps {
-  tabs: string[];
-  activeTab: string;
-  onTabChange: (tab: string) => void;
+interface Tab {
+  id: string;
+  label: string;
 }
 
-export function DashboardTabs({ tabs, activeTab, onTabChange }: TabProps): void {
+interface DashboardTabsProps {
+  tabs: Tab[];
+  activeTab: string;
+  onTabChange: (tabId: string) => void;
+}
+
+export function DashboardTabs({ tabs, activeTab, onTabChange }: DashboardTabsProps): ReactElement {
   return (
-    <div className='border-b border-gray-200'>
-      <nav className='-mb-px flex space-x-8'>
-        {tabs.map((tab: unknown) => (
+    <div className="border-b border-gray-200">
+      <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+        {tabs.map((tab) => (
           <button
-            key={tab}
-            onClick={() => onTabChange(tab: unknown)}
-            className={cn(
-              'whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium',
-              activeTab === tab
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
-            )}
+            key={tab.id}
+            onClick={() => onTabChange(tab.id)}
+            className={`
+              whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium
+              ${tab.id === activeTab
+                ? 'border-indigo-500 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+              }
+            `}
           >
-            {tab}
+            {tab.label}
           </button>
         ))}
       </nav>

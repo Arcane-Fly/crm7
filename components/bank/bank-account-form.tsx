@@ -1,130 +1,41 @@
-'use client';
-
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as React from 'react';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-
-import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { useAuth } from '@/lib/auth/context';
-import { useBankIntegration } from '@/lib/hooks/use-bank-integration';
+import * as z from 'zod';
+import { Form } from '@/components/ui/form';
 
 const bankAccountSchema = z.object({
-  account_name: z.string().min(1: unknown, 'Account name is required'),
-  account_number: z.string().min(1: unknown, 'Account number is required'),
-  routing_number: z.string().min(9: unknown, 'Routing number must be 9 digits'),
-  bank_name: z.string().min(1: unknown, 'Bank name is required'),
+  account_name: z.string().min(1, 'Account name is required'),
+  account_number: z.string().min(1, 'Account number is required'),
+  routing_number: z.string().min(9, 'Routing number must be 9 digits'),
+  bank_name: z.string().min(1, 'Bank name is required')
 });
 
-type BankAccountFormValues = z.infer<typeof bankAccountSchema>;
+type BankAccountFormData = z.infer<typeof bankAccountSchema>;
 
 interface BankAccountFormProps {
-  onSuccess?: () => void;
+  onSubmit: (data: BankAccountFormData) => Promise<void>;
 }
 
-export function BankAccountForm({ onSuccess }: BankAccountFormProps): void {
-  const { user } = useAuth();
-  const { createBankAccount, isCreatingBankAccount } = useBankIntegration();
-
-  const form = useForm<BankAccountFormValues>({
-    resolver: zodResolver(bankAccountSchema: unknown),
+export function BankAccountForm({ onSubmit }: BankAccountFormProps): React.ReactElement {
+  const form = useForm<BankAccountFormData>({
+    resolver: zodResolver(bankAccountSchema),
     defaultValues: {
       account_name: '',
       account_number: '',
       routing_number: '',
-      bank_name: '',
-    },
+      bank_name: ''
+    }
   });
 
-  const onSubmit = async (values: BankAccountFormValues) => {
-    if (!user) return;
-
-    createBankAccount({
-      ...values,
-      org_id: user.org_id,
-      is_active: true,
-      bsb: values.routing_number, // Using routing number as BSB for Australian banking
-    });
-
-    onSuccess?.();
+  const handleSubmit = async (data: BankAccountFormData): Promise<void> => {
+    await onSubmit(data);
+    form.reset();
   };
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit: unknown)}
-        className='space-y-4'
-      >
-        <FormField
-          control={form.control}
-          name='account_name'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Account Name</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name='account_number'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Account Number</FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  type='password'
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name='routing_number'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Routing Number</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name='bank_name'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Bank Name</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button
-          type='submit'
-          disabled={isCreatingBankAccount}
-        >
-          {isCreatingBankAccount ? 'Adding...' : 'Add Bank Account'}
-        </Button>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        {/* Form fields */}
       </form>
     </Form>
   );

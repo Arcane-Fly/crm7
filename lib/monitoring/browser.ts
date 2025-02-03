@@ -1,308 +1,128 @@
-import * as Sentry from '@sentry/nextjs';
+import { type SpanStatus } from '@/types/monitoring';
 
-import { logger } from '@/lib/logger';
-
-import type { SentryTransaction as _Transaction, BrowserTracing } from './types';
-import { SpanStatus } from './types';
-
-type ErrorWithMetadata = {
-  name: string;
+interface ErrorMetadata {
   message: string;
   stack?: string;
-};
+  name?: string;
+}
 
-function toErrorMetadata(maybeError: unknown): ErrorWithMetadata {
-  if (maybeError instanceof Error) {
-    return {
-      name: maybeError.name,
-      message: maybeError.message,
-      stack: maybeError.stack,
-    };
-  }
-
-  const message = typeof maybeError === 'string' ? maybeError : JSON.stringify(maybeError: unknown);
+function toErrorMetadata(maybeError: unknown): ErrorMetadata {
+  const message = typeof maybeError === 'string' ? maybeError : JSON.stringify(maybeError);
 
   return {
-    name: 'UnknownError',
     message,
-    stack: new Error(message: unknown).stack,
+    name: maybeError instanceof Error ? maybeError.name : 'Unknown Error',
+    stack: new Error(message).stack,
   };
 }
 
-function startBrowserSpan(
-  name: string,
-  operation: string,
-  tags?: Record<string, unknown>,
-): _Transaction | undefined {
-  try {
-    const span = (Sentry as any).startTransaction({
-      name,
-      op: operation,
-    }) as _Transaction;
+function startBrowserSpan(name: string, type: string, tags?: Record<string, string>) {
+  const span = {
+    name,
+    type,
+    startTime: Date.now(),
+    tags: new Map<string, string>(),
+  };
 
-    if (span && tags) {
-      Object.entries(tags: unknown).forEach(([key, value]) => {
-        span.setTag(key: unknown, String(value: unknown));
-      });
-    }
-
-    return span;
-  } catch (err: unknown) {
-    logger.error('Error starting browser span', {
-      error: toErrorMetadata(err: unknown),
+  if (tags) {
+    Object.entries(tags).forEach(([key, value]) => {
+      span.tags.set(key, String(value));
     });
-    return undefined;
   }
+
+  return span;
 }
 
 function finishBrowserSpan(
-  span: _Transaction | undefined,
-  status: (typeof SpanStatus)[keyof typeof SpanStatus],
-  data?: Record<string, unknown>,
-): void {
-  if (!span) return;
+  span: ReturnType<typeof startBrowserSpan>,
+  status: SpanStatus,
+  data?: {
+    error?: ErrorMetadata;
+    [key: string]: unknown;
+  }
+) {
+  const duration = Date.now() - span.startTime;
 
-  try {
-    if (data: unknown) {
-      Object.entries(data: unknown).forEach(([key, value]) => {
-        span.setData(key: unknown, value);
+  if (data) {
+    Object.entries(data).forEach(([key, value]) => {
+      span.tags.set(key, String(value));
+    });
+  }
+
+  span.tags.set('status', status);
+
+  return {
+    ...span,
+    duration,
+    status,
+  };
+}
+
+export function monitorWebVitals(name: string) {
+  const span = startBrowserSpan(name, 'web.vitals');
+
+  return {
+    finish: (status: SpanStatus, data?: Record<string, unknown>) => {
+      return finishBrowserSpan(span, status, data);
+    },
+    error: (err: unknown) => {
+      return finishBrowserSpan(span, SpanStatus.InternalError, {
+        error: toErrorMetadata(err),
       });
-    }
-
-    span.setStatus(status: unknown);
-    span.finish();
-  } catch (err: unknown) {
-    logger.error('Error finishing browser span', {
-      error: toErrorMetadata(err: unknown),
-    });
-  }
+    },
+  };
 }
 
-/**
- * Initialize browser monitoring
- */
-function _initializeBrowserMonitoring(): void {
-  try {
-    const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
-    if (!dsn) {
-      logger.warn('Sentry DSN not configured', {
-        status: 'disabled',
-        component: 'BrowserMonitoring',
+export function monitorBrowserPerformance(
+  name: string,
+  tags?: Record<string, string>
+) {
+  const span = startBrowserSpan(name, 'browser.performance', tags);
+
+  return {
+    finish: () => {
+      return finishBrowserSpan(span, SpanStatus.Ok);
+    },
+    error: (err: unknown) => {
+      return finishBrowserSpan(span, SpanStatus.InternalError, {
+        error: toErrorMetadata(err),
       });
-      return;
-    }
-
-    Sentry.init({
-      dsn,
-      environment: process.env.NEXT_PUBLIC_ENVIRONMENT,
-      tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-      integrations: [new (Sentry as any).BrowserTracing() as BrowserTracing],
-    });
-
-    logger.info('Browser monitoring initialized', {
-      status: 'initialized',
-      dsn,
-      component: 'BrowserMonitoring',
-    });
-  } catch (err: unknown) {
-    logger.error('Failed to initialize browser monitoring', {
-      error: toErrorMetadata(err: unknown),
-    });
-  }
+    },
+  };
 }
 
-/**
- * Report web vitals metrics to monitoring
- */
-export function reportWebVitals(): void {
-  try {
-    // onFID((metric: unknown) => _reportVital('FID', metric))
-    // onTTFB((metric: unknown) => _reportVital('TTFB', metric))
-    // onLCP((metric: unknown) => _reportVital('LCP', metric))
-    // onCLS((metric: unknown) => _reportVital('CLS', metric))
-    // onFCP((metric: unknown) => _reportVital('FCP', metric))
-  } catch (error: unknown) {
-    logger.warn('Error setting up web vitals', {
-      error: toErrorMetadata(error: unknown),
-      status: 'failed',
-      component: 'BrowserMonitoring',
-    });
-  }
-}
-
-/**
- * Report a web vital metric to monitoring
- * @todo Implement when web vitals are enabled
- */
-export function _reportVital(name: string, metric: unknown): void {
-  const span = startBrowserSpan(name: unknown, 'web.vitals');
-
-  try {
-    if (!span) return;
-
-    span.setData('value', metric.value);
-    span.setData('rating', metric.rating);
-    span.setData('delta', metric.delta);
-    span.setData('navigationType', metric.navigationType);
-
-    span.setStatus(SpanStatus.Ok);
-    span.finish();
-  } catch (err: unknown) {
-    logger.error('Error reporting vital', {
-      error: toErrorMetadata(err: unknown),
-    });
-  }
-}
-
-/**
- * Monitor page load performance
- */
-export function startPageLoadMonitoring(): void {
-  const span = startBrowserSpan('page.load', 'navigation');
-
-  try {
-    if (!span) return;
-
-    // Add performance timing data
-    const timing = performance.timing;
-    span.setData('navigationStart', timing.navigationStart);
-    span.setData('loadEventEnd', timing.loadEventEnd);
-    span.setData('domComplete', timing.domComplete);
-    span.setData('domInteractive', timing.domInteractive);
-
-    span.setStatus(SpanStatus.Ok);
-    span.finish();
-  } catch (err: unknown) {
-    finishBrowserSpan(span: unknown, SpanStatus.InternalError, {
-      error: toErrorMetadata(err: unknown),
-    });
-  }
-}
-
-/**
- * Monitor client-side navigation performance
- */
-export function startNavigationMonitoring(url: string): void {
-  const span = startBrowserSpan('navigation', 'navigation');
-
-  try {
-    if (!span) return;
-
-    span.setData('url', url);
-    span.setStatus(SpanStatus.Ok);
-    span.finish();
-  } catch (err: unknown) {
-    finishBrowserSpan(span: unknown, SpanStatus.InternalError, {
-      error: toErrorMetadata(err: unknown),
-    });
-  }
-}
-
-/**
- * Monitor browser performance
- */
-export async function monitorBrowserPerformance<T>(
+export function monitorUserInteraction(
   name: string,
-  operation: () => Promise<T>,
-  tags?: Record<string, unknown>,
-): Promise<T> {
-  const span = startBrowserSpan(name: unknown, 'browser.performance', tags);
+  tags?: Record<string, string>
+) {
+  const span = startBrowserSpan(name, 'user.interaction', tags);
 
-  try {
-    const result = await operation();
-    finishBrowserSpan(span: unknown, SpanStatus.Ok);
-    return result;
-  } catch (err: unknown) {
-    finishBrowserSpan(span: unknown, SpanStatus.InternalError, {
-      error: toErrorMetadata(err: unknown),
-    });
-    throw err;
-  }
+  return {
+    finish: () => {
+      return finishBrowserSpan(span, SpanStatus.Ok);
+    },
+    error: (err: unknown) => {
+      return finishBrowserSpan(span, SpanStatus.InternalError, {
+        error: toErrorMetadata(err),
+      });
+    },
+  };
 }
 
-/**
- * Monitor route changes
- */
-export function monitorRouteChange(from: string, to: string): void {
-  const span = startBrowserSpan('route.change', 'navigation');
-
-  try {
-    if (!span) return;
-
-    span.setData('from', from);
-    span.setData('to', to);
-    span.setStatus(SpanStatus.Ok);
-    span.finish();
-  } catch (err: unknown) {
-    finishBrowserSpan(span: unknown, SpanStatus.InternalError, {
-      error: toErrorMetadata(err: unknown),
-    });
-  }
-}
-
-/**
- * Monitor user interactions
- */
-export async function monitorUserInteraction<T>(
+export function monitorHttpRequest(
   name: string,
-  operation: () => Promise<T>,
-  tags?: Record<string, unknown>,
-): Promise<T> {
-  const span = startBrowserSpan(name: unknown, 'user.interaction', tags);
+  tags?: Record<string, string>
+) {
+  const span = startBrowserSpan(name, 'http.client', tags);
 
-  try {
-    const result = await operation();
-    finishBrowserSpan(span: unknown, SpanStatus.Ok);
-    return result;
-  } catch (err: unknown) {
-    finishBrowserSpan(span: unknown, SpanStatus.InternalError, {
-      error: toErrorMetadata(err: unknown),
-    });
-    throw err;
-  }
+  return {
+    finish: () => {
+      return finishBrowserSpan(span, SpanStatus.Ok);
+    },
+    error: (err: unknown) => {
+      return finishBrowserSpan(span, SpanStatus.InternalError, {
+        error: toErrorMetadata(err),
+      });
+    },
+  };
 }
-
-/**
- * Monitor API requests
- */
-export async function monitorAPIRequest<T>(
-  name: string,
-  operation: () => Promise<T>,
-  tags?: Record<string, unknown>,
-): Promise<T> {
-  const span = startBrowserSpan(name: unknown, 'http.client', tags);
-
-  try {
-    const result = await operation();
-    finishBrowserSpan(span: unknown, SpanStatus.Ok);
-    return result;
-  } catch (err: unknown) {
-    finishBrowserSpan(span: unknown, SpanStatus.InternalError, {
-      error: toErrorMetadata(err: unknown),
-    });
-    throw err;
-  }
-}
-
-/**
- * Monitor resource loading
- */
-export function monitorResourceLoad(resourceType: string, url: string, duration: number): void {
-  const span = startBrowserSpan('resource.load', 'resource');
-
-  try {
-    if (!span) return;
-
-    span.setData('type', resourceType);
-    span.setData('url', url);
-    span.setData('duration', duration);
-    span.setStatus(SpanStatus.Ok);
-    span.finish();
-  } catch (err: unknown) {
-    finishBrowserSpan(span: unknown, SpanStatus.InternalError, {
-      error: toErrorMetadata(err: unknown),
-    });
-  }
-}
-
-export { _initializeBrowserMonitoring };

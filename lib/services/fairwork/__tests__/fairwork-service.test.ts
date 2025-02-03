@@ -1,11 +1,32 @@
-import { describe, expect, it, vi } from 'vitest';
+import { type PrismaClient } from '@prisma/client';
 import { type RedisClientType } from 'redis';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { type MetricsService } from '../../../utils/metrics';
+import { FairWorkApiClient } from '../api-client';
 import { FairWorkServiceImpl } from '../fairwork-service';
-import { type FairWorkApiClient } from '../api-client';
 import { type Award, type Rate } from '../types';
 
-// Mock dependencies
-const mockApiClient = {
+// Create mock types
+type MockRedisClient = {
+  get: ReturnType<typeof vi.fn>;
+  set: ReturnType<typeof vi.fn>;
+  del: ReturnType<typeof vi.fn>;
+};
+
+type MockApiClient = {
+  getActiveAwards: ReturnType<typeof vi.fn>;
+  getAward: ReturnType<typeof vi.fn>;
+  getCurrentRates: ReturnType<typeof vi.fn>;
+  getRatesForDate: ReturnType<typeof vi.fn>;
+  getClassifications: ReturnType<typeof vi.fn>;
+  getClassificationHierarchy: ReturnType<typeof vi.fn>;
+  getRateTemplates: ReturnType<typeof vi.fn>;
+  validateRate: ReturnType<typeof vi.fn>;
+  calculateBaseRate: ReturnType<typeof vi.fn>;
+};
+
+// Mock dependencies with proper types
+const mockApiClient: MockApiClient = {
   getActiveAwards: vi.fn(),
   getAward: vi.fn(),
   getCurrentRates: vi.fn(),
@@ -15,16 +36,28 @@ const mockApiClient = {
   getRateTemplates: vi.fn(),
   validateRate: vi.fn(),
   calculateBaseRate: vi.fn(),
-} as unknown as FairWorkApiClient;
+};
 
-const mockRedisClient = {
+const mockRedisClient: MockRedisClient = {
   get: vi.fn(),
   set: vi.fn(),
   del: vi.fn(),
-} as unknown as RedisClientType;
+};
+
+const mockPrisma: PrismaClient = {} as PrismaClient;
+const mockMetrics: MetricsService = {
+  recordServiceMethodDuration: vi.fn(),
+};
 
 describe('FairWorkService', () => {
-  const service = new FairWorkServiceImpl(mockApiClient, mockRedisClient);
+  const service = new FairWorkServiceImpl(
+    mockApiClient as unknown as FairWorkApiClient,
+    mockRedisClient as unknown as RedisClientType,
+    {
+      prisma: mockPrisma,
+      metrics: mockMetrics
+    }
+  );
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -34,8 +67,9 @@ describe('FairWorkService', () => {
     const mockAwards: Award[] = [
       {
         code: 'MA000001',
-        title: 'Award 1',
-        status: 'active',
+        name: 'Award 1',
+        effectiveFrom: '2024-01-01',
+        classifications: [],
       },
     ];
 
@@ -51,7 +85,7 @@ describe('FairWorkService', () => {
 
     it('should fetch and cache awards if not cached', async () => {
       mockRedisClient.get.mockResolvedValueOnce(null);
-      mockApiClient.getActiveAwards.mockResolvedValueOnce(mockAwards);
+      mockApiClient.getActiveAwards.mockResolvedValueOnce({ items: mockAwards });
 
       const result = await service.getActiveAwards();
 
@@ -69,19 +103,15 @@ describe('FairWorkService', () => {
       mockRedisClient.get.mockResolvedValueOnce(null);
       mockApiClient.getActiveAwards.mockRejectedValueOnce(new Error('API error'));
 
-      const result = await service.getActiveAwards();
-
-      expect(result).toEqual([]);
+      await expect(service.getActiveAwards()).rejects.toThrow('API error');
     });
   });
 
   describe('getCurrentRates', () => {
     const mockRates: Rate[] = [
       {
-        code: 'RATE1',
-        amount: 20.5,
+        baseRate: 20.5,
         effectiveFrom: '2024-01-01',
-        status: 'active',
       },
     ];
 
@@ -91,21 +121,21 @@ describe('FairWorkService', () => {
       const result = await service.getCurrentRates('MA000001');
 
       expect(result).toEqual(mockRates);
-      expect(mockRedisClient.get).toHaveBeenCalledWith('rates:current:MA000001');
+      expect(mockRedisClient.get).toHaveBeenCalledWith('rates:MA000001:current');
       expect(mockApiClient.getCurrentRates).not.toHaveBeenCalled();
     });
 
     it('should fetch and cache rates if not cached', async () => {
       mockRedisClient.get.mockResolvedValueOnce(null);
-      mockApiClient.getCurrentRates.mockResolvedValueOnce({ items: mockRates });
+      mockApiClient.getCurrentRates.mockResolvedValueOnce(mockRates);
 
       const result = await service.getCurrentRates('MA000001');
 
       expect(result).toEqual(mockRates);
-      expect(mockRedisClient.get).toHaveBeenCalledWith('rates:current:MA000001');
+      expect(mockRedisClient.get).toHaveBeenCalledWith('rates:MA000001:current');
       expect(mockApiClient.getCurrentRates).toHaveBeenCalledWith('MA000001');
       expect(mockRedisClient.set).toHaveBeenCalledWith(
-        'rates:current:MA000001',
+        'rates:MA000001:current',
         JSON.stringify(mockRates),
         expect.any(Number)
       );
@@ -115,9 +145,7 @@ describe('FairWorkService', () => {
       mockRedisClient.get.mockResolvedValueOnce(null);
       mockApiClient.getCurrentRates.mockRejectedValueOnce(new Error('API error'));
 
-      const result = await service.getCurrentRates('MA000001');
-
-      expect(result).toEqual([]);
+      await expect(service.getCurrentRates('MA000001')).rejects.toThrow('API error');
     });
   });
 

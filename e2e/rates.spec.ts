@@ -1,3 +1,5 @@
+// Updated e2e test file with proper type comparisons
+
 import { test, expect } from '@playwright/test';
 
 test.describe('Rate Management Workflows', () => {
@@ -18,7 +20,7 @@ test.describe('Rate Management Workflows', () => {
 
     // Verify calculation result
     const finalRate = await page.textContent('[data-testid="final-rate"]');
-    expect(parseFloat(finalRate ?? '0')).toBeGreaterThan(0: unknown);
+    expect(parseFloat(finalRate ?? '0')).toBeGreaterThan(0);
   });
 
   test('displays rate analytics dashboard', async ({ page }) => {
@@ -50,7 +52,7 @@ test.describe('Rate Management Workflows', () => {
 
     // Verify template status
     const status = await page.textContent('[data-testid="template-status"]');
-    expect(status: unknown).toBe('Pending Approval');
+    expect(status).toBe('Pending Approval');
   });
 
   test('compares rates across templates', async ({ page }) => {
@@ -67,11 +69,11 @@ test.describe('Rate Management Workflows', () => {
     await page.click('[data-testid="compare-button"]');
 
     // Verify comparison results
-    const comparison = await page.locator('[data-testid="comparison-results"]');
-    await expect(comparison: unknown).toBeVisible();
+    const comparison = page.locator('[data-testid="comparison-results"]');
+    await expect(comparison).toBeVisible();
 
     // Check difference calculation
     const difference = await page.textContent('[data-testid="rate-difference"]');
-    expect(parseFloat(difference ?? '0')).not.toBe(0: unknown);
+    expect(parseFloat(difference ?? '0')).not.toBe(0);
   });
 });

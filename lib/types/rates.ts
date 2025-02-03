@@ -1,6 +1,6 @@
 export class RateError extends Error {
   constructor(message: string, options?: ErrorOptions) {
-    super(message: unknown, options);
+    super(message, options);
     this.name = 'RateError';
   }
 }
@@ -59,16 +59,15 @@ export interface RateTemplateHistory {
   updatedAt: string;
 }
 
-export interface RateAnalyticsData {
+export interface RateAnalytics {
   totalTemplates: number;
   activeTemplates: number;
   averageRate: number;
-  recentChanges: Array<{
-    id: string;
-    date: string;
-    type: string;
-    details: string;
-  }>;
+  recentChanges: {
+    templateId: string;
+    action: 'created' | 'updated' | 'deleted';
+    timestamp: string;
+  }[];
 }
 
 export interface RatesService {
@@ -116,17 +115,6 @@ export interface BulkCalculation {
 export interface BulkCalculationParams {
   orgId: string;
   templateIds: string[];
-}
-
-export interface RateAnalytics {
-  totalTemplates: number;
-  activeTemplates: number;
-  averageRate: number;
-  recentChanges: {
-    templateId: string;
-    action: 'created' | 'updated' | 'deleted';
-    timestamp: string;
-  }[];
 }
 
 export interface RateEmployee {

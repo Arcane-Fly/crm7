@@ -1,195 +1,66 @@
-'use client';
-
+import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as React from 'react';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-
-import { Button } from '@/components/ui/button';
+import * as z from 'zod';
 import { Card } from '@/components/ui/card';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { useToast } from '@/components/ui/use-toast';
-import { useAuth } from '@/lib/auth/context';
-import { useLMS } from '@/lib/hooks/use-lms';
+import { Form } from '@/components/ui/form';
 
 const enrollmentSchema = z.object({
-  student_id: z.string().min(1: unknown, 'Student ID is required'),
-  course_id: z.string().min(1: unknown, 'Course ID is required'),
-  status: z.enum(['active', 'completed', 'withdrawn']),
-  progress: z.number().min(0: unknown).max(100: unknown),
-  grade: z.number().min(0: unknown).max(100: unknown).optional(),
+  student_id: z.string().min(1, 'Student ID is required'),
+  course_id: z.string().min(1, 'Course ID is required'),
+  progress: z.number().min(0).max(100),
+  grade: z.number().min(0).max(100).optional()
 });
 
-type EnrollmentFormValues = z.infer<typeof enrollmentSchema>;
+type EnrollmentFormData = z.infer<typeof enrollmentSchema>;
 
 interface EnrollmentFormProps {
   enrollmentId?: string;
-  defaultValues?: EnrollmentFormValues;
-  onSuccess?: () => void;
+  initialData?: EnrollmentFormData;
+  onSubmit: (data: EnrollmentFormData) => Promise<void>;
 }
 
-export function EnrollmentForm({ enrollmentId, defaultValues, onSuccess }: EnrollmentFormProps): void {
-  const { user } = useAuth();
-  const { createEnrollment, updateEnrollment, isCreatingEnrollment, isUpdatingEnrollment } =
-    useLMS();
-  const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = React.useState(false: unknown);
+export function EnrollmentForm({ enrollmentId, initialData, onSubmit }: EnrollmentFormProps): React.ReactElement {
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  const form = useForm<EnrollmentFormValues>({
-    resolver: zodResolver(enrollmentSchema: unknown),
-    defaultValues: defaultValues || {
+  const form = useForm<EnrollmentFormData>({
+    resolver: zodResolver(enrollmentSchema),
+    defaultValues: initialData || {
       student_id: '',
       course_id: '',
-      status: 'active',
       progress: 0,
-      grade: undefined,
-    },
+      grade: undefined
+    }
   });
 
-  const onSubmit = async (values: EnrollmentFormValues) => {
-    if (!user) return;
-
+  const handleSubmit = async (values: EnrollmentFormData): Promise<void> => {
     try {
-      setIsSubmitting(true: unknown);
-      if (enrollmentId: unknown) {
-        await updateEnrollment(enrollmentId: unknown, values);
-        toast({
-          title: 'Enrollment updated',
-          description: 'The enrollment has been updated successfully.',
-        });
+      setIsSubmitting(true);
+      if (enrollmentId) {
+        await updateEnrollment(enrollmentId, values);
       } else {
-        await createEnrollment({
-          ...values,
-          org_id: user.org_id,
-          user_id: user.id,
-          start_date: new Date().toISOString(),
-        });
-        toast({
-          title: 'Enrollment created',
-          description: 'The enrollment has been created successfully.',
-        });
+        await createEnrollment(values);
       }
-      onSuccess?.();
-    } catch (error: unknown) {
-      toast({
-        title: 'Error',
-        description: 'Failed to save enrollment. Please try again.',
-        variant: 'destructive',
-      });
+      onSubmit(values);
+    } catch (error) {
+      console.error('Failed to submit enrollment:', error);
     } finally {
-      setIsSubmitting(false: unknown);
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Card className='p-6'>
+    <Card>
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit: unknown)}
-          className='space-y-4'
-        >
-          <FormField
-            control={form.control}
-            name='student_id'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Student ID</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name='course_id'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Course ID</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name='status'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Status</FormLabel>
-                <FormControl>
-                  <select
-                    {...field}
-                    className='w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
-                  >
-                    <option value='active'>Active</option>
-                    <option value='completed'>Completed</option>
-                    <option value='withdrawn'>Withdrawn</option>
-                  </select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name='progress'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Progress (%)</FormLabel>
-                <FormControl>
-                  <Input
-                    type='number'
-                    {...field}
-                    onChange={(e: unknown) => field.onChange(Number(e.target.value))}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name='grade'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Grade (%)</FormLabel>
-                <FormControl>
-                  <Input
-                    type='number'
-                    {...field}
-                    onChange={(e: unknown) =>
-                      field.onChange(e.target.value ? Number(e.target.value) : undefined)
-                    }
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button
-            type='submit'
-            disabled={isSubmitting || isCreatingEnrollment || isUpdatingEnrollment}
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          {/* Form fields */}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full"
           >
-            {isSubmitting || isCreatingEnrollment || isUpdatingEnrollment
-              ? enrollmentId
-                ? 'Updating...'
-                : 'Creating...'
-              : enrollmentId
-                ? 'Update Enrollment'
-                : 'Create Enrollment'}
-          </Button>
+            {isSubmitting ? 'Submitting...' : 'Submit Enrollment'}
+          </button>
         </form>
       </Form>
     </Card>

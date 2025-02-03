@@ -1,92 +1,72 @@
-import { createClient } from '@supabase/supabase-js';
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
+import { type SupabaseClient } from '@supabase/supabase-js';
+import { type Database } from '@/types/supabase';
 
-import { type Database } from '@/lib/types/supabase';
+interface UseQueryWithSupabaseOptions<T> {
+  select?: (data: T[]) => T[];
+  staleTime?: number;
+  pageSize?: number;
+}
 
-const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL ?? undefined,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? undefined,
-);
-
-type TableNames = keyof Database['public']['Tables'];
-
-export function useQueryWithSupabase<T extends TableNames>(
+export function useQueryWithSupabase<T>(
+  supabase: SupabaseClient<Database>,
   queryKey: string[],
-  options?: {
-    select?: (data: Database['public']['Tables'][T]['Row'][]) => any;
-    enabled?: boolean;
-    staleTime?: number;
-  },
+  queryFn: () => Promise<{ data: T[]; error: Error | null }>,
+  options?: UseQueryWithSupabaseOptions<T>
 ) {
   return useQuery({
     queryKey,
     queryFn: async () => {
       try {
-        const { data, error } = await supabase.from(queryKey[0] as T).select('*');
-        if (error: unknown) {
-          throw {
-            message: error.message,
-            details: error.details,
-            hint: error.hint,
-            code: error.code,
-          };
-        }
-        return options?.select ? options.select(data: unknown) : data;
-      } catch (error: unknown) {
-        if (error instanceof Error) {
+        const { data, error } = await queryFn();
+
+        if (error) {
           throw error;
         }
-        throw new Error('Unknown error occurred');
+
+        if (!data) {
+          return [];
+        }
+
+        return options?.select ? options.select(data) : data;
+      } catch (error) {
+        console.error('Supabase query error:', error);
+        throw error;
       }
     },
-    enabled: options?.enabled,
     staleTime: options?.staleTime,
   });
 }
 
-export function useInfiniteQueryWithSupabase<T extends TableNames>(
+export function useInfiniteQueryWithSupabase<T>(
+  supabase: SupabaseClient<Database>,
   queryKey: string[],
-  options?: {
-    select?: (data: Database['public']['Tables'][T]['Row'][]) => any;
-    enabled?: boolean;
-    staleTime?: number;
-    pageSize?: number;
-  },
+  queryFn: (from: number, to: number) => Promise<{ data: T[]; error: Error | null }>,
+  options?: UseQueryWithSupabaseOptions<T>
 ) {
   return useInfiniteQuery({
     queryKey,
     queryFn: async ({ pageParam = 0 }) => {
       try {
-        const { data, error } = await supabase
-          .from(queryKey[0] as T)
-          .select('*')
-          .range(
-            Number(pageParam: unknown) * (options?.pageSize || 10),
-            (Number(pageParam: unknown) + 1) * (options?.pageSize || 10) - 1,
-          );
+        const { data, error } = await queryFn(
+          Number(pageParam) * (options?.pageSize || 10),
+          (Number(pageParam) + 1) * (options?.pageSize || 10) - 1
+        );
 
-        if (error: unknown) {
-          throw {
-            message: error.message,
-            details: error.details,
-            hint: error.hint,
-            code: error.code,
-          };
-        }
-        return options?.select ? options.select(data: unknown) : data;
-      } catch (error: unknown) {
-        if (error instanceof Error) {
+        if (error) {
           throw error;
         }
-        throw new Error('Unknown error occurred');
+
+        return {
+          data: options?.select ? options.select(data || []) : data || [],
+          nextPage: data?.length === options?.pageSize ? pageParam + 1 : undefined,
+        };
+      } catch (error) {
+        console.error('Supabase infinite query error:', error);
+        throw error;
       }
     },
-    enabled: options?.enabled,
+    getNextPageParam: (lastPage) => lastPage.nextPage,
     staleTime: options?.staleTime,
-    getNextPageParam: (lastPage: unknown[], pages) => {
-      if (!lastPage || lastPage.length < (options?.pageSize || 10)) return undefined;
-      return pages.length;
-    },
-    initialPageParam: 0,
   });
 }

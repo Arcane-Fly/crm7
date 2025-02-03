@@ -15,10 +15,10 @@ interface EnrichmentResult {
 }
 
 export function EnrichmentClient(): ReactElement {
-  const [loading, setLoading] = useState(false: unknown);
-  const [error, setError] = useState<string | null>(null: unknown);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<EnrichmentResult[] | null>(null: unknown);
+  const [results, setResults] = useState<EnrichmentResult[] | null>(null);
 
   const handleEnrich = async (): Promise<void> => {
     if (!query.trim()) {
@@ -27,19 +27,19 @@ export function EnrichmentClient(): ReactElement {
     }
 
     try {
-      setLoading(true: unknown);
-      setError(null: unknown);
+      setLoading(true);
+      setError(null);
       // TODO: Implement enrichment API call
       const mockResults: EnrichmentResult[] = [
         { id: '1', name: 'Result 1' },
         { id: '2', name: 'Result 2' },
       ];
-      setResults(mockResults: unknown);
+      setResults(mockResults);
     } catch (err: unknown) {
       const error = err as Error;
       setError(error.message);
     } finally {
-      setLoading(false: unknown);
+      setLoading(false);
     }
   };
 
@@ -55,7 +55,7 @@ export function EnrichmentClient(): ReactElement {
               <Input
                 id='query'
                 value={query}
-                onChange={(e: unknown) => setQuery(e.target.value)}
+                onChange={(e) => setQuery(e.target.value)}
                 placeholder='Enter your search query...'
               />
             </div>
@@ -73,7 +73,7 @@ export function EnrichmentClient(): ReactElement {
               <div className='mt-6'>
                 <h2 className='mb-4 text-lg font-semibold'>Results</h2>
                 <div className='space-y-4'>
-                  {results.map((result: unknown) => (
+                  {results.map((result) => (
                     <Card
                       key={result.id}
                       className='p-4'

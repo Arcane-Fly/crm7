@@ -1,94 +1,84 @@
-import { type User } from '@auth0/auth0-react';
-import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
+import { type Auth0User } from '@/types/auth';
 
-interface Auth0User extends User {
-  sub: string;
-  email: string;
-  name: string;
-  picture: string;
-  ['https://your-namespace/roles']: string[];
-}
-
-interface AuthHook {
+interface UseAuthReturn {
   isAuthenticated: boolean;
   isLoading: boolean;
   user: Auth0User | null;
+  accessToken: string | null;
   login: () => Promise<void>;
   logout: () => Promise<void>;
-  getAccessToken: () => Promise<string>;
+  refreshToken: () => Promise<void>;
 }
 
-export function useAuth(): AuthHook {
-  const [isAuthenticated, setIsAuthenticated] = useState(false: unknown);
-  const [isLoading, setIsLoading] = useState(true: unknown);
-  const [user, setUser] = useState<Auth0User | null>(null: unknown);
-  const [accessToken, setAccessToken] = useState<string | null>(null: unknown);
-  const router = useRouter();
+export function useAuth(): UseAuthReturn {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<Auth0User | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
 
-  const login = useCallback(async (): Promise<void> => {
+  const login = async () => {
     try {
-      setIsLoading(true: unknown);
-      // Add your login logic here
-      void router.push('/dashboard');
-    } catch (error: unknown) {
-      console.error('Login failed:', error);
-    } finally {
-      setIsLoading(false: unknown);
+      setIsLoading(true);
+      // Implement login logic here
+      // This is just a placeholder
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
     }
-  }, [router]);
+  };
 
-  const logout = useCallback(async (): Promise<void> => {
+  const logout = async () => {
     try {
-      setIsLoading(true: unknown);
-      setUser(null: unknown);
-      setAccessToken(null: unknown);
-      setIsAuthenticated(false: unknown);
-      void router.push('/');
-    } catch (error: unknown) {
-      console.error('Logout failed:', error);
-    } finally {
-      setIsLoading(false: unknown);
+      setIsLoading(true);
+      setUser(null);
+      setAccessToken(null);
+      setIsAuthenticated(false);
+      // Implement logout logic here
+      // This is just a placeholder
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Logout error:', error);
+      throw error;
     }
-  }, [router]);
+  };
 
-  const getAccessToken = useCallback(async (): Promise<string> => {
-    if (!accessToken) {
-      throw new Error('No access token available');
+  const refreshToken = async () => {
+    try {
+      // Implement token refresh logic here
+      // This is just a placeholder
+      const response = await fetch('/api/auth/refresh');
+      const data = await response.json();
+
+      if (response.ok) {
+        const userData = data.user;
+        setUser(userData);
+        setIsAuthenticated(true);
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+      }
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Token refresh error:', error);
+      throw error;
     }
-    return accessToken;
-  }, [accessToken]);
+  };
 
   useEffect(() => {
-    const checkAuth = async (): Promise<void> => {
-      try {
-        // Add your auth check logic here
-        const response = await fetch('/api/auth/me');
-        if (!response.ok) {
-          throw new Error('Auth check failed');
-        }
-
-        const userData: Auth0User = await response.json();
-        setUser(userData: unknown);
-        setIsAuthenticated(true: unknown);
-      } catch (error: unknown) {
-        console.error('Auth check failed:', error);
-        setUser(null: unknown);
-        setIsAuthenticated(false: unknown);
-      } finally {
-        setIsLoading(false: unknown);
-      }
-    };
-
-    void checkAuth();
+    refreshToken();
   }, []);
 
   return {
     isAuthenticated,
     isLoading,
     user,
+    accessToken,
     login,
     logout,
-    getAccessToken,
+    refreshToken,
   };
 }

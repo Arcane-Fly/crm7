@@ -48,21 +48,35 @@ export class FairWorkApiClient {
         headers,
         body: data ? JSON.stringify(data) : null,
         signal: controller.signal,
+        retry: {
+          // Don't retry 4xx errors
+          maxRetries: 0,
+        },
       });
 
       clearTimeout(timeoutId);
 
       if (!response.ok) {
         const error = await response.json() as ApiError;
-        throw {
+        const apiError = {
           ...error,
           status: response.status,
+          message: error.message || response.statusText,
         };
+        throw apiError;
       }
 
       return response.json() as Promise<T>;
     } catch (error) {
       clearTimeout(timeoutId);
+      
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          throw new Error('Request timed out');
+        }
+        throw error;
+      }
+      
       throw error;
     }
   }

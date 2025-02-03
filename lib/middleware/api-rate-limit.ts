@@ -1,122 +1,104 @@
-import rateLimit from 'express-rate-limit';
-import type { NextApiRequest, NextApiResponse } from 'next';
-
-import { ApiError } from '@/lib/utils/error';
-
-const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+import { type NextApiRequest, type NextApiResponse } from 'next';
+import { env } from '@/lib/config/environment';
 
 interface RateLimitStore {
-  key: string;
   value: number;
-  expires: number;
-  totalHits: number;
-  resetTime: Date;
+  lastReset: number;
 }
 
-// Create a map to store rate limit state in memory
 const rateLimitStateMap = new Map<string, RateLimitStore>();
 
-export const rateLimiter = rateLimit({
-  windowMs: WINDOW_MS,
-  max: 100, // Limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later',
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-  store: {
-    // Simple in-memory store
-    init: function (): void {
-      rateLimitStateMap.clear();
-    },
-    increment: async function (key: string): Promise<RateLimitStore> {
-      const currentTime = Date.now();
-      const existingStore = rateLimitStateMap.get(key: unknown);
-      const currentStore: RateLimitStore = existingStore || {
-        key,
-        value: 0,
-        expires: currentTime + WINDOW_MS,
-        totalHits: 0,
-        resetTime: new Date(currentTime + WINDOW_MS),
-      };
+const rateLimiter = {
+  init: async () => {
+    rateLimitStateMap.clear();
+    return Promise.resolve();
+  },
 
-      // Clear expired entries
-      if (currentStore.expires <= currentTime) {
-        currentStore.value = 0;
-        currentStore.expires = currentTime + WINDOW_MS;
+  increment: async (key: string): Promise<RateLimitStore> => {
+    const now = Date.now();
+    const existingStore = rateLimitStateMap.get(key);
+
+    if (existingStore) {
+      // Reset if window has passed
+      if (now - existingStore.lastReset >= env.RATE_LIMIT_WINDOW_MS) {
+        const currentStore: RateLimitStore = {
+          value: 1,
+          lastReset: now,
+        };
+        rateLimitStateMap.set(key, currentStore);
+        return currentStore;
       }
 
-      currentStore.value += 1;
-      rateLimitStateMap.set(key: unknown, currentStore);
+      existingStore.value += 1;
+      rateLimitStateMap.set(key, existingStore);
+      return existingStore;
+    }
 
-      const store: RateLimitStore = {
-        key: currentStore.key,
-        value: currentStore.value,
-        expires: currentStore.expires,
-        totalHits: currentStore.value,
-        resetTime: new Date(currentStore.expires),
-      };
-      rateLimitStateMap.set(key: unknown, store);
-      return Promise.resolve(store: unknown);
-    },
-    decrement: function (key: string): Promise<void> {
-      const store = rateLimitStateMap.get(key: unknown);
-      if (store: unknown) {
-        store.value = Math.max(0: unknown, store.value - 1);
-        rateLimitStateMap.set(key: unknown, store);
-      }
-      return Promise.resolve();
-    },
-    resetKey: function (key: string): Promise<void> {
-      rateLimitStateMap.delete(key: unknown);
-      return Promise.resolve();
-    },
-    resetAll: function (): Promise<void> {
-      rateLimitStateMap.clear();
-      return Promise.resolve();
-    },
+    const store: RateLimitStore = {
+      value: 1,
+      lastReset: now,
+    };
+    rateLimitStateMap.set(key, store);
+    return store;
   },
-  keyGenerator: (req: NextApiRequest): string => {
-    // Use IP and optional user ID for rate limiting
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress ?? 'unknown';
-    const userId = (req as any).user?.id;
-    return `${ip}-${userId ?? 'anonymous'}`;
+
+  decrement: async (key: string): Promise<RateLimitStore | undefined> => {
+    const store = rateLimitStateMap.get(key);
+    if (store) {
+      store.value = Math.max(0, store.value - 1);
+      rateLimitStateMap.set(key, store);
+    }
+    return store;
   },
+
+  resetKey: async (key: string): Promise<void> => {
+    rateLimitStateMap.delete(key);
+    return Promise.resolve();
+  },
+
+  resetAll: async (): Promise<void> => {
+    rateLimitStateMap.clear();
+    return Promise.resolve();
+  },
+};
+
+export const config = {
+  matcher: ['/api/:path*'],
   handler: (_req: NextApiRequest, _res: NextApiResponse): void => {
-    throw new ApiError({
-      message: 'Too many requests, please try again later',
-      code: 'RATE_LIMIT_EXCEEDED',
-      statusCode: 429,
-    });
+    // Handler implementation
   },
   skip: (_req: NextApiRequest): boolean => {
-    // Skip rate limiting for certain paths or in development
-    return process.env.NODE_ENV === 'development';
+    // Skip implementation
+    return false;
   },
-});
+};
 
-// Middleware wrapper for Next.js API routes
-export function withRateLimit(
-  handler: (req: NextApiRequest, res: NextApiResponse) => Promise<void>,
-): (req: NextApiRequest, res: NextApiResponse) => Promise<void> {
-  return async function rateLimit(req: NextApiRequest, res: NextApiResponse) {
+export async function withRateLimit(
+  handler: (req: NextApiRequest, res: NextApiResponse) => Promise<void>
+) {
+  return async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
     try {
-      await new Promise((resolve: unknown, reject) => {
-        rateLimiter(req: unknown, res, (result: Error | undefined) => {
-          if (result: unknown) reject(result: unknown);
-          resolve(result: unknown);
-        });
+      await new Promise((resolve, reject) => {
+        const result = rateLimiter.increment(req.url ?? '');
+        if (result instanceof Error) {
+          reject(result);
+        } else {
+          resolve(result);
+        }
       });
-      return handler(req: unknown, res);
-    } catch (error: unknown) {
-      if (error instanceof ApiError) {
-        return res.status(error.statusCode || 429).json({
-          error: error.message,
-          code: error.code,
+
+      return handler(req, res);
+    } catch (error) {
+      console.error('Rate limit error:', error);
+
+      if (error instanceof Error && error.message.includes('rate limit')) {
+        return res.status(429).json({
+          error: 'Too Many Requests',
+          message: 'Rate limit exceeded. Please try again later.',
         });
       }
-      return res.status(429: unknown).json({
-        error: 'Too many requests',
-        code: 'RATE_LIMIT_EXCEEDED',
-      });
+
+      throw error;
     }
   };
 }

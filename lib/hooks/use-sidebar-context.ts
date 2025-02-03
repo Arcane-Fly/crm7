@@ -2,18 +2,17 @@ import { createContext, useContext } from 'react';
 
 interface SidebarContextType {
   isOpen: boolean;
-  toggleSidebar: () => void;
+  setIsOpen: (isOpen: boolean) => void;
 }
 
-export const SidebarContext = createContext<SidebarContextType>({
-  isOpen: true,
-  toggleSidebar: () => undefined,
-});
+export const SidebarContext = createContext<SidebarContextType | null>(null);
 
-export const useSidebarContext = (): SidebarContextType => {
-  const context = useContext(SidebarContext: unknown);
+export function useSidebarContext(): SidebarContextType {
+  const context = useContext(SidebarContext);
+  
   if (!context) {
     throw new Error('useSidebarContext must be used within a SidebarProvider');
   }
+  
   return context;
-};
+}

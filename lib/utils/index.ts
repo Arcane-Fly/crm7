@@ -1,51 +1,102 @@
-import { type ClassValue, clsx } from 'clsx';
+import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-/**
- * Combines class names using clsx and tailwind-merge
- */
-export function cn(...inputs: ClassValue[]): void {
-  return twMerge(clsx(inputs: unknown));
+export function cn(...inputs: ClassValue[]): string {
+  return twMerge(clsx(inputs));
 }
 
-/**
- * Safely maps over an array with proper type checking
- */
 export function safeMap<T, U>(
   array: T[] | null | undefined,
-  callback: (item: T, index: number, array: T[]) => U,
+  callback: (item: T, index: number) => U,
 ): U[] {
   if (!array) return [];
-  return array.map(callback: unknown);
+  return array.map(callback);
 }
 
-/**
- * Formats a date string into a readable format
- */
-export function formatDate(date: string | Date): string {
-  const dateObj = typeof date === 'string' ? new Date(date: unknown) : date;
-  return dateObj.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
+export function formatDate(date: Date | string): string {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return dateObj.toLocaleDateString('en-AU', {
     day: 'numeric',
+    month: 'short',
+    year: 'numeric',
   });
 }
 
-/**
- * Handles API errors consistently across the application
- */
-export function handleApiError(error: unknown): void {
-  if (error instanceof Error) {
-    return {
-      data: null,
-      status: 500,
-      message: error.message,
-    };
-  }
+export function formatDateTime(date: Date | string): string {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return dateObj.toLocaleString('en-AU');
+}
 
-  return {
-    data: null,
-    status: 500,
-    message: 'An unexpected error occurred',
+export function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat('en-AU', {
+    style: 'currency',
+    currency: 'AUD',
+  }).format(amount);
+}
+
+export function formatNumber(num: number): string {
+  return new Intl.NumberFormat('en-AU').format(num);
+}
+
+export function formatPercentage(value: number): string {
+  return `${value.toFixed(1)}%`;
+}
+
+export function truncateText(text: string, maxLength: number): string {
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength)}...`;
+}
+
+export function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+export function generateId(): string {
+  return Math.random().toString(36).substr(2, 9);
+}
+
+export function debounce<T extends (...args: any[]) => void>(
+  func: T,
+  wait: number,
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout;
+
+  return function executedFunction(...args: Parameters<T>) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+export function throttle<T extends (...args: any[]) => void>(
+  func: T,
+  limit: number,
+): (...args: Parameters<T>) => void {
+  let inThrottle: boolean;
+  let lastFunc: NodeJS.Timeout;
+  let lastRan: number;
+
+  return function executedFunction(...args: Parameters<T>) {
+    if (!inThrottle) {
+      func(...args);
+      lastRan = Date.now();
+      inThrottle = true;
+    } else {
+      clearTimeout(lastFunc);
+      lastFunc = setTimeout(() => {
+        if (Date.now() - lastRan >= limit) {
+          func(...args);
+          lastRan = Date.now();
+        }
+      }, limit - (Date.now() - lastRan));
+    }
   };
 }

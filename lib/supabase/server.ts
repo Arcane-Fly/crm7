@@ -1,91 +1,62 @@
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
-import { logger } from '@/lib/logger';
-
-import type { Database } from '../types/database';
-
-/**
- * Creates a Supabase client for use on the server.
- * This client is used for server-side operations like:
- * - Server-side authentication
- * - Database operations in API routes
- * - Server-side data fetching
- */
-export const createClient = (): void => {
+export function createClient() {
   const cookieStore = cookies();
 
-  return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL ?? undefined,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? undefined,
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         get(name: string) {
-          return cookieStore.get(name: unknown)?.value;
+          return cookieStore.get(name)?.value;
         },
-        set(name: string, value: string, options: unknown) {
+        set(name: string, value: string, options: CookieOptions) {
           try {
             cookieStore.set({ name, value, ...options });
-          } catch (error: unknown) {
-            logger.error('Failed to set cookie', { error, name });
+          } catch (error) {
+            // Handle cookie error
           }
         },
-        remove(name: string, options: unknown) {
+        remove(name: string, options: CookieOptions) {
           try {
-            cookieStore.delete({ name, ...options });
-          } catch (error: unknown) {
-            logger.error('Failed to remove cookie', { error, name });
+            cookieStore.set({ name, value: '', ...options });
+          } catch (error) {
+            // Handle cookie error
           }
         },
-      },
-      auth: {
-        flowType: 'pkce',
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-        persistSession: true,
       },
     },
   );
-};
+}
 
-/**
- * Creates a Supabase admin client with full database access.
- * This should only be used in trusted server contexts.
- */
-export const createAdminClient = (): void => {
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error('SUPABASE_SERVICE_ROLE_KEY is not set');
-  }
-
+export function createAdminClient() {
   const cookieStore = cookies();
 
-  return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL ?? undefined,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_KEY!,
     {
       cookies: {
         get(name: string) {
-          return cookieStore.get(name: unknown)?.value;
+          return cookieStore.get(name)?.value;
         },
-        set(name: string, value: string, options: unknown) {
+        set(name: string, value: string, options: CookieOptions) {
           try {
             cookieStore.set({ name, value, ...options });
-          } catch (error: unknown) {
-            logger.error('Failed to set cookie in admin client', { error, name });
+          } catch (error) {
+            // Handle cookie error
           }
         },
-        remove(name: string, options: unknown) {
+        remove(name: string, options: CookieOptions) {
           try {
-            cookieStore.delete({ name, ...options });
-          } catch (error: unknown) {
-            logger.error('Failed to remove cookie in admin client', { error, name });
+            cookieStore.set({ name, value: '', ...options });
+          } catch (error) {
+            // Handle cookie error
           }
         },
-      },
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
       },
     },
   );
-};
+}

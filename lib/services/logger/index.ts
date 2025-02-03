@@ -24,7 +24,7 @@ class ConsoleLogger implements Logger {
 
   private formatMessage(level: LogLevel, message: string, context?: LogContext): string {
     const timestamp = new Date().toISOString();
-    const contextStr = context ? ` ${JSON.stringify(context: unknown)}` : '';
+    const contextStr = context ? ` ${JSON.stringify(context)}` : '';
     return `[${timestamp}] [${level.toUpperCase()}] [${this.namespace}] ${message}${contextStr}`;
   }
 
@@ -46,7 +46,7 @@ class ConsoleLogger implements Logger {
 }
 
 export const logger: LoggerService = {
-  createLogger: (namespace: string): Logger => new ConsoleLogger(namespace: unknown),
+  createLogger: (namespace: string): Logger => new ConsoleLogger(namespace),
 };
 
 export type { Logger, LogContext, LoggerService };

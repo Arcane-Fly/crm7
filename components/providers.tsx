@@ -6,7 +6,7 @@ import * as React from 'react';
 
 import { Toaster } from '@/components/ui/toaster';
 
-export function Providers({ children }: { children: React.ReactNode }): void {
+export function Providers({ children }: { children: React.ReactNode }): React.ReactElement {
   const [queryClient] = React.useState(
     () =>
       new QueryClient({
@@ -18,17 +18,12 @@ export function Providers({ children }: { children: React.ReactNode }): void {
             retry: 1,
           },
         },
-      }),
+      })
   );
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider
-        attribute='class'
-        defaultTheme='system'
-        enableSystem
-        disableTransitionOnChange
-      >
+      <ThemeProvider attribute='class' defaultTheme='system' enableSystem disableTransitionOnChange>
         {children}
         <Toaster />
       </ThemeProvider>

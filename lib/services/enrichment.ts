@@ -1,160 +1,89 @@
-import { Together } from '@/lib/api/together';
-import { createClient } from '@/lib/supabase/client';
+import { type SupabaseClient } from '@supabase/supabase-js';
+import { type Database } from '@/types/supabase';
+import { BaseService } from './base-service';
 
-interface EnrichmentOptions {
-  model?: 'deepseek-ai/DeepSeek-V3' | 'pplx-7b-online';
-  temperature?: number;
-  maxTokens?: number;
+interface EnrichmentData {
+  id: string;
+  sourceId: string;
+  enrichedData: Record<string, unknown>;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  error?: string;
 }
 
-export class DataEnrichmentService {
-  private together: Together;
-  private supabase = createClient();
-
-  constructor() {
-    this.together = new Together(process.env.TOGETHER_API_KEY ?? undefined);
+export class EnrichmentService extends BaseService {
+  constructor(private readonly supabase: SupabaseClient<Database>) {
+    super({
+      name: 'EnrichmentService',
+      version: '1.0.0',
+    });
   }
 
-  async enrichFromWebsite(url: string, options: EnrichmentOptions = {}) {
-    try {
-      // Fetch website content
-      const response = await fetch(url: unknown);
-      const html = await response.text();
-
-      // Extract text content (basic implementation)
-      const text = html
-        .replace(/<[^>]*>/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-
-      // Use Together AI to analyze
-      const enrichedData = await this.together.chat.completions.create({
-        model: options.model ?? 'deepseek-ai/DeepSeek-V3',
-        messages: [
-          {
-            role: 'system',
-            content:
-              'Extract key information from the following text. Focus on company details, qualifications, training programs, and industry-specific information.',
-          },
-          {
-            role: 'user',
-            content: text,
-          },
-        ],
-        temperature: options.temperature || 0.3,
-        max_tokens: options.maxTokens || 1000,
-      });
-
-      return enrichedData;
-    } catch (error: unknown) {
-      console.error('Enrichment error:', error);
-      throw error;
+  private async fetchExternalData(url: string): Promise<unknown> {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch data: ${response.statusText}`);
     }
+    return response.json();
   }
 
-  async enrichWithPerplexity(query: string) {
-    try {
-      const response = await fetch('https://api.perplexity.ai/chat/completions', {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${process.env.PERPLEXITY_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: 'pplx-7b-online',
-          messages: [
-            {
-              role: 'system',
-              content:
-                'You are an expert in vocational education and training. Extract and analyze relevant information.',
-            },
-            {
-              role: 'user',
-              content: query,
-            },
-          ],
-          max_tokens: 1024,
-          temperature: 0.1,
-        }),
-      });
-
-      return await response.json();
-    } catch (error: unknown) {
-      console.error('Perplexity API error:', error);
-      throw error;
-    }
-  }
-
-  async enrichApprenticeData(apprenticeId: string) {
-    try {
-      // Fetch apprentice data
-      const { data: apprentice, error } = await this.supabase
-        .from('apprentices')
-        .select('*')
-        .eq('id', apprenticeId)
+  async enrichData(sourceId: string, urls: string[]): Promise<EnrichmentData> {
+    return this.executeServiceMethod('enrichData', async () => {
+      // Create initial record
+      const { data, error } = await this.supabase
+        .from('enrichment_data')
+        .insert({
+          sourceId,
+          status: 'processing',
+          enrichedData: {},
+        })
+        .select()
         .single();
 
-      if (error: unknown) throw error;
+      if (error) throw error;
 
-      // Enrich with industry insights
-      const industryInsights = await this.enrichWithPerplexity(
-        `Provide insights about career progression and skill requirements for ${apprentice.qualification} in ${apprentice.industry}`,
-      );
+      try {
+        // Fetch and combine data from all URLs
+        const enrichedData = await Promise.all(
+          urls.map(async (url) => {
+            try {
+              return await this.fetchExternalData(url);
+            } catch (error) {
+              console.error(`Failed to fetch data from ${url}:`, error);
+              return null;
+            }
+          })
+        );
 
-      // Update apprentice record with enriched data
-      const { error: updateError } = await this.supabase
-        .from('apprentices')
-        .update({
-          enriched_data: {
-            industry_insights: industryInsights.choices[0].message.content,
-            last_updated: new Date().toISOString(),
-          },
-        })
-        .eq('id', apprenticeId);
+        // Update with enriched data
+        const { data: updatedData, error: updateError } = await this.supabase
+          .from('enrichment_data')
+          .update({
+            enrichedData: enrichedData.filter(Boolean),
+            status: 'completed',
+          })
+          .eq('id', data.id)
+          .select()
+          .single();
 
-      if (updateError: unknown) throw updateError;
+        if (updateError) throw updateError;
 
-      return industryInsights;
-    } catch (error: unknown) {
-      console.error('Apprentice enrichment error:', error);
-      throw error;
-    }
-  }
+        return updatedData;
+      } catch (error) {
+        // Update status to failed
+        const { data: failedData, error: updateError } = await this.supabase
+          .from('enrichment_data')
+          .update({
+            status: 'failed',
+            error: error instanceof Error ? error.message : 'Unknown error',
+          })
+          .eq('id', data.id)
+          .select()
+          .single();
 
-  async enrichQualificationData(qualificationId: string) {
-    try {
-      // Fetch qualification data
-      const { data: qualification, error } = await this.supabase
-        .from('qualifications')
-        .select('*')
-        .eq('id', qualificationId)
-        .single();
+        if (updateError) throw updateError;
 
-      if (error: unknown) throw error;
-
-      // Enrich with market data and requirements
-      const marketData = await this.enrichWithPerplexity(
-        `Analyze market demand, salary ranges, and industry requirements for ${qualification.title}`,
-      );
-
-      // Update qualification with enriched data
-      const { error: updateError } = await this.supabase
-        .from('qualifications')
-        .update({
-          market_data: {
-            insights: marketData.choices[0].message.content,
-            last_updated: new Date().toISOString(),
-          },
-        })
-        .eq('id', qualificationId);
-
-      if (updateError: unknown) throw updateError;
-
-      return marketData;
-    } catch (error: unknown) {
-      console.error('Qualification enrichment error:', error);
-      throw error;
-    }
+        return failedData;
+      }
+    });
   }
 }

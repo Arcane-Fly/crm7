@@ -1,37 +1,23 @@
-'use client';
+import { type Enrollment } from '@/lib/types';
 
-import { useQuery } from '@tanstack/react-query';
+interface EnrollmentListProps {
+  enrollments: Enrollment[];
+  onUpdate: () => void;
+}
 
-import { useSupabase } from '@/lib/hooks/use-supabase';
-import type { Database } from '@/lib/types/database';
-
-type ApprenticeQualificationRow = Database['public']['Tables']['apprentice_qualifications']['Row'];
-
-export function EnrollmentList(): React.ReactElement {
-  const { supabase } = useSupabase();
-  const { data: enrollments } = useQuery({
-    queryKey: ['apprentice_qualifications'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('apprentice_qualifications')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error: unknown) throw error;
-      return data as ApprenticeQualificationRow[];
-    },
-  });
+export function EnrollmentList({ enrollments, onUpdate }: EnrollmentListProps): React.ReactElement {
+  const handleUnenroll = async (enrollmentId: string): Promise<void> => {
+    try {
+      await deleteEnrollment(enrollmentId);
+      onUpdate();
+    } catch (error) {
+      console.error('Failed to unenroll:', error);
+    }
+  };
 
   return (
-    <div>
-      {enrollments?.map((enrollment: ApprenticeQualificationRow) => (
-        <div key={enrollment.id}>
-          <h3>Qualification: {enrollment.qualification_id}</h3>
-          <p>Apprentice: {enrollment.apprentice_id}</p>
-          <p>Status: {enrollment.status}</p>
-          <p>Started: {enrollment.start_date}</p>
-        </div>
-      ))}
+    <div className="space-y-4">
+      {/* Enrollment list implementation */}
     </div>
   );
 }

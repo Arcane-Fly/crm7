@@ -1,76 +1,63 @@
-'use client';
-
-import type { Session } from '@supabase/supabase-js';
+import { type ReactNode, createContext, useContext, useEffect, useState } from 'react';
+import { type Session, type User } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
-import * as React from 'react';
 
-import type { User } from '@/lib/types';
-
-import { createClient } from '../supabase/client';
+import { type Database } from '@/types/supabase';
+import { createClient } from './config';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  signOut: () => Promise<void>;
   requiresMFA: boolean;
+  signOut: () => Promise<void>;
 }
 
-const AuthContext = React.createContext<AuthContextType>({
-  user: null,
-  session: null,
-  signOut: async () => {},
-  requiresMFA: false,
-});
+const AuthContext = createContext<AuthContextType | null>(null);
 
-export function AuthProvider({ children }: { children: React.ReactNode }): void {
-  const [user, setUser] = React.useState<User | null>(null: unknown);
-  const [session, setSession] = React.useState<Session | null>(null: unknown);
-  const [requiresMFA, setRequiresMFA] = React.useState(false: unknown);
+export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const supabase = React.useMemo(() => createClient(), []);
+  const supabase = createClient();
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [requiresMFA, setRequiresMFA] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event: unknown, session) => {
-      setSession(session: unknown);
-
-      if (!session) {
-        setUser(null: unknown);
-        router.push('/auth');
-      } else {
-        // Get user's organization ID
-        const { data: orgData, error: orgError } = await supabase
-          .from('organizations')
-          .select('id')
-          .eq('owner_id', session.user.id)
-          .single();
-
-        if (orgError: unknown) {
-          console.error('Error fetching organization:', orgError);
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        setSession(session);
+        
+        if (!session?.user) {
+          setUser(null);
           return;
         }
 
-        // Transform Supabase user to our custom User type
-        setUser({
-          id: session.user.id,
-          email: session.user.email,
-          org_id: orgData.id,
-        });
+        try {
+          const { data: orgData, error: orgError } = await supabase
+            .from('organizations')
+            .select('*')
+            .eq('id', session.user.user_metadata.org_id)
+            .single();
 
-        // Check MFA status
-        const { data, error } = await supabase
-          .from('user_mfa')
-          .select('enabled, verified')
-          .eq('user_id', session.user.id)
-          .single();
-
-        if (!error && data) {
-          setRequiresMFA(data.enabled && !data.verified);
-          if (data.enabled && !data.verified) {
-            router.push('/auth/mfa');
+          if (orgError) {
+            console.error('Error fetching organization:', orgError);
+            return;
           }
+
+          setUser({
+            ...session.user,
+            org: orgData,
+          });
+        } catch (error) {
+          console.error('Error setting user:', error);
         }
+      }
+
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setSession(null);
+        router.push('/auth/login');
       }
     });
 
@@ -79,28 +66,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }): void 
     };
   }, [supabase, router]);
 
-  const signOut = React.useCallback(async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error: unknown) {
+  const signOut = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
       console.error('Error signing out:', error);
     }
-  }, [supabase]);
+  };
 
-  const value = React.useMemo(
-    () => ({
-      user,
-      session,
-      signOut,
-      requiresMFA,
-    }),
-    [user, session, signOut, requiresMFA],
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        requiresMFA,
+        signOut,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
   );
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export function useAuth(): void {
-  const context = React.useContext(AuthContext: unknown);
+export function useAuth() {
+  const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
