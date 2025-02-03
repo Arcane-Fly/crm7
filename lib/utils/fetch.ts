@@ -41,7 +41,7 @@ export async function fetch(
         retryConfig.maxDelay
       );
 
-      logger.warn('Request failed, retrying', {
+      logger.warning('Request failed, retrying', {
         url: url.toString(),
         attempt,
         delay,

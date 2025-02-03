@@ -206,7 +206,7 @@ export class FairWorkServiceImpl extends BaseService implements FairWorkService 
       try {
         const { awardCode, classification } = params;
         const rates = await this.getCurrentRates(awardCode);
-        const baseRate = rates.find((r) => r.code === classification)?.baseRate;
+        const baseRate = rates.find((r) => r.penalties?.some(p => p.code === classification))?.baseRate;
 
         if (!baseRate) {
           throw new Error(`Base rate not found for classification ${classification}`);

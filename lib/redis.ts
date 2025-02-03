@@ -1,9 +1,11 @@
-import { createClient } from 'redis';
+import { createClient, type RedisClientType } from 'redis';
 
-const client = createClient();
+const client: RedisClientType = createClient({
+  scripts: {},
+});
 
 client.connect().catch((error) => {
   console.error('Failed to connect to Redis:', error);
 });
 
-export const redis = client;
+export const redis: RedisClientType = client;

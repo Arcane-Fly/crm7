@@ -46,7 +46,7 @@ export class FairWorkApiClient {
       const response = await fetch(url, {
         method,
         headers,
-        body: data ? JSON.stringify(data) : undefined,
+        body: data ? JSON.stringify(data) : null,
         signal: controller.signal,
       });
 
