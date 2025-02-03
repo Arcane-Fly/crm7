@@ -63,13 +63,13 @@ Many devDependencies play a key role in maintaining code quality, running tests,
 1. **Retain Essential Dependencies:**
    Maintain the dependencies identified as crucial for security, UI components, and monitoring within the core `package.json`.
 
-2. **Document Rationale:**
+1. **Document Rationale:**
    This document serves to justify the retention of "unused" dependencies that are marked for future feature support. Update this document as dependencies evolve.
 
-3. **Plan for Segmentation:**
+1. **Plan for Segmentation:**
    Identify dependencies that could be candidates for extraction. Create a roadmap for transitioning these into separate integrated packages in subsequent project phases.
 
-4. **Continuous Evaluation:**
+1. **Continuous Evaluation:**
    Periodically re-run pnpm depcheck, update this document, and adjust the dependency strategy in response to evolving project requirements and technological advancements.
 
 ---

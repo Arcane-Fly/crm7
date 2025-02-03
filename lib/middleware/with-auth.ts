@@ -69,12 +69,24 @@ export async function withAuth<T>(
   } catch (error) {
     if (error instanceof AuthError) {
       log.warn(error.message, error.context);
-      return NextResponse.json({ error: error.message } as ApiResponse<T>, {
+      return NextResponse.json({
+        error: {
+          code: 'AUTH_ERROR',
+          message: error.message,
+          status: error.statusCode,
+        },
+      } as ApiResponse<T>, {
         status: error.statusCode,
       });
     }
 
     log.error('Authentication error', { error });
-    return NextResponse.json({ error: 'Internal server error' } as ApiResponse<T>, { status: 500 });
+    return NextResponse.json({
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Internal server error',
+        status: 500,
+      },
+    } as ApiResponse<T>, { status: 500 });
   }
 }
