@@ -178,7 +178,7 @@
     "postcss": "^8.4.33",
     "postcss-preset-env": "^9.3.0",
     "prettier": "^3.4.2",
-    "prettier-plugin-tailwindcss": "^0.5.14",
+    "prettier-plugin-tailwindcss": "^0.6.0",
     "sharp": "^0.33.2",
     "sort-package-json": "2.14.0",
     "stylelint": "16.14.1",
