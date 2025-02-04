@@ -197,10 +197,7 @@
   "packageManager": "pnpm@9.14.0",
   "pnpm": {
     "overrides": {
-      "lru-cache": "^7.18.3",
-      "proxy-agent@6.5.0": {
-        "lru-cache": "^7.18.3"
-      }
+      "lru-cache": "7.18.3"
     }
   },
   "corepack": {
