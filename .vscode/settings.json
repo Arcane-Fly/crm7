@@ -76,7 +76,7 @@
   },
   "eslint.codeActionsOnSave.mode": "all",
   "eslint.format.enable": true,
-  "eslint.packageManager": "pnpm",
+  // Deprecated: Package Manager is now automatically detected
 
   // JavaScript Configuration
   "javascript.validate.enable": true,
@@ -480,5 +480,8 @@
       "report": true
     }
   },
-  "windsurf.autoExecutionPolicy": "shred"
+  "windsurf.autoExecutionPolicy": "shred",
+  "yaml.schemas": {
+    ".github/workflow-schemas/deploy.json": ".github/workflows/deploy.yml"
+  }
 }

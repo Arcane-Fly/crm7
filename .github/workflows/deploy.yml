@@ -1,4 +1,7 @@
+# yaml-language-server: $schema=../.github/workflow-schemas/deploy.json
+# yaml-language-server: $ignore-secrets-and-vars-validation
 name: Deploy
+
 on:
   push:
     branches:
@@ -7,13 +10,20 @@ on:
   pull_request:
     branches:
       - main
-      - master
+  workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.base.ref || github.ref_name }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v3

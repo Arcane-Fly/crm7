@@ -1,0 +1,74 @@
+name: Lint Code Base
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+  statuses: write
+
+jobs:
+  lint:
+    name: Lint Code Base
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.base.ref || github.ref_name }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: latest
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run ESLint
+        run: pnpm lint
+
+      - name: Run Type Check
+        run: pnpm type-check
+
+      - name: Super-Linter
+        uses: super-linter/super-linter@v7.2.1
+        env:
+          VALIDATE_ALL_CODEBASE: false
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VALIDATE_TYPESCRIPT_ES: true
+          VALIDATE_JAVASCRIPT_ES: true
+          VALIDATE_CSS: true
+          VALIDATE_YAML: true
+          VALIDATE_JSON: true
+          VALIDATE_MARKDOWN: true
+          VALIDATE_GITHUB_ACTIONS: true
+          VALIDATE_ENV: true
+          VALIDATE_HTML: true
+          TYPESCRIPT_DEFAULT_STYLE: prettier
+          VALIDATE_TYPESCRIPT_STANDARD: true
+          VALIDATE_SECURITY: true
+          TYPESCRIPT_ES_CONFIG_FILE: .eslintrc.json
+          JAVASCRIPT_ES_CONFIG_FILE: .eslintrc.json
+          MARKDOWN_CONFIG_FILE: .markdownlint.json
+          VALIDATE_TYPESCRIPT_PRETTIER: true
+          VALIDATE_JAVASCRIPT_PRETTIER: true
+          VALIDATE_CSS_PRETTIER: true
+          VALIDATE_JSON_PRETTIER: true
+          VALIDATE_MARKDOWN_PRETTIER: true
+          VALIDATE_YAML_PRETTIER: true
+          ENABLE_GITHUB_ACTIONS_GROUP_TITLE: true
+          ENABLE_GITHUB_ACTIONS_STEP_SUMMARY: true
