@@ -112,13 +112,13 @@ export class RateManagementServiceImpl implements RateManagementService {
     this.rateManagementConfig = rateManagementConfig;
   }
 
-  async getRateTemplates(orgId: string): Promise<void> {
-    try {
-      const { data, error } = await this.client
-        .from('rate_templates')
-        .select('*')
-        .eq('orgId', orgId)
-        .order('createdAt', { ascending: false });
+async getRateTemplates(orgId: string): Promise {
+  try {
+    const { data, error } = await this.client
+      .from('rate_templates')
+      .select('*')
+      .eq('orgId', orgId)
+      .order('createdAt', { ascending: false });
 
       if (typeof error !== "undefined" && error !== null) {
         const customError = new Error(error.message) as CustomError;
