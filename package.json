@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": "20.x",
+    "node": "18.x",
     "pnpm": ">=9.14.0"
   },
   "scripts": {
@@ -17,7 +17,7 @@
     "dev": "next dev -p 4200",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "preinstall": "npx only-allow pnpm",
+    "preinstall": "export COREPACK_DISABLE_SIGNATURES=1 && npx only-allow pnpm && corepack prepare pnpm@latest --activate || true",
     "postinstall": "husky install",
     "lint": "eslint .",
     "lint:next": "next lint",
