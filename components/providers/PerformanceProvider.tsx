@@ -1,3 +1,5 @@
+'use client';
+
 import { createContext, useContext, useReducer, type ReactNode } from 'react';
 import { performanceReducer, initialState } from '@/lib/reducers/performance';
 import type { PerformanceContextType } from '@/lib/types';

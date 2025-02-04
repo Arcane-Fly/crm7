@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { Breadcrumb, BreadcrumbItem } from '@/components/ui/breadcrumb';
 import { DataEnrichment } from '@/components/admin/data-enrichment';
