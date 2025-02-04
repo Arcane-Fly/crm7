@@ -1,4 +1,6 @@
 import { logger } from '@/lib/logger';
+import { createClient } from '@supabase/supabase-js';
+import { type Database } from '@/types/supabase';
 
 interface AuthConfig {
   apiUrl: string;
@@ -49,5 +51,20 @@ export class AuthService {
 
   public getConfig(): AuthConfig {
     return this.config;
+  }
+
+  public async authenticate(token: string): Promise<void> {
+    const supabase = createClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
+    );
+
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+
+    if (error || !user) {
+      throw new Error('Unauthorized');
+    }
+
+    return user;
   }
 }
