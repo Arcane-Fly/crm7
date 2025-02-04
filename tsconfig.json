@@ -27,7 +27,7 @@
       "@/types/*": ["types/*"],
       "@/utils/*": ["lib/utils/*"],
       "@/services/*": ["lib/services/*"],
-      "@/hooks/*": ["lib/hooks/*"]
+      "@/hooks/*": ["hooks/*"]
     },
     "plugins": [
       {
