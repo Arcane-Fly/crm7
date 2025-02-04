@@ -1,44 +1,146 @@
+'use client';
+
+import { ChevronRight, MoreHorizontal } from 'lucide-react';
+import Link from 'next/link';
 import { type ReactElement, type ReactNode } from 'react';
-import { ChevronRight } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 
 interface BreadcrumbProps {
   children: ReactNode;
+  className?: string;
+  separator?: ReactNode;
+  isCollapsed?: boolean;
+  maxItems?: number;
 }
 
 interface BreadcrumbItemProps {
   href?: string;
   children: ReactNode;
+  isLast?: boolean;
+  className?: string;
 }
 
-export function Breadcrumb({ children }: BreadcrumbProps): ReactElement {
+interface BreadcrumbEllipsisProps {
+  items: Array<{ href: string; label: string }>;
+}
+
+function BreadcrumbEllipsis({ items }: BreadcrumbEllipsisProps): ReactElement {
   return (
-    <nav aria-label="Breadcrumb">
-      <ol className="flex items-center space-x-2">
-        {React.Children.map(children, (child, index) => (
-          <li key={index} className="flex items-center">
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          className="h-auto p-0 font-normal hover:bg-transparent"
+        >
+          <MoreHorizontal className="h-4 w-4" />
+          <span className="sr-only">Show more items</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start">
+        {items.map((item, index) => (
+          <DropdownMenuItem key={index} asChild>
+            <Link
+              href={item.href}
+              className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary"
+            >
+              {item.label}
+            </Link>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+export function BreadcrumbItem({
+  href,
+  children,
+  isLast,
+  className,
+}: BreadcrumbItemProps): ReactElement {
+  const Component = href && !isLast ? Link : 'span';
+
+  return (
+    <Component
+      href={href as string}
+      className={cn(
+        'text-sm font-medium',
+        isLast ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
+        className,
+      )}
+      aria-current={isLast ? 'page' : undefined}
+    >
+      {children}
+    </Component>
+  );
+}
+
+export function Breadcrumb({
+  children,
+  className,
+  separator = <ChevronRight className="h-4 w-4 text-muted-foreground/40" />,
+  isCollapsed = true,
+  maxItems = 3,
+}: BreadcrumbProps): ReactElement {
+  const childrenArray = React.Children.toArray(children);
+  const totalItems = childrenArray.length;
+
+  // If we don't need to collapse or have fewer items than maxItems
+  if (!isCollapsed || totalItems <= maxItems) {
+    return (
+      <nav
+        aria-label="Breadcrumb"
+        className={cn('flex items-center', className)}
+      >
+        <ol className="flex items-center gap-2">
+          {childrenArray.map((child, index) => (
+            <li key={index} className="flex items-center gap-2">
+              {child}
+              {index < totalItems - 1 && separator}
+            </li>
+          ))}
+        </ol>
+      </nav>
+    );
+  }
+
+  // Calculate items to show when collapsed
+  const firstItem = childrenArray[0];
+  const lastItems = childrenArray.slice(-2);
+  const middleItems = childrenArray.slice(1, -2).map((child: any) => ({
+    href: child.props.href,
+    label: child.props.children,
+  }));
+
+  return (
+    <nav
+      aria-label="Breadcrumb"
+      className={cn('flex items-center', className)}
+    >
+      <ol className="flex items-center gap-2">
+        <li className="flex items-center gap-2">
+          {firstItem}
+          {separator}
+        </li>
+        <li className="flex items-center gap-2">
+          <BreadcrumbEllipsis items={middleItems} />
+          {separator}
+        </li>
+        {lastItems.map((child, index) => (
+          <li key={index} className="flex items-center gap-2">
             {child}
-            {index < React.Children.count(children) - 1 && (
-              <ChevronRight className="h-4 w-4" />
-            )}
+            {index < lastItems.length - 1 && separator}
           </li>
         ))}
       </ol>
     </nav>
-  );
-}
-
-export function BreadcrumbItem({ href, children }: BreadcrumbItemProps): ReactElement {
-  if (href) {
-    return (
-      <a href={href} className="text-sm font-medium text-gray-500 hover:text-gray-700">
-        {children}
-      </a>
-    );
-  }
-
-  return (
-    <span className="text-sm font-medium text-gray-900">
-      {children}
-    </span>
   );
 }
