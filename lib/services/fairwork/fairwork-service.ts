@@ -31,6 +31,7 @@ export interface FairWorkService {
 }
 
 export class FairWorkServiceImpl extends BaseService implements FairWorkService {
+  static instance: FairWorkService;
   private readonly apiClient: FairWorkApiClient;
   private readonly cache: CacheService;
   private readonly serviceLogger = logger.createLogger('FairWorkService');
@@ -42,13 +43,13 @@ export class FairWorkServiceImpl extends BaseService implements FairWorkService 
     this.cache = new CacheService(redisClient);
   }
 
-  async getActiveAwards(): Promise<void> {
-    return this.executeServiceMethod('getActiveAwards', async () => {
+  public async getActiveAwards(): Promise<Award[]> {
+    return await this.executeServiceMethod('getActiveAwards', async () => {
       try {
         const cacheKey = 'active_awards';
         const cachedAwards = await this.cache.get<Award[]>(cacheKey);
 
-        if (typeof cachedAwards !== "undefined" && cachedAwards !== null) {
+        if (typeof cachedAwards !== 'undefined' && cachedAwards !== null) {
           return cachedAwards;
         }
 
@@ -62,20 +63,20 @@ export class FairWorkServiceImpl extends BaseService implements FairWorkService 
     });
   }
 
-  async getAward(awardCode: string): Promise<void> {
+  public async getAward(awardCode: string): Promise<Award | null> {
     return this.executeServiceMethod('getAward', async () => {
       try {
         const cacheKey = `award:${awardCode}`;
         const cachedAward = await this.cache.get<Award>(cacheKey);
 
-        if (typeof cachedAward !== "undefined" && cachedAward !== null) {
+        if (typeof cachedAward !== 'undefined' && cachedAward !== null) {
           return cachedAward;
         }
 
         const awards = await this.getActiveAwards();
         const award = awards.find((a) => a.code === awardCode);
 
-        if (typeof award !== "undefined" && award !== null) {
+        if (typeof award !== 'undefined' && award !== null) {
           await this.cache.set(cacheKey, award, this.CACHE_TTL);
         }
 
@@ -87,13 +88,13 @@ export class FairWorkServiceImpl extends BaseService implements FairWorkService 
     });
   }
 
-  async getCurrentRates(awardCode: string): Promise<void> {
+  public async getCurrentRates(awardCode: string): Promise<Rate[]> {
     return this.executeServiceMethod('getCurrentRates', async () => {
       try {
         const cacheKey = `rates:${awardCode}:current`;
         const cachedRates = await this.cache.get<Rate[]>(cacheKey);
 
-        if (typeof cachedRates !== "undefined" && cachedRates !== null) {
+        if (typeof cachedRates !== 'undefined' && cachedRates !== null) {
           return cachedRates;
         }
 
@@ -107,13 +108,16 @@ export class FairWorkServiceImpl extends BaseService implements FairWorkService 
     });
   }
 
-  async getRatesForDate(awardCode: string, date: string = new Date().toISOString()): Promise<void> {
+  public async getRatesForDate(
+    awardCode: string,
+    date: string = new Date().toISOString(),
+  ): Promise<Rate[]> {
     return this.executeServiceMethod('getRatesForDate', async () => {
       try {
         const cacheKey = `rates:${awardCode}:${date}`;
         const cachedRates = await this.cache.get<Rate[]>(cacheKey);
 
-        if (typeof cachedRates !== "undefined" && cachedRates !== null) {
+        if (typeof cachedRates !== 'undefined' && cachedRates !== null) {
           return cachedRates;
         }
 
@@ -127,13 +131,13 @@ export class FairWorkServiceImpl extends BaseService implements FairWorkService 
     });
   }
 
-  async getClassifications(awardCode: string): Promise<void> {
+  public async getClassifications(): Promise<Classification[]> {
     return this.executeServiceMethod('getClassifications', async () => {
       try {
         const cacheKey = `classifications:${awardCode}`;
         const cachedClassifications = await this.cache.get<Classification[]>(cacheKey);
 
-        if (typeof cachedClassifications !== "undefined" && cachedClassifications !== null) {
+        if (typeof cachedClassifications !== 'undefined' && cachedClassifications !== null) {
           return cachedClassifications;
         }
 
@@ -147,13 +151,13 @@ export class FairWorkServiceImpl extends BaseService implements FairWorkService 
     });
   }
 
-  async getClassificationHierarchy(awardCode: string): Promise<void> {
+  public async getClassificationHierarchy(): Promise<ClassificationHierarchy> {
     return this.executeServiceMethod('getClassificationHierarchy', async () => {
       try {
         const cacheKey = `classification_hierarchy:${awardCode}`;
         const cachedHierarchy = await this.cache.get<ClassificationHierarchy>(cacheKey);
 
-        if (typeof cachedHierarchy !== "undefined" && cachedHierarchy !== null) {
+        if (typeof cachedHierarchy !== 'undefined' && cachedHierarchy !== null) {
           return cachedHierarchy;
         }
 
@@ -167,13 +171,13 @@ export class FairWorkServiceImpl extends BaseService implements FairWorkService 
     });
   }
 
-  async getRateTemplates(awardCode: string): Promise<void> {
+  public async getRateTemplates(awardCode: string): Promise<RateTemplate[]> {
     return this.executeServiceMethod('getRateTemplates', async () => {
       try {
         const cacheKey = `rate_templates:${awardCode}`;
         const cachedTemplates = await this.cache.get<RateTemplate[]>(cacheKey);
 
-        if (typeof cachedTemplates !== "undefined" && cachedTemplates !== null) {
+        if (typeof cachedTemplates !== 'undefined' && cachedTemplates !== null) {
           return cachedTemplates;
         }
 
@@ -187,7 +191,7 @@ export class FairWorkServiceImpl extends BaseService implements FairWorkService 
     });
   }
 
-  async validateRate(params: RateValidationRequest): Promise<void> {
+  public async validateRate(params: RateValidationRequest): Promise<RateValidationResponse> {
     return this.executeServiceMethod('validateRate', async () => {
       try {
         return await this.apiClient.validateRate(params);
@@ -198,15 +202,17 @@ export class FairWorkServiceImpl extends BaseService implements FairWorkService 
     });
   }
 
-  async calculateBaseRate(params: {
+  public async calculateBaseRate(params: {
     awardCode: string;
     classification: string;
-  }): Promise<void> {
+  }): Promise<{ baseRate: number }> {
     return this.executeServiceMethod('calculateBaseRate', async () => {
       try {
         const { awardCode, classification } = params;
         const rates = await this.getCurrentRates(awardCode);
-        const baseRate = rates.find((r) => r.penalties?.some(p => p.code === classification))?.baseRate;
+        const baseRate = rates.find((r) =>
+          r.penalties?.some((p) => p.code === classification),
+        )?.baseRate;
 
         if (!baseRate) {
           throw new Error(`Base rate not found for classification ${classification}`);
@@ -220,3 +226,5 @@ export class FairWorkServiceImpl extends BaseService implements FairWorkService 
     });
   }
 }
+
+export type { FairWorkService };

@@ -8,9 +8,10 @@ export interface User {
 export * from './bank';
 export * from './billing';
 export * from './hr';
+export * from './monitoring'; // Re-export monitoring types
 export * from './rates';
 export * from './validation';
 
 // Re-export database types
-export type { Database } from './database';
 export type { SupabaseClient } from '@supabase/supabase-js';
+export type { Database } from './database';

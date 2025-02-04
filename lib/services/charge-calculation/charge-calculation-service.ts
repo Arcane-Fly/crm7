@@ -16,7 +16,7 @@ export class ChargeCalculationService extends BaseService {
     });
   }
 
-  async calculateChargeRate(template: RateTemplate, hours: number): Promise<void> {
+  async calculateChargeRate(template: RateTemplate, hours: number): Promise<number> {
     return this.executeServiceMethod('calculateChargeRate', async () => {
       const components = {
         base: template.baseRate * hours,
@@ -36,7 +36,7 @@ export class ChargeCalculationService extends BaseService {
     });
   }
 
-  async calculateBulkChargeRates(templates: RateTemplate[], hours: number): Promise<void> {
+  async calculateBulkChargeRates(templates: RateTemplate[], hours: number): Promise<Map<string, number>> {
     return this.executeServiceMethod('calculateBulkChargeRates', async () => {
       const results = new Map<string, number>();
 

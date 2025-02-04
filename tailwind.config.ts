@@ -20,6 +20,9 @@ const config = {
       },
     },
     extend: {
+      spacing: { // Add spacing section
+        'sidebar-width': '240px', // Define sidebar-width
+      },
       colors: {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
