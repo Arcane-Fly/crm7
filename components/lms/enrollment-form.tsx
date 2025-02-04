@@ -20,7 +20,7 @@ interface EnrollmentFormProps {
   onSubmit: (data: EnrollmentFormData) => Promise<void>;
 }
 
-export function EnrollmentForm({ enrollmentId, initialData, onSubmit }: EnrollmentFormProps): React.ReactElement {
+export function EnrollmentForm({ enrollmentId, initialData, onSubmit }: EnrollmentFormProps): JSX.Element {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const form = useForm<EnrollmentFormData>({
@@ -36,7 +36,7 @@ export function EnrollmentForm({ enrollmentId, initialData, onSubmit }: Enrollme
   const handleSubmit = async (values: EnrollmentFormData): Promise<void> => {
     try {
       setIsSubmitting(true);
-      if (enrollmentId) {
+      if (typeof enrollmentId !== "undefined" && enrollmentId !== null) {
         await updateEnrollment(enrollmentId, values);
       } else {
         await createEnrollment(values);

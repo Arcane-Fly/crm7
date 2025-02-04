@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useUser } from '@/lib/hooks/use-user';
 import { createClient } from '@/lib/supabase/client';
 
-export function RatesClient(): ReactElement {
+export function RatesClient(): JSX.Element {
   const { user } = useUser();
   const supabase = createClient();
 

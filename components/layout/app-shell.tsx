@@ -11,7 +11,7 @@ interface AppShellProps {
   children: ReactNode;
 }
 
-export function AppShell({ children }: AppShellProps): ReactElement {
+export function AppShell({ children }: AppShellProps): JSX.Element {
   return (
     <div className="min-h-screen bg-background">
       <AppSidebar />

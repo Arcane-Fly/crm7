@@ -1,4 +1,4 @@
-export default function ApprenticesPage(): React.ReactElement {
+export default function ApprenticesPage(): JSX.Element {
   return (
     <div>
       <h1>Apprentices</h1>

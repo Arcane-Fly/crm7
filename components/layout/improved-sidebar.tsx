@@ -27,7 +27,7 @@ interface SidebarContextType {
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
-export function SidebarProvider({ children }: { children: ReactNode }): ReactElement {
+export function SidebarProvider({ children }: { children: ReactNode }): JSX.Element {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
@@ -51,7 +51,7 @@ export const Sidebar = (): ReactElement => {
   const pathname = usePathname();
 
   const handleLinkClick = (): void => {
-    if (isMobileOpen) {
+    if (typeof isMobileOpen !== "undefined" && isMobileOpen !== null) {
       setIsMobileOpen(false);
     }
   };

@@ -9,7 +9,7 @@ const fairworkClient = new FairWorkClient(defaultConfig);
 export async function POST(
   req: NextRequest,
   context: { params: { awardCode: string; classificationCode: string } }
-): Promise<Response> {
+): Promise<void> {
   try {
     const body = await req.json();
     const params = ValidateSchema.parse(body);

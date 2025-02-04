@@ -3,9 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": "20.x",
+    "pnpm": ">=9.14.0"
+  },
   "scripts": {
     "analyze": "ANALYZE=true next build",
-    "build": "next build",
+    "build": "PUPPETEER_SKIP_DOWNLOAD=true next build",
     "clean": "rm -rf .next out node_modules",
     "deploy": "tsx scripts/monitor-deployment.ts deploy",
     "deploy:monitor": "tsx scripts/monitor-deployment.ts monitor",
@@ -15,9 +19,11 @@
     "format:check": "prettier --check .",
     "preinstall": "npx only-allow pnpm",
     "postinstall": "husky install",
-    "lint": "next lint",
-    "lint:fix": "next lint --fix",
-    "lint:strict": "eslint --max-warnings=0 .",
+    "lint": "eslint .",
+    "lint:next": "next lint",
+    "lint:fix": "eslint . --fix",
+    "lint:staged": "lint-staged",
+    "lint:strict": "eslint . --max-warnings=0",
     "lint:types": "tsc --noEmit",
     "setup:tools": "pnpm add -D @types/node @types/react @typescript-eslint/parser",
     "start": "next start",
@@ -178,6 +184,7 @@
     "stylelint": "16.14.1",
     "supabase": "link:@/lib/supabase",
     "tailwindcss": "^3.4.1",
+    "ts-morph": "25.0.0",
     "ts-node": "10.9.2",
     "tsc-files": "1.1.4",
     "tsx": "^4.19.2",
@@ -187,14 +194,13 @@
     "vitest": "^1.6.0",
     "winston": "^3.11.0"
   },
-  "packageManager": "pnpm@9.0.0",
-  "engines": {
-    "node": ">=20.0.0",
-    "pnpm": ">=9.0.0"
-  },
+  "packageManager": "pnpm@9.14.0",
   "pnpm": {
     "overrides": {
-      "lru-cache": "^10.2.0"
+      "lru-cache": "^7.18.3",
+      "proxy-agent@6.5.0": {
+        "lru-cache": "^7.18.3"
+      }
     }
   },
   "corepack": {

@@ -27,7 +27,7 @@ interface SectionSidebarProps {
   section?: keyof typeof sections;
 }
 
-export function SectionSidebar({ className, section = 'dashboard' }: SectionSidebarProps): React.ReactElement {
+export function SectionSidebar({ className, section = 'dashboard' }: SectionSidebarProps): JSX.Element {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
 

@@ -17,7 +17,7 @@ export function DataTable<TData>({
   enableColumnVisibility = false,
   enableRowSelection = false,
   onSelectedIdsChange,
-}: DataTableProps<TData>): React.ReactElement {
+}: DataTableProps<TData>): JSX.Element {
   // ... implementation
   return (
     <div>

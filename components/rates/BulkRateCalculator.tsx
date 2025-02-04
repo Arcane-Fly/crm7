@@ -10,7 +10,7 @@ interface BulkRateCalculatorProps {
   orgId?: string;
 }
 
-export function BulkRateCalculator({ orgId = 'default-org' }: BulkRateCalculatorProps): ReactElement {
+export function BulkRateCalculator({ orgId = 'default-org' }: BulkRateCalculatorProps): JSX.Element {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -36,7 +36,7 @@ export function BulkRateCalculator({ orgId = 'default-org' }: BulkRateCalculator
       });
     },
     onSuccess: (response) => {
-      queryClient.setQueryData(['bulk-calculations', orgId], (old: any) => {
+      queryClient.setQueryData(['bulk-calculations', orgId], (old: unknown) => {
         if (!old) return { data: [response.data] };
         return {
           data: [...old.data, response.data],

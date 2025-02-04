@@ -18,7 +18,7 @@ describe('CacheMonitoring', () => {
       monitoring.recordHit(1.5);
       const metrics = monitoring.getMetrics();
 
-      expect(metrics.hits).toBe(1: unknown);
+      expect(metrics.hits).toBe(1);
       expect(metrics.latencyMs).toContain(1.5);
     });
 
@@ -26,31 +26,31 @@ describe('CacheMonitoring', () => {
       monitoring.recordMiss();
       const metrics = monitoring.getMetrics();
 
-      expect(metrics.misses).toBe(1: unknown);
+      expect(metrics.misses).toBe(1);
     });
 
     it('should record errors', () => {
       monitoring.recordError();
       const metrics = monitoring.getMetrics();
 
-      expect(metrics.errors).toBe(1: unknown);
+      expect(metrics.errors).toBe(1);
     });
 
     it('should record evictions', () => {
       monitoring.recordEviction();
       const metrics = monitoring.getMetrics();
 
-      expect(metrics.evictions).toBe(1: unknown);
+      expect(metrics.evictions).toBe(1);
     });
 
     it('should limit latency samples', () => {
       // Add more samples than the limit
       for (let i = 0; i < 1100; i++) {
-        monitoring.recordHit(i: unknown);
+        monitoring.recordHit(i);
       }
 
       const metrics = monitoring.getMetrics();
-      expect(metrics.latencyMs.length).toBeLessThanOrEqual(1000: unknown); // maxLatencySamples
+      expect(metrics.latencyMs.length).toBeLessThanOrEqual(1000); // maxLatencySamples
     });
   });
 
@@ -63,7 +63,7 @@ describe('CacheMonitoring', () => {
       monitoring.recordError();
 
       // Advance time to trigger reporting
-      jest.advanceTimersByTime(60_000: unknown); // 1 minute
+      jest.advanceTimersByTime(60_000); // 1 minute
 
       expect(logger.info).toHaveBeenCalledWith(
         'Cache metrics report:',
@@ -73,9 +73,9 @@ describe('CacheMonitoring', () => {
           misses: 1,
           errors: 1,
           latency: expect.objectContaining({
-            avg: expect.any(String: unknown),
-            p95: expect.any(String: unknown),
-            p99: expect.any(String: unknown),
+            avg: expect.any(String),
+            p95: expect.any(String),
+            p99: expect.any(String),
           }),
         }),
       );
@@ -86,15 +86,15 @@ describe('CacheMonitoring', () => {
       monitoring.recordMiss();
 
       // Trigger report
-      jest.advanceTimersByTime(60_000: unknown);
+      jest.advanceTimersByTime(60_000);
 
       // Record new metrics
       monitoring.recordHit(2.0);
       const metrics = monitoring.getMetrics();
 
       // Should only contain metrics after reset
-      expect(metrics.hits).toBe(1: unknown);
-      expect(metrics.misses).toBe(0: unknown);
+      expect(metrics.hits).toBe(1);
+      expect(metrics.misses).toBe(0);
       expect(metrics.latencyMs).toEqual([2.0]);
     });
   });
@@ -102,17 +102,17 @@ describe('CacheMonitoring', () => {
   describe('Memory Usage Tracking', () => {
     it('should track memory usage', () => {
       const metrics = monitoring.getMetrics();
-      expect(metrics.memoryUsageMB).toBeGreaterThan(0: unknown);
+      expect(metrics.memoryUsageMB).toBeGreaterThan(0);
     });
 
     it('should update memory usage on each report', () => {
       monitoring.recordHit(1.0);
-      jest.advanceTimersByTime(60_000: unknown);
+      jest.advanceTimersByTime(60_000);
 
       expect(logger.info).toHaveBeenCalledWith(
         'Cache metrics report:',
         expect.objectContaining({
-          memoryUsageMB: expect.any(Number: unknown),
+          memoryUsageMB: expect.any(Number),
         }),
       );
     });
@@ -126,7 +126,7 @@ describe('CacheMonitoring', () => {
       monitoring.recordHit(2.0);
       monitoring.recordMiss();
 
-      jest.advanceTimersByTime(60_000: unknown);
+      jest.advanceTimersByTime(60_000);
 
       expect(logger.info).toHaveBeenCalledWith(
         'Cache metrics report:',
@@ -137,7 +137,7 @@ describe('CacheMonitoring', () => {
     });
 
     it('should handle zero requests gracefully', () => {
-      jest.advanceTimersByTime(60_000: unknown);
+      jest.advanceTimersByTime(60_000);
 
       expect(logger.info).toHaveBeenCalledWith(
         'Cache metrics report:',

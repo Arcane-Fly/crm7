@@ -58,15 +58,15 @@ describe('Rate Calculation API Integration', () => {
         mockCalculationResponse,
       );
 
-      await calculateHandler(firstReq: unknown, firstRes);
+      await calculateHandler(firstReq, firstRes);
       const firstResult = JSON.parse(firstRes._getData());
 
       // Second request should use cache
-      await calculateHandler(secondReq: unknown, secondRes);
+      await calculateHandler(secondReq, secondRes);
       const secondResult = JSON.parse(secondRes._getData());
 
-      expect(firstResult: unknown).toEqual(secondResult: unknown);
-      expect(FairWorkService.prototype.calculateRate).toHaveBeenCalledTimes(1: unknown);
+      expect(firstResult).toEqual(secondResult);
+      expect(FairWorkService.prototype.calculateRate).toHaveBeenCalledTimes(1);
     });
 
     it('should bypass cache with force-refresh header', async () => {
@@ -82,10 +82,10 @@ describe('Rate Calculation API Integration', () => {
         mockCalculationResponse,
       );
 
-      await calculateHandler(req: unknown, res);
+      await calculateHandler(req, res);
 
       expect(FairWorkService.prototype.calculateRate).toHaveBeenCalled();
-      expect(res._getStatusCode()).toBe(200: unknown);
+      expect(res._getStatusCode()).toBe(200);
     });
 
     it('should handle cache service errors gracefully', async () => {
@@ -95,14 +95,14 @@ describe('Rate Calculation API Integration', () => {
       });
 
       const cacheError = new Error('Cache connection failed');
-      (CacheService.prototype.getOrSet as jest.Mock).mockRejectedValueOnce(cacheError: unknown);
+      (CacheService.prototype.getOrSet as jest.Mock).mockRejectedValueOnce(cacheError);
       (FairWorkService.prototype.calculateRate as jest.Mock).mockResolvedValueOnce(
         mockCalculationResponse,
       );
 
-      await calculateHandler(req: unknown, res);
+      await calculateHandler(req, res);
 
-      expect(res._getStatusCode()).toBe(200: unknown);
+      expect(res._getStatusCode()).toBe(200);
       expect(logger.error).toHaveBeenCalledWith(
         expect.stringContaining('Cache error'),
         expect.objectContaining({ error: cacheError.message }),
@@ -124,10 +124,10 @@ describe('Rate Calculation API Integration', () => {
         mockCalculationResponse,
       );
 
-      await calculateHandler(req: unknown, res);
+      await calculateHandler(req, res);
 
       expect(CacheService.prototype.set).toHaveBeenCalled();
-      expect(res._getStatusCode()).toBe(200: unknown);
+      expect(res._getStatusCode()).toBe(200);
     });
 
     it('should handle cache refresh errors', async () => {
@@ -140,11 +140,11 @@ describe('Rate Calculation API Integration', () => {
       });
 
       const error = new Error('Failed to refresh cache');
-      (CacheService.prototype.set as jest.Mock).mockRejectedValueOnce(error: unknown);
+      (CacheService.prototype.set as jest.Mock).mockRejectedValueOnce(error);
 
-      await calculateHandler(req: unknown, res);
+      await calculateHandler(req, res);
 
-      expect(res._getStatusCode()).toBe(200: unknown); // Should still return data even if cache fails
+      expect(res._getStatusCode()).toBe(200); // Should still return data even if cache fails
       expect(logger.error).toHaveBeenCalledWith(
         expect.stringContaining('Cache error'),
         expect.objectContaining({ error: error.message }),
@@ -160,12 +160,12 @@ describe('Rate Calculation API Integration', () => {
       });
 
       const serviceError = new Error('Service unavailable');
-      (FairWorkService.prototype.calculateRate as jest.Mock).mockRejectedValueOnce(serviceError: unknown);
-      (CacheService.prototype.get as jest.Mock).mockResolvedValueOnce(mockCalculationResponse: unknown);
+      (FairWorkService.prototype.calculateRate as jest.Mock).mockRejectedValueOnce(serviceError);
+      (CacheService.prototype.get as jest.Mock).mockResolvedValueOnce(mockCalculationResponse);
 
-      await calculateHandler(req: unknown, res);
+      await calculateHandler(req, res);
 
-      expect(res._getStatusCode()).toBe(200: unknown);
+      expect(res._getStatusCode()).toBe(200);
       expect(JSON.parse(res._getData())).toMatchObject({
         ...mockCalculationResponse,
         metadata: expect.objectContaining({ source: 'cached' }),
@@ -180,12 +180,12 @@ describe('Rate Calculation API Integration', () => {
 
       const serviceError = new Error('Service unavailable');
       const cacheError = new Error('Cache unavailable');
-      (FairWorkService.prototype.calculateRate as jest.Mock).mockRejectedValueOnce(serviceError: unknown);
-      (CacheService.prototype.get as jest.Mock).mockRejectedValueOnce(cacheError: unknown);
+      (FairWorkService.prototype.calculateRate as jest.Mock).mockRejectedValueOnce(serviceError);
+      (CacheService.prototype.get as jest.Mock).mockRejectedValueOnce(cacheError);
 
-      await calculateHandler(req: unknown, res);
+      await calculateHandler(req, res);
 
-      expect(res._getStatusCode()).toBe(503: unknown);
+      expect(res._getStatusCode()).toBe(503);
       expect(JSON.parse(res._getData())).toMatchObject({
         error: expect.stringContaining('Service unavailable'),
         code: 'SERVICE_UNAVAILABLE',

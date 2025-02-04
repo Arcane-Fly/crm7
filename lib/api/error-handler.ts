@@ -4,9 +4,9 @@ import { createApiResponse } from './response';
 import { logger } from '@/lib/logger';
 
 export function withErrorHandler<T>(
-  handler: (req: NextRequest, context: any) => Promise<NextResponse<T>>
-): (req: NextRequest, context: any) => Promise<NextResponse<T>> {
-  return async (req: NextRequest, context: any) => {
+  handler: (req: NextRequest, context: unknown) => Promise<NextResponse<T>>
+): Promise<void> {
+  return async (req: NextRequest, context: unknown) => {
     try {
       return await handler(req, context);
     } catch (error) {

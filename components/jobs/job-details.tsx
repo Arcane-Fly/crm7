@@ -69,7 +69,7 @@ export function JobDetails({
   job,
   onEdit,
   onClose,
-}: JobDetailsProps): ReactElement {
+}: JobDetailsProps): JSX.Element {
   const daysLeft = Math.ceil(
     (new Date(job.deadline).getTime() - new Date().getTime()) /
       (1000 * 60 * 60 * 24),

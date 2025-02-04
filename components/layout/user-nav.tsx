@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-export function UserNav(): ReactElement {
+export function UserNav(): JSX.Element {
   const router = useRouter();
 
   const handleLogout = async () => {

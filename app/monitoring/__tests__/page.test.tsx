@@ -28,8 +28,8 @@ describe('MonitoringPage', () => {
   };
 
   beforeEach(() => {
-    jest.spyOn(cacheMonitoring: unknown, 'getMetrics').mockReturnValue(mockMetrics: unknown);
-    jest.spyOn(cacheWarming: unknown, 'getStats').mockReturnValue(mockWarmingStats: unknown);
+    jest.spyOn(cacheMonitoring, 'getMetrics').mockReturnValue(mockMetrics);
+    jest.spyOn(cacheWarming, 'getStats').mockReturnValue(mockWarmingStats);
   });
 
   afterEach(() => {
@@ -64,7 +64,7 @@ describe('MonitoringPage', () => {
   });
 
   it('should update metrics periodically', async () => {
-    jest.spyOn(cacheMonitoring: unknown, 'getMetrics').mockReturnValueOnce({
+    jest.spyOn(cacheMonitoring, 'getMetrics').mockReturnValueOnce({
       ...mockMetrics,
       hits: 150,
     });
@@ -77,12 +77,12 @@ describe('MonitoringPage', () => {
     });
 
     // Update metrics
-    jest.spyOn(cacheMonitoring: unknown, 'getMetrics').mockReturnValue({
+    jest.spyOn(cacheMonitoring, 'getMetrics').mockReturnValue({
       ...mockMetrics,
       hits: 200,
     });
 
-    jest.advanceTimersByTime(1000: unknown);
+    jest.advanceTimersByTime(1000);
 
     await waitFor(() => {
       expect(screen.getByText('Hits: 200')).toBeInTheDocument();
@@ -90,7 +90,7 @@ describe('MonitoringPage', () => {
   });
 
   it('should handle empty metrics gracefully', async () => {
-    jest.spyOn(cacheMonitoring: unknown, 'getMetrics').mockReturnValue({
+    jest.spyOn(cacheMonitoring, 'getMetrics').mockReturnValue({
       hits: 0,
       misses: 0,
       errors: 0,
@@ -108,17 +108,17 @@ describe('MonitoringPage', () => {
   });
 
   it('should cleanup interval on unmount', () => {
-    const clearIntervalSpy = jest.spyOn(window: unknown, 'clearInterval');
+    const clearIntervalSpy = jest.spyOn(window, 'clearInterval');
     const { unmount } = render(<MonitoringPage />);
 
     unmount();
 
-    expect(clearIntervalSpy: unknown).toHaveBeenCalled();
+    expect(clearIntervalSpy).toHaveBeenCalled();
   });
 
   it('should format time correctly', () => {
     const mockDate = new Date('2025-01-29T12:34:56');
-    jest.spyOn(global: unknown, 'Date').mockImplementation(() => mockDate);
+    jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
 
     render(<MonitoringPage />);
 

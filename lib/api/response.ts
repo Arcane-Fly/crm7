@@ -22,7 +22,7 @@ export function createApiResponse<T>(
     response.data = data;
   }
   
-  if (error) {
+  if (typeof error !== "undefined" && error !== null) {
     response.error = error;
   }
 

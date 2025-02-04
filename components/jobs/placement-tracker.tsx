@@ -295,7 +295,7 @@ const columns: ColumnDef<Placement>[] = [
   },
 ];
 
-export function PlacementTracker(): React.ReactElement {
+export function PlacementTracker(): JSX.Element {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});

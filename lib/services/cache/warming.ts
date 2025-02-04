@@ -39,7 +39,7 @@ export class CacheWarming {
 
   getEntry(key: string): CacheEntry | undefined {
     const entry = this.entries.get(key);
-    if (entry) {
+    if (typeof entry !== "undefined" && entry !== null) {
       return entry;
     }
     return undefined;

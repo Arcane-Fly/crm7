@@ -27,7 +27,7 @@ export class CacheService {
     });
   }
 
-  async get<T>(key: string): Promise<T | null> {
+  async get<T>(key: string): Promise<void> {
     try {
       const value = await this.client.get(key);
       if (!value) return null;

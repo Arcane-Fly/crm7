@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 
-export function DocSearch(): React.ReactElement {
+export function DocSearch(): JSX.Element {
   const [open, setOpen] = useState<boolean>(false);
 
   return (

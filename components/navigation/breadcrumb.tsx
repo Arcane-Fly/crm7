@@ -4,7 +4,7 @@ interface BreadcrumbProps {
   pathname: string;
 }
 
-export function Breadcrumb({ pathname }: BreadcrumbProps): ReactElement {
+export function Breadcrumb({ pathname }: BreadcrumbProps): JSX.Element {
   const segments = pathname.split('/').filter(Boolean);
 
   return (

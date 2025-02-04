@@ -6,7 +6,7 @@ interface SidebarProps {
   pathname: string;
 }
 
-export function Sidebar({ sections, pathname }: SidebarProps): React.ReactElement {
+export function Sidebar({ sections, pathname }: SidebarProps): JSX.Element {
   const section = Object.keys(sections).find((key) => pathname?.startsWith(key) ?? false);
 
   return (

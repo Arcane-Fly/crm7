@@ -63,7 +63,7 @@ describe('FinancialDashboard', () => {
   });
 
   it('displays error state for transactions', () => {
-    vi.mocked(useBankIntegration as jest.Mock).mockReturnValueOnce({
+    (vi.mocked(useBankIntegration) as jest.Mock).mockReturnValueOnce({
       transactions: {
         data: undefined,
         error: { message: 'Failed to load transactions' } as PostgrestError,
@@ -84,7 +84,7 @@ describe('FinancialDashboard', () => {
   });
 
   it('displays loading state', () => {
-    vi.mocked(useBankIntegration: unknown).mockReturnValueOnce({
+    (vi.mocked(useBankIntegration) as jest.Mock).mockReturnValueOnce({
       transactions: {
         data: undefined,
         error: null,

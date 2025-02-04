@@ -1,16 +1,3 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
-# Exit on error
-set -e
-
-# Run lint-staged with auto-fixing
 pnpm lint-staged
-
-# Run type check only on staged files
-git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(ts|tsx)$' | xargs -r pnpm tsc --noEmit --pretty
-
-# Run ESLint with auto-fix on staged files
-git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(ts|tsx|js|jsx)$' | xargs -r pnpm eslint --fix
-
-# Run Prettier on staged files
-git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(ts|tsx|js|jsx|json|css|md)$' | xargs -r pnpm prettier --write

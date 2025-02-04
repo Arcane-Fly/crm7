@@ -18,13 +18,13 @@ export class FairWorkService extends BaseService {
     });
   }
 
-  async getTemplates(): Promise<FairWorkTemplate[]> {
+  async getTemplates(): Promise<void> {
     return this.executeServiceMethod('getTemplates', async () => {
       const { data, error } = await this.supabase
         .from('fairwork_templates')
         .select();
 
-      if (error) {
+      if (typeof error !== "undefined" && error !== null) {
         throw error;
       }
 
@@ -32,7 +32,7 @@ export class FairWorkService extends BaseService {
     });
   }
 
-  async getTemplate(id: string): Promise<FairWorkTemplate | null> {
+  async getTemplate(id: string): Promise<void> {
     return this.executeServiceMethod('getTemplate', async () => {
       const { data, error } = await this.supabase
         .from('fairwork_templates')
@@ -40,7 +40,7 @@ export class FairWorkService extends BaseService {
         .eq('id', id)
         .single();
 
-      if (error) {
+      if (typeof error !== "undefined" && error !== null) {
         throw error;
       }
 
@@ -48,7 +48,7 @@ export class FairWorkService extends BaseService {
     });
   }
 
-  async createTemplate(template: Omit<FairWorkTemplate, 'id'>): Promise<FairWorkTemplate> {
+  async createTemplate(template: Omit<FairWorkTemplate, 'id'>): Promise<void> {
     return this.executeServiceMethod('createTemplate', async () => {
       const { data, error } = await this.supabase
         .from('fairwork_templates')
@@ -56,7 +56,7 @@ export class FairWorkService extends BaseService {
         .select()
         .single();
 
-      if (error) {
+      if (typeof error !== "undefined" && error !== null) {
         throw error;
       }
 
@@ -64,7 +64,7 @@ export class FairWorkService extends BaseService {
     });
   }
 
-  async updateTemplate(id: string, updates: Partial<FairWorkTemplate>): Promise<FairWorkTemplate> {
+  async updateTemplate(id: string, updates: Partial<FairWorkTemplate>): Promise<void> {
     return this.executeServiceMethod('updateTemplate', async () => {
       const { data, error } = await this.supabase
         .from('fairwork_templates')
@@ -73,7 +73,7 @@ export class FairWorkService extends BaseService {
         .select()
         .single();
 
-      if (error) {
+      if (typeof error !== "undefined" && error !== null) {
         throw error;
       }
 
@@ -85,7 +85,7 @@ export class FairWorkService extends BaseService {
     template_id?: string;
     start_date?: string;
     end_date?: string;
-  }): Promise<FairWorkTemplate[]> {
+  }): Promise<void> {
     return this.executeServiceMethod('getRates', async () => {
       let query = this.supabase.from('fairwork_templates').select();
 
@@ -103,7 +103,7 @@ export class FairWorkService extends BaseService {
 
       const { data, error } = await query;
 
-      if (error) {
+      if (typeof error !== "undefined" && error !== null) {
         throw error;
       }
 

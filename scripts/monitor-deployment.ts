@@ -76,7 +76,7 @@ async function monitorDeployment(jobId: string, options: DeploymentOptions) {
   const maxAttempts = Math.floor(timeout / interval);
   let attempt = 0;
 
-  if (token) {
+  if (typeof token !== "undefined" && token !== null) {
     try {
       EnvSchema.parse({ VERCEL_TOKEN: token });
     } catch (error) {
@@ -116,9 +116,21 @@ async function monitorDeployment(jobId: string, options: DeploymentOptions) {
             code: deployment.error?.code,
           });
           process.exit(1);
+        case 'PENDING':
+          await handlePendingDeployment(deployment);
+          break;
+        case 'IN_PROGRESS':
+          await handleInProgressDeployment(deployment);
+          break;
+        case 'COMPLETED':
+          await handleCompletedDeployment(deployment);
+          break;
+        case 'FAILED':
+          await handleFailedDeployment(deployment);
+          break;
         default:
-          spinner.text = `Deployment status: ${deployment.state}`;
-          logger.info('Deployment status', { status: deployment.state });
+          logger.warn(`Unknown deployment status: ${deployment.state}`);
+          break;
       }
     } catch (error) {
       spinner.fail('Failed to check deployment status');

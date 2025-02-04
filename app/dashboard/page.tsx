@@ -39,7 +39,7 @@ const mockAlerts: DashboardAlert[] = [
   },
 ];
 
-export default function DashboardPage(): ReactElement {
+export default function DashboardPage(): JSX.Element {
   return (
     <div className="space-y-6 p-6">
       <DashboardStats

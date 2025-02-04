@@ -37,7 +37,7 @@ export class CacheService {
     return this.keyPrefix ? `${this.keyPrefix}:${key}` : key;
   }
 
-  async get<T>(key: string): Promise<T | null> {
+  async get<T>(key: string): Promise<void> {
     const startTime = Date.now();
     try {
       const data = await this.client.get(this.getKey(key));
@@ -105,7 +105,7 @@ export class CacheService {
     key: string,
     getter: () => Promise<T>,
     ttl?: number
-  ): Promise<T> {
+  ): Promise<void> {
     try {
       const cached = await this.get<T>(key);
       if (cached !== null) {

@@ -11,7 +11,7 @@ interface UseAsyncOptions<T> {
 export function useAsync<T>(
   asyncFunction: () => Promise<T>,
   options: UseAsyncOptions<T> = {}
-) {
+): Promise<void> {
   const { toast } = useToast();
   const { onSuccess, onError, toastOnError = true, autoExecute = false } = options;
 
@@ -25,7 +25,7 @@ export function useAsync<T>(
 
       onError?.(errorObj);
 
-      if (toastOnError) {
+      if (typeof toastOnError !== "undefined" && toastOnError !== null) {
         toast({
           title: 'Error',
           description: errorObj.message,
@@ -38,7 +38,7 @@ export function useAsync<T>(
   }, [asyncFunction, onSuccess, onError, toastOnError, toast]);
 
   useEffect(() => {
-    if (autoExecute) {
+    if (typeof autoExecute !== "undefined" && autoExecute !== null) {
       void execute();
     }
   }, [autoExecute, execute]);

@@ -8,7 +8,7 @@ interface RateCalculatorProps {
   onCalculate?: (totalAmount: number) => void;
 }
 
-export function RateCalculator({ orgId, onCalculate }: RateCalculatorProps): React.ReactElement {
+export function RateCalculator({ orgId, onCalculate }: RateCalculatorProps): JSX.Element {
   const { supabase } = useSupabase();
   const { toast } = useToast();
   const [loading, setLoading] = useState<boolean>(true);
@@ -16,7 +16,7 @@ export function RateCalculator({ orgId, onCalculate }: RateCalculatorProps): Rea
   const [result, setResult] = useState<CalculationResult | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
 
-  const calculateRate = (template: any): void => {
+  const calculateRate = (template: unknown): void => {
     const baseAmount = template.baseRate;
     const superAmount = baseAmount * (template.superRate / 100);
     const leaveAmount = baseAmount * (template.leaveLoading / 100);
@@ -56,7 +56,7 @@ export function RateCalculator({ orgId, onCalculate }: RateCalculatorProps): Rea
     setSelectedTemplate(value);
 
     const template = templates?.find((t) => t.id === value);
-    if (template) {
+    if (typeof template !== "undefined" && template !== null) {
       calculateRate(template);
     }
   };
@@ -70,7 +70,7 @@ export function RateCalculator({ orgId, onCalculate }: RateCalculatorProps): Rea
           .eq('org_id', orgId)
           .eq('status', 'active');
 
-        if (error) throw error;
+        if (typeof error !== "undefined" && error !== null) throw error;
 
         setTemplates(data);
       } catch (err) {
@@ -89,8 +89,8 @@ export function RateCalculator({ orgId, onCalculate }: RateCalculatorProps): Rea
     void fetchTemplates();
   }, [orgId, supabase, toast]);
 
-  if (loading) return <div>Loading templates...</div>;
-  if (error) return <div className="text-red-500">{error}</div>;
+  if (typeof loading !== "undefined" && loading !== null) return <div>Loading templates...</div>;
+  if (typeof error !== "undefined" && error !== null) return <div className="text-red-500">{error}</div>;
 
   return (
     <div className="space-y-6">

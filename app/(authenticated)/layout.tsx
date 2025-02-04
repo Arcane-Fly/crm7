@@ -20,7 +20,7 @@ interface AuthenticatedLayoutProps {
  */
 export default async function AuthenticatedLayout({
   children,
-}: AuthenticatedLayoutProps): Promise<ReactElement> {
+}: AuthenticatedLayoutProps): JSX.Element {
   const session = await getServerSession();
 
   if (!session) {

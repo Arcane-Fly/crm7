@@ -6,7 +6,7 @@ interface RateDashboardProps {
   orgId: string;
 }
 
-export function RateDashboard({ orgId }: RateDashboardProps): React.ReactElement {
+export function RateDashboard({ orgId }: RateDashboardProps): JSX.Element {
   const [error, setError] = useState<DashboardError | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -31,7 +31,7 @@ export function RateDashboard({ orgId }: RateDashboardProps): React.ReactElement
     }
   };
 
-  if (loading) {
+  if (typeof loading !== "undefined" && loading !== null) {
     return <div>Loading...</div>;
   }
 

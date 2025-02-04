@@ -14,7 +14,7 @@ interface EnrichmentResult {
   name: string;
 }
 
-export function EnrichmentClient(): ReactElement {
+export function EnrichmentClient(): JSX.Element {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');

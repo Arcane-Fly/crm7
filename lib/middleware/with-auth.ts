@@ -40,7 +40,7 @@ export async function withAuth<T>(
     req: AuthenticatedRequest,
     context: { params: Record<string, string> },
   ) => Promise<NextResponse<ApiResponse<T>>>,
-): Promise<NextResponse<ApiResponse<T>>> {
+): Promise<void> {
   try {
     const session = await getSession();
 

@@ -24,16 +24,16 @@ export function useUser(): UseUserReturn {
           error: authError,
         } = await supabase.auth.getUser();
 
-        if (authError) throw authError;
+        if (typeof authError !== "undefined" && authError !== null) throw authError;
 
-        if (authUser) {
+        if (typeof authUser !== "undefined" && authUser !== null) {
           const { data: userData, error: userError } = await supabase
             .from('users')
             .select('*')
             .eq('id', authUser.id)
             .single();
 
-          if (userError) throw userError;
+          if (typeof userError !== "undefined" && userError !== null) throw userError;
 
           setUser(userData);
         }

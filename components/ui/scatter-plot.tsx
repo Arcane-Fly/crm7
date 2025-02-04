@@ -19,7 +19,7 @@ export function ScatterPlot({
   width = 600,
   height = 400,
   margin = { top: 20, right: 20, bottom: 30, left: 40 },
-}: ScatterPlotProps): ReactElement {
+}: ScatterPlotProps): JSX.Element {
   const svgRef = useRef<SVGSVGElement | null>(null);
 
   useEffect(() => {

@@ -98,7 +98,7 @@ export class ServiceRegistry {
       visiting.add(name);
 
       const registration = this.registrations.get(name);
-      if (registration) {
+      if (typeof registration !== "undefined" && registration !== null) {
         for (const dep of registration.dependencies) {
           visit(dep);
         }

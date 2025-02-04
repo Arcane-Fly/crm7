@@ -26,7 +26,7 @@ export function useRealtimeNotifications(userId: string): UseRealtimeNotificatio
           .order('created_at', { ascending: false })
           .limit(50);
 
-        if (error) throw error;
+        if (typeof error !== "undefined" && error !== null) throw error;
 
         setNotifications(data);
         const unread = data.filter((n) => !n.read_at).length;
@@ -70,7 +70,7 @@ export function useRealtimeNotifications(userId: string): UseRealtimeNotificatio
         .eq('user_id', userId)
         .is('read_at', null);
 
-      if (error) throw error;
+      if (typeof error !== "undefined" && error !== null) throw error;
 
       setUnreadCount(0);
       setNotifications((prev) =>

@@ -32,7 +32,7 @@ interface BreadcrumbEllipsisProps {
   items: Array<{ href: string; label: string }>;
 }
 
-function BreadcrumbEllipsis({ items }: BreadcrumbEllipsisProps): ReactElement {
+function BreadcrumbEllipsis({ items }: BreadcrumbEllipsisProps): JSX.Element {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -65,7 +65,7 @@ export function BreadcrumbItem({
   children,
   isLast,
   className,
-}: BreadcrumbItemProps): ReactElement {
+}: BreadcrumbItemProps): JSX.Element {
   const Component = href && !isLast ? Link : 'span';
 
   return (
@@ -89,7 +89,7 @@ export function Breadcrumb({
   separator = <ChevronRight className="h-4 w-4 text-muted-foreground/40" />,
   isCollapsed = true,
   maxItems = 3,
-}: BreadcrumbProps): ReactElement {
+}: BreadcrumbProps): JSX.Element {
   const childrenArray = React.Children.toArray(children);
   const totalItems = childrenArray.length;
 
@@ -115,7 +115,7 @@ export function Breadcrumb({
   // Calculate items to show when collapsed
   const firstItem = childrenArray[0];
   const lastItems = childrenArray.slice(-2);
-  const middleItems = childrenArray.slice(1, -2).map((child: any) => ({
+  const middleItems = childrenArray.slice(1, -2).map((child: unknown) => ({
     href: child.props.href,
     label: child.props.children,
   }));

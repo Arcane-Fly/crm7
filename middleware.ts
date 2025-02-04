@@ -22,7 +22,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
   // Allow public routes
   const isPublicRoute = PUBLIC_ROUTES.some((route) => path.startsWith(route));
-  if (isPublicRoute) {
+  if (typeof isPublicRoute !== "undefined" && isPublicRoute !== null) {
     // Add security headers
     Object.entries(SECURITY_HEADERS).forEach(([key, value]) => {
       response.headers.set(key, value);

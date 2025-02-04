@@ -49,26 +49,26 @@ describe('CacheService', () => {
       const key = 'test-key';
       const value = { foo: 'bar' };
 
-      await cache.set(key: unknown, value);
-      const result = await cache.get<typeof value>(key: unknown);
+      await cache.set(key, value);
+      const result = await cache.get<typeof value>(key);
 
-      expect(result: unknown).toEqual(value: unknown);
+      expect(result).toEqual(value);
     });
 
     it('should return null for non-existent key', async () => {
       const result = await cache.get('non-existent');
-      expect(result: unknown).toBeNull();
+      expect(result).toBeNull();
     });
 
     it('should delete a value', async () => {
       const key = 'test-key';
       const value = { foo: 'bar' };
 
-      await cache.set(key: unknown, value);
-      await cache.delete(key: unknown);
+      await cache.set(key, value);
+      await cache.delete(key);
 
-      const result = await cache.get(key: unknown);
-      expect(result: unknown).toBeNull();
+      const result = await cache.get(key);
+      expect(result).toBeNull();
     });
 
     it('should clear all values with matching prefix', async () => {
@@ -80,8 +80,8 @@ describe('CacheService', () => {
       const result1 = await cache.get('test1');
       const result2 = await cache.get('test2');
 
-      expect(result1: unknown).toBeNull();
-      expect(result2: unknown).toBeNull();
+      expect(result1).toBeNull();
+      expect(result2).toBeNull();
     });
   });
 
@@ -91,29 +91,29 @@ describe('CacheService', () => {
       const value = { foo: 'bar' };
       const ttl = 1; // 1 second
 
-      await cache.set(key: unknown, value, ttl);
+      await cache.set(key, value, ttl);
 
       // Value should exist initially
-      let result = await cache.get<typeof value>(key: unknown);
-      expect(result: unknown).toEqual(value: unknown);
+      let result = await cache.get<typeof value>(key);
+      expect(result).toEqual(value);
 
       // Wait for TTL to expire
-      await new Promise((resolve: unknown) => setTimeout(resolve: unknown, 1100));
+      await new Promise(resolve => setTimeout(resolve, 1100));
 
       // Value should be gone after TTL
-      result = await cache.get(key: unknown);
-      expect(result: unknown).toBeNull();
+      result = await cache.get(key);
+      expect(result).toBeNull();
     });
 
     it('should use default TTL when not specified', async () => {
       const key = 'default-ttl-test';
       const value = { foo: 'bar' };
 
-      await cache.set(key: unknown, value);
+      await cache.set(key, value);
       const ttl = await redis.ttl(`test:${key}`);
 
-      expect(ttl: unknown).toBeLessThanOrEqual(3600: unknown);
-      expect(ttl: unknown).toBeGreaterThan(0: unknown);
+      expect(ttl).toBeLessThanOrEqual(3600);
+      expect(ttl).toBeGreaterThan(0);
     });
   });
 
@@ -122,7 +122,7 @@ describe('CacheService', () => {
       // Manually set invalid JSON
       await redis.set('test:invalid-json', 'invalid{json');
 
-      await expect(cache.get('invalid-json')).rejects.toThrow(CacheError: unknown);
+      await expect(cache.get('invalid-json')).rejects.toThrow(CacheError);
       expect(logger.error).toHaveBeenCalled();
     });
 
@@ -133,7 +133,7 @@ describe('CacheService', () => {
       // We need to access the private redis property for testing
       (cache as any).redis = mockRedis;
 
-      await expect(cache.get('test-key')).rejects.toThrow(CacheError: unknown);
+      await expect(cache.get('test-key')).rejects.toThrow(CacheError);
       expect(logger.error).toHaveBeenCalled();
     });
   });
@@ -144,26 +144,26 @@ describe('CacheService', () => {
       const value = { foo: 'bar' };
       const factory = jest.fn().mockResolvedValue({ foo: 'baz' });
 
-      await cache.set(key: unknown, value);
-      const result = await cache.getOrSet(key: unknown, factory);
+      await cache.set(key, value);
+      const result = await cache.getOrSet(key, factory);
 
-      expect(result: unknown).toEqual(value: unknown);
-      expect(factory: unknown).not.toHaveBeenCalled();
+      expect(result).toEqual(value);
+      expect(factory).not.toHaveBeenCalled();
     });
 
     it('should call factory and cache result if no cached value', async () => {
       const key = 'new-key';
       const value = { foo: 'bar' };
-      const factory = jest.fn().mockResolvedValue(value: unknown);
+      const factory = jest.fn().mockResolvedValue(value);
 
-      const result = await cache.getOrSet(key: unknown, factory);
+      const result = await cache.getOrSet(key, factory);
 
-      expect(result: unknown).toEqual(value: unknown);
-      expect(factory: unknown).toHaveBeenCalled();
+      expect(result).toEqual(value);
+      expect(factory).toHaveBeenCalled();
 
       // Verify value was cached
-      const cachedResult = await cache.get<typeof value>(key: unknown);
-      expect(cachedResult: unknown).toEqual(value: unknown);
+      const cachedResult = await cache.get<typeof value>(key);
+      expect(cachedResult).toEqual(value);
     });
 
     it('should retry on failure', async () => {
@@ -172,20 +172,20 @@ describe('CacheService', () => {
       const factory = jest
         .fn()
         .mockRejectedValueOnce(new Error('First attempt failed'))
-        .mockResolvedValueOnce(value: unknown);
+        .mockResolvedValueOnce(value);
 
-      const result = await cache.getOrSet(key: unknown, factory);
+      const result = await cache.getOrSet(key, factory);
 
-      expect(result: unknown).toEqual(value: unknown);
-      expect(factory: unknown).toHaveBeenCalledTimes(2: unknown);
+      expect(result).toEqual(value);
+      expect(factory).toHaveBeenCalledTimes(2);
     });
 
     it('should throw after max retries', async () => {
       const key = 'max-retries-key';
       const factory = jest.fn().mockRejectedValue(new Error('Always fails'));
 
-      await expect(cache.getOrSet(key: unknown, factory)).rejects.toThrow(CacheError: unknown);
-      expect(factory: unknown).toHaveBeenCalledTimes(4: unknown); // Initial attempt + 3 retries
+      await expect(cache.getOrSet(key, factory)).rejects.toThrow(CacheError);
+      expect(factory).toHaveBeenCalledTimes(4); // Initial attempt + 3 retries
     });
   });
 
@@ -201,9 +201,9 @@ describe('CacheService', () => {
       const result2 = await cache.get('test:2');
       const result3 = await cache.get('other:3');
 
-      expect(result1: unknown).toBeNull();
-      expect(result2: unknown).toBeNull();
-      expect(result3: unknown).not.toBeNull();
+      expect(result1).toBeNull();
+      expect(result2).toBeNull();
+      expect(result3).not.toBeNull();
     });
   });
 });

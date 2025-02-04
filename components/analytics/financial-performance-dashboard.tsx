@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { type Performance, type PerformanceStats } from '@/lib/types';
 
-export function FinancialPerformanceDashboard(): React.ReactElement {
+export function FinancialPerformanceDashboard(): JSX.Element {
   const [performances, setPerformances] = useState<Performance[]>([]);
   const [stats, setStats] = useState<PerformanceStats>({
     averageRating: 0,
@@ -13,9 +13,9 @@ export function FinancialPerformanceDashboard(): React.ReactElement {
       try {
         const { data, error } = await supabase.from('financial_performances').select('*');
         
-        if (error) throw error;
+        if (typeof error !== "undefined" && error !== null) throw error;
         
-        if (data) {
+        if (typeof data !== "undefined" && data !== null) {
           setPerformances(data);
           calculateStats(data);
         }

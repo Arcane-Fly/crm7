@@ -1,6 +1,7 @@
+/* global console */
 import sharp from 'sharp';
-import fs from 'fs';
 import path from 'path';
+import fs from 'fs';
 
 const sizes = [
   { width: 32, height: 32, name: 'icon-32.png' },

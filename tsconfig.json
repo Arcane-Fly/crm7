@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    "target": "es2022",
+    "target": "es5",
     "lib": [
       "dom",
       "dom.iterable",
@@ -70,15 +70,15 @@
     "lib/**/*.ts",
     "lib/**/*.tsx",
     "types/**/*.ts",
-    "types/**/*.d.ts"
+    "types/**/*.d.ts",
+    "**/__tests__/**/*.ts",
+    "**/__tests__/**/*.tsx"
   ],
   "exclude": [
     "node_modules",
     ".next",
     "out",
     "coverage",
-    "**/*.test.ts",
-    "**/*.test.tsx",
     "**/*.spec.ts",
     "**/*.spec.tsx"
   ]

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { type NavItem } from '@/lib/types';
 
-export function AppSidebar(): React.ReactElement {
+export function AppSidebar(): JSX.Element {
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
 
@@ -15,7 +15,7 @@ export function AppSidebar(): React.ReactElement {
   }, []);
 
   const getWidth = (): string => {
-    if (isCollapsed) return '0';
+    if (typeof isCollapsed !== "undefined" && isCollapsed !== null) return '0';
     return isMobile ? '100%' : '280px';
   };
 

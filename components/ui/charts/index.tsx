@@ -10,7 +10,7 @@ export function ChartContainer({
   children, 
   width = 600, 
   height = 400 
-}: ChartContainerProps): ReactElement {
+}: ChartContainerProps): JSX.Element {
   return (
     <div style={{ width, height }} className="relative">
       {children}

@@ -5,7 +5,7 @@ interface CourseListProps {
   onUpdate: () => void;
 }
 
-export function CourseList({ courses, onUpdate }: CourseListProps): React.ReactElement {
+export function CourseList({ courses, onUpdate }: CourseListProps): JSX.Element {
   const handleDeactivate = async (courseId: string): Promise<void> => {
     try {
       await updateCourse(courseId, { status: 'inactive' });

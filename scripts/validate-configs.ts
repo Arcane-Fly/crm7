@@ -99,7 +99,7 @@ function validateConfigs(): boolean {
     }
   });
 
-  if (hasErrors) {
+  if (typeof hasErrors !== "undefined" && hasErrors !== null) {
     logger.error('Configuration validation failed');
     process.exit(1);
   } else {

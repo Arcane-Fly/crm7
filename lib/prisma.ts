@@ -3,14 +3,14 @@ import { PrismaClient } from '@prisma/client';
 import { logger } from '@/lib/utils/logger';
 
 declare global {
-  // eslint-disable-next-line no-var
+   
   var prisma: PrismaClient | undefined;
 }
 
 class PrismaClientSingleton {
   private static instance: PrismaClient | undefined;
 
-  public static getInstance(): PrismaClient {
+  public static getInstance(): void {
     if (!PrismaClientSingleton.instance) {
       PrismaClientSingleton.instance = new PrismaClient({
         log: [
@@ -55,7 +55,7 @@ class PrismaClientSingleton {
 
 // For development hot reloading
 declare global {
-  // eslint-disable-next-line no-var
+   
   var prisma: PrismaClient | undefined;
 }
 

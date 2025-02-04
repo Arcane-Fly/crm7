@@ -33,7 +33,7 @@ export function useRealtimeData<T>(
 
         const { data: initialData, error: queryError } = await query;
 
-        if (queryError) {
+        if (typeof queryError !== "undefined" && queryError !== null) {
           throw queryError;
         }
 

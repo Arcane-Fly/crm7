@@ -25,7 +25,7 @@ const notificationEmailSchema = z.object({
   actionText: z.string().min(1),
 });
 
-export async function POST(request: NextRequest): Promise<NextResponse> {
+export async function POST(request: NextRequest): Promise<void> {
   const resendApiKey = process.env['RESEND_API_KEY'];
   if (!resendApiKey) {
     return NextResponse.json({ error: 'Resend API key not configured' }, { status: 500 });

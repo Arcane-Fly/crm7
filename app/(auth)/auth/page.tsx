@@ -8,7 +8,7 @@ import type { Session, AuthChangeEvent } from '@supabase/supabase-js';
 import { useToast } from '@/components/ui/use-toast';
 import { createClient } from '@/lib/supabase/client';
 
-export default function AuthPage(): React.ReactElement {
+export default function AuthPage(): JSX.Element {
   const router = useRouter();
   const { toast } = useToast();
   const supabase = createClient();
@@ -20,7 +20,7 @@ export default function AuthPage(): React.ReactElement {
       const {
         data: { session: currentSession },
       } = await supabase.auth.getSession();
-      if (currentSession) {
+      if (typeof currentSession !== "undefined" && currentSession !== null) {
         router.push('/');
       }
     };
@@ -37,7 +37,7 @@ export default function AuthPage(): React.ReactElement {
         }
         if (event === 'USER_UPDATED') {
           const { error } = await supabase.auth.getSession();
-          if (error) {
+          if (typeof error !== "undefined" && error !== null) {
             toast({
               variant: 'destructive',
               title: 'Authentication Error',
@@ -61,7 +61,7 @@ export default function AuthPage(): React.ReactElement {
     try {
       let error;
 
-      if (isSignUp) {
+      if (typeof isSignUp !== "undefined" && isSignUp !== null) {
         const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
@@ -85,7 +85,7 @@ export default function AuthPage(): React.ReactElement {
         error = signInError;
       }
 
-      if (error) {
+      if (typeof error !== "undefined" && error !== null) {
         toast({
           variant: 'destructive',
           title: 'Authentication Error',

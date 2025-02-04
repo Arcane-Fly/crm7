@@ -13,7 +13,7 @@ interface CommandProps {
   className?: string;
 }
 
-function Command({ children, className }: CommandProps): ReactElement {
+function Command({ children, className }: CommandProps): JSX.Element {
   if (!children) {
     return <div className={cn('hidden', className)} />;
   }
@@ -35,7 +35,7 @@ interface CommandDialogProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-function CommandDialog({ children, ...props }: CommandDialogProps): ReactElement {
+function CommandDialog({ children, ...props }: CommandDialogProps): JSX.Element {
   return (
     <Dialog {...props}>
       <DialogContent className='overflow-hidden p-0 shadow-lg'>
@@ -78,7 +78,7 @@ interface CommandListProps {
   children?: ReactNode;
 }
 
-function CommandList({ children }: CommandListProps): ReactElement {
+function CommandList({ children }: CommandListProps): JSX.Element {
   return (
     <CommandPrimitive.List className={cn('max-h-[300px] overflow-y-auto overflow-x-hidden')}>
       {children}
@@ -168,7 +168,7 @@ interface CommandShortcutProps {
   className?: string;
 }
 
-function CommandShortcut({ className, ...props }: CommandShortcutProps): ReactElement {
+function CommandShortcut({ className, ...props }: CommandShortcutProps): JSX.Element {
   return (
     <span
       className={cn('ml-auto text-xs tracking-widest text-muted-foreground', className)}

@@ -5,7 +5,7 @@ interface SafeListProps<T> {
   renderItem: (item: T) => React.ReactNode;
 }
 
-export function SafeList<T>({ items, renderItem }: SafeListProps<T>): React.ReactElement {
+export function SafeList<T>({ items, renderItem }: SafeListProps<T>): JSX.Element {
   const mappedItems = safeMap(items, renderItem);
   return <>{mappedItems}</>;
 }

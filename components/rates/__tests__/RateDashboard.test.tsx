@@ -1,7 +1,7 @@
 import type { UseQueryResult } from '@tanstack/react-query';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { vi } from 'vitest';
 import '@testing-library/jest-dom';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { vi } from 'vitest';
 
 import { useRates } from '@/lib/hooks/use-rates';
 import type { RateTemplate } from '@/lib/types/rates';
@@ -115,21 +115,21 @@ const createMockQueryResult = (
 
 describe('RateDashboard', () => {
   it('renders without crashing', async () => {
-    vi.mocked(useRates: unknown).mockReturnValueOnce(createMockQueryResult());
+    (vi.mocked(useRates) as jest.Mock).mockReturnValueOnce(createMockQueryResult());
 
     render(<RateDashboard orgId='test-org' />);
 
     const rateManagementElement = screen.getByText('Rate Management');
-    expect(rateManagementElement: unknown).toBeInTheDocument();
+    expect(rateManagementElement).toBeInTheDocument();
   });
 
   it('displays rates data', async () => {
-    vi.mocked(useRates: unknown).mockReturnValueOnce(createMockQueryResult());
+    (vi.mocked(useRates) as jest.Mock).mockReturnValueOnce(createMockQueryResult());
 
     render(<RateDashboard orgId='test-org' />);
 
     const rateElement = screen.getByText('$25.00');
-    expect(rateElement: unknown).toBeInTheDocument();
+    expect(rateElement).toBeInTheDocument();
   });
 
   it('shows loading state', async () => {
@@ -145,7 +145,7 @@ describe('RateDashboard', () => {
       isRefetchError: false,
     };
 
-    vi.mocked(useRates: unknown).mockReturnValueOnce(
+    (vi.mocked(useRates) as jest.Mock).mockReturnValueOnce(
       createMockQueryResult({
         ...loadingOverrides,
         fetchStatus: 'fetching',
@@ -160,7 +160,7 @@ describe('RateDashboard', () => {
     render(<RateDashboard orgId='test-org' />);
 
     const loadingElement = screen.queryByText('Loading...');
-    expect(loadingElement: unknown).not.toBeInTheDocument();
+    expect(loadingElement).not.toBeInTheDocument();
   });
 
   it('shows error state', async () => {
@@ -177,28 +177,28 @@ describe('RateDashboard', () => {
       isRefetchError: false,
     };
 
-    vi.mocked(useRates: unknown).mockReturnValueOnce(
+    (vi.mocked(useRates) as jest.Mock).mockReturnValueOnce(
       createMockQueryResult({
         ...errorOverrides,
         errorUpdatedAt: Date.now(),
         failureCount: 1,
         errorUpdateCount: 1,
-        promise: Promise.reject(error: unknown),
+        promise: Promise.reject(error),
       }),
     );
 
     render(<RateDashboard orgId='test-org' />);
 
     const errorElement = screen.queryByText('Error: Failed to load rates');
-    expect(errorElement: unknown).toBeInTheDocument();
+    expect(errorElement).toBeInTheDocument();
   });
 
   it('filters rates by date range', async () => {
-    vi.mocked(useRates: unknown).mockReturnValueOnce(createMockQueryResult());
+    (vi.mocked(useRates) as jest.Mock).mockReturnValueOnce(createMockQueryResult());
 
     render(<RateDashboard orgId='test-org' />);
     const dateRangeButton = screen.getByRole('button', { name: /Select Date Range/i });
-    fireEvent.click(dateRangeButton: unknown);
+    fireEvent.click(dateRangeButton);
     // Add more specific date range selection tests based on your date picker implementation
   });
 });

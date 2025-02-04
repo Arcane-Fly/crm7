@@ -10,7 +10,7 @@ const fairWorkLogger = logger.createLogger('FairWorkAPI');
  * GET /api/fairwork
  * List all awards
  */
-export async function GET(_request: NextRequest): Promise<NextResponse> {
+export async function GET(_request: NextRequest): Promise<void> {
   const serviceRegistry = ServiceRegistry.getInstance();
   const fairworkService = serviceRegistry.getService<FairWorkService>('fairworkService');
 

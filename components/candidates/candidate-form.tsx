@@ -85,7 +85,7 @@ interface CandidateFormProps {
 export function CandidateForm({
   initialData,
   onSubmit,
-}: CandidateFormProps): ReactElement {
+}: CandidateFormProps): JSX.Element {
   const form = useForm<CandidateFormValues>({
     resolver: zodResolver(candidateFormSchema),
     defaultValues: initialData || {

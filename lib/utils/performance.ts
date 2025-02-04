@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 
-export function debounce<T extends (...args: any[]) => void>(
+export function debounce<T extends (...args: unknown[]) => void>(
   func: T,
   wait: number,
 ): (...args: Parameters<T>) => void {
@@ -17,7 +17,7 @@ export function debounce<T extends (...args: any[]) => void>(
   };
 }
 
-export function throttle<T extends (...args: any[]) => void>(
+export function throttle<T extends (...args: unknown[]) => void>(
   func: T,
   limit: number,
 ): (...args: Parameters<T>) => void {
@@ -69,7 +69,7 @@ export function useRenderOptimization<T extends Record<string, unknown>>(
   });
 }
 
-export function useVisibilityOptimization(callback = () => {}): void {
+export function useVisibilityOptimization(callback = (): void => {}): void {
   const isVisible = useRef(true);
 
   const handleVisibilityChange = useCallback(() => {
@@ -90,7 +90,7 @@ export function useVisibilityOptimization(callback = () => {}): void {
 export async function measureApiCall<T>(
   apiCall: () => Promise<T>,
   name: string,
-): Promise<T> {
+): Promise<void> {
   const start = performance.now();
   try {
     const result = await apiCall();

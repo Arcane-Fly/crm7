@@ -40,7 +40,7 @@ export function generateId(): string {
   return Math.random().toString(36).substr(2, 9);
 }
 
-export function debounce<T extends (...args: any[]) => void>(
+export function debounce<T extends (...args: unknown[]) => void>(
   func: T,
   wait: number,
 ): (...args: Parameters<T>) => void {

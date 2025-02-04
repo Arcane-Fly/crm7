@@ -8,7 +8,7 @@ interface PerformanceProviderProps {
   children: ReactNode;
 }
 
-export function PerformanceProvider({ children }: PerformanceProviderProps): React.ReactElement {
+export function PerformanceProvider({ children }: PerformanceProviderProps): JSX.Element {
   const [state, dispatch] = useReducer(performanceReducer, initialState);
 
   return (

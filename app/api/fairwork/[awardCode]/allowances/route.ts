@@ -9,7 +9,7 @@ const fairworkClient = new FairWorkClient(defaultConfig);
 export async function GET(
   req: NextRequest,
   context: { params: { awardCode: string } }
-): Promise<Response> {
+): Promise<void> {
   try {
     const { searchParams } = new URL(req.url);
     const params = DateParamsSchema.parse(Object.fromEntries(searchParams));

@@ -10,7 +10,7 @@ interface RateAnalyticsProps {
   orgId: string;
 }
 
-export function RateAnalytics({ orgId }: RateAnalyticsProps): React.ReactElement {
+export function RateAnalytics({ orgId }: RateAnalyticsProps): JSX.Element {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [analytics, setAnalytics] = useState<RateAnalytics | null>(null);
@@ -33,11 +33,11 @@ export function RateAnalytics({ orgId }: RateAnalyticsProps): React.ReactElement
     void loadAnalytics();
   }, [orgId]);
 
-  if (loading) {
+  if (typeof loading !== "undefined" && loading !== null) {
     return <div>Loading analytics...</div>;
   }
 
-  if (error) {
+  if (typeof error !== "undefined" && error !== null) {
     return <Alert variant="destructive">{error}</Alert>;
   }
 

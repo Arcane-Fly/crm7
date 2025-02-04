@@ -57,7 +57,7 @@ export class Logger {
     return LOG_LEVEL_PRIORITY[level] >= LOG_LEVEL_PRIORITY[this.logLevel];
   }
 
-  private logToConsole(entry: LogEntry) {
+  private logToConsole(entry: LogEntry): void {
     if (!this.shouldLogLevel(entry.level)) return;
 
     const formattedMessage = this.formatMessage(entry);
@@ -89,7 +89,7 @@ export class Logger {
     }
   }
 
-  private logToExternalService(entry: LogEntry) {
+  private logToExternalService(entry: LogEntry): void {
     // TODO: Implement external logging service integration
     // This could be Sentry, LogRocket, or another service
     if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
@@ -103,7 +103,7 @@ export class Logger {
     context?: Record<string, unknown>,
     component?: string,
     error?: Error,
-  ) {
+  ): void {
     if (!this.shouldLog) return;
 
     const entry = this.createLogEntry(level, message, context, component, error);
@@ -111,23 +111,23 @@ export class Logger {
     this.logToExternalService(entry);
   }
 
-  debug(message: string, context?: Record<string, unknown>, component?: string) {
+  debug(message: string, context?: Record<string, unknown>, component?: string): void {
     this.log('debug', message, context, component);
   }
 
-  info(message: string, context?: Record<string, unknown>, component?: string) {
+  info(message: string, context?: Record<string, unknown>, component?: string): void {
     this.log('info', message, context, component);
   }
 
-  warn(message: string, context?: Record<string, unknown>, component?: string) {
+  warn(message: string, context?: Record<string, unknown>, component?: string): void {
     this.log('warn', message, context, component);
   }
 
-  error(message: string, error: Error, context?: Record<string, unknown>, component?: string) {
+  error(message: string, error: Error, context?: Record<string, unknown>, component?: string): void {
     this.log('error', message, context, component, error);
   }
 
-  setLogLevel(level: LogLevel) {
+  setLogLevel(level: LogLevel): void {
     this.logLevel = level;
   }
 }

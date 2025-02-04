@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import type { CacheMetrics, WarmingStats } from '@/lib/types/monitoring';
 
-export function CacheMetricsDashboard(): React.ReactElement {
+export function CacheMetricsDashboard(): JSX.Element {
   const [metrics, setMetrics] = useState<CacheMetrics>({ 
     avg: 0,
     p95: 0,

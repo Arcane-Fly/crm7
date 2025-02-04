@@ -16,7 +16,7 @@ export default function RateApproval({
   org_id,
   onApprove,
   onReject,
-}: RateApprovalProps): ReactElement {
+}: RateApprovalProps): JSX.Element {
   const { supabase } = useSupabase();
   const { user } = useUser();
   const { toast } = useToast();
@@ -33,7 +33,7 @@ export default function RateApproval({
         .eq('status', 'draft')
         .order('created_at', { ascending: false });
 
-      if (error) {
+      if (typeof error !== "undefined" && error !== null) {
         toast({
           variant: 'destructive',
           title: 'Fetch Error',
@@ -120,8 +120,8 @@ export default function RateApproval({
     fetchPendingTemplates();
   }, [org_id, fetchPendingTemplates]);
 
-  if (loading) return <div>Loading pending templates...</div>;
-  if (error) return <div className="text-red-500">{error}</div>;
+  if (typeof loading !== "undefined" && loading !== null) return <div>Loading pending templates...</div>;
+  if (typeof error !== "undefined" && error !== null) return <div className="text-red-500">{error}</div>;
   if (!templates.length) return <div>No pending templates to approve</div>;
 
   return (

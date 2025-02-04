@@ -7,7 +7,7 @@ interface ChargeRatesConfig {
   adjustments: Record<string, number>;
 }
 
-export function useChargeRates(ratesCalculator: RatesCalculator) {
+export function useChargeRates(ratesCalculator: RatesCalculator): Promise<void> {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 

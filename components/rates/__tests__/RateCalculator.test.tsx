@@ -92,7 +92,7 @@ describe('RateCalculator', () => {
       promise: Promise.resolve([]),
     };
 
-    vi.mocked(useRates: unknown).mockReturnValue(mockResult: unknown);
+    (vi.mocked(useRates) as jest.Mock).mockReturnValue(mockResult);
     renderComponent();
   });
 
@@ -102,13 +102,13 @@ describe('RateCalculator', () => {
       isLoading: true,
       error: null,
       isSuccess: false,
-      status: 'pending',
+      status: 'loading',
       isError: false,
       isPending: true,
       isLoadingError: false,
       isRefetchError: false,
-      dataUpdatedAt: Date.now(),
-      errorUpdatedAt: Date.now(),
+      dataUpdatedAt: 0,
+      errorUpdatedAt: 0,
       failureCount: 0,
       failureReason: null,
       errorUpdateCount: 0,
@@ -126,7 +126,7 @@ describe('RateCalculator', () => {
       promise: Promise.resolve([]),
     };
 
-    vi.mocked(useRates: unknown).mockReturnValue(mockResult: unknown);
+    (vi.mocked(useRates) as jest.Mock).mockReturnValue(mockResult);
     renderComponent();
     expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
   });
@@ -161,7 +161,7 @@ describe('RateCalculator', () => {
       promise: Promise.resolve([mockRateTemplate]),
     };
 
-    vi.mocked(useRates: unknown).mockReturnValue(mockResult: unknown);
+    (vi.mocked(useRates) as jest.Mock).mockReturnValue(mockResult);
     renderComponent();
     expect(screen.getByText('Test Template')).toBeInTheDocument();
   });
@@ -194,10 +194,10 @@ describe('RateCalculator', () => {
       refetch: vi.fn(),
       remove: vi.fn(),
       fetchStatus: 'idle',
-      promise: Promise.reject(mockError: unknown),
+      promise: Promise.reject(mockError),
     };
 
-    vi.mocked(useRates: unknown).mockReturnValue(mockResult: unknown);
+    (vi.mocked(useRates) as jest.Mock).mockReturnValue(mockResult);
     renderComponent();
     expect(screen.getByText(/Failed to fetch templates/i)).toBeInTheDocument();
   });

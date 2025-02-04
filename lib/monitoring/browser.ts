@@ -24,7 +24,7 @@ function startBrowserSpan(name: string, type: string, tags?: Record<string, stri
     tags: new Map<string, string>(),
   };
 
-  if (tags) {
+  if (typeof tags !== "undefined" && tags !== null) {
     Object.entries(tags).forEach(([key, value]) => {
       span.tags.set(key, String(value));
     });
@@ -43,7 +43,7 @@ function finishBrowserSpan(
 ) {
   const duration = Date.now() - span.startTime;
 
-  if (data) {
+  if (typeof data !== "undefined" && data !== null) {
     Object.entries(data).forEach(([key, value]) => {
       span.tags.set(key, String(value));
     });
@@ -58,7 +58,7 @@ function finishBrowserSpan(
   };
 }
 
-export function monitorWebVitals(name: string) {
+export function monitorWebVitals(name: string): void {
   const span = startBrowserSpan(name, 'web.vitals');
 
   return {

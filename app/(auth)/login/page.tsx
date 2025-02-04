@@ -10,7 +10,7 @@ interface LoginError extends Error {
   message: string;
 }
 
-export default function LoginPage(): ReactElement {
+export default function LoginPage(): JSX.Element {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,7 +32,7 @@ export default function LoginPage(): ReactElement {
         password,
       });
 
-      if (error) throw error;
+      if (typeof error !== "undefined" && error !== null) throw error;
       if (data.session) {
         router.push('/dashboard');
       }

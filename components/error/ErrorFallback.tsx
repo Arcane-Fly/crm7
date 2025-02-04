@@ -4,7 +4,7 @@ import type { FallbackProps } from 'react-error-boundary';
 
 import { Button } from '@/components/ui/button';
 
-export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps): ReactElement {
+export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps): JSX.Element {
   return (
     <div
       role='alert'

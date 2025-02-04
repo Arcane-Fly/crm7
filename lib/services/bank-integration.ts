@@ -22,7 +22,7 @@ interface BankTransaction {
 export class BankIntegrationService {
   constructor(private readonly supabase: SupabaseClient<Database>) {}
 
-  async createBankAccount(account: Omit<BankAccount, 'id'>): Promise<BankAccount> {
+  async createBankAccount(account: Omit<BankAccount, 'id'>): Promise<void> {
     try {
       const { data, error } = await this.supabase
         .from('bank_accounts')
@@ -30,7 +30,7 @@ export class BankIntegrationService {
         .select()
         .single();
 
-      if (error) {
+      if (typeof error !== "undefined" && error !== null) {
         throw error;
       }
 
@@ -41,7 +41,7 @@ export class BankIntegrationService {
     }
   }
 
-  async getBankAccount(id: string): Promise<BankAccount | null> {
+  async getBankAccount(id: string): Promise<void> {
     try {
       const { data, error } = await this.supabase
         .from('bank_accounts')
@@ -49,7 +49,7 @@ export class BankIntegrationService {
         .eq('id', id)
         .single();
 
-      if (error) {
+      if (typeof error !== "undefined" && error !== null) {
         throw error;
       }
 
@@ -60,7 +60,7 @@ export class BankIntegrationService {
     }
   }
 
-  async updateBankAccount(id: string, updates: Partial<BankAccount>): Promise<BankAccount> {
+  async updateBankAccount(id: string, updates: Partial<BankAccount>): Promise<void> {
     try {
       const { data, error } = await this.supabase
         .from('bank_accounts')
@@ -69,7 +69,7 @@ export class BankIntegrationService {
         .select()
         .single();
 
-      if (error) {
+      if (typeof error !== "undefined" && error !== null) {
         throw error;
       }
 
@@ -87,7 +87,7 @@ export class BankIntegrationService {
         .delete()
         .eq('id', id);
 
-      if (error) {
+      if (typeof error !== "undefined" && error !== null) {
         throw error;
       }
     } catch (error) {
@@ -96,7 +96,7 @@ export class BankIntegrationService {
     }
   }
 
-  async createTransaction(transaction: Omit<BankTransaction, 'id'>): Promise<BankTransaction> {
+  async createTransaction(transaction: Omit<BankTransaction, 'id'>): Promise<void> {
     try {
       const { data, error } = await this.supabase
         .from('bank_transactions')
@@ -104,7 +104,7 @@ export class BankIntegrationService {
         .select()
         .single();
 
-      if (error) {
+      if (typeof error !== "undefined" && error !== null) {
         throw error;
       }
 
@@ -115,7 +115,7 @@ export class BankIntegrationService {
     }
   }
 
-  async getTransaction(id: string): Promise<BankTransaction | null> {
+  async getTransaction(id: string): Promise<void> {
     try {
       const { data, error } = await this.supabase
         .from('bank_transactions')
@@ -123,7 +123,7 @@ export class BankIntegrationService {
         .eq('id', id)
         .single();
 
-      if (error) {
+      if (typeof error !== "undefined" && error !== null) {
         throw error;
       }
 
@@ -134,7 +134,7 @@ export class BankIntegrationService {
     }
   }
 
-  async getTransactions(accountId: string): Promise<BankTransaction[]> {
+  async getTransactions(accountId: string): Promise<void> {
     try {
       const { data, error } = await this.supabase
         .from('bank_transactions')
@@ -142,7 +142,7 @@ export class BankIntegrationService {
         .eq('accountId', accountId)
         .order('date', { ascending: false });
 
-      if (error) {
+      if (typeof error !== "undefined" && error !== null) {
         throw error;
       }
 

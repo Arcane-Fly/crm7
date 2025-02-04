@@ -5,7 +5,7 @@ interface EnrollmentListProps {
   onUpdate: () => void;
 }
 
-export function EnrollmentList({ enrollments, onUpdate }: EnrollmentListProps): React.ReactElement {
+export function EnrollmentList({ enrollments, onUpdate }: EnrollmentListProps): JSX.Element {
   const handleUnenroll = async (enrollmentId: string): Promise<void> => {
     try {
       await deleteEnrollment(enrollmentId);

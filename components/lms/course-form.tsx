@@ -21,7 +21,7 @@ interface CourseFormProps {
   onSubmit: (data: CourseFormData) => Promise<void>;
 }
 
-export function CourseForm({ courseId, initialData, onSubmit }: CourseFormProps): React.ReactElement {
+export function CourseForm({ courseId, initialData, onSubmit }: CourseFormProps): JSX.Element {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const form = useForm<CourseFormData>({
@@ -38,7 +38,7 @@ export function CourseForm({ courseId, initialData, onSubmit }: CourseFormProps)
   const handleSubmit = async (values: CourseFormData): Promise<void> => {
     try {
       setIsSubmitting(true);
-      if (courseId) {
+      if (typeof courseId !== "undefined" && courseId !== null) {
         await updateCourse(courseId, values);
       } else {
         await createCourse(values);

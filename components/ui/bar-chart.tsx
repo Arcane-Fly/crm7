@@ -13,7 +13,7 @@ export function BarChart({
   width = 600,
   height = 400,
   margin = { top: 20, right: 20, bottom: 30, left: 40 }
-}: BarChartProps): ReactElement {
+}: BarChartProps): JSX.Element {
   const svgRef = useRef<SVGSVGElement | null>(null);
 
   useEffect(() => {

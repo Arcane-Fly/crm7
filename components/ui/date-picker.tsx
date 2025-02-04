@@ -11,7 +11,7 @@ interface DatePickerProps {
   onDateChange?: (date: Date | undefined) => void;
 }
 
-export function DatePicker({ date, onDateChange }: DatePickerProps): ReactElement {
+export function DatePicker({ date, onDateChange }: DatePickerProps): JSX.Element {
   return (
     <Popover>
       <PopoverTrigger asChild>

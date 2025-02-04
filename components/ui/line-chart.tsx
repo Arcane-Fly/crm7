@@ -32,7 +32,7 @@ interface LineChartProps {
   };
 }
 
-export function LineChart({ data }: LineChartProps): ReactElement {
+export function LineChart({ data }: LineChartProps): JSX.Element {
   return (
     <ChartJS
       type="line"

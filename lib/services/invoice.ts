@@ -31,7 +31,7 @@ export class InvoiceService extends BaseService {
     status?: Invoice['status'];
     start_date?: string;
     end_date?: string;
-  }): Promise<Invoice[]> {
+  }): Promise<void> {
     return this.executeServiceMethod('getInvoices', async () => {
       let query = this.supabase.from('invoices').select();
 
@@ -49,7 +49,7 @@ export class InvoiceService extends BaseService {
 
       const { data, error } = await query;
 
-      if (error) {
+      if (typeof error !== "undefined" && error !== null) {
         throw error;
       }
 
@@ -57,7 +57,7 @@ export class InvoiceService extends BaseService {
     });
   }
 
-  async getInvoice(id: string): Promise<Invoice | null> {
+  async getInvoice(id: string): Promise<void> {
     return this.executeServiceMethod('getInvoice', async () => {
       const { data, error } = await this.supabase
         .from('invoices')
@@ -65,7 +65,7 @@ export class InvoiceService extends BaseService {
         .eq('id', id)
         .single();
 
-      if (error) {
+      if (typeof error !== "undefined" && error !== null) {
         throw error;
       }
 
@@ -73,7 +73,7 @@ export class InvoiceService extends BaseService {
     });
   }
 
-  async createInvoice(invoice: Omit<Invoice, 'id' | 'status'>): Promise<Invoice> {
+  async createInvoice(invoice: Omit<Invoice, 'id' | 'status'>): Promise<void> {
     return this.executeServiceMethod('createInvoice', async () => {
       const { data, error } = await this.supabase
         .from('invoices')
@@ -84,7 +84,7 @@ export class InvoiceService extends BaseService {
         .select()
         .single();
 
-      if (error) {
+      if (typeof error !== "undefined" && error !== null) {
         throw error;
       }
 
@@ -92,7 +92,7 @@ export class InvoiceService extends BaseService {
     });
   }
 
-  async updateInvoice(id: string, updates: Partial<Invoice>): Promise<Invoice> {
+  async updateInvoice(id: string, updates: Partial<Invoice>): Promise<void> {
     return this.executeServiceMethod('updateInvoice', async () => {
       const { data, error } = await this.supabase
         .from('invoices')
@@ -101,7 +101,7 @@ export class InvoiceService extends BaseService {
         .select()
         .single();
 
-      if (error) {
+      if (typeof error !== "undefined" && error !== null) {
         throw error;
       }
 
@@ -109,7 +109,7 @@ export class InvoiceService extends BaseService {
     });
   }
 
-  async importTimesheets(file: File): Promise<TimesheetImport[]> {
+  async importTimesheets(file: File): Promise<void> {
     return this.executeServiceMethod('importTimesheets', async () => {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -157,13 +157,13 @@ export class InvoiceService extends BaseService {
         .delete()
         .eq('id', id);
 
-      if (error) {
+      if (typeof error !== "undefined" && error !== null) {
         throw error;
       }
     });
   }
 
-  async markAsPaid(id: string): Promise<Invoice> {
+  async markAsPaid(id: string): Promise<void> {
     return this.executeServiceMethod('markAsPaid', async () => {
       const { data, error } = await this.supabase
         .from('invoices')
@@ -172,7 +172,7 @@ export class InvoiceService extends BaseService {
         .select()
         .single();
 
-      if (error) {
+      if (typeof error !== "undefined" && error !== null) {
         throw error;
       }
 
@@ -180,7 +180,7 @@ export class InvoiceService extends BaseService {
     });
   }
 
-  async markAsCancelled(id: string): Promise<Invoice> {
+  async markAsCancelled(id: string): Promise<void> {
     return this.executeServiceMethod('markAsCancelled', async () => {
       const { data, error } = await this.supabase
         .from('invoices')
@@ -189,7 +189,7 @@ export class InvoiceService extends BaseService {
         .select()
         .single();
 
-      if (error) {
+      if (typeof error !== "undefined" && error !== null) {
         throw error;
       }
 
@@ -197,14 +197,14 @@ export class InvoiceService extends BaseService {
     });
   }
 
-  async getInvoicesByStatus(status: Invoice['status']): Promise<Invoice[]> {
+  async getInvoicesByStatus(status: Invoice['status']): Promise<void> {
     return this.executeServiceMethod('getInvoicesByStatus', async () => {
       const { data, error } = await this.supabase
         .from('invoices')
         .select()
         .eq('status', status);
 
-      if (error) {
+      if (typeof error !== "undefined" && error !== null) {
         throw error;
       }
 

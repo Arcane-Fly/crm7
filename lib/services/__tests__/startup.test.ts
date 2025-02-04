@@ -21,27 +21,27 @@ describe('Startup Service', () => {
 
     it('should handle initialization errors', async () => {
       const error = new Error('Initialization failed');
-      jest.spyOn(fairWorkCacheWarming: unknown, 'initialize').mockImplementationOnce(() => {
+      (fairWorkCacheWarming.initialize as jest.Mock).mockImplementationOnce(() => {
         throw error;
       });
 
-      await expect(initializeServices()).rejects.toThrow(error: unknown);
+      await expect(initializeServices()).rejects.toThrow(error);
       expect(logger.error).toHaveBeenCalledWith(
         'Failed to initialize application services:',
-        expect.any(Error: unknown),
+        expect.any(Error)
       );
     });
 
     it('should handle unknown errors', async () => {
       const error = 'Unknown error occurred';
-      jest.spyOn(fairWorkCacheWarming: unknown, 'initialize').mockImplementationOnce(() => {
+      (fairWorkCacheWarming.initialize as jest.Mock).mockImplementationOnce(() => {
         throw error;
       });
 
-      await expect(initializeServices()).rejects.toBe(error: unknown);
+      await expect(initializeServices()).rejects.toBe(error);
       expect(logger.error).toHaveBeenCalledWith(
         'Failed to initialize application services:',
-        expect.any(Error: unknown),
+        expect.any(Error)
       );
     });
   });
@@ -56,27 +56,27 @@ describe('Startup Service', () => {
 
     it('should handle cleanup errors', async () => {
       const error = new Error('Cleanup failed');
-      jest.spyOn(fairWorkCacheWarming: unknown, 'stop').mockImplementationOnce(() => {
+      (fairWorkCacheWarming.stop as jest.Mock).mockImplementationOnce(() => {
         throw error;
       });
 
-      await expect(cleanupServices()).rejects.toThrow(error: unknown);
+      await expect(cleanupServices()).rejects.toThrow(error);
       expect(logger.error).toHaveBeenCalledWith(
         'Failed to cleanup application services:',
-        expect.any(Error: unknown),
+        expect.any(Error)
       );
     });
 
     it('should handle unknown cleanup errors', async () => {
       const error = 'Unknown cleanup error';
-      jest.spyOn(fairWorkCacheWarming: unknown, 'stop').mockImplementationOnce(() => {
+      (fairWorkCacheWarming.stop as jest.Mock).mockImplementationOnce(() => {
         throw error;
       });
 
-      await expect(cleanupServices()).rejects.toBe(error: unknown);
+      await expect(cleanupServices()).rejects.toBe(error);
       expect(logger.error).toHaveBeenCalledWith(
         'Failed to cleanup application services:',
-        expect.any(Error: unknown),
+        expect.any(Error)
       );
     });
   });
@@ -86,8 +86,8 @@ describe('Startup Service', () => {
     let processOnSpy: jest.SpyInstance;
 
     beforeEach(() => {
-      addEventListenerSpy = jest.spyOn(window: unknown, 'addEventListener');
-      processOnSpy = jest.spyOn(process: unknown, 'on');
+      addEventListenerSpy = jest.spyOn(window, 'addEventListener');
+      processOnSpy = jest.spyOn(process, 'on');
     });
 
     afterEach(() => {
@@ -98,20 +98,20 @@ describe('Startup Service', () => {
     it('should register browser cleanup handler', () => {
       // Re-run the module code
       jest.isolateModules(() => {
-        require('../startup');
+        import('../startup');
       });
 
-      expect(addEventListenerSpy: unknown).toHaveBeenCalledWith('beforeunload', expect.any(Function: unknown));
+      expect(addEventListenerSpy).toHaveBeenCalledWith('beforeunload', expect.any(Function));
     });
 
     it('should register process cleanup handlers', () => {
       // Re-run the module code
       jest.isolateModules(() => {
-        require('../startup');
+        import('../startup');
       });
 
-      expect(processOnSpy: unknown).toHaveBeenCalledWith('SIGTERM', expect.any(Function: unknown));
-      expect(processOnSpy: unknown).toHaveBeenCalledWith('SIGINT', expect.any(Function: unknown));
+      expect(processOnSpy).toHaveBeenCalledWith('SIGTERM', expect.any(Function));
+      expect(processOnSpy).toHaveBeenCalledWith('SIGINT', expect.any(Function));
     });
 
     it('should call cleanup on beforeunload', async () => {
@@ -126,22 +126,22 @@ describe('Startup Service', () => {
 
       // Re-run the module code
       jest.isolateModules(() => {
-        require('../startup');
+        import('../startup');
       });
 
       // Create a mock event
       const mockEvent = new Event('beforeunload') as BeforeUnloadEvent;
 
       // Check if handler was assigned and call it
-      if (beforeUnloadHandler: unknown) {
-        await beforeUnloadHandler(mockEvent: unknown);
+      if (beforeUnloadHandler) {
+        await beforeUnloadHandler(mockEvent);
       }
 
       expect(fairWorkCacheWarming.stop).toHaveBeenCalled();
     });
 
     it('should call cleanup and exit on SIGTERM', async () => {
-      const exitSpy = jest.spyOn(process: unknown, 'exit').mockImplementation();
+      const exitSpy = jest.spyOn(process, 'exit').mockImplementation();
       let sigtermHandler: () => Promise<void> = async () => {};
       processOnSpy.mockImplementation((signal: string, handler: () => Promise<void>) => {
         if (signal === 'SIGTERM') {
@@ -151,12 +151,12 @@ describe('Startup Service', () => {
 
       // Re-run the module code
       jest.isolateModules(() => {
-        require('../startup');
+        import('../startup');
       });
 
       await sigtermHandler();
       expect(fairWorkCacheWarming.stop).toHaveBeenCalled();
-      expect(exitSpy: unknown).toHaveBeenCalledWith(0: unknown);
+      expect(exitSpy).toHaveBeenCalledWith(0);
     });
   });
 });

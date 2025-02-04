@@ -18,7 +18,7 @@ const rateLimiter = {
     const now = Date.now();
     const existingStore = rateLimitStateMap.get(key);
 
-    if (existingStore) {
+    if (typeof existingStore !== "undefined" && existingStore !== null) {
       // Reset if window has passed
       if (now - existingStore.lastReset >= env.RATE_LIMIT_WINDOW_MS) {
         const currentStore: RateLimitStore = {
@@ -44,7 +44,7 @@ const rateLimiter = {
 
   decrement: async (key: string): Promise<RateLimitStore | undefined> => {
     const store = rateLimitStateMap.get(key);
-    if (store) {
+    if (typeof store !== "undefined" && store !== null) {
       store.value = Math.max(0, store.value - 1);
       rateLimitStateMap.set(key, store);
     }
@@ -75,7 +75,7 @@ export const config = {
 
 export async function withRateLimit(
   handler: (req: NextApiRequest, res: NextApiResponse) => Promise<void>
-) {
+): Promise<void> {
   return async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
     try {
       await new Promise((resolve, reject) => {

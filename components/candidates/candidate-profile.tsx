@@ -61,7 +61,7 @@ interface CandidateProfileProps {
   };
 }
 
-export function CandidateProfile({ candidate }: CandidateProfileProps): ReactElement {
+export function CandidateProfile({ candidate }: CandidateProfileProps): JSX.Element {
   return (
     <div className="space-y-6">
       <Card>

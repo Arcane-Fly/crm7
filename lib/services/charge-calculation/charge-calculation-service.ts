@@ -16,7 +16,7 @@ export class ChargeCalculationService extends BaseService {
     });
   }
 
-  async calculateChargeRate(template: RateTemplate, hours: number): Promise<number> {
+  async calculateChargeRate(template: RateTemplate, hours: number): Promise<void> {
     return this.executeServiceMethod('calculateChargeRate', async () => {
       const components = {
         base: template.baseRate * hours,
@@ -36,7 +36,7 @@ export class ChargeCalculationService extends BaseService {
     });
   }
 
-  async calculateBulkChargeRates(templates: RateTemplate[], hours: number): Promise<Map<string, number>> {
+  async calculateBulkChargeRates(templates: RateTemplate[], hours: number): Promise<void> {
     return this.executeServiceMethod('calculateBulkChargeRates', async () => {
       const results = new Map<string, number>();
 
@@ -49,7 +49,7 @@ export class ChargeCalculationService extends BaseService {
     });
   }
 
-  async validateChargeRate(template: RateTemplate, hours: number, proposedRate: number): Promise<boolean> {
+  async validateChargeRate(template: RateTemplate, hours: number, proposedRate: number): Promise<void> {
     return this.executeServiceMethod('validateChargeRate', async () => {
       const rate = await this.calculateChargeRate(template, hours);
       const tolerance = 0.01; // 1% tolerance for floating point comparison

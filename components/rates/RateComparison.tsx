@@ -7,7 +7,7 @@ interface RateComparisonProps {
   orgId: string;
 }
 
-export function RateComparison({ orgId }: RateComparisonProps): React.ReactElement {
+export function RateComparison({ orgId }: RateComparisonProps): JSX.Element {
   const { supabase } = useSupabase();
   const { toast } = useToast();
   const [loading, setLoading] = useState<boolean>(true);
@@ -23,7 +23,7 @@ export function RateComparison({ orgId }: RateComparisonProps): React.ReactEleme
           .eq('org_id', orgId)
           .eq('status', 'active');
 
-        if (error) throw error;
+        if (typeof error !== "undefined" && error !== null) throw error;
         setTemplates(data);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to fetch templates';
@@ -41,8 +41,8 @@ export function RateComparison({ orgId }: RateComparisonProps): React.ReactEleme
     void fetchTemplates();
   }, [orgId, supabase, toast]);
 
-  if (loading) return <div>Loading templates...</div>;
-  if (error) return <div className="text-red-500">{error}</div>;
+  if (typeof loading !== "undefined" && loading !== null) return <div>Loading templates...</div>;
+  if (typeof error !== "undefined" && error !== null) return <div className="text-red-500">{error}</div>;
   if (!templates.length) return <div>No templates available for comparison</div>;
 
   return (

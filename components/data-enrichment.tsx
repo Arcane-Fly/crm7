@@ -4,7 +4,7 @@ interface DataEnrichmentProps {
   onComplete?: () => void;
 }
 
-export function DataEnrichment({ type, id, onComplete }: DataEnrichmentProps): React.ReactElement {
+export function DataEnrichment({ type, id, onComplete }: DataEnrichmentProps): JSX.Element {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Data Enrichment</h3>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { type ComplianceRecord } from '@/lib/types';
 
-export function ComplianceDashboard(): React.ReactElement {
+export function ComplianceDashboard(): JSX.Element {
   const [records, setRecords] = useState<ComplianceRecord[]>([]);
 
   useEffect(() => {
@@ -9,9 +9,9 @@ export function ComplianceDashboard(): React.ReactElement {
       try {
         const { data, error } = await supabase.from('compliance_records').select('*');
         
-        if (error) throw error;
+        if (typeof error !== "undefined" && error !== null) throw error;
         
-        if (data) {
+        if (typeof data !== "undefined" && data !== null) {
           setRecords(data);
           calculateStats(data);
         }

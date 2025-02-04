@@ -28,7 +28,7 @@ export function useSupabaseQuery<T extends TableName>(
 
         const { data, error } = await query;
 
-        if (error) {
+        if (typeof error !== "undefined" && error !== null) {
           throw error;
         }
 
@@ -56,13 +56,13 @@ export function useSupabaseMutation<T extends TableName>(
       try {
         const query = supabase.from(table);
 
-        if (match) {
+        if (typeof match !== "undefined" && match !== null) {
           const { data: result, error } = await query.update(data).match(match);
-          if (error) throw error;
+          if (typeof error !== "undefined" && error !== null) throw error;
           return result;
         } else {
           const { data: result, error } = await query.insert(data);
-          if (error) throw error;
+          if (typeof error !== "undefined" && error !== null) throw error;
           return result;
         }
       } catch (error) {
