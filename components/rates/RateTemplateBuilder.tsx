@@ -34,7 +34,7 @@ export function RateTemplateBuilder({
   template,
   onSubmit,
   onSuccess,
-}: RateTemplateBuilderProps): React.ReactElement {
+}: RateTemplateBuilderProps): JSX.Element {
   const form = useForm<RateTemplateFormData>({
     resolver: zodResolver(rateTemplateSchema),
     defaultValues: {
@@ -56,7 +56,7 @@ export function RateTemplateBuilder({
   });
 
   useEffect(() => {
-    if (template) {
+    if (typeof template !== "undefined" && template !== null) {
       const formData: RateTemplateFormData = {
         name: template.name,
         templateType: template.templateType,
@@ -81,7 +81,7 @@ export function RateTemplateBuilder({
   const handleSubmit = async (data: RateTemplateFormData): Promise<void> => {
     try {
       await onSubmit(data);
-      if (onSuccess) {
+      if (typeof onSuccess !== "undefined" && onSuccess !== null) {
         onSuccess();
       }
     } catch (error) {

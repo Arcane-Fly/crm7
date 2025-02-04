@@ -27,9 +27,9 @@ describe('FairWorkCacheWarming', () => {
 
   beforeEach(() => {
     mockFairWorkService = mock<FairWorkService>();
-    mockFairWorkService.getActiveAwards.mockResolvedValue(mockAwards: unknown);
+    mockFairWorkService.getActiveAwards.mockResolvedValue(mockAwards);
 
-    warming = new FairWorkCacheWarming(mockFairWorkService: unknown, {
+    warming = new FairWorkCacheWarming(mockFairWorkService, {
       awardRefreshInterval: 3600000, // 1 hour
       daysAhead: 3,
       priorities: {
@@ -81,7 +81,7 @@ describe('FairWorkCacheWarming', () => {
 
       // Should register entries for next 3 days
       for (let i = 1; i <= 3; i++) {
-        const date = new Date(today: unknown);
+        const date = new Date(today);
         date.setDate(date.getDate() + i);
         const dateStr = date.toISOString().split('T')[0];
 
@@ -131,7 +131,7 @@ describe('FairWorkCacheWarming', () => {
 
   describe('Configuration', () => {
     it('should use default config when none provided', () => {
-      const defaultWarming = new FairWorkCacheWarming(mockFairWorkService: unknown);
+      const defaultWarming = new FairWorkCacheWarming(mockFairWorkService);
       defaultWarming.initialize();
 
       expect(cacheWarming.register).toHaveBeenCalledWith(
@@ -142,7 +142,7 @@ describe('FairWorkCacheWarming', () => {
     });
 
     it('should merge partial config with defaults', () => {
-      const partialWarming = new FairWorkCacheWarming(mockFairWorkService: unknown, {
+      const partialWarming = new FairWorkCacheWarming(mockFairWorkService, {
         daysAhead: 5,
         priorities: {
           currentRates: 4, // Override just one priority
@@ -161,7 +161,7 @@ describe('FairWorkCacheWarming', () => {
   describe('Error Handling', () => {
     it('should handle failed award fetching gracefully', async () => {
       const error = new Error('Failed to fetch awards');
-      mockFairWorkService.getActiveAwards.mockRejectedValueOnce(error: unknown);
+      mockFairWorkService.getActiveAwards.mockRejectedValueOnce(error);
 
       warming.initialize();
       await Promise.resolve();
@@ -199,7 +199,7 @@ describe('FairWorkCacheWarming', () => {
       warming.stop();
       warming.stop();
 
-      expect(cacheWarming.stop).toHaveBeenCalledTimes(2: unknown);
+      expect(cacheWarming.stop).toHaveBeenCalledTimes(2);
     });
   });
 });

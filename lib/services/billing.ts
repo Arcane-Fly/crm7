@@ -27,7 +27,7 @@ export class BillingService extends BaseService {
     });
   }
 
-  async createTimesheet(timesheet: Omit<Timesheet, 'id'>): Promise<Timesheet> {
+  async createTimesheet(timesheet: Omit<Timesheet, 'id'>): Promise<void> {
     return this.executeServiceMethod('createTimesheet', async () => {
       const { data, error } = await this.supabase
         .from('timesheets')
@@ -35,12 +35,12 @@ export class BillingService extends BaseService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (typeof error !== "undefined" && error !== null) throw error;
       return data;
     });
   }
 
-  async createBillingEntry(entry: Omit<BillingEntry, 'id'>): Promise<BillingEntry> {
+  async createBillingEntry(entry: Omit<BillingEntry, 'id'>): Promise<void> {
     return this.executeServiceMethod('createBillingEntry', async () => {
       const { data, error } = await this.supabase
         .from('billing_entries')
@@ -48,27 +48,27 @@ export class BillingService extends BaseService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (typeof error !== "undefined" && error !== null) throw error;
       return data;
     });
   }
 
-  async getBillingEntries(status?: BillingEntry['status']): Promise<BillingEntry[]> {
+  async getBillingEntries(status?: BillingEntry['status']): Promise<void> {
     return this.executeServiceMethod('getBillingEntries', async () => {
       const query = this.supabase.from('billing_entries').select();
 
-      if (status) {
+      if (typeof status !== "undefined" && status !== null) {
         query.eq('status', status);
       }
 
       const { data, error } = await query;
 
-      if (error) throw error;
+      if (typeof error !== "undefined" && error !== null) throw error;
       return data;
     });
   }
 
-  async processBillingEntry(id: string): Promise<BillingEntry> {
+  async processBillingEntry(id: string): Promise<void> {
     return this.executeServiceMethod('processBillingEntry', async () => {
       const { data, error } = await this.supabase
         .from('billing_entries')
@@ -77,12 +77,12 @@ export class BillingService extends BaseService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (typeof error !== "undefined" && error !== null) throw error;
       return data;
     });
   }
 
-  async markBillingEntryAsPaid(id: string): Promise<BillingEntry> {
+  async markBillingEntryAsPaid(id: string): Promise<void> {
     return this.executeServiceMethod('markBillingEntryAsPaid', async () => {
       const { data, error } = await this.supabase
         .from('billing_entries')
@@ -91,7 +91,7 @@ export class BillingService extends BaseService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (typeof error !== "undefined" && error !== null) throw error;
       return data;
     });
   }

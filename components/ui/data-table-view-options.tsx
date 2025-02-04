@@ -18,7 +18,7 @@ interface DataTableViewOptionsProps<TData> {
 
 export function DataTableViewOptions<TData>({
   table,
-}: DataTableViewOptionsProps<TData>): ReactElement {
+}: DataTableViewOptionsProps<TData>): JSX.Element {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

@@ -33,7 +33,7 @@ const fairworkService = new FairWorkServiceImpl(
 export async function GET(
   _request: NextRequest,
   { params }: { params: { awardCode: string } }
-) {
+): Promise<void> {
   try {
     const award = await fairworkService.getAward(params.awardCode);
     if (!award) {
@@ -67,7 +67,7 @@ export async function GET(
 export async function POST(
   request: NextRequest,
   { params }: { params: { awardCode: string } }
-) {
+): Promise<void> {
   try {
     const { classification } = await request.json();
     if (!classification) {

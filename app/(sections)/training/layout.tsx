@@ -27,7 +27,7 @@ const TRAINING_NAV: Record<string, NavSection> = {
   },
 };
 
-export default function TrainingLayout({ children }: { children: ReactNode }): React.ReactElement {
+export default function TrainingLayout({ children }: { children: ReactNode }): JSX.Element {
   return (
     <div className="flex min-h-screen">
       <nav className="w-64 border-r bg-background">

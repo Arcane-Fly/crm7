@@ -8,7 +8,7 @@ const fairworkClient = new FairWorkClient(defaultConfig);
 export async function GET(
   req: NextRequest,
   context: { params: { awardCode: string; classificationCode: string } }
-): Promise<Response> {
+): Promise<void> {
   try {
     const classification = await fairworkClient.getClassification(
       context.params.awardCode,

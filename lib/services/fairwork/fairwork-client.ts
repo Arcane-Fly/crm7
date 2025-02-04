@@ -19,7 +19,7 @@ export class FairWorkClient {
     awardCode: string,
     classificationCode: string,
     params?: { date?: string }
-  ): Promise<Rate[]> {
+  ): Promise<void> {
     try {
       const response = await this.client.get(`/awards/${awardCode}/classifications/${classificationCode}/rates`, {
         params,
@@ -34,7 +34,7 @@ export class FairWorkClient {
     awardCode: string,
     classificationCode: string,
     params?: { date?: string }
-  ): Promise<Rate[]> {
+  ): Promise<void> {
     try {
       const response = await this.client.get(`/awards/${awardCode}/classifications/${classificationCode}/future-rates`, {
         params,
@@ -49,7 +49,7 @@ export class FairWorkClient {
     awardCode: string,
     classificationCode: string,
     params?: { date?: string }
-  ): Promise<Rate[]> {
+  ): Promise<void> {
     try {
       const response = await this.client.get(`/awards/${awardCode}/classifications/${classificationCode}/history`, {
         params,
@@ -64,7 +64,7 @@ export class FairWorkClient {
     awardCode: string,
     classificationCode: string,
     params?: { date?: string }
-  ): Promise<LeaveEntitlement[]> {
+  ): Promise<void> {
     try {
       const response = await this.client.get(`/awards/${awardCode}/classifications/${classificationCode}/leave-entitlements`, {
         params,
@@ -78,7 +78,7 @@ export class FairWorkClient {
   async getClassification(
     awardCode: string,
     classificationCode: string
-  ): Promise<Classification> {
+  ): Promise<void> {
     try {
       const response = await this.client.get(`/awards/${awardCode}/classifications/${classificationCode}`);
       return response.data;
@@ -91,7 +91,7 @@ export class FairWorkClient {
     awardCode: string,
     classificationCode: string,
     request: RateValidationRequest
-  ): Promise<RateValidationResponse> {
+  ): Promise<void> {
     try {
       const response = await this.client.post(
         `/awards/${awardCode}/classifications/${classificationCode}/validate`,

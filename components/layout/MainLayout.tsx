@@ -11,7 +11,7 @@ interface MainLayoutProps {
   className?: string;
 }
 
-export function MainLayout({ children, className }: MainLayoutProps): ReactElement {
+export function MainLayout({ children, className }: MainLayoutProps): JSX.Element {
   return (
     <div className='min-h-screen bg-background'>
       <ErrorBoundary>

@@ -23,7 +23,7 @@ interface PlacementTrendsProps {
   quarterlyData: PlacementData[];
 }
 
-export function PlacementTrends({ monthlyData, quarterlyData }: PlacementTrendsProps): ReactElement {
+export function PlacementTrends({ monthlyData, quarterlyData }: PlacementTrendsProps): JSX.Element {
   return (
     <Card className="col-span-4">
       <CardHeader>

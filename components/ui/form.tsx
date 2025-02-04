@@ -32,7 +32,7 @@ type FormFieldProps<
 function FormField<
   TFieldValues extends FieldValues = FieldValues,
   TName extends Path<TFieldValues> = Path<TFieldValues>,
->({ control, name, render }: FormFieldProps<TFieldValues, TName>): React.ReactElement {
+>({ control, name, render }: FormFieldProps<TFieldValues, TName>): JSX.Element {
   const formContext = useFormContext<TFieldValues>();
   const controlToUse = control ?? formContext.control;
 
@@ -72,7 +72,7 @@ type FormItemContextValue = {
 
 const FormItemContext = React.createContext<FormItemContextValue>({} as FormItemContextValue);
 
-function FormItem({ className, ...props }: React.HTMLAttributes<HTMLDivElement>): React.ReactElement {
+function FormItem({ className, ...props }: React.HTMLAttributes<HTMLDivElement>): JSX.Element {
   const id = React.useId();
 
   return (

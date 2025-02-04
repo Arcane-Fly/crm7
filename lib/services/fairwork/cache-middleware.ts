@@ -41,7 +41,7 @@ export class FairWorkCacheMiddleware {
     return `${endpoint}:${sortedParams}`;
   }
 
-  async getBaseRate(params: Record<string, unknown>, factory: () => Promise<unknown>): Promise<unknown> {
+  async getBaseRate(params: Record<string, unknown>, factory: () => Promise<unknown>): Promise<void> {
     const key = this.getCacheKey('base-rate', params);
     return this.cache.getOrSet(key, factory, TTL_CONFIG.baseRate);
   }
@@ -49,22 +49,22 @@ export class FairWorkCacheMiddleware {
   async getClassifications(
     params: Record<string, unknown>,
     factory: () => Promise<unknown>
-  ): Promise<unknown> {
+  ): Promise<void> {
     const key = this.getCacheKey('classifications', params);
     return this.cache.getOrSet(key, factory, TTL_CONFIG.classifications);
   }
 
-  async getFutureRates(params: Record<string, unknown>, factory: () => Promise<unknown>): Promise<unknown> {
+  async getFutureRates(params: Record<string, unknown>, factory: () => Promise<unknown>): Promise<void> {
     const key = this.getCacheKey('future-rates', params);
     return this.cache.getOrSet(key, factory, TTL_CONFIG.futureRates);
   }
 
-  async getAllowances(params: Record<string, unknown>, factory: () => Promise<unknown>): Promise<unknown> {
+  async getAllowances(params: Record<string, unknown>, factory: () => Promise<unknown>): Promise<void> {
     const key = this.getCacheKey('allowances', params);
     return this.cache.getOrSet(key, factory, TTL_CONFIG.allowances);
   }
 
-  async getPenalties(params: Record<string, unknown>, factory: () => Promise<unknown>): Promise<unknown> {
+  async getPenalties(params: Record<string, unknown>, factory: () => Promise<unknown>): Promise<void> {
     const key = this.getCacheKey('penalties', params);
     return this.cache.getOrSet(key, factory, TTL_CONFIG.penalties);
   }
@@ -72,7 +72,7 @@ export class FairWorkCacheMiddleware {
   async getLeaveEntitlements(
     params: Record<string, unknown>,
     factory: () => Promise<unknown>
-  ): Promise<unknown> {
+  ): Promise<void> {
     const key = this.getCacheKey('leave-entitlements', params);
     return this.cache.getOrSet(key, factory, TTL_CONFIG.leaveEntitlements);
   }

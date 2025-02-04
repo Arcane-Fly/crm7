@@ -14,7 +14,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }): void {
   const router = useRouter();
   const supabase = createClient();
   const [user, setUser] = useState<User | null>(null);
@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             .eq('id', session.user.user_metadata.org_id)
             .single();
 
-          if (orgError) {
+          if (typeof orgError !== "undefined" && orgError !== null) {
             console.error('Error fetching organization:', orgError);
             return;
           }
@@ -88,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useAuth() {
+export function useAuth(): void {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');

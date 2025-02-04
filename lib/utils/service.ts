@@ -24,7 +24,7 @@ export abstract class BaseService {
     methodName: string,
     fn: () => Promise<T>,
     context?: Record<string, unknown>
-  ): Promise<T> {
+  ): Promise<void> {
     const startTime = Date.now();
     const logContext = { methodName, ...context };
 

@@ -18,7 +18,7 @@ export class EnrichmentService extends BaseService {
     });
   }
 
-  private async fetchExternalData(url: string): Promise<unknown> {
+  private async fetchExternalData(url: string): Promise<void> {
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`Failed to fetch data: ${response.statusText}`);
@@ -26,7 +26,7 @@ export class EnrichmentService extends BaseService {
     return response.json();
   }
 
-  async enrichData(sourceId: string, urls: string[]): Promise<EnrichmentData> {
+  async enrichData(sourceId: string, urls: string[]): Promise<void> {
     return this.executeServiceMethod('enrichData', async () => {
       // Create initial record
       const { data, error } = await this.supabase
@@ -39,7 +39,7 @@ export class EnrichmentService extends BaseService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (typeof error !== "undefined" && error !== null) throw error;
 
       try {
         // Fetch and combine data from all URLs
@@ -65,7 +65,7 @@ export class EnrichmentService extends BaseService {
           .select()
           .single();
 
-        if (updateError) throw updateError;
+        if (typeof updateError !== "undefined" && updateError !== null) throw updateError;
 
         return updatedData;
       } catch (error) {
@@ -80,7 +80,7 @@ export class EnrichmentService extends BaseService {
           .select()
           .single();
 
-        if (updateError) throw updateError;
+        if (typeof updateError !== "undefined" && updateError !== null) throw updateError;
 
         return failedData;
       }

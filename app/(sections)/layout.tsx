@@ -63,7 +63,7 @@ function getBreadcrumbSegments(pathname: string | null): BreadcrumbSegment[] {
   return breadcrumbs;
 }
 
-function LoadingSkeleton(): ReactElement {
+function LoadingSkeleton(): JSX.Element {
   return (
     <div className='space-y-4'>
       <Skeleton className='h-4 w-[300px]' />
@@ -79,7 +79,7 @@ function LoadingSkeleton(): ReactElement {
   );
 }
 
-export default function SectionsLayout({ children }: { children: ReactNode }): ReactElement {
+export default function SectionsLayout({ children }: { children: ReactNode }): JSX.Element {
   const pathname = usePathname();
   const mounted = useMounted();
   const segments = getBreadcrumbSegments(pathname);

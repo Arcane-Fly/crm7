@@ -6,23 +6,23 @@ describe('LoadingSpinner', () => {
   it('renders with default size', () => {
     render(<LoadingSpinner />);
     const spinner = screen.getByRole('status');
-    expect(spinner: unknown).toBeInTheDocument();
+    expect(spinner).toBeInTheDocument();
   });
 
   it('renders with different sizes', () => {
     const { rerender } = render(<LoadingSpinner size='sm' />);
     const smallSpinner = screen.getByRole('status');
-    expect(smallSpinner: unknown).toBeInTheDocument();
+    expect(smallSpinner).toBeInTheDocument();
 
     rerender(<LoadingSpinner size='lg' />);
     const largeSpinner = screen.getByRole('status');
-    expect(largeSpinner: unknown).toBeInTheDocument();
+    expect(largeSpinner).toBeInTheDocument();
   });
 
   it('applies custom className', () => {
     render(<LoadingSpinner className='test-class' />);
     const spinner = screen.getByRole('status');
-    expect(spinner: unknown).toHaveClass('test-class');
+    expect(spinner).toHaveClass('test-class');
   });
 
   it('has correct ARIA attributes', () => {

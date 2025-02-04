@@ -23,7 +23,7 @@ export function handleAuthError<T>(error: { message: string; statusCode: number 
  * @param error - Optional error object to log additional details.
  */
 export function handleInternalError<T>(error?: Error): ReturnType<typeof NextResponse.json> {
-  if (error) {
+  if (typeof error !== "undefined" && error !== null) {
     console.error('Internal server error:', error);
   }
   const response: ApiResponse<T> = {

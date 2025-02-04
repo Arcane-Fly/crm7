@@ -60,7 +60,7 @@ const notifications: Notification[] = [
   },
 ];
 
-export function Notifications(): ReactElement {
+export function Notifications(): JSX.Element {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (

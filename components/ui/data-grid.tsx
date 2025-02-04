@@ -19,7 +19,7 @@ export function DataGrid<TData>({
   columns,
   pageSize,
   error,
-}: DataGridProps<TData>): ReactElement {
+}: DataGridProps<TData>): JSX.Element {
   const table = useReactTable({
     data,
     columns,
@@ -28,12 +28,12 @@ export function DataGrid<TData>({
   });
 
   React.useEffect(() => {
-    if (pageSize) {
+    if (typeof pageSize !== "undefined" && pageSize !== null) {
       table.setPageSize(pageSize);
     }
   }, [pageSize, table]);
 
-  if (error) {
+  if (typeof error !== "undefined" && error !== null) {
     return (
       <div className="rounded-md bg-red-50 p-4">
         <div className="flex">

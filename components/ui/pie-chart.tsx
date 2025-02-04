@@ -15,7 +15,7 @@ interface PieChartProps {
   };
 }
 
-export function PieChart({ data }: PieChartProps): ReactElement {
+export function PieChart({ data }: PieChartProps): JSX.Element {
   return (
     <ChartJS
       type="pie"

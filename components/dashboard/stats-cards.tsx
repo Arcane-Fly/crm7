@@ -53,7 +53,7 @@ export function DashboardStats({
   activeRecruitments,
   activePlacements,
   complianceAlerts,
-}: DashboardStatsProps): ReactElement {
+}: DashboardStatsProps): JSX.Element {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <StatsCard

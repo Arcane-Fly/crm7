@@ -21,7 +21,7 @@ const NON_RETRYABLE_ERRORS = new Set(['AbortError', 'TypeError']);
 export async function fetch(
   url: string | URL | Request,
   init?: RequestInit & { retry?: Partial<RetryConfig> }
-): Promise<Response> {
+): Promise<void> {
   const retryConfig = { ...DEFAULT_RETRY_CONFIG, ...init?.retry };
   let lastError: Error | null = null;
   let attempt = 0;

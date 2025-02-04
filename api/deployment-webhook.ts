@@ -11,7 +11,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   try {
     const monitoringUrl = process.env['MONITORING_WEBHOOK_URL'];
-    if (monitoringUrl) {
+    if (typeof monitoringUrl !== "undefined" && monitoringUrl !== null) {
       await fetch(monitoringUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return new NextResponse('OK', { status: 200 });
   } catch (error) {
     const errorTrackingUrl = process.env['ERROR_TRACKING_URL'];
-    if (errorTrackingUrl) {
+    if (typeof errorTrackingUrl !== "undefined" && errorTrackingUrl !== null) {
       await fetch(errorTrackingUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

@@ -26,7 +26,7 @@ export class RateService implements RatesService {
     this.rateManagementService = new RateManagementServiceImpl();
   }
 
-  async getTemplates({ orgId }: { orgId: string }): Promise<{ data: RateTemplate[] }> {
+  async getTemplates({ orgId }: { orgId: string }): Promise<void> {
     try {
       const templates = await this.rateManagementService.getRateTemplates(orgId);
       return { data: templates };
@@ -36,7 +36,7 @@ export class RateService implements RatesService {
     }
   }
 
-  async getRateTemplate(id: string): Promise<RateTemplate> {
+  async getRateTemplate(id: string): Promise<void> {
     try {
       const template = await this.rateManagementService.getRateTemplate(id);
       if (!template) {
@@ -51,7 +51,7 @@ export class RateService implements RatesService {
     }
   }
 
-  async createRateTemplate(template: Partial<RateTemplate>): Promise<RateTemplate> {
+  async createRateTemplate(template: Partial<RateTemplate>): Promise<void> {
     try {
       const newTemplate = await this.rateManagementService.createRateTemplate(template);
       return newTemplate;
@@ -61,7 +61,7 @@ export class RateService implements RatesService {
     }
   }
 
-  async updateRateTemplate(id: string, template: Partial<RateTemplate>): Promise<RateTemplate> {
+  async updateRateTemplate(id: string, template: Partial<RateTemplate>): Promise<void> {
     try {
       const updatedTemplate = await this.rateManagementService.updateRateTemplate(id, template);
       return updatedTemplate;
@@ -93,7 +93,7 @@ export class RateService implements RatesService {
     }
   }
 
-  async getRateTemplateHistory(id: string): Promise<{ data: RateTemplateHistory[] }> {
+  async getRateTemplateHistory(id: string): Promise<void> {
     try {
       const history = await this.rateManagementService.getRateTemplateHistory(id);
       return { data: history };
@@ -103,7 +103,7 @@ export class RateService implements RatesService {
     }
   }
 
-  async getRateCalculations(id: string): Promise<{ data: RateCalculation[] }> {
+  async getRateCalculations(id: string): Promise<void> {
     try {
       const calculations = await this.rateManagementService.getRateCalculations(id);
       return { data: calculations };
@@ -113,7 +113,7 @@ export class RateService implements RatesService {
     }
   }
 
-  async validateRateTemplate(template: RateTemplate): Promise<RateValidationResult> {
+  async validateRateTemplate(template: RateTemplate): Promise<void> {
     try {
       const result = await this.rateManagementService.validateRateTemplate(template);
       return result;
@@ -123,7 +123,7 @@ export class RateService implements RatesService {
     }
   }
 
-  async calculateRate(template: RateTemplate): Promise<RateCalculationResult> {
+  async calculateRate(template: RateTemplate): Promise<void> {
     try {
       const result = await this.rateManagementService.calculateRate(template);
       return result;
@@ -133,7 +133,7 @@ export class RateService implements RatesService {
     }
   }
 
-  async getBulkCalculations(orgId: string): Promise<{ data: BulkCalculation[] }> {
+  async getBulkCalculations(orgId: string): Promise<void> {
     try {
       const calculations = await this.rateManagementService.getBulkCalculations(orgId);
       return { data: calculations };
@@ -143,7 +143,7 @@ export class RateService implements RatesService {
     }
   }
 
-  async createBulkCalculation(params: BulkCalculationParams): Promise<{ data: BulkCalculation }> {
+  async createBulkCalculation(params: BulkCalculationParams): Promise<void> {
     try {
       const result = await this.rateManagementService.createBulkCalculation(params);
       return { data: result };
@@ -153,7 +153,7 @@ export class RateService implements RatesService {
     }
   }
 
-  async getAnalytics({ orgId }: { orgId: string }): Promise<{ data: RateAnalytics }> {
+  async getAnalytics({ orgId }: { orgId: string }): Promise<void> {
     try {
       const analytics = await this.rateManagementService.getAnalytics(orgId);
       return { data: analytics };

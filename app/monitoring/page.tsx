@@ -24,7 +24,7 @@ function LoadingMetrics() {
   );
 }
 
-export default function MonitoringPage(): React.ReactElement {
+export default function MonitoringPage(): JSX.Element {
   return (
     <div className='container mx-auto p-6'>
       <div className='mb-6'>

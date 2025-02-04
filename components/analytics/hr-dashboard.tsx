@@ -4,7 +4,7 @@ import { type Employee, type Attendance, type AttendanceStats } from '@/lib/type
 
 const supabase = createClient();
 
-export function HRDashboard(): React.ReactElement {
+export function HRDashboard(): JSX.Element {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [attendance, setAttendance] = useState<Attendance[]>([]);
   const [stats, setStats] = useState<AttendanceStats | null>(null);
@@ -16,7 +16,7 @@ export function HRDashboard(): React.ReactElement {
           .from('employees')
           .select('*');
 
-        if (employeeError) {
+        if (typeof employeeError !== "undefined" && employeeError !== null) {
           console.error('Error fetching employees:', employeeError);
           return;
         }
@@ -27,7 +27,7 @@ export function HRDashboard(): React.ReactElement {
           .from('attendance')
           .select('*');
 
-        if (attendanceError) {
+        if (typeof attendanceError !== "undefined" && attendanceError !== null) {
           console.error('Error fetching attendance:', attendanceError);
           return;
         }

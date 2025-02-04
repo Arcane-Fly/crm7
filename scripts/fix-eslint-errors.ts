@@ -33,7 +33,7 @@ const FUNCTION_TRANSFORMATIONS: FileTransformation[] = [
 const TYPE_TRANSFORMATIONS: FileTransformation[] = [
   // Replace any with unknown
   {
-    pattern: /: any(?![a-zA-Z])/g,
+    pattern: /: unknown(?![a-zA-Z])/g,
     replacement: ': unknown'
   },
   // Fix non-null assertions

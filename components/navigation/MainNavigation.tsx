@@ -1,7 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 
-export function MainNavigation(): React.ReactElement {
+export function MainNavigation(): JSX.Element {
   const router = useRouter();
   const [activeSection, setActiveSection] = React.useState<string | null>(null);
 

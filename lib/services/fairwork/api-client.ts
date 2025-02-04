@@ -31,7 +31,7 @@ export class FairWorkApiClient {
     method: 'GET' | 'POST' | 'PUT' | 'DELETE',
     path: string,
     data?: unknown,
-  ): Promise<T> {
+  ): Promise<void> {
     const url = `${this.config.baseUrl}${path}`;
     const headers = {
       'Content-Type': 'application/json',
@@ -81,31 +81,31 @@ export class FairWorkApiClient {
     }
   }
 
-  async validateRate(params: RateValidationRequest): Promise<RateValidationResponse> {
+  async validateRate(params: RateValidationRequest): Promise<void> {
     return this.request<RateValidationResponse>('POST', '/rates/validate', params);
   }
 
-  async getActiveAwards(): Promise<Page<Award>> {
+  async getActiveAwards(): Promise<void> {
     return this.request<Page<Award>>('GET', '/awards/active');
   }
 
-  async getCurrentRates(awardCode: string): Promise<Rate[]> {
+  async getCurrentRates(awardCode: string): Promise<void> {
     return this.request<Rate[]>('GET', `/awards/${awardCode}/rates/current`);
   }
 
-  async getRatesForDate(awardCode: string, date: string): Promise<Rate[]> {
+  async getRatesForDate(awardCode: string, date: string): Promise<void> {
     return this.request<Rate[]>('GET', `/awards/${awardCode}/rates/${date}`);
   }
 
-  async getClassifications(awardCode: string): Promise<Classification[]> {
+  async getClassifications(awardCode: string): Promise<void> {
     return this.request<Classification[]>('GET', `/awards/${awardCode}/classifications`);
   }
 
-  async getClassificationHierarchy(awardCode: string): Promise<ClassificationHierarchy> {
+  async getClassificationHierarchy(awardCode: string): Promise<void> {
     return this.request<ClassificationHierarchy>('GET', `/awards/${awardCode}/classifications/hierarchy`);
   }
 
-  async getRateTemplates(awardCode: string): Promise<RateTemplate[]> {
+  async getRateTemplates(awardCode: string): Promise<void> {
     return this.request<RateTemplate[]>('GET', `/awards/${awardCode}/templates`);
   }
 }

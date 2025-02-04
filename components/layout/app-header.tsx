@@ -15,7 +15,7 @@ interface AppHeaderProps {
   className?: string;
 }
 
-export function AppHeader({ className = '' }: AppHeaderProps): ReactElement {
+export function AppHeader({ className = '' }: AppHeaderProps): JSX.Element {
   const { toggleSidebar } = useSidebarContext();
 
   return (

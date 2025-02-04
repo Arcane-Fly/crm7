@@ -18,7 +18,7 @@ interface PaymentFormProps {
   onSubmit: (data: PaymentFormData) => Promise<void>;
 }
 
-export function PaymentForm({ onSubmit }: PaymentFormProps): React.ReactElement {
+export function PaymentForm({ onSubmit }: PaymentFormProps): JSX.Element {
   const form = useForm<PaymentFormData>({
     resolver: zodResolver(paymentSchema),
     defaultValues: {

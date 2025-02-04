@@ -79,7 +79,7 @@ export function captureTransactionError(
 export function startSpan(
   transaction: Transaction,
   spanContext: SpanContext
-): ReturnType<Transaction['startChild']> {
+): void {
   if (!transaction) {
     return null;
   }

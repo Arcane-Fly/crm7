@@ -57,33 +57,33 @@ export interface AnalyticsData {
 export class RatesServiceImpl implements RatesService {
   private supabase = supabase;
 
-  async generateQuote(templateId: string): Promise<unknown> {
+  async generateQuote(templateId: string): Promise<void> {
     logger.info('Generating quote', { templateId });
     throw new Error('Not implemented');
   }
 
-  async getBulkCalculations(params: { org_id: string }): Promise<BulkCalculationResponse> {
+  async getBulkCalculations(params: { org_id: string }): Promise<void> {
     logger.info('Getting bulk calculations', params);
     throw new Error('Not implemented');
   }
 
-  async createBulkCalculation(params: unknown): Promise<BulkCalculationResponse> {
+  async createBulkCalculation(params: unknown): Promise<void> {
     logger.info('Creating bulk calculation', { params });
     throw new Error('Not implemented');
   }
 
-  async getAnalytics(params: { orgId: string }): Promise<{ data: AnalyticsData }> {
+  async getAnalytics(params: { orgId: string }): Promise<void> {
     logger.info('Getting analytics', params);
     throw new Error('Not implemented');
   }
 
-  async getTemplates(params: { org_id: string }): Promise<{ data: RateTemplate[] }> {
+  async getTemplates(params: { org_id: string }): Promise<void> {
     const { data, error } = await this.supabase
       .from('rate_templates')
       .select('*')
       .eq('org_id', params.org_id);
 
-    if (error) throw error;
+    if (typeof error !== "undefined" && error !== null) throw error;
     return { data: data as RateTemplate[] };
   }
 
@@ -91,7 +91,7 @@ export class RatesServiceImpl implements RatesService {
     org_id: string;
     start_date: string;
     end_date: string;
-  }): Promise<unknown> {
+  }): Promise<void> {
     logger.info('Getting forecasts', params);
     throw new Error('Not implemented');
   }
@@ -100,7 +100,7 @@ export class RatesServiceImpl implements RatesService {
     org_id: string;
     start_date: string;
     end_date: string;
-  }): Promise<unknown> {
+  }): Promise<void> {
     logger.info('Getting reports', params);
     throw new Error('Not implemented');
   }

@@ -12,7 +12,7 @@ const getStatusVariant = (status: string): string => {
   }
 };
 
-export function FundingProgramsDataTable(): React.ReactElement {
+export function FundingProgramsDataTable(): JSX.Element {
   return (
     <div>
       {/* Table implementation */}

@@ -30,7 +30,7 @@ export function Combobox({
   multiple = false,
   searchPlaceholder = 'Search...',
   notFoundText = 'No results found.',
-}: ComboboxProps): ReactElement {
+}: ComboboxProps): JSX.Element {
   const [open, setOpen] = React.useState<boolean>(false);
 
   const getDisplayValue = () => {

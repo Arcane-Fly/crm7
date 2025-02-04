@@ -3,7 +3,7 @@ import { logger } from '@/lib/logger';
 
 let browser: Browser | null = null;
 
-export async function getBrowser(): Promise<Browser> {
+export async function getBrowser(): Promise<void> {
   if (!browser) {
     try {
       browser = await puppeteer.launch({
@@ -26,7 +26,7 @@ export async function getBrowser(): Promise<Browser> {
 }
 
 export async function closeBrowser(): Promise<void> {
-  if (browser) {
+  if (typeof browser !== "undefined" && browser !== null) {
     try {
       await browser.close();
       browser = null;

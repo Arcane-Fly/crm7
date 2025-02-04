@@ -22,7 +22,7 @@ export class ExpenseService extends BaseService {
     });
   }
 
-  async createExpense(expense: Omit<Expense, 'id' | 'status'>): Promise<Expense> {
+  async createExpense(expense: Omit<Expense, 'id' | 'status'>): Promise<void> {
     return this.executeServiceMethod('createExpense', async () => {
       const { data, error } = await this.supabase
         .from('expenses')
@@ -33,12 +33,12 @@ export class ExpenseService extends BaseService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (typeof error !== "undefined" && error !== null) throw error;
       return data;
     });
   }
 
-  async getExpense(id: string): Promise<Expense | null> {
+  async getExpense(id: string): Promise<void> {
     return this.executeServiceMethod('getExpense', async () => {
       const { data, error } = await this.supabase
         .from('expenses')
@@ -46,12 +46,12 @@ export class ExpenseService extends BaseService {
         .eq('id', id)
         .single();
 
-      if (error) throw error;
+      if (typeof error !== "undefined" && error !== null) throw error;
       return data;
     });
   }
 
-  async updateExpense(id: string, updates: Partial<Expense>): Promise<Expense> {
+  async updateExpense(id: string, updates: Partial<Expense>): Promise<void> {
     return this.executeServiceMethod('updateExpense', async () => {
       const { data, error } = await this.supabase
         .from('expenses')
@@ -60,19 +60,19 @@ export class ExpenseService extends BaseService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (typeof error !== "undefined" && error !== null) throw error;
       return data;
     });
   }
 
-  async approveExpense(id: string, approvedBy: string): Promise<Expense> {
+  async approveExpense(id: string, approvedBy: string): Promise<void> {
     return this.updateExpense(id, {
       status: 'approved',
       approvedBy,
     });
   }
 
-  async rejectExpense(id: string, rejectedBy: string, reason: string): Promise<Expense> {
+  async rejectExpense(id: string, rejectedBy: string, reason: string): Promise<void> {
     return this.updateExpense(id, {
       status: 'rejected',
       rejectedBy,
@@ -87,21 +87,21 @@ export class ExpenseService extends BaseService {
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (typeof error !== "undefined" && error !== null) throw error;
     });
   }
 
-  async getExpenses(status?: Expense['status']): Promise<Expense[]> {
+  async getExpenses(status?: Expense['status']): Promise<void> {
     return this.executeServiceMethod('getExpenses', async () => {
       const query = this.supabase.from('expenses').select();
 
-      if (status) {
+      if (typeof status !== "undefined" && status !== null) {
         query.eq('status', status);
       }
 
       const { data, error } = await query;
 
-      if (error) throw error;
+      if (typeof error !== "undefined" && error !== null) throw error;
       return data;
     });
   }

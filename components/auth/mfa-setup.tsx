@@ -1,7 +1,7 @@
 import React from 'react';
 import { type MFASetupProps } from '@/lib/types';
 
-export function MFASetup({ onComplete }: MFASetupProps): React.ReactElement {
+export function MFASetup({ onComplete }: MFASetupProps): JSX.Element {
   const [qrCode, setQrCode] = React.useState<string>('');
   const [secret, setSecret] = React.useState<string>('');
   const [isVerifying, setIsVerifying] = React.useState<boolean>(false);
@@ -28,7 +28,7 @@ export function MFASetup({ onComplete }: MFASetupProps): React.ReactElement {
       setIsVerifying(true);
       const success = await verifyMFA(token);
 
-      if (success) {
+      if (typeof success !== "undefined" && success !== null) {
         onComplete();
       }
     } catch (error) {
@@ -38,7 +38,7 @@ export function MFASetup({ onComplete }: MFASetupProps): React.ReactElement {
     }
   };
 
-  if (isEnabled) {
+  if (typeof isEnabled !== "undefined" && isEnabled !== null) {
     return (
       <div className="text-center">
         <p className="text-green-600">MFA is already enabled</p>

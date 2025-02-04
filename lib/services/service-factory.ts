@@ -23,7 +23,7 @@ export class ServiceFactory {
     options: ServiceOptions,
   ): T {
     const existingService = this.services.get(options.name);
-    if (existingService) {
+    if (typeof existingService !== "undefined" && existingService !== null) {
       logger.warn('Service already registered', { serviceName: options.name });
       return existingService as T;
     }

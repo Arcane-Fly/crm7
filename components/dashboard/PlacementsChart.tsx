@@ -10,6 +10,6 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-export function PlacementsChart(): React.ReactElement {
+export function PlacementsChart(): JSX.Element {
   // Component implementation...
 }

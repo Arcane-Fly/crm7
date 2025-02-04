@@ -82,7 +82,7 @@ interface JobFormProps {
 export function JobForm({
   initialData,
   onSubmit,
-}: JobFormProps): ReactElement {
+}: JobFormProps): JSX.Element {
   const form = useForm<JobFormValues>({
     resolver: zodResolver(jobFormSchema),
     defaultValues: initialData || {

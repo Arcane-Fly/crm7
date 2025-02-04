@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useUser } from './use-user';
 
-export function useAdminAccess() {
+export function useAdminAccess(): void {
   const { user } = useUser();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);

@@ -1,11 +1,11 @@
 import { type NextRequest } from 'next/server';
 import { logger } from '@/lib/logger';
 
-export function monitorAPIEndpoint<T extends (...args: any[]) => Promise<any>>(
+export function monitorAPIEndpoint<T extends (...args: unknown[]) => Promise<any>>(
   originalMethod: T,
   endpointName: string
 ): T {
-  return async function monitoredMethod(this: any, ...args: Parameters<T>): Promise<ReturnType<T>> {
+  return async function monitoredMethod(this: unknown, ...args: Parameters<T>): Promise<ReturnType<T>> {
     const startTime = Date.now();
 
     try {

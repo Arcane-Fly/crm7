@@ -20,7 +20,7 @@ export function useQueryWithSupabase<T>(
       try {
         const { data, error } = await queryFn();
 
-        if (error) {
+        if (typeof error !== "undefined" && error !== null) {
           throw error;
         }
 
@@ -53,7 +53,7 @@ export function useInfiniteQueryWithSupabase<T>(
           (Number(pageParam) + 1) * (options?.pageSize || 10) - 1
         );
 
-        if (error) {
+        if (typeof error !== "undefined" && error !== null) {
           throw error;
         }
 

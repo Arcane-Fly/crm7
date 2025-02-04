@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export function ReadingProgress(): React.ReactElement {
+export function ReadingProgress(): JSX.Element {
   const [progress, setProgress] = useState<number>(0);
 
   useEffect(() => {

@@ -32,7 +32,7 @@ export class BaseService {
   protected async executeServiceMethod<T>(
     methodName: string,
     method: () => Promise<T>
-  ): Promise<T> {
+  ): Promise<void> {
     try {
       return await method();
     } catch (error) {

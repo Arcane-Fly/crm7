@@ -16,7 +16,7 @@ export default function AuthCallbackPage() {
       const code = searchParams.get('code');
       const next = searchParams.get('next') ?? '/';
 
-      if (code) {
+      if (typeof code !== "undefined" && code !== null) {
         await supabase.auth.exchangeCodeForSession(code);
       }
 

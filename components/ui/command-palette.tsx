@@ -29,7 +29,7 @@ import {
   CommandShortcut,
 } from '@/components/ui/command';
 
-export function CommandPalette(): React.ReactElement {
+export function CommandPalette(): JSX.Element {
   const [open, setOpen] = React.useState(false);
   const router = useRouter();
 

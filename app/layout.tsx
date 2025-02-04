@@ -51,7 +51,7 @@ export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
-}): React.ReactElement {
+}): JSX.Element {
   return (
     <html lang='en'>
       <body className={cn('min-h-screen bg-background antialiased', inter.className)}>

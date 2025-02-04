@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { type BankIntegrationService } from '@/lib/services/bank-integration';
 
-export function useBankIntegration(bankIntegrationService: BankIntegrationService) {
+export function useBankIntegration(bankIntegrationService: BankIntegrationService): Promise<void> {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 

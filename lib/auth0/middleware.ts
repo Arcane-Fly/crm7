@@ -7,7 +7,7 @@ interface Session {
   };
 }
 
-export function withAuth0(handler: Function) {
+export function withAuth0(handler: Function): Promise<void> {
   return async (request: NextRequest) => {
     try {
       const session = await getSession(request);
@@ -22,7 +22,7 @@ export function withAuth0(handler: Function) {
   };
 }
 
-export function withRoles(handler: Function, allowedRoles: string[]) {
+export function withRoles(handler: Function, allowedRoles: string[]): Promise<void> {
   return async (req: NextRequest) => {
     try {
       const session = await getSession(req);
@@ -44,7 +44,7 @@ export function withRoles(handler: Function, allowedRoles: string[]) {
   };
 }
 
-async function getSession(req: NextRequest): Promise<Session | null> {
+async function getSession(req: NextRequest): Promise<void> {
   // Implement session retrieval logic here
   return null;
 }

@@ -5,7 +5,7 @@ interface FundingOverviewProps {
   data: FundingData[];
 }
 
-export function FundingOverview({ data }: FundingOverviewProps): React.ReactElement {
+export function FundingOverview({ data }: FundingOverviewProps): JSX.Element {
   return (
     <div className="h-[300px]">
       <ResponsiveContainer width="100%" height="100%">

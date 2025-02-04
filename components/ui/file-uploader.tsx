@@ -13,7 +13,7 @@ export function FileUploader({
   accept,
   maxSize = 5242880, // 5MB
   maxFiles = 1,
-}: FileUploaderProps): ReactElement {
+}: FileUploaderProps): JSX.Element {
   const [error, setError] = useState<string | null>(null);
 
   const onDrop = (acceptedFiles: File[]) => {

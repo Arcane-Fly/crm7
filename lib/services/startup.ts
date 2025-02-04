@@ -5,7 +5,7 @@ import { ServiceRegistry } from './service-registry';
 let isInitialized = false;
 
 export async function initializeServices(): Promise<void> {
-  if (isInitialized) {
+  if (typeof isInitialized !== "undefined" && isInitialized !== null) {
     return;
   }
 

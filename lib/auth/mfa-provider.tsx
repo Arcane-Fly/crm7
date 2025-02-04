@@ -15,7 +15,7 @@ interface MFAProviderProps {
 
 const MFAContext = createContext<MFAContextType | null>(null);
 
-export function MFAProvider({ children }: MFAProviderProps) {
+export function MFAProvider({ children }: MFAProviderProps): void {
   const supabase = createClient();
   const [isEnabled, setIsEnabled] = useState(false);
   const [isEnrolling, setIsEnrolling] = useState(false);
@@ -23,7 +23,7 @@ export function MFAProvider({ children }: MFAProviderProps) {
   const checkMFAStatus = async () => {
     try {
       const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      if (error) throw error;
+      if (typeof error !== "undefined" && error !== null) throw error;
       setIsEnabled(data.currentLevel === 'aal2');
     } catch (error) {
       console.error('Error checking MFA status:', error);
@@ -36,7 +36,7 @@ export function MFAProvider({ children }: MFAProviderProps) {
       const { data, error } = await supabase.auth.mfa.enroll({
         factorType: 'totp',
       });
-      if (error) throw error;
+      if (typeof error !== "undefined" && error !== null) throw error;
       return data;
     } catch (error) {
       console.error('Error starting MFA enrollment:', error);
@@ -47,7 +47,7 @@ export function MFAProvider({ children }: MFAProviderProps) {
   const completeMFAEnrollment = async (code: string) => {
     try {
       const { error } = await supabase.auth.mfa.challenge({ factorId: code });
-      if (error) throw error;
+      if (typeof error !== "undefined" && error !== null) throw error;
       setIsEnabled(true);
       setIsEnrolling(false);
     } catch (error) {
@@ -71,7 +71,7 @@ export function MFAProvider({ children }: MFAProviderProps) {
   );
 }
 
-export function useMFA() {
+export function useMFA(): void {
   const context = useContext(MFAContext);
   if (!context) {
     throw new Error('useMFA must be used within an MFAProvider');

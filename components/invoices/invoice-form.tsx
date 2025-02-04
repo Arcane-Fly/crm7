@@ -4,13 +4,19 @@ import { Button } from '@/components/ui/button';
 import { type LineItem } from '@/lib/types';
 
 interface InvoiceFormData {
-  // Define additional properties as needed
-}
-interface InvoiceFormProps {
-  onSubmit: (data: InvoiceFormData) => Promise<void>;
+  dueDate: Date;
+  items: Array<{
+    description: string;
+    amount: number;
+  }>;
 }
 
-export function InvoiceForm({ onSubmit }: InvoiceFormProps): React.ReactElement {
+interface InvoiceFormProps {
+  onSubmit: (data: InvoiceFormData) => void;
+  initialData?: InvoiceFormData;
+}
+
+export function InvoiceForm({ onSubmit, initialData }: InvoiceFormProps): JSX.Element {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
   const [dueDate, setDueDate] = useState<Date | null>(null);
@@ -26,7 +32,7 @@ export function InvoiceForm({ onSubmit }: InvoiceFormProps): React.ReactElement 
     try {
       setIsLoading(true);
       // Form submission logic
-      await onSubmit({} as InvoiceFormData);
+      await onSubmit({ dueDate, items: lineItems } as InvoiceFormData);
     } catch (error) {
       console.error('Failed to submit invoice:', error);
     } finally {

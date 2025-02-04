@@ -41,7 +41,7 @@ export function FieldEditor({ table, column, recordId, value, onUpdate }: FieldE
         .update({ [column]: editValue })
         .eq('id', recordId);
 
-      if (error) throw error;
+      if (typeof error !== "undefined" && error !== null) throw error;
 
       onUpdate(editValue);
       setIsOpen(false);

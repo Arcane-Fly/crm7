@@ -23,7 +23,7 @@ export class FundingService extends BaseService {
     status?: FundingEntry['status'];
     start_date?: string;
     end_date?: string;
-  }): Promise<FundingEntry[]> {
+  }): Promise<void> {
     return this.executeServiceMethod('getFundingEntries', async () => {
       let query = this.supabase.from('funding_entries').select();
 
@@ -41,7 +41,7 @@ export class FundingService extends BaseService {
 
       const { data, error } = await query;
 
-      if (error) {
+      if (typeof error !== "undefined" && error !== null) {
         throw error;
       }
 
@@ -49,7 +49,7 @@ export class FundingService extends BaseService {
     });
   }
 
-  async getFundingEntry(id: string): Promise<FundingEntry | null> {
+  async getFundingEntry(id: string): Promise<void> {
     return this.executeServiceMethod('getFundingEntry', async () => {
       const { data, error } = await this.supabase
         .from('funding_entries')
@@ -57,7 +57,7 @@ export class FundingService extends BaseService {
         .eq('id', id)
         .single();
 
-      if (error) {
+      if (typeof error !== "undefined" && error !== null) {
         throw error;
       }
 
@@ -65,7 +65,7 @@ export class FundingService extends BaseService {
     });
   }
 
-  async createFundingEntry(entry: Omit<FundingEntry, 'id' | 'status'>): Promise<FundingEntry> {
+  async createFundingEntry(entry: Omit<FundingEntry, 'id' | 'status'>): Promise<void> {
     return this.executeServiceMethod('createFundingEntry', async () => {
       const { data, error } = await this.supabase
         .from('funding_entries')
@@ -76,7 +76,7 @@ export class FundingService extends BaseService {
         .select()
         .single();
 
-      if (error) {
+      if (typeof error !== "undefined" && error !== null) {
         throw error;
       }
 
@@ -84,7 +84,7 @@ export class FundingService extends BaseService {
     });
   }
 
-  async updateFundingEntry(id: string, updates: Partial<FundingEntry>): Promise<FundingEntry> {
+  async updateFundingEntry(id: string, updates: Partial<FundingEntry>): Promise<void> {
     return this.executeServiceMethod('updateFundingEntry', async () => {
       const { data, error } = await this.supabase
         .from('funding_entries')
@@ -93,7 +93,7 @@ export class FundingService extends BaseService {
         .select()
         .single();
 
-      if (error) {
+      if (typeof error !== "undefined" && error !== null) {
         throw error;
       }
 
@@ -108,7 +108,7 @@ export class FundingService extends BaseService {
         .delete()
         .eq('id', id);
 
-      if (error) {
+      if (typeof error !== "undefined" && error !== null) {
         throw error;
       }
     });

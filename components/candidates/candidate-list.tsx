@@ -210,7 +210,7 @@ const columns: ColumnDef<Candidate>[] = [
   },
 ];
 
-export function CandidateList(): React.ReactElement {
+export function CandidateList(): JSX.Element {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});

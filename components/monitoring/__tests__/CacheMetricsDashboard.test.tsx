@@ -15,7 +15,7 @@ describe('CacheMetricsDashboard', () => {
     hits: 100,
     misses: 20,
     errors: 5,
-    latencyMs: Array.from({ length: 100 }, (_: unknown, i) => i + 1), // 1-100ms
+    latencyMs: Array.from({ length: 100 }, (_, i) => i + 1), // 1-100ms
     memoryUsageMB: 256,
     evictions: 10,
   };
@@ -29,8 +29,8 @@ describe('CacheMetricsDashboard', () => {
   };
 
   beforeEach(() => {
-    jest.spyOn(cacheMonitoring: unknown, 'getMetrics').mockReturnValue(mockMetrics: unknown);
-    jest.spyOn(cacheWarming: unknown, 'getStats').mockReturnValue(mockWarmingStats: unknown);
+    jest.spyOn(cacheMonitoring, 'getMetrics').mockReturnValue(mockMetrics);
+    jest.spyOn(cacheWarming, 'getStats').mockReturnValue(mockWarmingStats);
   });
 
   afterEach(() => {
@@ -97,8 +97,8 @@ describe('CacheMetricsDashboard', () => {
     });
 
     // Update metrics
-    jest.spyOn(cacheMonitoring: unknown, 'getMetrics').mockReturnValue(updatedMetrics: unknown);
-    jest.advanceTimersByTime(1000: unknown);
+    jest.spyOn(cacheMonitoring, 'getMetrics').mockReturnValue(updatedMetrics);
+    jest.advanceTimersByTime(1000);
 
     await waitFor(() => {
       expect(screen.getByText('Hits: 150')).toBeInTheDocument();
@@ -111,7 +111,7 @@ describe('CacheMetricsDashboard', () => {
       latencyMs: [],
     };
 
-    jest.spyOn(cacheMonitoring: unknown, 'getMetrics').mockReturnValue(emptyMetrics: unknown);
+    jest.spyOn(cacheMonitoring, 'getMetrics').mockReturnValue(emptyMetrics);
     render(<CacheMetricsDashboard />);
 
     const user = userEvent.setup();
@@ -123,16 +123,16 @@ describe('CacheMetricsDashboard', () => {
   });
 
   it('should cleanup interval on unmount', () => {
-    const clearIntervalSpy = jest.spyOn(window: unknown, 'clearInterval');
+    const clearIntervalSpy = jest.spyOn(window, 'clearInterval');
     const { unmount } = render(<CacheMetricsDashboard />);
 
     unmount();
 
-    expect(clearIntervalSpy: unknown).toHaveBeenCalled();
+    expect(clearIntervalSpy).toHaveBeenCalled();
   });
 
   it('should handle missing warming stats gracefully', async () => {
-    jest.spyOn(cacheWarming: unknown, 'getStats').mockReturnValue({
+    jest.spyOn(cacheWarming, 'getStats').mockReturnValue({
       totalEntries: 0,
       activeEntries: 0,
       entriesByPriority: {},

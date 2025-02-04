@@ -21,7 +21,7 @@ export function useUser(): UseUserReturn {
       try {
         const { data: { user }, error: supabaseError } = await supabase.auth.getUser();
 
-        if (supabaseError) {
+        if (typeof supabaseError !== "undefined" && supabaseError !== null) {
           throw supabaseError;
         }
 

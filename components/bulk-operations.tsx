@@ -8,7 +8,7 @@ interface BulkOperationsProps {
   onComplete: () => void;
 }
 
-export function BulkOperations({ table, selectedIds, onComplete }: BulkOperationsProps): React.ReactElement {
+export function BulkOperations({ table, selectedIds, onComplete }: BulkOperationsProps): JSX.Element {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleExport = async (): Promise<void> => {
@@ -19,7 +19,7 @@ export function BulkOperations({ table, selectedIds, onComplete }: BulkOperation
         .from(table)
         .select('*');
 
-      if (error) throw error;
+      if (typeof error !== "undefined" && error !== null) throw error;
 
       const ws = XLSX.utils.json_to_sheet(data);
       const wb = XLSX.utils.book_new();
@@ -49,7 +49,7 @@ export function BulkOperations({ table, selectedIds, onComplete }: BulkOperation
 
         // Insert data into Supabase
         const { error } = await supabase.from(table).insert(jsonData);
-        if (error) throw error;
+        if (typeof error !== "undefined" && error !== null) throw error;
 
         onComplete();
       };
@@ -68,7 +68,7 @@ export function BulkOperations({ table, selectedIds, onComplete }: BulkOperation
 
       const { error } = await supabase.from(table).delete().in('id', selectedIds);
 
-      if (error) throw error;
+      if (typeof error !== "undefined" && error !== null) throw error;
 
       onComplete();
     } catch (error) {
@@ -91,7 +91,7 @@ export function BulkOperations({ table, selectedIds, onComplete }: BulkOperation
         type="file"
         onChange={(e) => {
           const file = e.target.files?.[0];
-          if (file) void handleImport(file);
+          if (typeof file !== "undefined" && file !== null) void handleImport(file);
         }}
         disabled={isLoading}
         accept=".xlsx,.xls"

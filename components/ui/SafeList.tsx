@@ -10,7 +10,7 @@ export function SafeList<T>({
   items, 
   renderItem, 
   emptyMessage = 'No items to display'
-}: SafeListProps<T>): ReactElement {
+}: SafeListProps<T>): JSX.Element {
   if (!items.length) {
     return <p className="text-gray-500">{emptyMessage}</p>;
   }

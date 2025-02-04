@@ -2,8 +2,8 @@ import { type NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { type Database } from '@/types/supabase';
 
-export async function withAuth(handler: Function) {
-  return async (req: NextRequest, context: any) => {
+export async function withAuth(handler: Function): Promise<void> {
+  return async (req: NextRequest, context: unknown) => {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
       return new Response('Unauthorized', { status: 401 });
@@ -16,8 +16,8 @@ export async function withAuth(handler: Function) {
 
     try {
       const supabase = createClient<Database>(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        process.env.NEXT_PUBLIC_SUPABASE_URL ?? undefined,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? undefined
       );
 
       const { data: { user }, error } = await supabase.auth.getUser(token);
@@ -33,7 +33,7 @@ export async function withAuth(handler: Function) {
   };
 }
 
-export async function getUser(req: NextRequest) {
+export async function getUser(req: NextRequest): Promise<void> {
   const authHeader = req.headers.get('Authorization');
   if (!authHeader?.startsWith('Bearer ')) {
     return null;
@@ -46,8 +46,8 @@ export async function getUser(req: NextRequest) {
 
   try {
     const supabase = createClient<Database>(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      process.env.NEXT_PUBLIC_SUPABASE_URL ?? undefined,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? undefined
     );
 
     const { data: { user } } = await supabase.auth.getUser(token);

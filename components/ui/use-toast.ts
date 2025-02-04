@@ -62,7 +62,7 @@ let memoryState: State = { toasts: [] };
 
 const listeners = new Set<(state: State) => void>();
 
-function dispatch(action: Action) {
+function dispatch(action: Action): void {
   memoryState = reducer(memoryState, action);
   listeners.forEach((listener) => {
     listener(memoryState);
@@ -88,7 +88,7 @@ function reducer(state: State, action: Action): State {
     case 'DISMISS_TOAST': {
       const { toastId } = action;
 
-      if (toastId) {
+      if (typeof toastId !== "undefined" && toastId !== null) {
         addToRemoveQueue(toastId);
       } else {
         state.toasts.forEach((toast) => {
@@ -123,7 +123,7 @@ function reducer(state: State, action: Action): State {
   }
 }
 
-export function useToast() {
+export function useToast(): void {
   const [state, setState] = React.useState<State>(memoryState);
 
   React.useEffect(() => {

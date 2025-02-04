@@ -4,7 +4,7 @@ import { logger } from '@/lib/logger';
 import { chargeCalculationService } from '@/lib/services/charge-calculation/charge-calculation-service';
 import type { RateTemplate } from '@/lib/types/rates';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }

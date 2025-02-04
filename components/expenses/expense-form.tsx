@@ -16,7 +16,7 @@ interface ExpenseFormProps {
   onSubmit: (data: ExpenseFormData) => Promise<void>;
 }
 
-export function ExpenseForm({ onSubmit }: ExpenseFormProps): React.ReactElement {
+export function ExpenseForm({ onSubmit }: ExpenseFormProps): JSX.Element {
   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
 
   const form = useForm<ExpenseFormData>({

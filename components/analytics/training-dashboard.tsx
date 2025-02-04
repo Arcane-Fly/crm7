@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { type TrainingStats } from '@/lib/types';
 
-export function TrainingDashboard(): React.ReactElement {
+export function TrainingDashboard(): JSX.Element {
   const [stats, setStats] = useState<TrainingStats>({
     completionRate: 0,
     averageScore: 0,

@@ -31,7 +31,7 @@ function startPerformanceSpan(name: string, type: string, tags?: Record<string, 
     tags: new Map(),
   };
 
-  if (tags) {
+  if (typeof tags !== "undefined" && tags !== null) {
     Object.entries(tags).forEach(([key, value]) => {
       span.tags.set(key, String(value));
     });
@@ -52,7 +52,7 @@ function finishPerformanceSpan(
   span.tags.set('duration', String(duration));
   span.tags.set('status', status);
 
-  if (data) {
+  if (typeof data !== "undefined" && data !== null) {
     Object.entries(data).forEach(([key, value]) => {
       span.tags.set(key, String(value));
     });

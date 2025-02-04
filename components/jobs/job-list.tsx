@@ -266,7 +266,7 @@ const columns: ColumnDef<Job>[] = [
   },
 ];
 
-export function JobList(): React.ReactElement {
+export function JobList(): JSX.Element {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});

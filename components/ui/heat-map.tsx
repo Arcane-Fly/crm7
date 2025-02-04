@@ -14,7 +14,7 @@ export function HeatMap({
   endColor = '#ff0000',
   cellSize = 40,
   gap = 4,
-}: HeatMapProps): ReactElement {
+}: HeatMapProps): JSX.Element {
   const maxValue = Math.max(...data.flat());
   const minValue = Math.min(...data.flat());
 

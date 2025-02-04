@@ -17,7 +17,7 @@ interface HeaderProps {
   className?: string;
 }
 
-export function Header({ className }: HeaderProps): ReactElement {
+export function Header({ className }: HeaderProps): JSX.Element {
   const { isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen } = useSidebar();
   const pathname = usePathname();
 

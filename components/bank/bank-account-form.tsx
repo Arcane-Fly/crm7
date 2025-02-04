@@ -16,7 +16,7 @@ interface BankAccountFormProps {
   onSubmit: (data: BankAccountFormData) => Promise<void>;
 }
 
-export function BankAccountForm({ onSubmit }: BankAccountFormProps): React.ReactElement {
+export function BankAccountForm({ onSubmit }: BankAccountFormProps): JSX.Element {
   const form = useForm<BankAccountFormData>({
     resolver: zodResolver(bankAccountSchema),
     defaultValues: {

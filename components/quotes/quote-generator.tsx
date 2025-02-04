@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ratesService } from '@/lib/services/rates';
 
-export function QuoteGenerator(): React.ReactElement {
+export function QuoteGenerator(): JSX.Element {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -17,11 +17,11 @@ export function QuoteGenerator(): React.ReactElement {
     }
   };
 
-  if (isLoading) {
+  if (typeof isLoading !== "undefined" && isLoading !== null) {
     return <div>Generating quote...</div>;
   }
 
-  if (error) {
+  if (typeof error !== "undefined" && error !== null) {
     return <div>Error: {error.message}</div>;
   }
 

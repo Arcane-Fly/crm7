@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 
 import { ErrorFallback } from '../ErrorFallback';
 
@@ -42,7 +42,7 @@ describe('ErrorFallback', () => {
     );
 
     fireEvent.click(screen.getByText('Try again'));
-    expect(mockResetErrorBoundary: unknown).toHaveBeenCalledTimes(1: unknown);
+    expect(mockResetErrorBoundary).toHaveBeenCalledTimes(1);
   });
 
   it('has correct ARIA attributes', () => {

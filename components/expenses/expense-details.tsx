@@ -4,7 +4,7 @@ interface ExpenseDetailsProps {
   expense: Expense;
 }
 
-export function ExpenseDetails({ expense }: ExpenseDetailsProps): React.ReactElement {
+export function ExpenseDetails({ expense }: ExpenseDetailsProps): JSX.Element {
   return (
     <div className="space-y-4">
       <div className="flex justify-between">

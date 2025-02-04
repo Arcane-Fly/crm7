@@ -8,6 +8,10 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['@sentry/profiling-node'],
   },
+  eslint: {
+    dirs: ['app', 'components', 'lib', 'types', 'utils'],
+    ignoreDuringBuilds: false,
+  },
   webpack: (config, { isServer }) => {
     // Fixes npm packages that depend on `canvas` module
     if (!isServer) {

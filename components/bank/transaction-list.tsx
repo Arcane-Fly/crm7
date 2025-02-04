@@ -7,7 +7,7 @@ interface TransactionListProps {
   transactions: Transaction[];
 }
 
-export function TransactionList({ transactions }: TransactionListProps): React.ReactElement {
+export function TransactionList({ transactions }: TransactionListProps): JSX.Element {
   const [typeFilter, setTypeFilter] = useState<'credit' | 'debit' | ''>('');
 
   const formatCurrency = (amount: number): string => {

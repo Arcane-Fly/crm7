@@ -4,7 +4,7 @@ interface PerformanceDashboardProps {
   metrics: PerformanceMetrics;
 }
 
-export function PerformanceDashboard({ metrics }: PerformanceDashboardProps): React.ReactElement {
+export function PerformanceDashboard({ metrics }: PerformanceDashboardProps): JSX.Element {
   const formatChartData = (metrics: PerformanceMetrics) => {
     // Chart data formatting implementation
   };

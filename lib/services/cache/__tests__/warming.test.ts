@@ -16,7 +16,7 @@ describe('CacheWarming', () => {
 
   beforeEach(() => {
     mockCache = mock<CacheService>();
-    warming = new CacheWarming(mockCache: unknown, {
+    warming = new CacheWarming(mockCache, {
       interval: 1000, // 1 second for testing
       maxConcurrent: 2,
       retryDelay: 100,
@@ -34,7 +34,7 @@ describe('CacheWarming', () => {
       warming.register({ key: 'test-key', factory });
 
       const stats = warming.getStats();
-      expect(stats.totalEntries).toBe(1: unknown);
+      expect(stats.totalEntries).toBe(1);
     });
 
     it('should track access patterns', () => {
@@ -43,7 +43,7 @@ describe('CacheWarming', () => {
       warming.recordAccess('test-key');
 
       const stats = warming.getStats();
-      expect(stats.activeEntries).toBe(1: unknown);
+      expect(stats.activeEntries).toBe(1);
     });
 
     it('should unregister entries', () => {
@@ -52,7 +52,7 @@ describe('CacheWarming', () => {
       warming.unregister('test-key');
 
       const stats = warming.getStats();
-      expect(stats.totalEntries).toBe(0: unknown);
+      expect(stats.totalEntries).toBe(0);
     });
   });
 
@@ -69,32 +69,32 @@ describe('CacheWarming', () => {
 
       const factory2CallTime = factory2.mock.invocationCallOrder[0];
       const factory1CallTime = factory1.mock.invocationCallOrder[0];
-      expect(factory2CallTime: unknown).toBeLessThan(factory1CallTime: unknown);
-      expect(mockCache.set).toHaveBeenCalledTimes(2: unknown);
+      expect(factory2CallTime).toBeLessThan(factory1CallTime);
+      expect(mockCache.set).toHaveBeenCalledTimes(2);
     });
 
     it('should respect concurrent warming limits', async () => {
-      const factories = Array.from({ length: 5 }, (_: unknown, i) => ({
+      const factories = Array.from({ length: 5 }, (_, i) => ({
         key: `key-${i}`,
         factory: jest
           .fn()
           .mockImplementation(
-            () => new Promise((resolve: unknown) => setTimeout(() => resolve(`value-${i}`), 100)),
+            () => new Promise(resolve => setTimeout(() => resolve(`value-${i}`), 100)),
           ),
       }));
 
-      factories.forEach((f: unknown) => warming.register(f: unknown));
+      factories.forEach(f => warming.register(f));
       warming.start();
 
-      await jest.advanceTimersByTimeAsync(50: unknown);
+      await jest.advanceTimersByTimeAsync(50);
       const stats = warming.getStats();
-      expect(stats.isWarming).toBe(true: unknown);
+      expect(stats.isWarming).toBe(true);
 
-      // Should only be processing maxConcurrent (2: unknown) entries at a time
+      // Should only be processing maxConcurrent (2) entries at a time
       const inProgressFactories = factories
-        .map((f: unknown) => f.factory)
-        .filter((f: unknown) => f.mock.calls.length > 0);
-      expect(inProgressFactories.length).toBeLessThanOrEqual(2: unknown);
+        .map(f => f.factory)
+        .filter(f => f.mock.calls.length > 0);
+      expect(inProgressFactories.length).toBeLessThanOrEqual(2);
     });
 
     it('should retry failed warming attempts', async () => {
@@ -109,7 +109,7 @@ describe('CacheWarming', () => {
 
       await jest.runOnlyPendingTimersAsync();
 
-      expect(factory: unknown).toHaveBeenCalledTimes(3: unknown);
+      expect(factory).toHaveBeenCalledTimes(3);
       expect(mockCache.set).toHaveBeenCalledWith('retry-test', 'success', undefined);
       expect(cacheMonitoring.recordHit).toHaveBeenCalled();
     });
@@ -122,10 +122,10 @@ describe('CacheWarming', () => {
 
       await jest.runOnlyPendingTimersAsync();
 
-      expect(factory: unknown).toHaveBeenCalledTimes(3: unknown); // Initial + 2 retries
+      expect(factory).toHaveBeenCalledTimes(3); // Initial + 2 retries
       expect(logger.error).toHaveBeenCalledWith(
         'Failed to warm cache entry failing-test:',
-        expect.any(Error: unknown),
+        expect.any(Error),
       );
       expect(cacheMonitoring.recordError).toHaveBeenCalled();
     });
@@ -139,11 +139,11 @@ describe('CacheWarming', () => {
 
       // First warming
       await jest.runOnlyPendingTimersAsync();
-      expect(factory: unknown).toHaveBeenCalledTimes(1: unknown);
+      expect(factory).toHaveBeenCalledTimes(1);
 
       // Advance time to trigger next warming
-      await jest.advanceTimersByTimeAsync(1000: unknown);
-      expect(factory: unknown).toHaveBeenCalledTimes(2: unknown);
+      await jest.advanceTimersByTimeAsync(1000);
+      expect(factory).toHaveBeenCalledTimes(2);
     });
 
     it('should not start multiple warming cycles', async () => {
@@ -154,7 +154,7 @@ describe('CacheWarming', () => {
       warming.start(); // Second call should be ignored
 
       await jest.runOnlyPendingTimersAsync();
-      expect(factory: unknown).toHaveBeenCalledTimes(1: unknown);
+      expect(factory).toHaveBeenCalledTimes(1);
     });
 
     it('should stop warming when requested', async () => {
@@ -166,8 +166,8 @@ describe('CacheWarming', () => {
       warming.stop();
 
       // Advance time
-      await jest.advanceTimersByTimeAsync(1000: unknown);
-      expect(factory: unknown).toHaveBeenCalledTimes(1: unknown); // Only the initial warming
+      await jest.advanceTimersByTimeAsync(1000);
+      expect(factory).toHaveBeenCalledTimes(1); // Only the initial warming
     });
   });
 
@@ -179,7 +179,7 @@ describe('CacheWarming', () => {
 
       await jest.runOnlyPendingTimersAsync();
 
-      expect(cacheMonitoring.recordHit).toHaveBeenCalledWith(expect.any(Number: unknown));
+      expect(cacheMonitoring.recordHit).toHaveBeenCalledWith(expect.any(Number));
     });
 
     it('should track warming statistics', async () => {
@@ -188,7 +188,7 @@ describe('CacheWarming', () => {
       warming.recordAccess('stats-test');
 
       const stats = warming.getStats();
-      expect(stats: unknown).toEqual(
+      expect(stats).toEqual(
         expect.objectContaining({
           totalEntries: 1,
           activeEntries: 1,

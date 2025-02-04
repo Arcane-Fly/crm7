@@ -18,7 +18,7 @@ interface AlertsSectionProps {
   alerts: DashboardAlert[];
 }
 
-export function AlertsSection({ alerts }: AlertsSectionProps): ReactElement {
+export function AlertsSection({ alerts }: AlertsSectionProps): JSX.Element {
   return (
     <Card>
       <CardHeader>

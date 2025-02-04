@@ -58,28 +58,28 @@ export class RedisClientImpl implements RedisClient {
     }
   }
 
-  async get(key: string): Promise<string | null> {
+  async get(key: string): Promise<void> {
     await this.connect();
-    return this.client!.get(key);
+    return this.client ?? undefined.get(key);
   }
 
   async set(key: string, value: string): Promise<void> {
     await this.connect();
-    await this.client!.set(key, value);
+    await this.client ?? undefined.set(key, value);
   }
 
   async setex(key: string, seconds: number, value: string): Promise<void> {
     await this.connect();
-    await this.client!.setex(key, seconds, value);
+    await this.client ?? undefined.setex(key, seconds, value);
   }
 
   async del(...keys: string[]): Promise<void> {
     await this.connect();
-    await this.client!.del(...keys);
+    await this.client ?? undefined.del(...keys);
   }
 
-  async keys(pattern: string): Promise<string[]> {
+  async keys(pattern: string): Promise<void> {
     await this.connect();
-    return this.client!.keys(pattern);
+    return this.client ?? undefined.keys(pattern);
   }
 }

@@ -15,7 +15,7 @@ interface DateRangePickerProps {
 export function DateRangePicker({
   date,
   onDateChange,
-}: DateRangePickerProps): ReactElement {
+}: DateRangePickerProps): JSX.Element {
   return (
     <div className="grid gap-2">
       <Popover>

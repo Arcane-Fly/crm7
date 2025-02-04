@@ -29,9 +29,9 @@ export class RatesMLService {
     employee_id: string;
     calculation_date: Date;
     features: Record<string, any>;
-  }): Promise<MLPrediction> {
+  }): Promise<void> {
     const { data, error } = await this.supabase.rpc('predict_rate', params);
-    if (error) throw error;
+    if (typeof error !== "undefined" && error !== null) throw error;
     return data;
   }
 
@@ -39,9 +39,9 @@ export class RatesMLService {
     template_id: string;
     base_rate: number;
     features: Record<string, any>;
-  }): Promise<MLPrediction> {
+  }): Promise<void> {
     const { data, error } = await this.supabase.rpc('predict_margin', params);
-    if (error) throw error;
+    if (typeof error !== "undefined" && error !== null) throw error;
     return data;
   }
 
@@ -50,16 +50,9 @@ export class RatesMLService {
     start_date: Date;
     end_date: Date;
     threshold?: number;
-  }): Promise<{
-    anomalies: RateCalculation[];
-    metrics: {
-      total_analyzed: number;
-      anomalies_found: number;
-      average_deviation: number;
-    };
-  }> {
+  }): Promise<void> {
     const { data, error } = await this.supabase.rpc('detect_rate_anomalies', params);
-    if (error) throw error;
+    if (typeof error !== "undefined" && error !== null) throw error;
     return data;
   }
 
@@ -67,13 +60,9 @@ export class RatesMLService {
     template_id: string;
     target_margin: number;
     constraints: Record<string, any>;
-  }): Promise<{
-    optimized_rates: Record<string, number>;
-    expected_margin: number;
-    confidence_score: number;
-  }> {
+  }): Promise<void> {
     const { data, error } = await this.supabase.rpc('optimize_rates', params);
-    if (error) throw error;
+    if (typeof error !== "undefined" && error !== null) throw error;
     return data;
   }
 
@@ -81,9 +70,9 @@ export class RatesMLService {
     model_type: 'rate_prediction' | 'margin_prediction' | 'anomaly_detection';
     start_date: Date;
     end_date: Date;
-  }): Promise<MLModelMetrics> {
+  }): Promise<void> {
     const { data, error } = await this.supabase.rpc('get_ml_model_metrics', params);
-    if (error) throw error;
+    if (typeof error !== "undefined" && error !== null) throw error;
     return data;
   }
 
@@ -92,13 +81,9 @@ export class RatesMLService {
     training_start_date: Date;
     training_end_date: Date;
     hyperparameters?: Record<string, any>;
-  }): Promise<{
-    model_id: string;
-    metrics: MLModelMetrics;
-    training_duration: number;
-  }> {
+  }): Promise<void> {
     const { data, error } = await this.supabase.rpc('train_ml_model', params);
-    if (error) throw error;
+    if (typeof error !== "undefined" && error !== null) throw error;
     return data;
   }
 }
