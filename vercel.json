@@ -13,10 +13,12 @@
   "build": {
     "env": {
       "NEXT_TELEMETRY_DISABLED": "1",
-      "PNPM_VERSION": "9.0.0",
+      "PNPM_VERSION": "9.14.0",
       "NODE_VERSION": "20.x",
       "ENABLE_COREPACK": "1",
-      "ENABLE_EXPERIMENTAL_COREPACK": "1"
+      "ENABLE_EXPERIMENTAL_COREPACK": "1",
+      "PUPPETEER_SKIP_DOWNLOAD": "true",
+      "CANVAS_SKIP_DOWNLOAD": "true"
     }
   },
   "headers": [
