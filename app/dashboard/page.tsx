@@ -1,81 +1,63 @@
-import { Users, Briefcase, Building2, AlertCircle } from 'lucide-react';
+import type { DashboardAlert } from '@/types/dashboard';
+import type { ReactElement } from 'react';
 
-import { AlertsList } from '@/components/dashboard/AlertsList';
-import { FundingChart } from '@/components/dashboard/FundingChart';
-import { PlacementsChart } from '@/components/dashboard/PlacementsChart';
-import { Card, CardContent } from '@/components/ui/card';
+import { AlertsSection } from '@/components/dashboard/alerts-section';
+import { PlacementTrends } from '@/components/dashboard/placement-trends';
+import { QuickActions } from '@/components/dashboard/quick-actions';
+import { DashboardStats } from '@/components/dashboard/stats-cards';
 
-export default function DashboardPage() {
+const mockMonthlyData = [
+  { month: 'Jan', placements: 65 },
+  { month: 'Feb', placements: 59 },
+  { month: 'Mar', placements: 80 },
+  { month: 'Apr', placements: 81 },
+  { month: 'May', placements: 56 },
+  { month: 'Jun', placements: 55 },
+];
+
+const mockQuarterlyData = [
+  { month: 'Q1', placements: 204 },
+  { month: 'Q2', placements: 192 },
+  { month: 'Q3', placements: 153 },
+  { month: 'Q4', placements: 189 },
+];
+
+const mockAlerts: DashboardAlert[] = [
+  {
+    id: '1',
+    title: 'Compliance Documents Expiring',
+    description: '15 candidates have documents expiring in the next 30 days',
+    severity: 'high',
+    type: 'warning',
+  },
+  {
+    id: '2',
+    title: 'New Training Requirements',
+    description: 'Updated workplace safety training requirements for all candidates',
+    severity: 'medium',
+    type: 'info',
+  },
+];
+
+export default function DashboardPage(): ReactElement {
   return (
-    <div className='space-y-6'>
-      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
-        <Card>
-          <CardContent className='pt-6'>
-            <div className='flex items-center justify-between'>
-              <div>
-                <p className='text-sm font-medium text-gray-500'>Total Candidates</p>
-                <p className='text-2xl font-bold'>2,451</p>
-                <p className='text-sm font-medium text-green-600'>+12% vs last month</p>
-              </div>
-              <div className='rounded-full bg-blue-50 p-3'>
-                <Users className='h-5 w-5 text-blue-500' />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className='pt-6'>
-            <div className='flex items-center justify-between'>
-              <div>
-                <p className='text-sm font-medium text-gray-500'>Active Placements</p>
-                <p className='text-2xl font-bold'>847</p>
-                <p className='text-sm font-medium text-green-600'>+5% vs last month</p>
-              </div>
-              <div className='rounded-full bg-blue-50 p-3'>
-                <Briefcase className='h-5 w-5 text-blue-500' />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className='pt-6'>
-            <div className='flex items-center justify-between'>
-              <div>
-                <p className='text-sm font-medium text-gray-500'>Active Clients</p>
-                <p className='text-2xl font-bold'>156</p>
-                <p className='text-sm font-medium text-green-600'>+3% vs last month</p>
-              </div>
-              <div className='rounded-full bg-blue-50 p-3'>
-                <Building2 className='h-5 w-5 text-blue-500' />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className='pt-6'>
-            <div className='flex items-center justify-between'>
-              <div>
-                <p className='text-sm font-medium text-gray-500'>Compliance Alerts</p>
-                <p className='text-2xl font-bold'>23</p>
-                <p className='text-sm font-medium text-red-600'>-15% vs last month</p>
-              </div>
-              <div className='rounded-full bg-red-50 p-3'>
-                <AlertCircle className='h-5 w-5 text-red-500' />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className='grid gap-6 lg:grid-cols-3'>
-        <div className='lg:col-span-2'>
-          <PlacementsChart />
-          <div className='mt-6'>
-            <FundingChart />
-          </div>
+    <div className="space-y-6 p-6">
+      <DashboardStats
+        totalCandidates={2451}
+        activeRecruitments={156}
+        activePlacements={847}
+        complianceAlerts={15}
+      />
+      <div className="grid gap-6 md:grid-cols-7">
+        <div className="col-span-5">
+          <PlacementTrends
+            monthlyData={mockMonthlyData}
+            quarterlyData={mockQuarterlyData}
+          />
         </div>
-        <div>
-          <AlertsList />
+        <div className="col-span-2 space-y-6">
+          <QuickActions />
+          <AlertsSection alerts={mockAlerts} />
         </div>
       </div>
     </div>
