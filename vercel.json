@@ -1,6 +1,6 @@
 {
-  "buildCommand": "corepack enable && pnpm run build",
-  "installCommand": "corepack enable && pnpm install",
+  "buildCommand": "corepack enable && pnpm install --no-frozen-lockfile && pnpm run build",
+  "installCommand": "corepack enable && pnpm install --no-frozen-lockfile",
   "framework": "nextjs",
   "outputDirectory": ".next",
   "regions": ["syd1", "sin1"],
@@ -14,7 +14,7 @@
     "env": {
       "NEXT_TELEMETRY_DISABLED": "1",
       "PNPM_VERSION": "9.0.0",
-      "NODE_VERSION": "18.x",
+      "NODE_VERSION": "20.x",
       "ENABLE_COREPACK": "1",
       "ENABLE_EXPERIMENTAL_COREPACK": "1"
     }
