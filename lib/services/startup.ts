@@ -48,12 +48,12 @@ export async function cleanupServices(): Promise<void> {
 }
 
 // Handle process termination
-process.on('SIGTERM', () => {
+process.on('SIGTERM', (): void => {
   logger.info('SIGTERM received. Starting graceful shutdown...');
-  void cleanupServices().finally(() => process.exit(0));
+  void cleanupServices().finally((): never => process.exit(0));
 });
 
-process.on('SIGINT', () => {
+process.on('SIGINT', (): void => {
   logger.info('SIGINT received. Starting graceful shutdown...');
-  void cleanupServices().finally(() => process.exit(0));
+  void cleanupServices().finally((): never => process.exit(0));
 });

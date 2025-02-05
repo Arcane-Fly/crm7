@@ -15,6 +15,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    environment: production
     env:
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
@@ -46,9 +47,10 @@ jobs:
   build:
     needs: test
     runs-on: ubuntu-latest
+    environment: production
     env:
-      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ github.secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ github.secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
     steps:
       - uses: actions/checkout@v4
 
@@ -68,9 +70,10 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
+    environment: production
     env:
-      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ github.secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ github.secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
       VERCEL_PROJECT_ID: prj_ZcvIEwYIBFQBfbJafOjGuc2THSbA
       VERCEL_DEPLOY_HOOK: MRewLE6RLO
     steps:
@@ -102,7 +105,7 @@ jobs:
       - name: Monitor Deployment
         env:
           JOB_ID: ${{ steps.deploy.outputs.job_id }}
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_TOKEN: ${{ github.secrets.VERCEL_TOKEN }}
         run: |
           echo "Monitoring deployment job: $JOB_ID"
           MAX_ATTEMPTS=30

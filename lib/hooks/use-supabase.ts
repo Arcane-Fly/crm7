@@ -19,12 +19,12 @@ const config: SupabaseConfig = {
 };
 
 export function useSupabase(): SupabaseContext {
-  const [context, setContext] = useState<SupabaseContext>(() => ({
+  const [context, setContext] = useState<SupabaseContext>((): { supabase: SupabaseClient<Database, SchemaName, Schema>; isInitialized: false; } => ({
     supabase: createClient<Database>(config.url, config.key),
     isInitialized: false,
   }));
 
-  useEffect(() => {
+  useEffect((): void => {
     if (!config.url || !config.key) {
       console.error('Supabase configuration is missing');
       return;

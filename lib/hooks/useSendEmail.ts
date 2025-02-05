@@ -10,7 +10,7 @@ export function useSendEmail(): UseSendEmailReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const sendEmail = async (params: Record<string, unknown>) => {
+  const sendEmail = async (params: Record<string, unknown>): Promise<void> => {
     setIsLoading(true);
     setError(null);
 

@@ -26,14 +26,14 @@ export function FormInputField({
   description,
   className,
   ...props
-}: FormInputFieldProps) {
+}: FormInputFieldProps): React.JSX.Element {
   const { control } = useFormContext();
 
   return (
     <FormField
       control={control}
       name={name}
-      render={({ field }) => (
+      render={({ field }): React.JSX.Element => (
         <FormItem>
           <FormLabel>{label}</FormLabel>
           <FormControl>
@@ -63,14 +63,14 @@ export function FormTextAreaField({
   description,
   className,
   ...props
-}: FormTextAreaFieldProps) {
+}: FormTextAreaFieldProps): React.JSX.Element {
   const { control } = useFormContext();
 
   return (
     <FormField
       control={control}
       name={name}
-      render={({ field }) => (
+      render={({ field }): React.JSX.Element => (
         <FormItem>
           <FormLabel>{label}</FormLabel>
           <FormControl>
@@ -105,14 +105,14 @@ export function FormSelectField({
   options,
   className,
   ...props
-}: FormSelectFieldProps) {
+}: FormSelectFieldProps): React.JSX.Element {
   const { control } = useFormContext();
 
   return (
     <FormField
       control={control}
       name={name}
-      render={({ field }) => (
+      render={({ field }): React.JSX.Element => (
         <FormItem>
           <FormLabel>{label}</FormLabel>
           <FormControl>

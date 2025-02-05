@@ -3,20 +3,13 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { createContext, useContext, useState, type ReactElement, type ReactNode } from 'react';
+import { createContext, JSX, useContext, useState, type ReactElement, type ReactNode } from 'react';
 
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MAIN_NAV_ITEMS } from '@/config/navigation';
 import { cn } from '@/lib/utils';
 
-export interface NavItem {
-  label: string;
-  href?: string;
-  icon?: React.ReactNode;
-  children?: NavItem[];
-  slug?: string;
-  title?: string;
-}
+import type { NavItem } from '@/config/navigation';
 
 interface SidebarContextType {
   isCollapsed: boolean;

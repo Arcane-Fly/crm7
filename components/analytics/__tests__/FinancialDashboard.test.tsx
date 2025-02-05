@@ -1,6 +1,6 @@
 import type { PostgrestError } from '@supabase/supabase-js';
 import { render, screen } from '@testing-library/react';
-import { vi } from 'vitest';
+import { vi, type Mock } from 'vitest';
 
 import { useBankIntegration } from '@/lib/hooks/use-bank-integration';
 import type { Database } from '@/types/supabase';
@@ -50,9 +50,9 @@ vi.mock('@/lib/hooks/use-bank-integration', () => ({
       error: null,
       isLoading: false,
     },
-    createBankAccount: vi.fn(),
-    createPayment: vi.fn(),
-    refreshData: vi.fn(),
+    createBankAccount: vi.fn().mockResolvedValue(undefined),
+    createPayment: vi.fn().mockResolvedValue(undefined),
+    refreshData: vi.fn().mockResolvedValue(undefined),
   }),
 }));
 
@@ -63,7 +63,7 @@ describe('FinancialDashboard', () => {
   });
 
   it('displays error state for transactions', () => {
-    (vi.mocked(useBankIntegration) as jest.Mock).mockReturnValueOnce({
+    (vi.mocked(useBankIntegration) as Mock).mockReturnValueOnce({
       transactions: {
         data: undefined,
         error: { message: 'Failed to load transactions' } as PostgrestError,
@@ -74,9 +74,9 @@ describe('FinancialDashboard', () => {
         error: null,
         isLoading: false,
       },
-      createBankAccount: vi.fn(),
-      createPayment: vi.fn(),
-      refreshData: vi.fn(),
+      createBankAccount: vi.fn().mockResolvedValue(undefined),
+      createPayment: vi.fn().mockResolvedValue(undefined),
+      refreshData: vi.fn().mockResolvedValue(undefined),
     });
 
     render(<FinancialDashboard />);
@@ -84,7 +84,7 @@ describe('FinancialDashboard', () => {
   });
 
   it('displays loading state', () => {
-    (vi.mocked(useBankIntegration) as jest.Mock).mockReturnValueOnce({
+    (vi.mocked(useBankIntegration) as Mock).mockReturnValueOnce({
       transactions: {
         data: undefined,
         error: null,
@@ -95,13 +95,10 @@ describe('FinancialDashboard', () => {
         error: null,
         isLoading: true,
       },
-      createBankAccount: vi.fn(),
-      createPayment: vi.fn(),
-      refreshData: vi.fn(),
+      createBankAccount: vi.fn().mockResolvedValue(undefined),
+      createPayment: vi.fn().mockResolvedValue(undefined),
+      refreshData: vi.fn().mockResolvedValue(undefined),
       isLoading: false,
-      error: null,
-      isCreatingBankAccount: false,
-      isCreatingPayment: false,
     });
 
     render(<FinancialDashboard />);

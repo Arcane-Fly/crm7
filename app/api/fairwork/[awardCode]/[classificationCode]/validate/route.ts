@@ -1,20 +1,28 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
 import { createApiResponse, createErrorResponse } from '@/lib/api/response';
-import { logger } from '@/lib/logger';
+import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
+import { NextRequest, NextResponse } from 'next/server';
 
 const fairworkClient = new FairWorkClient();
 
 export async function POST(
   req: NextRequest,
-  { params: _params }: { params: { awardCode: string; classificationCode: string } }
+  context: { params: { awardCode: string; classificationCode: string } }
 ): Promise<NextResponse> {
   try {
     const body = await req.json();
-    const validationResult = await fairworkClient.validateRate(body);
+    // Use validatePayRate with awardCode and classificationCode from the URL params
+    const validationResult = await fairworkClient.validatePayRate(
+      context.params.awardCode,
+      context.params.classificationCode,
+      body
+    );
     return createApiResponse(validationResult);
   } catch (error) {
-    logger.error('Failed to validate rate', { error });
-    return createErrorResponse('RATE_VALIDATION_FAILED', 'Failed to validate rate', undefined, 500);
+    return createErrorResponse(
+      'VALIDATION_ERROR',
+      'Rate validation failed',
+      undefined,
+      500
+    );
   }
 }

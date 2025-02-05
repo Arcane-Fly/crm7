@@ -3,8 +3,6 @@
 import { MenuIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { type ReactElement } from 'react';
-
 import { Button } from '@/components/ui/button';
 import { MAIN_NAV_ITEMS } from '@/config/navigation';
 import { cn } from '@/lib/utils';

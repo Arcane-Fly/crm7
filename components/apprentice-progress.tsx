@@ -49,7 +49,7 @@ export function ApprenticeProgress(): void {
               fontSize={12}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(value: unknown) => `${value}`}
+              tickFormatter={(value: unknown): string => `${value}`}
             />
             <Tooltip />
             <Legend />

@@ -9,7 +9,7 @@ interface RateLimitStore {
 const rateLimitStateMap = new Map<string, RateLimitStore>();
 
 const rateLimiter = {
-  init: async () => {
+  init: async (): Promise<void> => {
     rateLimitStateMap.clear();
     return Promise.resolve();
   },
@@ -78,7 +78,7 @@ export async function withRateLimit(
 ): Promise<void> {
   return async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
     try {
-      await new Promise((resolve, reject) => {
+      await new Promise((resolve, reject): void => {
         const result = rateLimiter.increment(req.url ?? '');
         if (result instanceof Error) {
           reject(result);

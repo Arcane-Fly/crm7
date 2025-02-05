@@ -86,7 +86,7 @@ export const columns: ColumnDef<Apprentice>[] = [
   {
     accessorKey: 'name',
     header: 'Name',
-    cell: ({ row }) => <div>{row.getValue('name')}</div>,
+    cell: ({ row }): React.JSX.Element => <div>{row.getValue('name')}</div>,
   },
   {
     accessorKey: 'email',
@@ -101,22 +101,22 @@ export const columns: ColumnDef<Apprentice>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div>{row.getValue('email')}</div>,
+    cell: ({ row }): React.JSX.Element => <div>{row.getValue('email')}</div>,
   },
   {
     accessorKey: 'qualification',
     header: 'Qualification',
-    cell: ({ row }) => <div>{row.getValue('qualification')}</div>,
+    cell: ({ row }): React.JSX.Element => <div>{row.getValue('qualification')}</div>,
   },
   {
     accessorKey: 'progress',
     header: 'Progress',
-    cell: ({ row }) => <div>{row.getValue('progress')}</div>,
+    cell: ({ row }): React.JSX.Element => <div>{row.getValue('progress')}</div>,
   },
   {
     accessorKey: 'status',
     header: 'Status',
-    cell: ({ row }) => <div className='capitalize'>{row.getValue('status')}</div>,
+    cell: ({ row }): React.JSX.Element => <div className='capitalize'>{row.getValue('status')}</div>,
   },
   {
     id: 'actions',
@@ -137,7 +137,7 @@ export const columns: ColumnDef<Apprentice>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align='end'>
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(apprentice.id)}>
+            <DropdownMenuItem onClick={(): Promise<void> => navigator.clipboard.writeText(apprentice.id)}>
               Copy apprentice ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />

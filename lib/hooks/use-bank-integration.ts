@@ -5,7 +5,7 @@ export function useBankIntegration(bankIntegrationService: BankIntegrationServic
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const handleIntegration = async (data: unknown) => {
+  const handleIntegration = async (data: unknown): Promise<unknown> => {
     setIsLoading(true);
     setError(null);
 

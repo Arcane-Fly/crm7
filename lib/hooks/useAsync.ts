@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 
 interface UseAsyncOptions<T> {
@@ -11,11 +11,11 @@ interface UseAsyncOptions<T> {
 export function useAsync<T>(
   asyncFunction: () => Promise<T>,
   options: UseAsyncOptions<T> = {}
-): Promise<void> {
+): () => Promise<T> {
   const { toast } = useToast();
   const { onSuccess, onError, toastOnError = true, autoExecute = false } = options;
 
-  const execute = useCallback(async () => {
+  const execute = useCallback(async (): Promise<T> => {
     try {
       const data = await asyncFunction();
       onSuccess?.(data);
@@ -25,7 +25,7 @@ export function useAsync<T>(
 
       onError?.(errorObj);
 
-      if (typeof toastOnError !== "undefined" && toastOnError !== null) {
+      if (toastOnError) {
         toast({
           title: 'Error',
           description: errorObj.message,
@@ -38,7 +38,7 @@ export function useAsync<T>(
   }, [asyncFunction, onSuccess, onError, toastOnError, toast]);
 
   useEffect(() => {
-    if (typeof autoExecute !== "undefined" && autoExecute !== null) {
+    if (autoExecute) {
       void execute();
     }
   }, [autoExecute, execute]);

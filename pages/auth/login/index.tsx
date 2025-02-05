@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { createBrowserSupabaseClient } from '@/lib/auth/config';
 
-export default function LoginPage() {
+export default function LoginPage(): React.JSX.Element {
   const [supabase] = useState(() => createBrowserSupabaseClient());
 
   return (

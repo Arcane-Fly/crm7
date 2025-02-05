@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { type ComplianceRecord } from '@/lib/types';
 
-export function ComplianceDashboard(): JSX.Element {
-  const [records, setRecords] = useState<ComplianceRecord[]>([]);
+export function ComplianceDashboard(): React.ReactElement {
+  const [_records, setRecords] = useState<ComplianceRecord[]>([]);
 
-  useEffect(() => {
+  useEffect((): void => {
     const fetchData = async (): Promise<void> => {
       try {
         const { data, error } = await supabase.from('compliance_records').select('*');
@@ -23,14 +23,16 @@ export function ComplianceDashboard(): JSX.Element {
     void fetchData();
   }, []);
 
-  const getStatusColor = (status: string): string => {
+  const _getStatusColor = (status: string): string => {
     switch (status) {
       case 'compliant':
-        return 'text-green-500';
-      case 'non_compliant':
-        return 'text-red-500';
+        return 'bg-green-500';
+      case 'warning':
+        return 'bg-yellow-500';
+      case 'violation':
+        return 'bg-red-500';
       default:
-        return 'text-gray-500';
+        return 'bg-gray-500';
     }
   };
 

@@ -107,7 +107,7 @@ const columns: ColumnDef<Candidate>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => (
+    cell: ({ row }): React.JSX.Element => (
       <div className="flex items-center">
         <span className="font-medium">{row.getValue('name')}</span>
       </div>
@@ -120,7 +120,7 @@ const columns: ColumnDef<Candidate>[] = [
   {
     accessorKey: 'status',
     header: 'Status',
-    cell: ({ row }) => {
+    cell: ({ row }): React.JSX.Element => {
       const status = row.getValue('status') as string;
       return (
         <Badge
@@ -146,7 +146,7 @@ const columns: ColumnDef<Candidate>[] = [
   {
     accessorKey: 'skills',
     header: 'Skills',
-    cell: ({ row }) => {
+    cell: ({ row }): React.JSX.Element => {
       const skills = row.getValue('skills') as string[];
       return (
         <div className="flex flex-wrap gap-1">
@@ -172,7 +172,7 @@ const columns: ColumnDef<Candidate>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => {
+    cell: ({ row }): React.JSX.Element => {
       const date = new Date(row.getValue('lastContact'));
       return <div>{date.toLocaleDateString()}</div>;
     },
@@ -193,7 +193,7 @@ const columns: ColumnDef<Candidate>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(candidate.email)}
+              onClick={(): Promise<void> => navigator.clipboard.writeText(candidate.email)}
             >
               Copy email
             </DropdownMenuItem>
@@ -257,7 +257,7 @@ export function CandidateList(): JSX.Element {
             <Input
               placeholder="Search candidates..."
               value={globalFilter}
-              onChange={(e) => setGlobalFilter(e.target.value)}
+              onChange={(e): void => setGlobalFilter(e.target.value)}
               className="h-8 w-[150px] lg:w-[250px]"
             />
           </div>

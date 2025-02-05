@@ -1,7 +1,6 @@
 'use client';
 
 import { CreditCard, LogOut, Settings, User, Moon, Sun, Keyboard } from 'lucide-react';
-import { type ReactElement } from 'react';
 import { useTheme } from 'next-themes';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -81,13 +80,13 @@ export function UserNav(): JSX.Element {
             <span>Theme</span>
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
-            <DropdownMenuItem onClick={() => setTheme("light")}>
+            <DropdownMenuItem onClick={(): void => setTheme("light")}>
               Light
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setTheme("dark")}>
+            <DropdownMenuItem onClick={(): void => setTheme("dark")}>
               Dark
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setTheme("system")}>
+            <DropdownMenuItem onClick={(): void => setTheme("system")}>
               System
             </DropdownMenuItem>
           </DropdownMenuSubContent>

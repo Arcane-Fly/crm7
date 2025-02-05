@@ -2,7 +2,7 @@
 
 import { ChevronRight, MoreHorizontal } from 'lucide-react';
 import Link from 'next/link';
-import { type ReactElement, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {

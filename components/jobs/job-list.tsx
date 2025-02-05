@@ -136,7 +136,7 @@ const columns: ColumnDef<Job>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => (
+    cell: ({ row }): React.JSX.Element => (
       <div>
         <div className="font-medium">{row.getValue('title')}</div>
         <div className="flex items-center text-sm text-muted-foreground">
@@ -149,7 +149,7 @@ const columns: ColumnDef<Job>[] = [
   {
     accessorKey: 'location',
     header: 'Location',
-    cell: ({ row }) => (
+    cell: ({ row }): React.JSX.Element => (
       <div className="flex items-center">
         <MapPin className="mr-1 h-4 w-4 text-muted-foreground" />
         {row.getValue('location')}
@@ -159,14 +159,14 @@ const columns: ColumnDef<Job>[] = [
   {
     accessorKey: 'type',
     header: 'Type',
-    cell: ({ row }) => (
+    cell: ({ row }): React.JSX.Element => (
       <Badge variant="outline">{row.getValue('type')}</Badge>
     ),
   },
   {
     accessorKey: 'status',
     header: 'Status',
-    cell: ({ row }) => {
+    cell: ({ row }): React.JSX.Element => {
       const status = row.getValue('status') as string;
       return (
         <Badge
@@ -188,7 +188,7 @@ const columns: ColumnDef<Job>[] = [
   {
     accessorKey: 'salary',
     header: 'Salary Range',
-    cell: ({ row }) => {
+    cell: ({ row }): React.JSX.Element => {
       const salary = row.getValue('salary') as Job['salary'];
       return (
         <div className="flex items-center">
@@ -202,7 +202,7 @@ const columns: ColumnDef<Job>[] = [
   {
     accessorKey: 'applicants',
     header: 'Applicants',
-    cell: ({ row }) => (
+    cell: ({ row }): React.JSX.Element => (
       <div className="flex items-center">
         <Users className="mr-1 h-4 w-4 text-muted-foreground" />
         {row.getValue('applicants')}
@@ -222,7 +222,7 @@ const columns: ColumnDef<Job>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => {
+    cell: ({ row }): React.JSX.Element => {
       const deadline = new Date(row.getValue('deadline'));
       const daysLeft = Math.ceil(
         (deadline.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24),
@@ -237,7 +237,7 @@ const columns: ColumnDef<Job>[] = [
   },
   {
     id: 'actions',
-    cell: ({ row }) => {
+    cell: ({ row }): React.JSX.Element => {
       const job = row.original;
 
       return (
@@ -266,7 +266,7 @@ const columns: ColumnDef<Job>[] = [
   },
 ];
 
-export function JobList(): JSX.Element {
+export function JobList(): React.ReactElement {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
@@ -313,7 +313,7 @@ export function JobList(): JSX.Element {
             <Input
               placeholder="Search jobs..."
               value={globalFilter}
-              onChange={(e) => setGlobalFilter(e.target.value)}
+              onChange={(e): void => setGlobalFilter(e.target.value)}
               className="h-8 w-[150px] lg:w-[250px]"
             />
           </div>

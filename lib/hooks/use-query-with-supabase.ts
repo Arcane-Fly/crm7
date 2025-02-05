@@ -13,10 +13,10 @@ export function useQueryWithSupabase<T>(
   queryKey: string[],
   queryFn: () => Promise<{ data: T[]; error: Error | null }>,
   options?: UseQueryWithSupabaseOptions<T>
-) {
+): import("/home/braden/Desktop/Dev/crm7r/node_modules/.pnpm/@tanstack+react-query@5.66.0_react@18.2.0/node_modules/@tanstack/react-query/build/modern/types").UseQueryResult<T[], Error> {
   return useQuery({
     queryKey,
-    queryFn: async () => {
+    queryFn: async (): Promise<T[]> => {
       try {
         const { data, error } = await queryFn();
 
@@ -46,7 +46,7 @@ export function useInfiniteQueryWithSupabase<T>(
 ) {
   return useInfiniteQuery({
     queryKey,
-    queryFn: async ({ pageParam = 0 }) => {
+    queryFn: async ({ pageParam = 0 }): Promise<{ data: T[]; nextPage: any; }> => {
       try {
         const { data, error } = await queryFn(
           Number(pageParam) * (options?.pageSize || 10),

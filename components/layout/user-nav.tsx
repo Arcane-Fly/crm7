@@ -3,8 +3,6 @@
 import { LogOutIcon, UserIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { type ReactElement } from 'react';
-
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -18,7 +16,7 @@ import {
 export function UserNav(): JSX.Element {
   const router = useRouter();
 
-  const handleLogout = async () => {
+  const handleLogout = async (): Promise<void> => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
       router.push('/login');

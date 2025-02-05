@@ -12,14 +12,14 @@ export function createClient(): void {
         get(name: string) {
           return cookieStore.get(name)?.value;
         },
-        set(name: string, value: string, options: CookieOptions) {
+        set(name: string, value: string, options: CookieOptions): void {
           try {
             cookieStore.set({ name, value, ...options });
           } catch (error) {
             // Handle cookie error
           }
         },
-        remove(name: string, options: CookieOptions) {
+        remove(name: string, options: CookieOptions): void {
           try {
             cookieStore.set({ name, value: '', ...options });
           } catch (error) {
@@ -42,14 +42,14 @@ export function createAdminClient(): void {
         get(name: string) {
           return cookieStore.get(name)?.value;
         },
-        set(name: string, value: string, options: CookieOptions) {
+        set(name: string, value: string, options: CookieOptions): void {
           try {
             cookieStore.set({ name, value, ...options });
           } catch (error) {
             // Handle cookie error
           }
         },
-        remove(name: string, options: CookieOptions) {
+        remove(name: string, options: CookieOptions): void {
           try {
             cookieStore.set({ name, value: '', ...options });
           } catch (error) {

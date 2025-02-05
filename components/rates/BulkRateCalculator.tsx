@@ -1,16 +1,21 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { type ReactElement } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { ratesService } from '@/lib/services/rates';
-import { type BulkCalculation, type RateTemplate } from '@/lib/types/rates';
+
+interface RateCalculation {
+  id: string;
+  rate: number;
+  multiplier: number;
+  result: number;
+}
 
 interface BulkRateCalculatorProps {
   orgId?: string;
 }
 
-export function BulkRateCalculator({ orgId = 'default-org' }: BulkRateCalculatorProps): JSX.Element {
+export function BulkRateCalculator({ orgId = 'default-org' }: BulkRateCalculatorProps): React.ReactElement {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -25,7 +30,7 @@ export function BulkRateCalculator({ orgId = 'default-org' }: BulkRateCalculator
   });
 
   const createCalculation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (): Promise<any> => {
       if (!templatesData?.data) {
         throw new Error('No templates available');
       }
@@ -35,8 +40,8 @@ export function BulkRateCalculator({ orgId = 'default-org' }: BulkRateCalculator
         templateIds,
       });
     },
-    onSuccess: (response) => {
-      queryClient.setQueryData(['bulk-calculations', orgId], (old: unknown) => {
+    onSuccess: (response): void => {
+      queryClient.setQueryData(['bulk-calculations', orgId], (old: unknown): { data: any[]; } => {
         if (!old) return { data: [response.data] };
         return {
           data: [...old.data, response.data],
@@ -47,7 +52,7 @@ export function BulkRateCalculator({ orgId = 'default-org' }: BulkRateCalculator
         description: 'Calculation created successfully',
       });
     },
-    onError: () => {
+    onError: (): void => {
       toast({
         title: 'Error',
         description: 'Failed to create calculation',
@@ -62,7 +67,7 @@ export function BulkRateCalculator({ orgId = 'default-org' }: BulkRateCalculator
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-semibold">Bulk Rate Calculations</h2>
           <Button 
-            onClick={() => createCalculation.mutate()}
+            onClick={(): void => createCalculation.mutate()}
             disabled={isLoading || createCalculation.isPending}
           >
             New Calculation

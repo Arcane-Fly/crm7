@@ -36,7 +36,7 @@ export function SectionSidebar({ className, section = 'dashboard' }: SectionSide
       <Button
         variant="outline"
         className="absolute right-4 top-4 lg:hidden"
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        onClick={(): void => setIsMobileMenuOpen(!isMobileMenuOpen)}
       >
         <Menu className="h-4 w-4" />
       </Button>

@@ -7,7 +7,7 @@ export const columns: ColumnDef<ProgressReview>[] = [
   {
     accessorKey: 'type',
     header: 'Type',
-    cell: ({ row }) => {
+    cell: ({ row }): React.JSX.Element => {
       const type = row.getValue('type') as string;
       return <div className='capitalize'>{type}</div>;
     },
@@ -15,7 +15,7 @@ export const columns: ColumnDef<ProgressReview>[] = [
   {
     accessorKey: 'progress',
     header: 'Progress',
-    cell: ({ row }) => {
+    cell: ({ row }): React.JSX.Element => {
       const progress = row.getValue('progress') as number;
       const progressClass = progress < 30 ? 'low' : progress < 70 ? 'medium' : 'high';
 
@@ -29,7 +29,7 @@ export const columns: ColumnDef<ProgressReview>[] = [
   {
     accessorKey: 'status',
     header: 'Status',
-    cell: ({ row }) => {
+    cell: ({ row }): React.JSX.Element => {
       const status = row.getValue('status') as string;
       const variantMap = {
         completed: 'success',

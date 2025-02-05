@@ -98,7 +98,7 @@ export class FairWorkCacheWarming {
 
   start(): void {
     void this.warmCache();
-    setInterval(() => void this.warmCache(), this.config.interval);
+    setInterval((): undefined => void this.warmCache(), this.config.interval);
   }
 
   stop(): void {

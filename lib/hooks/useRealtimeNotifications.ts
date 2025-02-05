@@ -17,7 +17,7 @@ export function useRealtimeNotifications(userId: string): UseRealtimeNotificatio
   useEffect(() => {
     let subscription: RealtimeChannel;
 
-    const fetchNotifications = async () => {
+    const fetchNotifications = async (): Promise<void> => {
       try {
         const { data, error } = await supabase
           .from('notifications')
@@ -36,7 +36,7 @@ export function useRealtimeNotifications(userId: string): UseRealtimeNotificatio
       }
     };
 
-    const setupSubscription = () => {
+    const setupSubscription = (): void => {
       subscription = supabase
         .channel('notifications_changes')
         .on(
@@ -47,7 +47,7 @@ export function useRealtimeNotifications(userId: string): UseRealtimeNotificatio
             table: 'notifications',
             filter: `user_id=eq.${userId}`,
           },
-          () => {
+          (): void => {
             void fetchNotifications();
           }
         )
@@ -57,12 +57,12 @@ export function useRealtimeNotifications(userId: string): UseRealtimeNotificatio
     void fetchNotifications();
     setupSubscription();
 
-    return () => {
+    return (): void => {
       subscription?.unsubscribe();
     };
   }, [userId, supabase]);
 
-  const markAllAsRead = async () => {
+  const markAllAsRead = async (): Promise<void> => {
     try {
       const { error } = await supabase
         .from('notifications')

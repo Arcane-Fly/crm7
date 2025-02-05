@@ -1,4 +1,4 @@
-import { useRef, useEffect, type ReactElement } from 'react';
+import { useRef, useEffect } from 'react';
 import * as d3 from 'd3';
 
 interface DataPoint {
@@ -22,7 +22,7 @@ export function ScatterPlot({
 }: ScatterPlotProps): JSX.Element {
   const svgRef = useRef<SVGSVGElement | null>(null);
 
-  useEffect(() => {
+  useEffect((): void => {
     if (!svgRef.current) return;
 
     // Clear existing chart
@@ -41,10 +41,10 @@ export function ScatterPlot({
     const svg = d3.select(svgRef.current);
 
     // Add axes
-    const xAxis = (g: d3.Selection<SVGGElement, unknown, null, undefined>) => 
+    const xAxis = (g: d3.Selection<SVGGElement, unknown, null, undefined>): void => 
       g.attr('transform', `translate(0,${height - margin.bottom})`).call(d3.axisBottom(x));
 
-    const yAxis = (g: d3.Selection<SVGGElement, unknown, null, undefined>) => 
+    const yAxis = (g: d3.Selection<SVGGElement, unknown, null, undefined>): void => 
       g.attr('transform', `translate(${margin.left},0)`).call(d3.axisLeft(y));
 
     svg.append('g').call(xAxis);
@@ -78,7 +78,7 @@ export function ScatterPlot({
             ${d.confidence ? `Confidence: ${(d.confidence * 100).toFixed(1)}%` : ''}
           `);
       })
-      .on('mousemove', (event) => {
+      .on('mousemove', (event): void => {
         tooltip
           .style('top', (event.pageY - 10) + 'px')
           .style('left', (event.pageX + 10) + 'px');

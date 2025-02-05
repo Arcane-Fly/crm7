@@ -1,5 +1,5 @@
-import * as React from 'react';
 import './notification-template.css';
+import { type NotificationTemplateProps } from '@/lib/types';
 
 interface NotificationTemplateProps {
   title: string;
@@ -9,13 +9,13 @@ interface NotificationTemplateProps {
   actionText?: string;
 }
 
-export async function NotificationTemplate({
+export function NotificationTemplate({
   title,
   message,
   recipientName,
   actionUrl,
   actionText,
-}: NotificationTemplateProps) {
+}: NotificationTemplateProps): React.ReactElement {
   return `
     <!DOCTYPE html>
     <html>

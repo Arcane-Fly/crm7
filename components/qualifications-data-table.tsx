@@ -93,7 +93,7 @@ export const columns: ColumnDef<Qualification>[] = [
   {
     accessorKey: 'code',
     header: 'Code',
-    cell: ({ row }) => <div>{row.getValue('code')}</div>,
+    cell: ({ row }): React.JSX.Element => <div>{row.getValue('code')}</div>,
   },
   {
     accessorKey: 'title',
@@ -108,22 +108,22 @@ export const columns: ColumnDef<Qualification>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div>{row.getValue('title')}</div>,
+    cell: ({ row }): React.JSX.Element => <div>{row.getValue('title')}</div>,
   },
   {
     accessorKey: 'level',
     header: 'Level',
-    cell: ({ row }) => <div>{row.getValue('level')}</div>,
+    cell: ({ row }): React.JSX.Element => <div>{row.getValue('level')}</div>,
   },
   {
     accessorKey: 'sector',
     header: 'Sector',
-    cell: ({ row }) => <div>{row.getValue('sector')}</div>,
+    cell: ({ row }): React.JSX.Element => <div>{row.getValue('sector')}</div>,
   },
   {
     accessorKey: 'duration',
     header: 'Duration',
-    cell: ({ row }) => <div>{row.getValue('duration')}</div>,
+    cell: ({ row }): React.JSX.Element => <div>{row.getValue('duration')}</div>,
   },
   {
     id: 'actions',
@@ -144,7 +144,7 @@ export const columns: ColumnDef<Qualification>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align='end'>
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(qualification.id)}>
+            <DropdownMenuItem onClick={(): Promise<void> => navigator.clipboard.writeText(qualification.id)}>
               Copy qualification ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />

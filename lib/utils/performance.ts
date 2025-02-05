@@ -7,7 +7,7 @@ export function debounce<T extends (...args: unknown[]) => void>(
   let timeout: NodeJS.Timeout;
 
   return function executedFunction(...args: Parameters<T>) {
-    const later = () => {
+    const later = (): void => {
       clearTimeout(timeout);
       func(...args);
     };
@@ -32,7 +32,7 @@ export function throttle<T extends (...args: unknown[]) => void>(
       inThrottle = true;
     } else {
       clearTimeout(lastFunc);
-      lastFunc = setTimeout(() => {
+      lastFunc = setTimeout((): void => {
         if (Date.now() - lastRan >= limit) {
           func(...args);
           lastRan = Date.now();
@@ -45,7 +45,7 @@ export function throttle<T extends (...args: unknown[]) => void>(
 export function useRenderTime(componentName: string): void {
   const startTime = useRef(performance.now());
 
-  useEffect(() => {
+  useEffect((): void => {
     const endTime = performance.now();
     const renderTime = endTime - startTime.current;
     console.log(`${componentName} render time: ${renderTime.toFixed(2)}ms`);
@@ -72,16 +72,16 @@ export function useRenderOptimization<T extends Record<string, unknown>>(
 export function useVisibilityOptimization(callback = (): void => {}): void {
   const isVisible = useRef(true);
 
-  const handleVisibilityChange = useCallback(() => {
+  const handleVisibilityChange = useCallback((): void => {
     isVisible.current = document.visibilityState === 'visible';
     if (isVisible.current) {
       callback();
     }
   }, [callback]);
 
-  useEffect(() => {
+  useEffect((): () => void => {
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => {
+    return (): void => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [handleVisibilityChange]);
