@@ -192,7 +192,7 @@
   "pnpm": {
     "overrides": {
       "lru-cache": "10.2.0",
-      "@asamuzakjp/css-color": "3.0.0"
+      "@asamuzakjp/css-color": "3.0.7"
     }
   },
   "corepack": {
