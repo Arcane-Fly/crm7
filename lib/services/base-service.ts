@@ -32,7 +32,7 @@ export class BaseService {
   protected async executeServiceMethod<T>(
     methodName: string,
     method: () => Promise<T>
-  ): Promise<void> {
+  ): Promise<T> {
     try {
       return await method();
     } catch (error) {
@@ -53,5 +53,13 @@ export class BaseService {
 
   public getMetrics(): ServiceMetrics | null {
     return this.enableMetrics ? this.metrics : null;
+  }
+
+  public resetMetrics(): void {
+    if (this.enableMetrics) {
+      this.metrics.lastError = null;
+      this.metrics.lastErrorTime = null;
+      this.metrics.errorCount = 0;
+    }
   }
 }

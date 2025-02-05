@@ -18,12 +18,14 @@ export const initialState: PerformanceState = {
   },
 };
 
-type PerformanceAction = 
+type PerformanceAction =
   | { type: 'SET_FCP'; payload: number }
   | { type: 'SET_LCP'; payload: number }
   | { type: 'SET_FID'; payload: number }
   | { type: 'SET_CLS'; payload: number }
   | { type: 'SET_TTFB'; payload: number };
+
+export type { PerformanceAction }; // Export PerformanceAction
 
 export function performanceReducer(state: PerformanceState, action: PerformanceAction): PerformanceState {
   switch (action.type) {

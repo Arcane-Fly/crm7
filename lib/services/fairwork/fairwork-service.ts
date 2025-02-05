@@ -9,7 +9,7 @@ import {
   type Award,
   type Classification,
   type ClassificationHierarchy,
-  type Rate,
+  type PayRate,
   type RateTemplate,
   type RateValidationRequest,
   type RateValidationResponse,
@@ -18,19 +18,17 @@ import {
 export interface FairWorkService {
   getActiveAwards(): Promise<Award[]>;
   getAward(awardCode: string): Promise<Award | null>;
-  getCurrentRates(awardCode: string): Promise<Rate[]>;
-  getRatesForDate(awardCode: string, date?: string): Promise<Rate[]>;
+  getCurrentRates(awardCode: string): Promise<PayRate[]>;
+  getRatesForDate(awardCode: string, date?: string): Promise<PayRate[]>;
   getClassifications(awardCode: string): Promise<Classification[]>;
-  getClassificationHierarchy(awardCode: string): Promise<ClassificationHierarchy>;
+  getClassificationHierarchy(awardCode: string): Promise<ClassificationHierarchy | null>;
   getRateTemplates(awardCode: string): Promise<RateTemplate[]>;
-  validateRate(params: RateValidationRequest): Promise<RateValidationResponse>;
-  calculateBaseRate(params: {
-    awardCode: string;
-    classification: string;
-  }): Promise<{ baseRate: number }>;
+  validateRate(params: RateValidationRequest): Promise<RateValidationResponse | null>;
+  calculateBaseRate(params: { awardCode: string; classificationCode: string }): Promise<number | null>;
 }
 
 export class FairWorkServiceImpl extends BaseService implements FairWorkService {
+  static instance: FairWorkService;
   private readonly apiClient: FairWorkApiClient;
   private readonly cache: CacheService;
   private readonly serviceLogger = logger.createLogger('FairWorkService');
@@ -42,181 +40,159 @@ export class FairWorkServiceImpl extends BaseService implements FairWorkService 
     this.cache = new CacheService(redisClient);
   }
 
-  async getActiveAwards(): Promise<void> {
-    return this.executeServiceMethod('getActiveAwards', async () => {
+  public async getActiveAwards(): Promise<Award[]> {
+    return await this.executeServiceMethod('getActiveAwards', async (): Promise<Award[]> => {
       try {
         const cacheKey = 'active_awards';
         const cachedAwards = await this.cache.get<Award[]>(cacheKey);
-
-        if (typeof cachedAwards !== "undefined" && cachedAwards !== null) {
+        if (cachedAwards) {
           return cachedAwards;
         }
-
-        const { items: awards } = await this.apiClient.getActiveAwards();
-        await this.cache.set(cacheKey, awards, this.CACHE_TTL);
-        return awards;
+        const { data } = await this.apiClient.getActiveAwards();
+        await this.cache.set(cacheKey, data, this.CACHE_TTL);
+        return data;
       } catch (error) {
         this.serviceLogger.error('Failed to get active awards', { error });
-        throw error;
+        return [];
       }
     });
   }
 
-  async getAward(awardCode: string): Promise<void> {
-    return this.executeServiceMethod('getAward', async () => {
+  public async getAward(awardCode: string): Promise<Award | null> {
+    return this.executeServiceMethod('getAward', async (): Promise<Award | null> => {
       try {
         const cacheKey = `award:${awardCode}`;
         const cachedAward = await this.cache.get<Award>(cacheKey);
-
-        if (typeof cachedAward !== "undefined" && cachedAward !== null) {
+        if (cachedAward) {
           return cachedAward;
         }
-
         const awards = await this.getActiveAwards();
-        const award = awards.find((a) => a.code === awardCode);
-
-        if (typeof award !== "undefined" && award !== null) {
+        const award = awards.find((a) => a.code === awardCode) || null;
+        if (award) {
           await this.cache.set(cacheKey, award, this.CACHE_TTL);
         }
-
-        return award ?? null;
+        return award;
       } catch (error) {
         this.serviceLogger.error('Failed to get award', { error, awardCode });
-        throw error;
+        return null;
       }
     });
   }
 
-  async getCurrentRates(awardCode: string): Promise<void> {
-    return this.executeServiceMethod('getCurrentRates', async () => {
+  public async getCurrentRates(awardCode: string): Promise<PayRate[]> {
+    return this.executeServiceMethod('getCurrentRates', async (): Promise<PayRate[]> => {
       try {
         const cacheKey = `rates:${awardCode}:current`;
-        const cachedRates = await this.cache.get<Rate[]>(cacheKey);
-
-        if (typeof cachedRates !== "undefined" && cachedRates !== null) {
+        const cachedRates = await this.cache.get<PayRate[]>(cacheKey);
+        if (cachedRates) {
           return cachedRates;
         }
-
         const rates = await this.apiClient.getCurrentRates(awardCode);
         await this.cache.set(cacheKey, rates, this.CACHE_TTL);
         return rates;
       } catch (error) {
         this.serviceLogger.error('Failed to get current rates', { error, awardCode });
-        throw error;
+        return [];
       }
     });
   }
 
-  async getRatesForDate(awardCode: string, date: string = new Date().toISOString()): Promise<void> {
-    return this.executeServiceMethod('getRatesForDate', async () => {
+  public async getRatesForDate(awardCode: string, date: string = new Date().toISOString()): Promise<PayRate[]> {
+    return this.executeServiceMethod('getRatesForDate', async (): Promise<PayRate[]> => {
       try {
         const cacheKey = `rates:${awardCode}:${date}`;
-        const cachedRates = await this.cache.get<Rate[]>(cacheKey);
-
-        if (typeof cachedRates !== "undefined" && cachedRates !== null) {
+        const cachedRates = await this.cache.get<PayRate[]>(cacheKey);
+        if (cachedRates) {
           return cachedRates;
         }
-
         const rates = await this.apiClient.getRatesForDate(awardCode, date);
         await this.cache.set(cacheKey, rates, this.CACHE_TTL);
         return rates;
       } catch (error) {
         this.serviceLogger.error('Failed to get rates for date', { error, awardCode, date });
-        throw error;
+        return [];
       }
     });
   }
 
-  async getClassifications(awardCode: string): Promise<void> {
-    return this.executeServiceMethod('getClassifications', async () => {
+  public async getClassifications(awardCode: string): Promise<Classification[]> {
+    return this.executeServiceMethod('getClassifications', async (): Promise<Classification[]> => {
       try {
         const cacheKey = `classifications:${awardCode}`;
         const cachedClassifications = await this.cache.get<Classification[]>(cacheKey);
-
-        if (typeof cachedClassifications !== "undefined" && cachedClassifications !== null) {
+        if (cachedClassifications) {
           return cachedClassifications;
         }
-
         const classifications = await this.apiClient.getClassifications(awardCode);
         await this.cache.set(cacheKey, classifications, this.CACHE_TTL);
         return classifications;
       } catch (error) {
         this.serviceLogger.error('Failed to get classifications', { error, awardCode });
-        throw error;
+        return [];
       }
     });
   }
 
-  async getClassificationHierarchy(awardCode: string): Promise<void> {
-    return this.executeServiceMethod('getClassificationHierarchy', async () => {
+  public async getClassificationHierarchy(awardCode: string): Promise<ClassificationHierarchy | null> {
+    return this.executeServiceMethod('getClassificationHierarchy', async (): Promise<ClassificationHierarchy | null> => {
       try {
         const cacheKey = `classification_hierarchy:${awardCode}`;
         const cachedHierarchy = await this.cache.get<ClassificationHierarchy>(cacheKey);
-
-        if (typeof cachedHierarchy !== "undefined" && cachedHierarchy !== null) {
+        if (cachedHierarchy) {
           return cachedHierarchy;
         }
-
         const hierarchy = await this.apiClient.getClassificationHierarchy(awardCode);
         await this.cache.set(cacheKey, hierarchy, this.CACHE_TTL);
         return hierarchy;
       } catch (error) {
         this.serviceLogger.error('Failed to get classification hierarchy', { error, awardCode });
-        throw error;
+        return null;
       }
     });
   }
 
-  async getRateTemplates(awardCode: string): Promise<void> {
-    return this.executeServiceMethod('getRateTemplates', async () => {
+  public async getRateTemplates(awardCode: string): Promise<RateTemplate[]> {
+    return this.executeServiceMethod('getRateTemplates', async (): Promise<RateTemplate[]> => {
       try {
         const cacheKey = `rate_templates:${awardCode}`;
         const cachedTemplates = await this.cache.get<RateTemplate[]>(cacheKey);
-
-        if (typeof cachedTemplates !== "undefined" && cachedTemplates !== null) {
+        if (cachedTemplates) {
           return cachedTemplates;
         }
-
         const templates = await this.apiClient.getRateTemplates(awardCode);
         await this.cache.set(cacheKey, templates, this.CACHE_TTL);
         return templates;
       } catch (error) {
         this.serviceLogger.error('Failed to get rate templates', { error, awardCode });
-        throw error;
+        return [];
       }
     });
   }
 
-  async validateRate(params: RateValidationRequest): Promise<void> {
-    return this.executeServiceMethod('validateRate', async () => {
+  public async validateRate(params: RateValidationRequest): Promise<RateValidationResponse | null> {
+    return this.executeServiceMethod('validateRate', async (): Promise<RateValidationResponse | null> => {
       try {
         return await this.apiClient.validateRate(params);
       } catch (error) {
         this.serviceLogger.error('Failed to validate rate', { error, params });
-        throw error;
+        return null;
       }
     });
   }
 
-  async calculateBaseRate(params: {
-    awardCode: string;
-    classification: string;
-  }): Promise<void> {
-    return this.executeServiceMethod('calculateBaseRate', async () => {
+  public async calculateBaseRate(params: { awardCode: string; classificationCode: string }): Promise<number | null> {
+    return this.executeServiceMethod('calculateBaseRate', async (): Promise<number | null> => {
       try {
-        const { awardCode, classification } = params;
+        const { awardCode, classificationCode } = params;
         const rates = await this.getCurrentRates(awardCode);
-        const baseRate = rates.find((r) => r.penalties?.some(p => p.code === classification))?.baseRate;
-
-        if (!baseRate) {
-          throw new Error(`Base rate not found for classification ${classification}`);
-        }
-
-        return { baseRate };
+        const rate = rates.find(r => r.classificationCode === classificationCode);
+        return rate?.baseRate || null;
       } catch (error) {
         this.serviceLogger.error('Failed to calculate base rate', { error, params });
-        throw error;
+        return null;
       }
     });
   }
 }
+
+export type { FairWorkService };

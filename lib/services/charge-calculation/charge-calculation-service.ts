@@ -1,14 +1,16 @@
-import { type RateTemplate } from '@/types/rates';
+import type { RateTemplate } from '@/lib/types';
 import { BaseService } from '../base-service';
+import { logger } from '@/lib/utils/logger';
 
-export class ChargeCalculationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'ChargeCalculationError';
-  }
+export interface ChargeCalculationService {
+  calculateChargeRate(template: RateTemplate, hours: number): Promise<number>;
+  calculateBulkChargeRates(templates: RateTemplate[], hours: number): Promise<Map<string, number>>;
+  validateChargeRate(template: RateTemplate, hours: number, proposedRate: number): Promise<boolean>;
 }
 
-export class ChargeCalculationService extends BaseService {
+export class ChargeCalculationServiceImpl extends BaseService implements ChargeCalculationService {
+  private readonly serviceLogger = logger.createLogger('ChargeCalculationService');
+
   constructor() {
     super({
       name: 'ChargeCalculationService',
@@ -16,8 +18,8 @@ export class ChargeCalculationService extends BaseService {
     });
   }
 
-  async calculateChargeRate(template: RateTemplate, hours: number): Promise<void> {
-    return this.executeServiceMethod('calculateChargeRate', async () => {
+  async calculateChargeRate(template: RateTemplate, hours: number): Promise<number> {
+    return this.executeServiceMethod('calculateChargeRate', async (): Promise<number> => {
       const components = {
         base: template.baseRate * hours,
         margin: template.baseRate * (template.baseMargin / 100) * hours,
@@ -27,17 +29,18 @@ export class ChargeCalculationService extends BaseService {
         payrollTax: template.baseRate * (template.payrollTaxRate / 100) * hours,
         training: template.baseRate * (template.trainingCostRate / 100) * hours,
         other: template.baseRate * (template.otherCostsRate / 100) * hours,
+        casual: template.baseRate * (template.casualLoading / 100) * hours,
       };
 
-      const totalComponents = Object.values(components).reduce((sum, val) => sum + val, 0);
+      const totalComponents = Object.values(components).reduce((sum, value) => sum + value, 0);
       const fundingOffset = template.baseRate * (template.fundingOffset / 100) * hours;
 
       return totalComponents - fundingOffset;
-    });
+    }) as Promise<number>;
   }
 
-  async calculateBulkChargeRates(templates: RateTemplate[], hours: number): Promise<void> {
-    return this.executeServiceMethod('calculateBulkChargeRates', async () => {
+  async calculateBulkChargeRates(templates: RateTemplate[], hours: number): Promise<Map<string, number>> {
+    return this.executeServiceMethod('calculateBulkChargeRates', async (): Promise<Map<string, number>> => {
       const results = new Map<string, number>();
 
       for (const template of templates) {
@@ -46,15 +49,18 @@ export class ChargeCalculationService extends BaseService {
       }
 
       return results;
-    });
+    }) as Promise<Map<string, number>>;
   }
 
-  async validateChargeRate(template: RateTemplate, hours: number, proposedRate: number): Promise<void> {
-    return this.executeServiceMethod('validateChargeRate', async () => {
+  async validateChargeRate(template: RateTemplate, hours: number, proposedRate: number): Promise<boolean> {
+    return this.executeServiceMethod('validateChargeRate', async (): Promise<boolean> => {
       const rate = await this.calculateChargeRate(template, hours);
       const tolerance = 0.01; // 1% tolerance for floating point comparison
       const difference = Math.abs(rate - proposedRate);
-      return difference <= rate * tolerance;
-    });
+      const percentageDifference = difference / rate;
+      return percentageDifference <= tolerance;
+    }) as Promise<boolean>;
   }
 }
+
+export const chargeCalculationService = new ChargeCalculationServiceImpl();

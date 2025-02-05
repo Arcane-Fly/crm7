@@ -1,19 +1,21 @@
+import type { PostgrestError, SupabaseClient } from '@supabase/supabase-js';
 import { createClient } from '@supabase/supabase-js';
-import type { SupabaseClient, PostgrestError } from '@supabase/supabase-js';
 
 import {
-  type RateTemplate,
-  type RateTemplateInput,
-  type RateTemplateUpdate,
-  type RateTemplateStatus,
   type BulkCalculation,
   type RateAnalytics,
-  type RateValidationResult,
-  type RateTemplateHistory,
   type RateCalculationResult,
-  type RateCalculationComponents,
+  type RateTemplate,
+  type RateTemplateHistory,
+  type RateTemplateInput,
+  type RateTemplateStatus,
+  type RateTemplateUpdate,
+  type RateValidationResult,
 } from '@/lib/types/rates';
 import { logger } from '@/lib/utils/logger';
+
+import type { FairWorkService, PayRate } from '../fairwork/index';
+import type { Classification } from '../fairwork/types';
 
 interface LogError extends Error {
   context: string;
@@ -21,8 +23,8 @@ interface LogError extends Error {
   [key: string]: unknown;
 }
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const SUPABASE_URL = process.env['NEXT_PUBLIC_SUPABASE_URL'];
+const SUPABASE_KEY = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'];
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
   throw new Error('Missing Supabase environment variables');
@@ -42,10 +44,6 @@ export class RateManagementError extends Error {
     this.name = 'RateManagementError';
   }
 }
-
-import type { FairWorkService } from '../fairwork/fairwork-service';
-import type { PayRate, Classification } from '../fairwork/fairwork-service';
-import { fairWorkService } from '../fairwork/fairwork-service';
 
 interface ServiceConfig {
   minimumRate: number;
@@ -112,15 +110,15 @@ export class RateManagementServiceImpl implements RateManagementService {
     this.rateManagementConfig = rateManagementConfig;
   }
 
-async getRateTemplates(orgId: string): Promise {
-  try {
-    const { data, error } = await this.client
-      .from('rate_templates')
-      .select('*')
-      .eq('orgId', orgId)
-      .order('createdAt', { ascending: false });
+  async getRateTemplates(orgId: string): Promise {
+    try {
+      const { data, error } = await this.client
+        .from('rate_templates')
+        .select('*')
+        .eq('orgId', orgId)
+        .order('createdAt', { ascending: false });
 
-      if (typeof error !== "undefined" && error !== null) {
+      if (typeof error !== 'undefined' && error !== null) {
         const customError = new Error(error.message) as CustomError;
         customError.details = { code: error.code };
         throw customError;
@@ -152,7 +150,7 @@ async getRateTemplates(orgId: string): Promise {
         .eq('id', id)
         .single();
 
-      if (typeof error !== "undefined" && error !== null) {
+      if (typeof error !== 'undefined' && error !== null) {
         const customError = new Error(error.message) as CustomError;
         customError.details = { code: error.code };
         throw customError;
@@ -178,7 +176,7 @@ async getRateTemplates(orgId: string): Promise {
         .select()
         .single();
 
-      if (typeof error !== "undefined" && error !== null) {
+      if (typeof error !== 'undefined' && error !== null) {
         const customError = new Error(error.message) as CustomError;
         customError.details = { code: error.code };
         throw customError;
@@ -212,7 +210,7 @@ async getRateTemplates(orgId: string): Promise {
         .select()
         .single();
 
-      if (typeof error !== "undefined" && error !== null) {
+      if (typeof error !== 'undefined' && error !== null) {
         const customError = new Error(error.message) as CustomError;
         customError.details = { code: error.code };
         throw customError;
@@ -248,7 +246,7 @@ async getRateTemplates(orgId: string): Promise {
     try {
       const { error } = await this.client.from('rate_templates').delete().eq('id', id);
 
-      if (typeof error !== "undefined" && error !== null) {
+      if (typeof error !== 'undefined' && error !== null) {
         throw new Error(error.message);
       }
     } catch (error) {
@@ -272,7 +270,7 @@ async getRateTemplates(orgId: string): Promise {
         .eq('templateId', id)
         .order('changedAt', { ascending: false });
 
-      if (typeof error !== "undefined" && error !== null) {
+      if (typeof error !== 'undefined' && error !== null) {
         throw new Error(error.message);
       }
 
@@ -298,7 +296,7 @@ async getRateTemplates(orgId: string): Promise {
         .eq('templateId', id)
         .order('createdAt', { ascending: false });
 
-      if (typeof error !== "undefined" && error !== null) {
+      if (typeof error !== 'undefined' && error !== null) {
         throw new Error(error.message);
       }
 
@@ -324,7 +322,7 @@ async getRateTemplates(orgId: string): Promise {
         .select()
         .single();
 
-      if (typeof error !== "undefined" && error !== null) {
+      if (typeof error !== 'undefined' && error !== null) {
         throw new Error(error.message);
       }
 
@@ -353,7 +351,7 @@ async getRateTemplates(orgId: string): Promise {
         .select('*')
         .eq('orgId', orgId);
 
-      if (typeof templatesError !== "undefined" && templatesError !== null) {
+      if (typeof templatesError !== 'undefined' && templatesError !== null) {
         throw new Error(templatesError.message);
       }
 
@@ -362,12 +360,11 @@ async getRateTemplates(orgId: string): Promise {
         .select('*')
         .eq('orgId', orgId);
 
-      if (typeof calculationsError !== "undefined" && calculationsError !== null) {
+      if (typeof calculationsError !== 'undefined' && calculationsError !== null) {
         throw new Error(calculationsError.message);
       }
 
       const totalTemplates = templates.length ?? 0;
-      const totalCalculations = calculations.length ?? 0;
       const averageRate =
         calculations.reduce((acc, curr) => acc + curr.finalRate, 0) / (calculations.length || 1);
 
@@ -391,7 +388,7 @@ async getRateTemplates(orgId: string): Promise {
   async getCurrentRates(): Promise<void> {
     const cacheKey = 'currentRates';
     const cached = this.getFromCache(cacheKey);
-    if (typeof cached !== "undefined" && cached !== null) return cached as PayRate[];
+    if (typeof cached !== 'undefined' && cached !== null) return cached as PayRate[];
 
     try {
       const rates = await fairWorkService.getCurrentRates();
@@ -406,7 +403,7 @@ async getRateTemplates(orgId: string): Promise {
   async getRatesForDate(date: Date): Promise<void> {
     const cacheKey = `rates_${date.toISOString()}`;
     const cached = this.getFromCache(cacheKey);
-    if (typeof cached !== "undefined" && cached !== null) return cached as PayRate[];
+    if (typeof cached !== 'undefined' && cached !== null) return cached as PayRate[];
 
     try {
       const rates = await fairWorkService.getRatesForDate(date);
@@ -421,7 +418,7 @@ async getRateTemplates(orgId: string): Promise {
   async getClassifications(): Promise<void> {
     const cacheKey = 'classifications';
     const cached = this.getFromCache(cacheKey);
-    if (typeof cached !== "undefined" && cached !== null) return cached as Classification[];
+    if (typeof cached !== 'undefined' && cached !== null) return cached as Classification[];
 
     try {
       const classifications = await fairWorkService.getClassifications();
@@ -436,7 +433,7 @@ async getRateTemplates(orgId: string): Promise {
   async getClassificationHierarchy(): Promise<void> {
     const cacheKey = 'classificationHierarchy';
     const cached = this.getFromCache(cacheKey);
-    if (typeof cached !== "undefined" && cached !== null) return cached as Classification[];
+    if (typeof cached !== 'undefined' && cached !== null) return cached as Classification[];
 
     try {
       const hierarchy = await fairWorkService.getClassificationHierarchy();

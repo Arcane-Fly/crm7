@@ -1,4 +1,3 @@
-// ... existing imports ...
 import { cn } from '@/lib/utils';
 
 export interface Activity {
@@ -9,13 +8,13 @@ export interface Activity {
   status?: 'completed' | 'pending' | 'failed';
 }
 
-interface ActivityListProps {
+export interface ActivityListProps {
   title: string;
   activities: Activity[];
   className?: string;
 }
 
-export function ActivityList({ title, activities, className }: ActivityListProps): JSX.Element {
+function ActivityList({ title, activities, className }: ActivityListProps): JSX.Element {
   return (
     <div className={cn('space-y-4', className)}>
       <h3 className="text-lg font-semibold">{title}</h3>
@@ -35,3 +34,5 @@ export function ActivityList({ title, activities, className }: ActivityListProps
     </div>
   );
 }
+
+export default ActivityList;

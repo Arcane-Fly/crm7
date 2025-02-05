@@ -1,16 +1,13 @@
+/** @jsxImportSource react */
 'use client';
 
-import { createContext, useContext, useReducer, type ReactNode } from 'react';
-import { performanceReducer, initialState } from '@/lib/reducers/performance';
+import { initialState, performanceReducer } from '@/lib/reducers/performance';
 import type { PerformanceContextType } from '@/lib/types';
+import { createContext, useContext, useReducer } from 'react';
 
 const PerformanceContext = createContext<PerformanceContextType | undefined>(undefined);
 
-interface PerformanceProviderProps {
-  children: ReactNode;
-}
-
-export function PerformanceProvider({ children }: PerformanceProviderProps): JSX.Element {
+export function PerformanceProvider({ children }: { children: React.ReactNode }): JSX.Element {
   const [state, dispatch] = useReducer(performanceReducer, initialState);
 
   return (
@@ -19,6 +16,8 @@ export function PerformanceProvider({ children }: PerformanceProviderProps): JSX
     </PerformanceContext.Provider>
   );
 }
+
+export { PerformanceContext }; // Explicitly export PerformanceContext
 
 export function usePerformanceContext(): PerformanceContextType {
   const context = useContext(PerformanceContext);

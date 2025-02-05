@@ -32,7 +32,7 @@ The Rates Management System is a core component of our CRM platform, responsible
    - Rate template handling
    - Real-time rate calculations
 
-2. **Cache Service**
+1. **Cache Service**
    - Redis integration
    - Type-safe cache operations
    - Automatic serialization/deserialization
@@ -61,7 +61,7 @@ The Rates Management System is a core component of our CRM platform, responsible
   - Machine Learning for pattern recognition
   - Rule-based validation engine
 
-### 2. Calculation Engine Service
+### 1. Calculation Engine Service
 
 - Rule-based calculation engine for:
   - Base rates
@@ -74,7 +74,7 @@ The Rates Management System is a core component of our CRM platform, responsible
   - Compliance validation
   - Rate simulation
 
-### 3. Validation System
+### 1. Validation System
 
 - Comprehensive validation against:
   - Fair Work standards

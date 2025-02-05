@@ -1,5 +1,6 @@
 import { logger } from '@/lib/logger';
 import type { ServiceFactory } from './service-factory';
+import { ServiceFactory as DefaultServiceFactory } from './service-factory';  // import for creating an instance
 
 interface ServiceRegistration {
   name: string;
@@ -10,8 +11,18 @@ export class ServiceRegistry {
   private registrations: Map<string, ServiceRegistration> = new Map();
   private factory: ServiceFactory;
 
+  // Add a static instance for singleton access.
+  private static instance: ServiceRegistry;
+
   constructor(factory: ServiceFactory) {
     this.factory = factory;
+  }
+
+  public static getInstance(): ServiceRegistry {
+    if (!ServiceRegistry.instance) {
+      ServiceRegistry.instance = new ServiceRegistry(DefaultServiceFactory.getInstance());
+    }
+    return ServiceRegistry.instance;
   }
 
   register(name: string, dependencies: string[] = []): void {
@@ -26,36 +37,28 @@ export class ServiceRegistry {
       if (initialized.has(name)) {
         return;
       }
-
       if (initializing.has(name)) {
         throw new Error(`Circular dependency detected: ${name}`);
       }
-
       const registration = this.registrations.get(name);
       if (!registration) {
         throw new Error(`Service not registered: ${name}`);
       }
-
       initializing.add(name);
-
-      // Initialize dependencies first
       for (const dep of registration.dependencies) {
         initializeService(dep);
       }
 
       try {
-        // Initialize the service
         this.getService(name);
       } catch (error) {
         logger.error(`Failed to initialize service: ${name}`, error as Error);
         throw error;
       }
-
       initializing.delete(name);
       initialized.add(name);
     };
 
-    // Initialize all services
     for (const name of this.registrations.keys()) {
       initializeService(name);
     }
@@ -90,20 +93,16 @@ export class ServiceRegistry {
       if (visited.has(name)) {
         return;
       }
-
       if (visiting.has(name)) {
         throw new Error(`Circular dependency detected: ${name}`);
       }
-
       visiting.add(name);
-
       const registration = this.registrations.get(name);
-      if (typeof registration !== "undefined" && registration !== null) {
+      if (registration != null) {
         for (const dep of registration.dependencies) {
           visit(dep);
         }
       }
-
       visiting.delete(name);
       visited.add(name);
       order.push(name);
@@ -112,7 +111,6 @@ export class ServiceRegistry {
     for (const name of this.registrations.keys()) {
       visit(name);
     }
-
     return order;
   }
 }

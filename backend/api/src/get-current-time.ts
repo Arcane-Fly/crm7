@@ -1,25 +1,17 @@
-export class ExtendedError extends Error {
-  constructor(message: string, public readonly requestId?: string) {
-    super(message);
-    this.name = 'ExtendedError';
-  }
-}
-
+// Replace the current implementation with:
 export async function handler(req: Request, res: Response): Promise<void> {
   const requestId = crypto.randomUUID();
-  
   try {
-    res.status(200).json({
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
       currentTime: Date.now(),
       requestId
-    });
+    }));
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    const extendedError = new ExtendedError(errorMessage, requestId);
-    
-    res.status(500).json({
-      error: extendedError.message,
-      requestId: extendedError.requestId
-    });
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+      requestId
+    }));
   }
 }

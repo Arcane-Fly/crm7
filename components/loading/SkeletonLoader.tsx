@@ -1,12 +1,17 @@
+import React from 'react';
 import { cn } from '@/lib/utils';
 
-type SkeletonLoaderProps = {
+interface SkeletonLoaderProps {
   lines?: number;
   className?: string;
   lineClassName?: string;
-};
+}
 
-export function SkeletonLoader({ lines = 3, className, lineClassName }: SkeletonLoaderProps): void {
+const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
+  lines = 3,
+  className,
+  lineClassName,
+}) => {
   return (
     <div
       role='status'
@@ -27,4 +32,6 @@ export function SkeletonLoader({ lines = 3, className, lineClassName }: Skeleton
       <span className='sr-only'>Loading...</span>
     </div>
   );
-}
+};
+
+export default SkeletonLoader;
