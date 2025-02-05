@@ -1,4 +1,3 @@
-// Updated error handler with explicit generic type for the API response
 import { type NextRequest, NextResponse } from 'next/server';
 import { createApiResponse } from './response';
 import { logger } from '@/lib/logger';
