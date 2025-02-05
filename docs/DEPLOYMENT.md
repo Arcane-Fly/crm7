@@ -85,6 +85,11 @@ NEXT_PUBLIC_FEATURE_FLAGS=
 pnpm install
 ```
 
+### Important Notes
+- Do not use --frozen-lockfile flag in Vercel deployment commands
+- Ensure pnpm version matches between local and CI environments
+- Use COREPACK_DISABLE_SIGNATURES=1 when installing dependencies
+
 ### 2. Type Check
 
 ```bash
