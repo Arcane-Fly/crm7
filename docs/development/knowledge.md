@@ -41,4 +41,6 @@
 - Use --no-verify flag to bypass pre-commit hooks if lint-staged configuration fails
 - Ensure commit messages follow conventional commits format
 - Keep commits focused on single concerns
+- When pushing changes: commit, pull with rebase, then push
+- Use conventional commit prefixes: feat, fix, docs, style, refactor, test, chore
 
