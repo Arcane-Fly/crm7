@@ -123,13 +123,27 @@ export class Logger {
     this.log('warn', message, context, component);
   }
 
-  error(message: string, error: Error, context?: Record<string, unknown>, component?: string): void {
+  error(
+    message: string,
+    error: Error,
+    context?: Record<string, unknown>,
+    component?: string,
+  ): void {
     this.log('error', message, context, component, error);
   }
 
   setLogLevel(level: LogLevel): void {
     this.logLevel = level;
   }
+
+  createLogger(component: string): Logger {
+    const logger = new Logger();
+    logger.log = (level, message, context, error) => {
+      this.log(level, message, context, component, error);
+    };
+    return logger;
+  }
 }
 
 export const logger = Logger.getInstance();
+export const createLogger = (component: string) => logger.createLogger(component);
