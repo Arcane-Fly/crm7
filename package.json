@@ -13,7 +13,7 @@
     "dev": "next dev -p 4200",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "preinstall": "export COREPACK_DISABLE_SIGNATURES=1 && npx only-allow pnpm && corepack prepare pnpm@9.15.5 --activate || true",
+    "preinstall": "export COREPACK_DISABLE_SIGNATURES=1 && npx only-allow pnpm && corepack prepare pnpm@10.2.0 --activate || true",
     "postinstall": "husky install",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -183,10 +183,10 @@
     "vitest": "^3.0.5",
     "winston": "^3.11.0"
   },
-  "packageManager": "pnpm@9.15.5",
+  "packageManager": "pnpm@10.2.0",
   "engines": {
-    "node": ">=18.18.1",
-    "pnpm": ">=9.14.0"
+    "node": ">=22.13.1",
+    "pnpm": ">=10.2.0"
   },
   "pnpm": {
     "overrides": {
