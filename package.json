@@ -189,7 +189,7 @@
   },
   "pnpm": {
     "overrides": {
-      "lru-cache": "10.2.0",
+      "lru-cache": "10.4.3",
       "@asamuzakjp/css-color": "3.0.7"
     }
   },
