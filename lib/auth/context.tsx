@@ -1,9 +1,11 @@
 import { type ReactNode, createContext, useContext, useEffect, useState } from 'react';
 import { type Session, type User } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
-
-import { type Database } from '@/types/supabase';
 import { createClient } from './config';
+
+interface AuthProviderProps {
+  children: ReactNode;
+}
 
 interface AuthContextType {
   user: User | null;
@@ -14,17 +16,18 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export function AuthProvider({ children }: { children: ReactNode }): void {
+export function AuthProvider({ children }: AuthProviderProps): React.ReactElement {
   const router = useRouter();
   const supabase = createClient();
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [requiresMFA, setRequiresMFA] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [_requiresMFA, _setRequiresMFA] = useState<boolean>(false);
 
-  useEffect(() => {
+  useEffect((): () => void => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session): Promise<void> => {
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         setSession(session);
         
@@ -61,12 +64,12 @@ export function AuthProvider({ children }: { children: ReactNode }): void {
       }
     });
 
-    return () => {
+    return (): void => {
       subscription.unsubscribe();
     };
   }, [supabase, router]);
 
-  const signOut = async () => {
+  const signOut = async (): Promise<void> => {
     try {
       await supabase.auth.signOut();
     } catch (error) {
@@ -79,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }): void {
       value={{
         user,
         session,
-        requiresMFA,
+        requiresMFA: _requiresMFA,
         signOut,
       }}
     >
@@ -88,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }): void {
   );
 }
 
-export function useAuth(): void {
+export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');

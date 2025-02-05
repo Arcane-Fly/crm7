@@ -58,7 +58,7 @@ const topNavItems = [
   },
 ];
 
-export default function TopNav() {
+export default function TopNav(): React.JSX.Element {
   const pathname = usePathname() ?? '/';
 
   return (

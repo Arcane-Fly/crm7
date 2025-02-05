@@ -1,20 +1,11 @@
 import {
   type RateTemplate,
-  type RateTemplateHistory,
-  type RateCalculation,
-  type RateCalculationResult,
-  type RateValidationResult,
-  type BulkCalculation,
   type BulkCalculationParams,
-  type RateAnalytics,
   type RateTemplateStatus,
   type RatesService,
   RateError,
 } from '@/lib/types/rates';
 import { createLogger } from '@/lib/utils/logger';
-
-import { FairWorkServiceImpl } from '../fairwork/fairwork-service';
-
 import { RateManagementServiceImpl } from './rate-management-service';
 
 const logger = createLogger('RatesService');

@@ -5,10 +5,11 @@ interface DocumentPreviewProps {
   url: string;
 }
 
-export function DocumentPreview({ url }: DocumentPreviewProps): JSX.Element {
+export function DocumentPreview({ url }: DocumentPreviewProps): React.ReactElement {
   const [numPages, setNumPages] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [_loading, setLoading] = useState<boolean>(true);
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }): void => {
     setNumPages(numPages);
@@ -16,7 +17,7 @@ export function DocumentPreview({ url }: DocumentPreviewProps): JSX.Element {
   };
 
   const changePage = (offset: number): void => {
-    setPageNumber((prevPageNumber) => prevPageNumber + offset);
+    setPageNumber((prevPageNumber): number => prevPageNumber + offset);
   };
 
   const previousPage = (): void => {

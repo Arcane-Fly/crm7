@@ -1,4 +1,4 @@
-import { useRef, useEffect, type ReactElement } from 'react';
+import { useRef, useEffect } from 'react';
 import * as d3 from 'd3';
 
 interface BarChartProps {

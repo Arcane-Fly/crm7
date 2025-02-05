@@ -11,7 +11,7 @@ export function useChargeRates(ratesCalculator: RatesCalculator): Promise<void> 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const calculateRate = async (config: ChargeRatesConfig) => {
+  const calculateRate = async (config: ChargeRatesConfig): Promise<any> => {
     setIsLoading(true);
     setError(null);
 

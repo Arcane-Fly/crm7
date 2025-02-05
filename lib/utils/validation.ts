@@ -36,12 +36,12 @@ export const urlSchema = z
 export const abnSchema = z
   .string()
   .regex(/^\d{11}$/, 'ABN must be 11 digits')
-  .refine((abn: string) => validateABN(abn), 'Invalid ABN');
+  .refine((abn: string): boolean => validateABN(abn), 'Invalid ABN');
 
 export const tfnSchema = z
   .string()
   .regex(/^\d{9}$/, 'TFN must be 9 digits')
-  .refine((tfn: string) => validateTFN(tfn), 'Invalid TFN');
+  .refine((tfn: string): boolean => validateTFN(tfn), 'Invalid TFN');
 
 // Common object schemas
 export const addressSchema = z.object({

@@ -3,7 +3,7 @@
 import { Sidebar } from './Sidebar';
 import TopNav from './TopNav';
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default function Layout({ children }: { children: React.ReactNode }): React.JSX.Element {
   return (
     <div className='min-h-screen bg-gray-50'>
       <TopNav />

@@ -1,6 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { ReactElement } from 'react';
-
 import { useToast } from '@/components/ui/use-toast';
 import { useUser } from '@/lib/hooks/useUser';
 import { useSupabase } from '@/lib/supabase/supabase-provider';
@@ -24,7 +22,7 @@ export default function RateApproval({
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchPendingTemplates = useCallback(async () => {
+  const fetchPendingTemplates = useCallback(async (): Promise<void> => {
     try {
       const { data, error } = await supabase
         .from('rate_templates')
@@ -116,7 +114,7 @@ export default function RateApproval({
     [onReject, supabase, toast, user],
   );
 
-  useEffect(() => {
+  useEffect((): void => {
     fetchPendingTemplates();
   }, [org_id, fetchPendingTemplates]);
 
@@ -150,13 +148,13 @@ export default function RateApproval({
             </div>
             <div className="mt-4 flex justify-end space-x-4">
               <button
-                onClick={() => handleReject(template)}
+                onClick={(): Promise<void> => handleReject(template)}
                 className="rounded-md bg-red-100 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-200"
               >
                 Reject
               </button>
               <button
-                onClick={() => handleApprove(template)}
+                onClick={(): Promise<void> => handleApprove(template)}
                 className="rounded-md bg-green-100 px-4 py-2 text-sm font-medium text-green-700 hover:bg-green-200"
               >
                 Approve

@@ -1,4 +1,3 @@
-import { type ReactElement } from 'react';
 import {
   type ColumnDef,
   flexRender,
@@ -27,7 +26,7 @@ export function DataGrid<TData>({
     getPaginationRowModel: getPaginationRowModel(),
   });
 
-  React.useEffect(() => {
+  React.useEffect((): void => {
     if (typeof pageSize !== "undefined" && pageSize !== null) {
       table.setPageSize(pageSize);
     }

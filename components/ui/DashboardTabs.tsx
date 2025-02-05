@@ -1,5 +1,3 @@
-import { type ReactElement } from 'react';
-
 interface Tab {
   id: string;
   label: string;
@@ -18,7 +16,7 @@ export function DashboardTabs({ tabs, activeTab, onTabChange }: DashboardTabsPro
         {tabs.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => onTabChange(tab.id)}
+            onClick={(): void => onTabChange(tab.id)}
             className={`
               whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium
               ${tab.id === activeTab

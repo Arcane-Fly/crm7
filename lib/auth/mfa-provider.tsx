@@ -3,24 +3,26 @@ import { createClient } from './config';
 
 interface MFAContextType {
   isEnabled: boolean;
-  isEnrolling: boolean;
-  checkMFAStatus: () => Promise<void>;
-  startMFAEnrollment: () => Promise<void>;
-  completeMFAEnrollment: (code: string) => Promise<void>;
+  isVerified: boolean;
+  secret: string | null;
+  qrCode: string | null;
+  verify: (token: string) => Promise<boolean>;
+  enable: () => Promise<void>;
+  disable: () => Promise<void>;
 }
 
 interface MFAProviderProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 const MFAContext = createContext<MFAContextType | null>(null);
 
-export function MFAProvider({ children }: MFAProviderProps): void {
+export function MFAProvider({ children }: MFAProviderProps): React.ReactElement {
   const supabase = createClient();
   const [isEnabled, setIsEnabled] = useState(false);
   const [isEnrolling, setIsEnrolling] = useState(false);
 
-  const checkMFAStatus = async () => {
+  const checkMFAStatus = async (): Promise<void> => {
     try {
       const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
       if (typeof error !== "undefined" && error !== null) throw error;
@@ -30,7 +32,7 @@ export function MFAProvider({ children }: MFAProviderProps): void {
     }
   };
 
-  const startMFAEnrollment = async () => {
+  const startMFAEnrollment = async (): Promise<any> => {
     try {
       setIsEnrolling(true);
       const { data, error } = await supabase.auth.mfa.enroll({
@@ -44,7 +46,7 @@ export function MFAProvider({ children }: MFAProviderProps): void {
     }
   };
 
-  const completeMFAEnrollment = async (code: string) => {
+  const completeMFAEnrollment = async (code: string): Promise<void> => {
     try {
       const { error } = await supabase.auth.mfa.challenge({ factorId: code });
       if (typeof error !== "undefined" && error !== null) throw error;
@@ -60,10 +62,37 @@ export function MFAProvider({ children }: MFAProviderProps): void {
     <MFAContext.Provider
       value={{
         isEnabled,
-        isEnrolling,
-        checkMFAStatus,
-        startMFAEnrollment,
-        completeMFAEnrollment,
+        isVerified: false,
+        secret: null,
+        qrCode: null,
+        verify: async (token: string) => {
+          try {
+            const { error } = await supabase.auth.mfa.challenge({ factorId: token });
+            if (typeof error !== "undefined" && error !== null) throw error;
+            return true;
+          } catch (error) {
+            console.error('Error verifying MFA:', error);
+            return false;
+          }
+        },
+        enable: async () => {
+          try {
+            await startMFAEnrollment();
+          } catch (error) {
+            console.error('Error enabling MFA:', error);
+            throw error;
+          }
+        },
+        disable: async () => {
+          try {
+            const { error } = await supabase.auth.mfa.delete();
+            if (typeof error !== "undefined" && error !== null) throw error;
+            setIsEnabled(false);
+          } catch (error) {
+            console.error('Error disabling MFA:', error);
+            throw error;
+          }
+        },
       }}
     >
       {children}
@@ -71,7 +100,7 @@ export function MFAProvider({ children }: MFAProviderProps): void {
   );
 }
 
-export function useMFA(): void {
+export function useMFA(): MFAContextType {
   const context = useContext(MFAContext);
   if (!context) {
     throw new Error('useMFA must be used within an MFAProvider');

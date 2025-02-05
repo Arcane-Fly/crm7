@@ -1,5 +1,3 @@
-import { type ReactElement } from 'react';
-
 interface HeatMapProps {
   data: number[][];
   startColor?: string;
@@ -18,12 +16,16 @@ export function HeatMap({
   const maxValue = Math.max(...data.flat());
   const minValue = Math.min(...data.flat());
 
-  const getColor = (value: number) => {
-    const normalizedValue = (value - minValue) / (maxValue - minValue);
-    return interpolateColor(startColor, endColor, normalizedValue);
+  const getColor = (value: number, maxValue: number): string => {
+    const intensity = value / maxValue;
+    return `rgb(0, ${Math.round(intensity * 255)}, 0)`;
   };
 
-  function interpolateColor(start: string, end: string, ratio: number) {
+  const formatTooltip = (value: number): string => {
+    return `Value: ${value}`;
+  };
+
+  function interpolateColor(start: string, end: string, ratio: number): string {
     const startRGB = hexToRGB(start);
     const endRGB = hexToRGB(end);
 
@@ -34,7 +36,7 @@ export function HeatMap({
     return `rgb(${r}, ${g}, ${b})`;
   }
 
-  function hexToRGB(hex: string) {
+  function hexToRGB(hex: string): { r: number; g: number; b: number } {
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
@@ -52,8 +54,9 @@ export function HeatMap({
               style={{
                 width: cellSize,
                 height: cellSize,
-                backgroundColor: getColor(value),
+                backgroundColor: getColor(value, maxValue),
               }}
+              title={formatTooltip(value)}
             >
               {value}
             </div>

@@ -11,7 +11,7 @@ const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
   lines = 3,
   className,
   lineClassName,
-}) => {
+}): React.ReactElement => {
   return (
     <div
       role='status'

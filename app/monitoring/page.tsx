@@ -9,7 +9,7 @@ export const metadata = {
   description: 'Monitor system performance, caching, and health metrics',
 };
 
-function LoadingMetrics() {
+function LoadingMetrics(): React.JSX.Element {
   return (
     <div className='space-y-4'>
       <Card className='p-4'>

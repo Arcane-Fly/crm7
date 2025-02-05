@@ -7,11 +7,11 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? undefined
 );
 
-export default function AuthCallbackPage() {
+export default function AuthCallbackPage(): null {
   const router = useRouter();
 
-  useEffect(() => {
-    const handleAuthCallback = async () => {
+  useEffect((): void => {
+    const handleAuthCallback = async (): Promise<void> => {
       const { searchParams } = new URL(window.location.href);
       const code = searchParams.get('code');
       const next = searchParams.get('next') ?? '/';

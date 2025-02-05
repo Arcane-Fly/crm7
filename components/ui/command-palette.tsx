@@ -5,7 +5,6 @@ import {
   Calendar,
   CreditCard,
   Settings,
-  Smile,
   User,
   Search,
   Command,
@@ -33,19 +32,19 @@ export function CommandPalette(): JSX.Element {
   const [open, setOpen] = React.useState(false);
   const router = useRouter();
 
-  React.useEffect(() => {
-    const down = (e: KeyboardEvent) => {
+  React.useEffect((): () => void => {
+    const down = (e: KeyboardEvent): void => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen((open) => !open);
+        setOpen((open): boolean => !open);
       }
     };
 
     document.addEventListener('keydown', down);
-    return () => document.removeEventListener('keydown', down);
+    return (): void => document.removeEventListener('keydown', down);
   }, []);
 
-  const runCommand = React.useCallback((command: () => void) => {
+  const runCommand = React.useCallback((command: () => void): void => {
     setOpen(false);
     command();
   }, []);
@@ -53,7 +52,7 @@ export function CommandPalette(): JSX.Element {
   return (
     <>
       <button
-        onClick={() => setOpen(true)}
+        onClick={(): void => setOpen(true)}
         className="inline-flex items-center rounded-sm px-3 py-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <Command className="mr-2 h-4 w-4" />
@@ -68,28 +67,28 @@ export function CommandPalette(): JSX.Element {
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup heading="Navigation">
             <CommandItem
-              onSelect={() => runCommand(() => router.push('/dashboard'))}
+              onSelect={(): void => runCommand(() => router.push('/dashboard'))}
             >
               <BarChart3 className="mr-2 h-4 w-4" />
               Go to Dashboard
               <CommandShortcut>⌘D</CommandShortcut>
             </CommandItem>
             <CommandItem
-              onSelect={() => runCommand(() => router.push('/candidates'))}
+              onSelect={(): void => runCommand(() => router.push('/candidates'))}
             >
               <Users className="mr-2 h-4 w-4" />
               View Candidates
               <CommandShortcut>⌘C</CommandShortcut>
             </CommandItem>
             <CommandItem
-              onSelect={() => runCommand(() => router.push('/clients'))}
+              onSelect={(): void => runCommand(() => router.push('/clients'))}
             >
               <Building2 className="mr-2 h-4 w-4" />
               View Clients
               <CommandShortcut>⌘L</CommandShortcut>
             </CommandItem>
             <CommandItem
-              onSelect={() => runCommand(() => router.push('/jobs'))}
+              onSelect={(): void => runCommand(() => router.push('/jobs'))}
             >
               <Briefcase className="mr-2 h-4 w-4" />
               View Jobs
@@ -99,25 +98,25 @@ export function CommandPalette(): JSX.Element {
           <CommandSeparator />
           <CommandGroup heading="Tools">
             <CommandItem
-              onSelect={() => runCommand(() => router.push('/calendar'))}
+              onSelect={(): void => runCommand(() => router.push('/calendar'))}
             >
               <Calendar className="mr-2 h-4 w-4" />
               Calendar
             </CommandItem>
             <CommandItem
-              onSelect={() => runCommand(() => router.push('/documents'))}
+              onSelect={(): void => runCommand(() => router.push('/documents'))}
             >
               <FileText className="mr-2 h-4 w-4" />
               Documents
             </CommandItem>
             <CommandItem
-              onSelect={() => runCommand(() => router.push('/search'))}
+              onSelect={(): void => runCommand(() => router.push('/search'))}
             >
               <Search className="mr-2 h-4 w-4" />
               Search
             </CommandItem>
             <CommandItem
-              onSelect={() => runCommand(() => router.push('/calculator'))}
+              onSelect={(): void => runCommand(() => router.push('/calculator'))}
             >
               <Calculator className="mr-2 h-4 w-4" />
               Calculator
@@ -126,21 +125,21 @@ export function CommandPalette(): JSX.Element {
           <CommandSeparator />
           <CommandGroup heading="Account">
             <CommandItem
-              onSelect={() => runCommand(() => router.push('/settings'))}
+              onSelect={(): void => runCommand(() => router.push('/settings'))}
             >
               <Settings className="mr-2 h-4 w-4" />
               Settings
               <CommandShortcut>⌘S</CommandShortcut>
             </CommandItem>
             <CommandItem
-              onSelect={() => runCommand(() => router.push('/billing'))}
+              onSelect={(): void => runCommand(() => router.push('/billing'))}
             >
               <CreditCard className="mr-2 h-4 w-4" />
               Billing
               <CommandShortcut>⌘B</CommandShortcut>
             </CommandItem>
             <CommandItem
-              onSelect={() => runCommand(() => router.push('/profile'))}
+              onSelect={(): void => runCommand(() => router.push('/profile'))}
             >
               <User className="mr-2 h-4 w-4" />
               Profile

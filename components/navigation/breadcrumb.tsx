@@ -1,5 +1,3 @@
-import { type ReactElement } from 'react';
-
 interface BreadcrumbProps {
   pathname: string;
 }

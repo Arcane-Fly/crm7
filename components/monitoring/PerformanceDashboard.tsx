@@ -1,16 +1,23 @@
 import { type PerformanceMetrics } from '@/lib/types';
+import { useState } from 'react';
 
 interface PerformanceDashboardProps {
   metrics: PerformanceMetrics;
 }
 
-export function PerformanceDashboard({ metrics }: PerformanceDashboardProps): JSX.Element {
-  const formatChartData = (metrics: PerformanceMetrics) => {
+export function PerformanceDashboard(): React.ReactElement {
+  const [_metrics, setMetrics] = useState<PerformanceMetrics[]>([]);
+  const [_chartData, setChartData] = useState<ChartData>({
+    labels: [],
+    datasets: []
+  });
+
+  const formatChartData = (metrics: PerformanceMetrics): void => {
     // Chart data formatting implementation
   };
 
-  const chartData = formatChartData(metrics);
-  const { pageLoadStats, memoryStats, networkRequestStats } = metrics;
+  const chartData = formatChartData({} as PerformanceMetrics);
+  const { pageLoadStats, memoryStats, networkRequestStats } = {} as PerformanceMetrics;
 
   return (
     <div className="grid gap-4 md:grid-cols-2">

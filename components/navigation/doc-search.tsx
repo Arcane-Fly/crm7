@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 
-export function DocSearch(): JSX.Element {
-  const [open, setOpen] = useState<boolean>(false);
+export function DocSearch(): React.ReactElement {
+  const [query, setQuery] = useState<string>('');
+  const [_open, setOpen] = useState<boolean>(false);
 
   return (
     <>
       <Button
         variant="outline"
         className="relative h-9 w-full justify-start rounded-[0.5rem] text-sm text-muted-foreground sm:pr-12 md:w-40 lg:w-64"
-        onClick={() => setOpen(true)}
+        onClick={(): void => setOpen(true)}
       >
         <span className="hidden lg:inline-flex">Search documentation...</span>
         <span className="inline-flex lg:hidden">Search...</span>

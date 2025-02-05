@@ -35,7 +35,7 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): React.ReactElement => {
     e.preventDefault();
     if (!programId || !employeeId || !amountClaimed) {
       toast({
@@ -150,7 +150,7 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
           <Input
             type='number'
             value={amountClaimed}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAmountClaimed(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>): void => setAmountClaimed(e.target.value)}
             placeholder='Enter amount'
             min='0'
             step='0.01'
@@ -162,7 +162,7 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
         <Label>Reference Number</Label>
         <Input
           value={referenceNumber}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setReferenceNumber(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>): void => setReferenceNumber(e.target.value)}
           placeholder='Optional reference number'
         />
       </div>
@@ -171,7 +171,7 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
         <Label>Notes</Label>
         <Textarea
           value={notes}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNotes(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>): void => setNotes(e.target.value)}
           placeholder='Additional notes or comments'
         />
       </div>
@@ -181,7 +181,7 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
         <FileUploader
           accept='.pdf,.doc,.docx,.jpg,.jpeg,.png'
           maxSize={5 * 1024 * 1024}
-          onFileSelect={(files: File[]) => setFiles(files)}
+          onFileSelect={(files: File[]): void => setFiles(files)}
           multiple={true}
         />
       </div>

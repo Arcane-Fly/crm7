@@ -1,6 +1,8 @@
 'use client';
 
-export default function LoginPage(): JSX.Element {
+import * as React from 'react';
+
+export default function LoginPage(): React.ReactElement {
   return (
     <div>
       {/* Login form implementation */}

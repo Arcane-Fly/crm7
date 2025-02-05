@@ -16,10 +16,11 @@ interface InvoiceFormProps {
   initialData?: InvoiceFormData;
 }
 
-export function InvoiceForm({ onSubmit, initialData }: InvoiceFormProps): JSX.Element {
+export function InvoiceForm({ onSubmit }: InvoiceFormProps): React.ReactElement {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
-  const [dueDate, setDueDate] = useState<Date | null>(null);
+  const [issueDate, setIssueDate] = useState<Date>(new Date());
+  const [_dueDate, _setDueDate] = useState<Date>(new Date());
 
   const updateLineItem = (index: number, field: keyof LineItem, value: string | number): void => {
     const newItems = [...lineItems];
@@ -32,7 +33,7 @@ export function InvoiceForm({ onSubmit, initialData }: InvoiceFormProps): JSX.El
     try {
       setIsLoading(true);
       // Form submission logic
-      await onSubmit({ dueDate, items: lineItems } as InvoiceFormData);
+      await onSubmit({ dueDate: _dueDate, items: lineItems } as InvoiceFormData);
     } catch (error) {
       console.error('Failed to submit invoice:', error);
     } finally {
@@ -46,7 +47,7 @@ export function InvoiceForm({ onSubmit, initialData }: InvoiceFormProps): JSX.El
         <div className="space-y-4">
           <div>
             <label>Due Date</label>
-            <div>{dueDate ? format(dueDate, 'PPP') : 'Select date'}</div>
+            <div>{_dueDate ? format(_dueDate, 'PPP') : 'Select date'}</div>
           </div>
 
           <div className="space-y-4">
@@ -55,7 +56,7 @@ export function InvoiceForm({ onSubmit, initialData }: InvoiceFormProps): JSX.El
                 <input
                   type="text"
                   value={item.description}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
                     updateLineItem(index, 'description', e.target.value)
                   }
                   placeholder="Description"
@@ -63,7 +64,7 @@ export function InvoiceForm({ onSubmit, initialData }: InvoiceFormProps): JSX.El
                 <input
                   type="number"
                   value={item.quantity}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
                     updateLineItem(index, 'quantity', parseFloat(e.target.value))
                   }
                   placeholder="Quantity"
@@ -71,7 +72,7 @@ export function InvoiceForm({ onSubmit, initialData }: InvoiceFormProps): JSX.El
                 <input
                   type="number"
                   value={item.unit_price}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
                     updateLineItem(index, 'unit_price', parseFloat(e.target.value))
                   }
                   placeholder="Unit Price"

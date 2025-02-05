@@ -23,7 +23,7 @@ export class ExpenseService extends BaseService {
   }
 
   async createExpense(expense: Omit<Expense, 'id' | 'status'>): Promise<void> {
-    return this.executeServiceMethod('createExpense', async () => {
+    return this.executeServiceMethod('createExpense', async (): Promise<any> => {
       const { data, error } = await this.supabase
         .from('expenses')
         .insert({
@@ -39,7 +39,7 @@ export class ExpenseService extends BaseService {
   }
 
   async getExpense(id: string): Promise<void> {
-    return this.executeServiceMethod('getExpense', async () => {
+    return this.executeServiceMethod('getExpense', async (): Promise<any> => {
       const { data, error } = await this.supabase
         .from('expenses')
         .select()
@@ -52,7 +52,7 @@ export class ExpenseService extends BaseService {
   }
 
   async updateExpense(id: string, updates: Partial<Expense>): Promise<void> {
-    return this.executeServiceMethod('updateExpense', async () => {
+    return this.executeServiceMethod('updateExpense', async (): Promise<any> => {
       const { data, error } = await this.supabase
         .from('expenses')
         .update(updates)
@@ -81,7 +81,7 @@ export class ExpenseService extends BaseService {
   }
 
   async deleteExpense(id: string): Promise<void> {
-    return this.executeServiceMethod('deleteExpense', async () => {
+    return this.executeServiceMethod('deleteExpense', async (): Promise<void> => {
       const { error } = await this.supabase
         .from('expenses')
         .delete()
@@ -92,7 +92,7 @@ export class ExpenseService extends BaseService {
   }
 
   async getExpenses(status?: Expense['status']): Promise<void> {
-    return this.executeServiceMethod('getExpenses', async () => {
+    return this.executeServiceMethod('getExpenses', async (): Promise<any> => {
       const query = this.supabase.from('expenses').select();
 
       if (typeof status !== "undefined" && status !== null) {

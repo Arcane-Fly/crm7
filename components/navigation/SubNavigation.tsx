@@ -127,7 +127,7 @@ export const SubNavigation: React.FC<SubNavigationProps> = ({ section }) => {
   const router = useRouter();
   const [openSections, setOpenSections] = React.useState<string[]>([]);
 
-  const isActive = (href: string) => router.pathname === href;
+  const isActive = (href: string): boolean => router.pathname === href;
 
   const sections = subNavSections[section] || [];
 
@@ -168,7 +168,7 @@ export const SubNavigation: React.FC<SubNavigationProps> = ({ section }) => {
                           'w-full justify-start gap-2 text-sm',
                           isActive(item.href) && 'bg-accent text-accent-foreground',
                         )}
-                        onClick={() => router.push(item.href)}
+                        onClick={(): React.ReactElement => router.push(item.href)}
                         aria-label={item.ariaLabel}
                         aria-current={isActive(item.href) ? 'page' : undefined}
                       >

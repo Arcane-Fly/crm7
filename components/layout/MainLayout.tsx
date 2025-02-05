@@ -1,5 +1,3 @@
-import type { ReactElement } from 'react';
-
 import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary';
 import { cn } from '@/lib/utils';
 

@@ -19,7 +19,7 @@ export class FairWorkService extends BaseService {
   }
 
   async getTemplates(): Promise<void> {
-    return this.executeServiceMethod('getTemplates', async () => {
+    return this.executeServiceMethod('getTemplates', async (): Promise<any> => {
       const { data, error } = await this.supabase
         .from('fairwork_templates')
         .select();
@@ -33,7 +33,7 @@ export class FairWorkService extends BaseService {
   }
 
   async getTemplate(id: string): Promise<void> {
-    return this.executeServiceMethod('getTemplate', async () => {
+    return this.executeServiceMethod('getTemplate', async (): Promise<any> => {
       const { data, error } = await this.supabase
         .from('fairwork_templates')
         .select()
@@ -49,7 +49,7 @@ export class FairWorkService extends BaseService {
   }
 
   async createTemplate(template: Omit<FairWorkTemplate, 'id'>): Promise<void> {
-    return this.executeServiceMethod('createTemplate', async () => {
+    return this.executeServiceMethod('createTemplate', async (): Promise<any> => {
       const { data, error } = await this.supabase
         .from('fairwork_templates')
         .insert(template)
@@ -65,7 +65,7 @@ export class FairWorkService extends BaseService {
   }
 
   async updateTemplate(id: string, updates: Partial<FairWorkTemplate>): Promise<void> {
-    return this.executeServiceMethod('updateTemplate', async () => {
+    return this.executeServiceMethod('updateTemplate', async (): Promise<any> => {
       const { data, error } = await this.supabase
         .from('fairwork_templates')
         .update(updates)
@@ -86,7 +86,7 @@ export class FairWorkService extends BaseService {
     start_date?: string;
     end_date?: string;
   }): Promise<void> {
-    return this.executeServiceMethod('getRates', async () => {
+    return this.executeServiceMethod('getRates', async (): Promise<any> => {
       let query = this.supabase.from('fairwork_templates').select();
 
       if (params.template_id) {

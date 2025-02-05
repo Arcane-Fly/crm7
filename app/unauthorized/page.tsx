@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-export default function UnauthorizedPage() {
+export default function UnauthorizedPage(): React.JSX.Element {
   return (
     <div className='container flex min-h-screen items-center justify-center py-8'>
       <Card className='w-full max-w-md'>

@@ -2,7 +2,7 @@ import { handleAuth, handleCallback, handleLogin, handleLogout } from '@auth0/ne
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default handleAuth({
-  callback: async (req: NextApiRequest, res: NextApiResponse) => {
+  callback: async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
     try {
       await handleCallback(req, res, {
         redirectUri: process.env.AUTH0_REDIRECT_URI,
@@ -13,7 +13,7 @@ export default handleAuth({
     }
   },
 
-  login: async (req: NextApiRequest, res: NextApiResponse) => {
+  login: async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
     try {
       await handleLogin(req, res, {
         authorizationParams: {
@@ -26,7 +26,7 @@ export default handleAuth({
     }
   },
 
-  logout: async (req: NextApiRequest, res: NextApiResponse) => {
+  logout: async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
     try {
       await handleLogout(req, res, {
         returnTo: process.env.AUTH0_BASE_URL,

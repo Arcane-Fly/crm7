@@ -1,14 +1,7 @@
 'use client';
 
 import {
-  LayoutDashboard,
-  Users,
-  GraduationCap,
-  Briefcase,
-  DollarSign,
-  FileText,
-  AlertTriangle,
-  Settings,
+  LayoutDashboard
 } from 'lucide-react';
 import * as React from 'react';
 import { cn } from '@/lib/utils';
