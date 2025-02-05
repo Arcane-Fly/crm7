@@ -109,8 +109,17 @@ export class RateManagementServiceImpl implements RateManagementService {
     };
     this.rateManagementConfig = rateManagementConfig;
   }
+  validateRateTemplate(template: RateTemplate): Promise<RateValidationResult> {
+    throw new Error('Method not implemented.');
+  }
+  calculateRate(template: RateTemplate): Promise<RateCalculationResult> {
+    throw new Error('Method not implemented.');
+  }
+  getBulkCalculations(orgId: string): Promise<{ data: BulkCalculation[] }> {
+    throw new Error('Method not implemented.');
+  }
 
-  async getRateTemplates(orgId: string): Promise {
+  async getRateTemplates(orgId: string): Promise<RateTemplate[]> {
     try {
       const { data, error } = await this.client
         .from('rate_templates')
@@ -138,7 +147,7 @@ export class RateManagementServiceImpl implements RateManagementService {
     }
   }
 
-  async getRateTemplate(id: string): Promise<void> {
+  async getRateTemplate(id: string): Promise<RateTemplate | null> {
     if (!id) {
       throw new Error('Template ID is required');
     }
@@ -167,7 +176,7 @@ export class RateManagementServiceImpl implements RateManagementService {
     }
   }
 
-  async createRateTemplate(template: RateTemplateInput): Promise<void> {
+  async createRateTemplate(template: RateTemplateInput): Promise<RateTemplate> {
     try {
       const mappedTemplate = this.mapFromRateTemplate(template);
       const { data, error } = await this.client
@@ -200,7 +209,7 @@ export class RateManagementServiceImpl implements RateManagementService {
     }
   }
 
-  async updateRateTemplate(id: string, updates: RateTemplateUpdate): Promise<void> {
+  async updateRateTemplate(id: string, updates: RateTemplateUpdate): Promise<RateTemplate> {
     try {
       const mappedUpdates = this.mapFromRateTemplate(updates);
       const { data, error } = await this.client
@@ -238,7 +247,7 @@ export class RateManagementServiceImpl implements RateManagementService {
     id: string,
     status: RateTemplateStatus,
     updatedBy: string,
-  ): Promise<void> {
+  ): Promise<RateTemplate> {
     return this.updateRateTemplate(id, { id, status, updatedBy });
   }
 
@@ -262,7 +271,7 @@ export class RateManagementServiceImpl implements RateManagementService {
     }
   }
 
-  async getRateTemplateHistory(id: string): Promise<void> {
+  async getRateTemplateHistory(id: string): Promise<{ data: RateTemplateHistory[] }> {
     try {
       const { data, error } = await this.client
         .from('rate_template_history')
@@ -288,7 +297,7 @@ export class RateManagementServiceImpl implements RateManagementService {
     }
   }
 
-  async getRateCalculations(id: string): Promise<void> {
+  async getRateCalculations(id: string): Promise<{ data: RateCalculationResult[] }> {
     try {
       const { data, error } = await this.client
         .from('rate_calculations')
@@ -314,7 +323,7 @@ export class RateManagementServiceImpl implements RateManagementService {
     }
   }
 
-  async createBulkCalculation(calculation: Omit<BulkCalculation, 'id'>): Promise<void> {
+  async createBulkCalculation(calculation: Omit<BulkCalculation, 'id'>): Promise<BulkCalculation> {
     try {
       const { data, error } = await this.client
         .from('bulk_calculations')
@@ -344,7 +353,7 @@ export class RateManagementServiceImpl implements RateManagementService {
     }
   }
 
-  async getAnalytics(orgId: string): Promise<void> {
+  async getAnalytics(orgId: string): Promise<{ data: RateAnalytics }> {
     try {
       const { data: templates, error: templatesError } = await this.client
         .from('rate_templates')
@@ -385,7 +394,7 @@ export class RateManagementServiceImpl implements RateManagementService {
     }
   }
 
-  async getCurrentRates(): Promise<void> {
+  async getCurrentRates(): Promise<PayRate[]> {
     const cacheKey = 'currentRates';
     const cached = this.getFromCache(cacheKey);
     if (typeof cached !== 'undefined' && cached !== null) return cached as PayRate[];
@@ -400,7 +409,7 @@ export class RateManagementServiceImpl implements RateManagementService {
     }
   }
 
-  async getRatesForDate(date: Date): Promise<void> {
+  async getRatesForDate(date: Date): Promise<PayRate[]> {
     const cacheKey = `rates_${date.toISOString()}`;
     const cached = this.getFromCache(cacheKey);
     if (typeof cached !== 'undefined' && cached !== null) return cached as PayRate[];
@@ -415,7 +424,7 @@ export class RateManagementServiceImpl implements RateManagementService {
     }
   }
 
-  async getClassifications(): Promise<void> {
+  async getClassifications(): Promise<Classification[]> {
     const cacheKey = 'classifications';
     const cached = this.getFromCache(cacheKey);
     if (typeof cached !== 'undefined' && cached !== null) return cached as Classification[];
@@ -430,7 +439,7 @@ export class RateManagementServiceImpl implements RateManagementService {
     }
   }
 
-  async getClassificationHierarchy(): Promise<void> {
+  async getClassificationHierarchy(): Promise<Classification[]> {
     const cacheKey = 'classificationHierarchy';
     const cached = this.getFromCache(cacheKey);
     if (typeof cached !== 'undefined' && cached !== null) return cached as Classification[];
@@ -511,5 +520,8 @@ export class RateManagementServiceImpl implements RateManagementService {
     return mapped;
   }
 }
+
+export { RateManagementServiceImpl as RateManagementService };
+export type { RateManagementService };
 
 export default RateManagementServiceImpl;
