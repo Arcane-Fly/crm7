@@ -168,6 +168,7 @@
     "postcss-preset-env": "^10.1.3",
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.0",
+    "prisma": "6.3.1",
     "sharp": "^0.33.2",
     "sort-package-json": "2.14.0",
     "stylelint": "16.14.1",
@@ -189,8 +190,13 @@
   },
   "pnpm": {
     "overrides": {
+<<<<<<< HEAD
       "lru-cache": "11.0.2",
       "@asamuzakjp/css-color": "3.0.7"
+=======
+      "@asamuzakjp/css-color": "3.0.0",
+      "lru-cache": "10.2.0"
+>>>>>>> de843018f (feat: add Prisma ORM with Supabase integration)
     }
   },
   "corepack": {
