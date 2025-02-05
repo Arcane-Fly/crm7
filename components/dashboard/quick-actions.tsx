@@ -1,7 +1,6 @@
 'use client';
 
 import { PlusIcon, UserPlusIcon, CalendarIcon, DollarSignIcon } from 'lucide-react';
-import { ReactElement } from 'react';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';

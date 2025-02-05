@@ -48,7 +48,7 @@ export function startTransaction(
     data,
   });
 
-  Sentry.configureScope((scope) => {
+  Sentry.configureScope((scope): void => {
     scope.setSpan(transaction);
     scope.setTransactionName(name);
   });

@@ -33,7 +33,7 @@ const SortableColumnHeader = ({ column, title }: SortableColumnProps): JSX.Eleme
   return (
     <Button
       variant='ghost'
-      onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      onClick={(): void => column.toggleSorting(column.getIsSorted() === 'asc')}
     >
       {title}
       <ArrowUpDown className='ml-2 h-4 w-4' />
@@ -68,7 +68,7 @@ const renderActions = (document: Document): JSX.Element => {
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end'>
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-        <DropdownMenuItem onClick={() => navigator.clipboard.writeText(document.id)}>
+        <DropdownMenuItem onClick={(): Promise<void> => navigator.clipboard.writeText(document.id)}>
           Copy ID
         </DropdownMenuItem>
         <DropdownMenuSeparator />
@@ -83,7 +83,7 @@ const renderActions = (document: Document): JSX.Element => {
 export const columns: ColumnDef<Document>[] = [
   {
     accessorKey: 'name',
-    header: ({ column }) => (
+    header: ({ column }): React.JSX.Element => (
       <SortableColumnHeader
         column={column}
         title='Name'
@@ -97,12 +97,12 @@ export const columns: ColumnDef<Document>[] = [
   {
     accessorKey: 'size',
     header: 'Size',
-    cell: ({ row }) => formatFileSize(row.getValue('size')),
+    cell: ({ row }): string => formatFileSize(row.getValue('size')),
   },
   {
     accessorKey: 'uploadedAt',
     header: 'Uploaded',
-    cell: ({ row }) => format(new Date(row.getValue('uploadedAt')), 'dd/MM/yyyy'),
+    cell: ({ row }): string => format(new Date(row.getValue('uploadedAt')), 'dd/MM/yyyy'),
   },
   {
     accessorKey: 'status',
@@ -110,6 +110,6 @@ export const columns: ColumnDef<Document>[] = [
   },
   {
     id: 'actions',
-    cell: ({ row }) => renderActions(row.original),
+    cell: ({ row }): JSX.Element => renderActions(row.original),
   },
 ];

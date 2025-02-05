@@ -114,7 +114,7 @@ export const TopBar: React.FC = () => {
             <DropdownMenuItem>Profile</DropdownMenuItem>
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => logout()}>Log out</DropdownMenuItem>
+            <DropdownMenuItem onClick={(): React.ReactElement => logout()}>Log out</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

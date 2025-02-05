@@ -11,28 +11,41 @@ import { cn } from '@/lib/utils';
 
 const Form = FormProvider;
 
-type FormFieldContextValue<TFieldValues extends FieldValues> = {
-  name: Path<TFieldValues>;
+interface FormFieldContextValue<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends keyof TFieldValues = keyof TFieldValues
+> {
+  name: TName;
   form: UseFormReturn<TFieldValues>;
-};
+}
 
 const FormFieldContext = React.createContext<FormFieldContextValue<any>>(
   {} as FormFieldContextValue<any>,
 );
 
-type FormFieldProps<
+interface FormItemContextValue {
+  id: string;
+}
+
+const FormItemContext = React.createContext<FormItemContextValue>({} as FormItemContextValue);
+
+interface FormFieldProps<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends Path<TFieldValues> = Path<TFieldValues>,
-> = {
+  TName extends keyof TFieldValues = keyof TFieldValues,
+> {
   control: UseFormReturn<TFieldValues>['control'];
   name: TName;
   render: (props: { field: ControllerRenderProps<TFieldValues, TName> }) => React.ReactElement;
-};
+}
 
 function FormField<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends Path<TFieldValues> = Path<TFieldValues>,
->({ control, name, render }: FormFieldProps<TFieldValues, TName>): JSX.Element {
+  TName extends keyof TFieldValues = keyof TFieldValues,
+>({
+  control,
+  name,
+  render,
+}: FormFieldProps<TFieldValues, TName>): React.ReactElement {
   const formContext = useFormContext<TFieldValues>();
   const controlToUse = control ?? formContext.control;
 
@@ -41,13 +54,19 @@ function FormField<
       <Controller
         control={controlToUse}
         name={name}
-        render={({ field }) => render({ field })}
+        render={({ field }): React.ReactElement<any, string | React.JSXElementConstructor<any>> => render({ field })}
       />
     </FormFieldContext.Provider>
   );
 }
 
-const useFormField = () => {
+const useFormField = (): {
+  id: string;
+  name: keyof FieldValues;
+  formItemId: string;
+  formDescriptionId: string;
+  formMessageId: string;
+} => {
   const fieldContext = React.useContext(FormFieldContext);
   const itemContext = React.useContext(FormItemContext);
   const { getFieldState, formState } = fieldContext.form;
@@ -66,13 +85,7 @@ const useFormField = () => {
   };
 };
 
-type FormItemContextValue = {
-  id: string;
-};
-
-const FormItemContext = React.createContext<FormItemContextValue>({} as FormItemContextValue);
-
-function FormItem({ className, ...props }: React.HTMLAttributes<HTMLDivElement>): JSX.Element {
+function FormItem({ className, ...props }: React.HTMLAttributes<HTMLDivElement>): React.ReactElement {
   const id = React.useId();
 
   return (
@@ -86,7 +99,7 @@ FormItem.displayName = 'FormItem';
 const FormLabel = React.forwardRef<
   React.ElementRef<typeof LabelPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
->(({ className, ...props }, ref) => {
+>(({ className, ...props }, ref): React.ReactElement => {
   const { error, formItemId } = useFormField();
 
   return (
@@ -98,7 +111,7 @@ FormLabel.displayName = 'FormLabel';
 const FormControl = React.forwardRef<
   React.ElementRef<typeof Slot>,
   React.ComponentPropsWithoutRef<typeof Slot>
->((props, ref) => {
+>((props, ref): React.ReactElement => {
   const { error, formItemId, formDescriptionId, formMessageId } = useFormField();
 
   return (
@@ -114,7 +127,7 @@ const FormControl = React.forwardRef<
 FormControl.displayName = 'FormControl';
 
 const FormDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
-  ({ className, ...props }, ref) => {
+  ({ className, ...props }, ref): React.ReactElement => {
     const { formDescriptionId } = useFormField();
 
     return (
@@ -125,7 +138,7 @@ const FormDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttribu
 FormDescription.displayName = 'FormDescription';
 
 const FormMessage = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
-  ({ className, children, ...props }, ref) => {
+  ({ className, children, ...props }, ref): React.ReactElement | null => {
     const { error, formMessageId } = useFormField();
     const body = error ? String(error.message) : children;
 

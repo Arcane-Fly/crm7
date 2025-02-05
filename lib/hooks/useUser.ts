@@ -16,8 +16,8 @@ export function useUser(): UseUserReturn {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  useEffect(() => {
-    const fetchUser = async () => {
+  useEffect((): void => {
+    const fetchUser = async (): Promise<void> => {
       try {
         const { data: { user }, error: supabaseError } = await supabase.auth.getUser();
 
@@ -39,7 +39,7 @@ export function useUser(): UseUserReturn {
     void fetchUser();
   }, [supabase]);
 
-  const refreshUser = async () => {
+  const refreshUser = async (): Promise<void> => {
     try {
       setError(null);
       await supabase.auth.refreshSession();
@@ -49,7 +49,7 @@ export function useUser(): UseUserReturn {
     }
   };
 
-  const logout = async () => {
+  const logout = async (): Promise<void> => {
     try {
       await supabase.auth.signOut();
       setUser(null);

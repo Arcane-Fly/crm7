@@ -11,7 +11,7 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
   lines = 3,
   className,
   lineClassName,
-}) => {
+}): React.ReactElement => {
   return (
     <div role="status" aria-label="Loading content" className={cn('animate-pulse space-y-2', className)}>
       {Array.from({ length: lines }).map((_, i) => (

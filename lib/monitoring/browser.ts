@@ -16,7 +16,7 @@ function toErrorMetadata(maybeError: unknown): ErrorMetadata {
   };
 }
 
-function startBrowserSpan(name: string, type: string, tags?: Record<string, string>) {
+function startBrowserSpan(name: string, type: string, tags?: Record<string, string>): { name: string; type: string; startTime: number; tags: Map<string, string>; } {
   const span = {
     name,
     type,
@@ -40,7 +40,7 @@ function finishBrowserSpan(
     error?: ErrorMetadata;
     [key: string]: unknown;
   }
-) {
+): { duration: number; status: SpanStatus; name: string; type: string; startTime: number; tags: Map<string, string>; } {
   const duration = Date.now() - span.startTime;
 
   if (typeof data !== "undefined" && data !== null) {
@@ -62,10 +62,10 @@ export function monitorWebVitals(name: string): void {
   const span = startBrowserSpan(name, 'web.vitals');
 
   return {
-    finish: (status: SpanStatus, data?: Record<string, unknown>) => {
+    finish: (status: SpanStatus, data?: Record<string, unknown>): { duration: number; status: SpanStatus; name: string; type: string; startTime: number; tags: Map<string, string>; } => {
       return finishBrowserSpan(span, status, data);
     },
-    error: (err: unknown) => {
+    error: (err: unknown): { duration: number; status: SpanStatus; name: string; type: string; startTime: number; tags: Map<string, string>; } => {
       return finishBrowserSpan(span, SpanStatus.InternalError, {
         error: toErrorMetadata(err),
       });
@@ -80,10 +80,10 @@ export function monitorBrowserPerformance(
   const span = startBrowserSpan(name, 'browser.performance', tags);
 
   return {
-    finish: () => {
+    finish: (): { duration: number; status: SpanStatus; name: string; type: string; startTime: number; tags: Map<string, string>; } => {
       return finishBrowserSpan(span, SpanStatus.Ok);
     },
-    error: (err: unknown) => {
+    error: (err: unknown): { duration: number; status: SpanStatus; name: string; type: string; startTime: number; tags: Map<string, string>; } => {
       return finishBrowserSpan(span, SpanStatus.InternalError, {
         error: toErrorMetadata(err),
       });
@@ -98,10 +98,10 @@ export function monitorUserInteraction(
   const span = startBrowserSpan(name, 'user.interaction', tags);
 
   return {
-    finish: () => {
+    finish: (): { duration: number; status: SpanStatus; name: string; type: string; startTime: number; tags: Map<string, string>; } => {
       return finishBrowserSpan(span, SpanStatus.Ok);
     },
-    error: (err: unknown) => {
+    error: (err: unknown): { duration: number; status: SpanStatus; name: string; type: string; startTime: number; tags: Map<string, string>; } => {
       return finishBrowserSpan(span, SpanStatus.InternalError, {
         error: toErrorMetadata(err),
       });
@@ -116,10 +116,10 @@ export function monitorHttpRequest(
   const span = startBrowserSpan(name, 'http.client', tags);
 
   return {
-    finish: () => {
+    finish: (): { duration: number; status: SpanStatus; name: string; type: string; startTime: number; tags: Map<string, string>; } => {
       return finishBrowserSpan(span, SpanStatus.Ok);
     },
-    error: (err: unknown) => {
+    error: (err: unknown): { duration: number; status: SpanStatus; name: string; type: string; startTime: number; tags: Map<string, string>; } => {
       return finishBrowserSpan(span, SpanStatus.InternalError, {
         error: toErrorMetadata(err),
       });

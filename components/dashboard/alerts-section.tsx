@@ -1,8 +1,6 @@
 'use client';
 
 import { AlertCircleIcon, AlertTriangleIcon } from 'lucide-react';
-import type { ReactElement } from 'react';
-
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 

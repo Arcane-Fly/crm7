@@ -3,6 +3,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
+import * as React from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 
 export interface Apprentice {
@@ -32,41 +33,35 @@ interface SortableColumnProps {
   title: string;
 }
 
-const SortableColumnHeader = ({ column, title }: SortableColumnProps): JSX.Element => {
+const SortableColumnHeader = ({ column, title }: SortableColumnProps): React.ReactElement => {
   return (
-    <Button
-      variant='ghost'
-      onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-    >
+    <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
       {title}
-      <ArrowUpDown className='ml-2 h-4 w-4' />
+      <ArrowUpDown className="ml-2 h-4 w-4" />
     </Button>
   );
 };
 
-const renderStatus = (status: Apprentice['status']): JSX.Element => {
+const renderStatus = (status: Apprentice['status']): React.ReactElement => {
   const variantMap = {
     active: 'default',
     completed: 'success',
-    withdrawn: 'destructive',
+    withdrawn: 'destructive'
   } as const;
 
   return <Badge variant={variantMap[status]}>{status}</Badge>;
 };
 
-const renderActions = (apprentice: Apprentice): JSX.Element => {
+const renderActions = (apprentice: Apprentice): React.ReactElement => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant='ghost'
-          className='h-8 w-8 p-0'
-        >
-          <span className='sr-only'>Open menu</span>
-          <MoreHorizontal className='h-4 w-4' />
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <span className="sr-only">Open menu</span>
+          <MoreHorizontal className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align='end'>
+      <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuItem onClick={() => navigator.clipboard.writeText(apprentice.id)}>
           Copy ID
@@ -82,29 +77,26 @@ const renderActions = (apprentice: Apprentice): JSX.Element => {
 export const columns: ColumnDef<Apprentice>[] = [
   {
     accessorKey: 'name',
-    header: ({ column }) => (
-      <SortableColumnHeader
-        column={column}
-        title='Name'
-      />
-    ),
+    header: ({ column }): React.ReactElement => (
+      <SortableColumnHeader column={column} title="Name" />
+    )
   },
   {
     accessorKey: 'email',
-    header: 'Email',
+    header: 'Email'
   },
   {
     accessorKey: 'startDate',
     header: 'Start Date',
-    cell: ({ row }) => format(new Date(row.getValue('startDate')), 'dd/MM/yyyy'),
+    cell: ({ row }): string => format(new Date(row.getValue('startDate')), 'dd/MM/yyyy')
   },
   {
     accessorKey: 'status',
     header: 'Status',
-    cell: ({ row }) => renderStatus(row.getValue('status')),
+    cell: ({ row }): React.ReactElement => renderStatus(row.getValue('status'))
   },
   {
     id: 'actions',
-    cell: ({ row }) => renderActions(row.original),
-  },
+    cell: ({ row }): React.ReactElement => renderActions(row.original)
+  }
 ];

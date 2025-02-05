@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 const DropdownMenuCheckboxItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.CheckboxItem>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.CheckboxItem>
->(({ className, children, checked, ...props }, ref) => (
+>(({ className, children, checked, ...props }, ref): React.ReactElement => (
   <DropdownMenuPrimitive.CheckboxItem
     ref={ref}
     className={cn(

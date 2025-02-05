@@ -63,7 +63,7 @@ export async function fetch(
         error: lastError,
       });
 
-      await new Promise((resolve) => setTimeout(resolve, delay));
+      await new Promise((resolve): NodeJS.Timeout => setTimeout(resolve, delay));
     }
   }
 

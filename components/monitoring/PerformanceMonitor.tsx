@@ -6,9 +6,9 @@ import { usePerformance } from '@/hooks/use-performance';
 export function PerformanceMonitor(): null {
   const { startMonitoring, stopMonitoring } = usePerformance();
 
-  useEffect(() => {
+  useEffect((): () => void => {
     const memoryInterval = startMonitoring();
-    return () => {
+    return (): void => {
       clearInterval(memoryInterval);
       stopMonitoring();
     };

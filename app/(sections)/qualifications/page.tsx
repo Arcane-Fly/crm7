@@ -28,7 +28,7 @@ export default function QualificationsPage(): JSX.Element {
             <DataEnrichment
               type="qualification"
               id={selectedIds[0] ?? ''}
-              onComplete={() => setSelectedIds([])}
+              onComplete={(): void => setSelectedIds([])}
             />
           </div>
         </div>

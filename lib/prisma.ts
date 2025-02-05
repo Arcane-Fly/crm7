@@ -23,7 +23,7 @@ class PrismaClientSingleton {
 
       // Log queries in development
       if (process.env.NODE_ENV === 'development') {
-        PrismaClientSingleton.instance.$on('query', (e: unknown) => {
+        PrismaClientSingleton.instance.$on('query', (e: unknown): void => {
           logger.debug('Prisma Query', {
             query: e.query,
             params: e.params,
@@ -33,7 +33,7 @@ class PrismaClientSingleton {
       }
 
       // Log all errors
-      PrismaClientSingleton.instance.$on('error', (e: unknown) => {
+      PrismaClientSingleton.instance.$on('error', (e: unknown): void => {
         logger.error('Prisma Error', {
           target: e.target,
           message: e.message,
@@ -41,7 +41,7 @@ class PrismaClientSingleton {
       });
 
       // Log all warnings
-      PrismaClientSingleton.instance.$on('warn', (e: unknown) => {
+      PrismaClientSingleton.instance.$on('warn', (e: unknown): void => {
         logger.warn('Prisma Warning', {
           target: e.target,
           message: e.message,

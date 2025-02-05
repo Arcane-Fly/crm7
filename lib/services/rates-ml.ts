@@ -2,8 +2,6 @@ import { createClient } from '@supabase/supabase-js';
 
 import type { Database } from '@/types/supabase';
 
-import type { RateCalculation } from './rates';
-
 export interface MLPrediction {
   predicted_value: number;
   confidence_score: number;

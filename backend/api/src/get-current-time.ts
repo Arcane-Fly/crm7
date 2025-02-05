@@ -1,17 +1,15 @@
-// Replace the current implementation with:
-export async function handler(req: Request, res: Response): Promise<void> {
-  const requestId = crypto.randomUUID();
+import { NextResponse } from 'next/server';
+
+export async function handler(): Promise<NextResponse> {
   try {
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({
-      currentTime: Date.now(),
-      requestId
-    }));
+    return NextResponse.json({
+      timestamp: new Date().toISOString(),
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+    });
   } catch (error) {
-    res.writeHead(500, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({
-      error: error instanceof Error ? error.message : 'Unknown error occurred',
-      requestId
-    }));
+    return NextResponse.json({
+      error: 'Failed to get current time',
+      details: error instanceof Error ? error.message : String(error)
+    }, { status: 500 });
   }
 }

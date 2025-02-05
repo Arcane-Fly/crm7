@@ -25,7 +25,7 @@ const addToRemoveQueue = (toastId: string): void => {
     return;
   }
 
-  const timeout = setTimeout(() => {
+  const timeout = setTimeout((): void => {
     toastTimeouts.delete(toastId);
     dispatch({
       type: 'REMOVE_TOAST',
@@ -133,19 +133,15 @@ export function useToast(): {
 } {
   const [state, setState] = React.useState<State>(memoryState);
 
-  React.useEffect(() => {
+  React.useEffect((): () => void => {
     listeners.add(setState);
-    return () => {
+    return (): void => {
       listeners.delete(setState);
     };
   }, []);
 
   const addToast = (toast: Toast): void => {
     dispatch({ type: 'ADD_TOAST', toast });
-  };
-
-  const removeToast = (toastId: string): void => {
-    dispatch({ type: 'REMOVE_TOAST', toastId });
   };
 
   const updateToast = (toast: Toast): void => {
@@ -158,7 +154,7 @@ export function useToast(): {
 
   return {
     ...state,
-    toast: (props: ToastProps) => {
+    toast: (props: ToastProps): { id: string; dismiss: () => void; update: (props: ToastProps) => void; } => {
       const id = genId();
 
       const update = (props: ToastProps): void =>

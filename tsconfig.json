@@ -1,12 +1,7 @@
 {
-  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    "target": "es5",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "target": "ESNext",
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -16,70 +11,19 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./*"],
-      "@/components/*": ["components/*"],
-      "@/lib/*": ["lib/*"],
-      "@/config/*": ["config/*"],
-      "@/types/*": ["types/*"],
-      "@/utils/*": ["lib/utils/*"],
-      "@/services/*": ["lib/services/*"],
-      "@/hooks/*": ["hooks/*"]
-    },
+    "types": ["next", "node"],
     "plugins": [
       {
         "name": "next"
       }
     ],
-    "types": [
-      "node",
-      "jest",
-      "react",
-      "@testing-library/jest-dom",
-      "vitest"
-    ],
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "forceConsistentCasingInFileNames": true,
-    "allowSyntheticDefaultImports": true,
-    "useDefineForClassFields": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "importHelpers": true,
-    "skipDefaultLibCheck": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "exactOptionalPropertyTypes": true,
-    "verbatimModuleSyntax": true
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
   },
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    "app/**/*.ts",
-    "app/**/*.tsx",
-    "components/**/*.ts",
-    "components/**/*.tsx",
-    "lib/**/*.ts",
-    "lib/**/*.tsx",
-    "types/**/*.ts",
-    "types/**/*.d.ts",
-    "**/__tests__/**/*.ts",
-    "**/__tests__/**/*.tsx"
-  ],
-  "exclude": [
-    "node_modules",
-    ".next",
-    "out",
-    "coverage",
-    "**/*.spec.ts",
-    "**/*.spec.tsx"
-  ]
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
 }

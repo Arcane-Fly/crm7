@@ -66,4 +66,16 @@ const typedLogger: TypedLogger = {
   },
 };
 
-export default typedLogger;
+const loggerModule = {
+  info: (message: string, ...args: unknown[]): void => {
+    console.log(message, ...args);
+  },
+  warn: (message: string, ...args: unknown[]): void => {
+    console.warn(message, ...args);
+  },
+  error: (message: string, ...args: unknown[]): void => {
+    console.error(message, ...args);
+  }
+};
+
+export { typedLogger, loggerModule };

@@ -1,26 +1,31 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
 import { createApiResponse, createErrorResponse } from '@/lib/api/response';
-import { logger } from '@/lib/logger';
-import { defaultConfig } from '@/lib/services/fairwork/fairwork.config';
+import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
+import { NextRequest, NextResponse } from 'next/server';
 
-const fairworkClient = new FairWorkClient(defaultConfig);
+const fairworkClient = new FairWorkClient();
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { awardCode: string; classificationCode: string } }
+  context: { params: { awardCode: string; classificationCode: string } }
 ): Promise<NextResponse> {
   try {
-    const date = req.nextUrl.searchParams.get('date') || undefined;
-    const query = date ? { date } : undefined;
+    // Only pass the awardCode and query parameters (omit classificationCode)
+    const url = new URL(req.url);
+    const query: { date?: string; employmentType?: string } = {
+      date: url.searchParams.get('date') || undefined,
+      employmentType: url.searchParams.get('employmentType') || undefined,
+    };
     const entitlements = await fairworkClient.getLeaveEntitlements(
-      params.awardCode,
-      params.classificationCode,
+      context.params.awardCode,
       query
     );
     return createApiResponse(entitlements);
-  } catch (error) {
-    logger.error('Failed to fetch leave entitlements', { error });
-    return createErrorResponse('LEAVE_ENTITLEMENTS_FETCH_ERROR', 'Failed to fetch leave entitlements', undefined, 500);
+  } catch (_error) {
+    return createErrorResponse(
+      'LEAVE_ENTITLEMENTS_FETCH_ERROR',
+      'Failed to fetch leave entitlements',
+      undefined,
+      500
+    );
   }
 }

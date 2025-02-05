@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 export function ReadingProgress(): JSX.Element {
   const [progress, setProgress] = useState<number>(0);
 
-  useEffect(() => {
+  useEffect((): () => void => {
     const updateProgress = (): void => {
       const scrolled = window.scrollY;
       const maxHeight = document.documentElement.scrollHeight - window.innerHeight;
@@ -12,7 +12,7 @@ export function ReadingProgress(): JSX.Element {
     };
 
     window.addEventListener('scroll', updateProgress);
-    return () => window.removeEventListener('scroll', updateProgress);
+    return (): void => window.removeEventListener('scroll', updateProgress);
   }, []);
 
   return (

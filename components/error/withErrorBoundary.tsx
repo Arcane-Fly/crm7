@@ -16,10 +16,10 @@ export function withErrorBoundary<P extends object>(
     return (
       <ErrorBoundary
         FallbackComponent={options?.FallbackComponent ?? ErrorFallback}
-        onReset={options?.onReset ?? (() => window.location.reload())}
+        onReset={options?.onReset ?? ((): void => window.location.reload())}
         onError={
           options?.onError ??
-          ((error: unknown, _info) => {
+          ((error: unknown, _info): void => {
             // TODO: Add your error logging service here
             console.error('Error caught by error boundary:', error);
           })

@@ -25,7 +25,7 @@ export function useLMS(): void {
   // Course Mutations
   const { mutateAsync: createCourse, isPending: isCreatingCourse } = useSupabaseMutation({
     table: 'courses',
-    onSuccess: () => {
+    onSuccess: (): void => {
       toast({
         title: 'Course created',
         description: 'The course has been created successfully.',
@@ -36,7 +36,7 @@ export function useLMS(): void {
 
   const { mutateAsync: updateCourse, isPending: isUpdatingCourse } = useSupabaseMutation({
     table: 'courses',
-    onSuccess: () => {
+    onSuccess: (): void => {
       toast({
         title: 'Course updated',
         description: 'The course has been updated successfully.',
@@ -48,7 +48,7 @@ export function useLMS(): void {
   // Enrollment Mutations
   const { mutateAsync: createEnrollment, isPending: isCreatingEnrollment } = useSupabaseMutation({
     table: 'enrollments',
-    onSuccess: () => {
+    onSuccess: (): void => {
       toast({
         title: 'Enrollment created',
         description: 'The enrollment has been created successfully.',
@@ -59,7 +59,7 @@ export function useLMS(): void {
 
   const { mutateAsync: updateEnrollment, isPending: isUpdatingEnrollment } = useSupabaseMutation({
     table: 'enrollments',
-    onSuccess: () => {
+    onSuccess: (): void => {
       toast({
         title: 'Enrollment updated',
         description: 'The enrollment has been updated successfully.',

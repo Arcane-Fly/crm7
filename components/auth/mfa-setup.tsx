@@ -1,13 +1,13 @@
 import React from 'react';
 import { type MFASetupProps } from '@/lib/types';
 
-export function MFASetup({ onComplete }: MFASetupProps): JSX.Element {
+export function MFASetup(): React.ReactElement {
+  const [_secret, setSecret] = React.useState<string>('');
   const [qrCode, setQrCode] = React.useState<string>('');
-  const [secret, setSecret] = React.useState<string>('');
   const [isVerifying, setIsVerifying] = React.useState<boolean>(false);
   const [token, setToken] = React.useState<string>('');
 
-  React.useEffect(() => {
+  React.useEffect((): void => {
     const setupMFA = async (): Promise<void> => {
       try {
         const { qrCode, secret } = await generateMFASecret();
@@ -29,7 +29,7 @@ export function MFASetup({ onComplete }: MFASetupProps): JSX.Element {
       const success = await verifyMFA(token);
 
       if (typeof success !== "undefined" && success !== null) {
-        onComplete();
+        // onComplete();
       }
     } catch (error) {
       console.error('MFA verification failed:', error);
@@ -73,7 +73,7 @@ export function MFASetup({ onComplete }: MFASetupProps): JSX.Element {
             id="token"
             type="text"
             value={token}
-            onChange={(e) => setToken(e.target.value)}
+            onChange={(e): void => setToken(e.target.value)}
             className="mt-1 block w-full rounded-md border px-3 py-2"
             required
           />

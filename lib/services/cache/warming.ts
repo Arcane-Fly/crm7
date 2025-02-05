@@ -54,7 +54,7 @@ export class CacheWarming {
     try {
       this.isWarming = true;
 
-      const sortedEntries = Array.from(this.entries.values()).sort((a, b) => {
+      const sortedEntries = Array.from(this.entries.values()).sort((a, b): number => {
         const aLastWarmed = a.lastWarmed ?? 0;
         const bLastWarmed = b.lastWarmed ?? 0;
         return aLastWarmed - bLastWarmed;
@@ -95,7 +95,7 @@ export class CacheWarming {
       const retries = 3;
       for (let i = 0; i < retries; i++) {
         try {
-          await new Promise((resolve) => setTimeout(resolve, this.config.retryDelay));
+          await new Promise((resolve): NodeJS.Timeout => setTimeout(resolve, this.config.retryDelay));
           const value = await entry.getter();
           await this.cache.set(entry.key, value, entry.ttl);
           entry.lastWarmed = Date.now();
@@ -119,8 +119,8 @@ export class CacheWarming {
       ? 0
       : Math.max(0, this.config.interval - (now - this.lastWarmTime));
 
-    setTimeout(() => {
-      void this.warmAll().then(() => {
+    setTimeout((): void => {
+      void this.warmAll().then((): void => {
         this.scheduleNextWarm();
       });
     }, delay);

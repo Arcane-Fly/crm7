@@ -5,7 +5,7 @@ import { Search } from 'lucide-react';
 import * as React from 'react';
 import type { ReactElement, ReactNode } from 'react';
 
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog as DialogPrimitive, DialogContent } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
 interface CommandProps {
@@ -37,13 +37,13 @@ interface CommandDialogProps {
 
 function CommandDialog({ children, ...props }: CommandDialogProps): JSX.Element {
   return (
-    <Dialog {...props}>
+    <DialogPrimitive {...props}>
       <DialogContent className='overflow-hidden p-0 shadow-lg'>
         <Command className='[&_[data-cmdk-group-heading]]:px-2 [&_[data-cmdk-group-heading]]:font-medium [&_[data-cmdk-group-heading]]:text-muted-foreground [&_[data-cmdk-group]:not([hidden])_~[data-cmdk-group]]:pt-0 [&_[data-cmdk-group]]:px-2 [&_[data-cmdk-input-wrapper]_svg]:h-5 [&_[data-cmdk-input-wrapper]_svg]:w-5 [&_[data-cmdk-input]]:h-12 [&_[data-cmdk-item]]:px-2 [&_[data-cmdk-item]]:py-3 [&_[data-cmdk-item]_svg]:h-5 [&_[data-cmdk-item]_svg]:w-5'>
           {children}
         </Command>
       </DialogContent>
-    </Dialog>
+    </DialogPrimitive>
   );
 }
 
@@ -55,7 +55,7 @@ interface CommandInputProps {
 const CommandInput = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Input>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input> & CommandInputProps
->(({ className, ...props }, ref) => (
+>(({ className, ...props }, ref): React.ReactElement => (
   <div
     className='flex items-center border-b px-3'
     data-cmdk-input-wrapper
@@ -93,7 +93,7 @@ interface CommandEmptyProps {
 const CommandEmpty = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Empty>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Empty> & CommandEmptyProps
->(({ children, ...props }, ref) => (
+>(({ children, ...props }, ref): React.ReactElement => (
   <CommandPrimitive.Empty
     ref={ref}
     className='py-6 text-center text-sm'
@@ -113,7 +113,7 @@ interface CommandGroupProps {
 const CommandGroup = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Group>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Group> & CommandGroupProps
->(({ className, ...props }, ref) => (
+>(({ className, ...props }, ref): React.ReactElement => (
   <CommandPrimitive.Group
     ref={ref}
     className={cn(
@@ -133,7 +133,7 @@ interface CommandSeparatorProps {
 const CommandSeparator = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Separator>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Separator> & CommandSeparatorProps
->(({ className, ...props }, ref) => (
+>(({ className, ...props }, ref): React.ReactElement => (
   <CommandPrimitive.Separator
     ref={ref}
     className={cn('-mx-1 h-px bg-border', className)}
@@ -150,7 +150,7 @@ interface CommandItemProps {
 const CommandItem = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Item> & CommandItemProps
->(({ className, ...props }, ref) => (
+>(({ className, ...props }, ref): React.ReactElement => (
   <CommandPrimitive.Item
     ref={ref}
     className={cn(

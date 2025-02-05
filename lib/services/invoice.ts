@@ -32,7 +32,7 @@ export class InvoiceService extends BaseService {
     start_date?: string;
     end_date?: string;
   }): Promise<void> {
-    return this.executeServiceMethod('getInvoices', async () => {
+    return this.executeServiceMethod('getInvoices', async (): Promise<any> => {
       let query = this.supabase.from('invoices').select();
 
       if (params.status) {
@@ -58,7 +58,7 @@ export class InvoiceService extends BaseService {
   }
 
   async getInvoice(id: string): Promise<void> {
-    return this.executeServiceMethod('getInvoice', async () => {
+    return this.executeServiceMethod('getInvoice', async (): Promise<any> => {
       const { data, error } = await this.supabase
         .from('invoices')
         .select()
@@ -74,7 +74,7 @@ export class InvoiceService extends BaseService {
   }
 
   async createInvoice(invoice: Omit<Invoice, 'id' | 'status'>): Promise<void> {
-    return this.executeServiceMethod('createInvoice', async () => {
+    return this.executeServiceMethod('createInvoice', async (): Promise<any> => {
       const { data, error } = await this.supabase
         .from('invoices')
         .insert({
@@ -93,7 +93,7 @@ export class InvoiceService extends BaseService {
   }
 
   async updateInvoice(id: string, updates: Partial<Invoice>): Promise<void> {
-    return this.executeServiceMethod('updateInvoice', async () => {
+    return this.executeServiceMethod('updateInvoice', async (): Promise<any> => {
       const { data, error } = await this.supabase
         .from('invoices')
         .update(updates)
@@ -111,10 +111,10 @@ export class InvoiceService extends BaseService {
 
   async importTimesheets(file: File): Promise<void> {
     return this.executeServiceMethod('importTimesheets', async () => {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve, reject): void => {
         const reader = new FileReader();
 
-        reader.onload = (e) => {
+        reader.onload = (e): void => {
           try {
             const data = e.target?.result;
             if (!data) {
@@ -144,14 +144,14 @@ export class InvoiceService extends BaseService {
           }
         };
 
-        reader.onerror = (error) => reject(error);
+        reader.onerror = (error): void => reject(error);
         reader.readAsBinaryString(file);
       });
     });
   }
 
   async deleteInvoice(id: string): Promise<void> {
-    return this.executeServiceMethod('deleteInvoice', async () => {
+    return this.executeServiceMethod('deleteInvoice', async (): Promise<void> => {
       const { error } = await this.supabase
         .from('invoices')
         .delete()
@@ -164,7 +164,7 @@ export class InvoiceService extends BaseService {
   }
 
   async markAsPaid(id: string): Promise<void> {
-    return this.executeServiceMethod('markAsPaid', async () => {
+    return this.executeServiceMethod('markAsPaid', async (): Promise<any> => {
       const { data, error } = await this.supabase
         .from('invoices')
         .update({ status: 'paid' })
@@ -181,7 +181,7 @@ export class InvoiceService extends BaseService {
   }
 
   async markAsCancelled(id: string): Promise<void> {
-    return this.executeServiceMethod('markAsCancelled', async () => {
+    return this.executeServiceMethod('markAsCancelled', async (): Promise<any> => {
       const { data, error } = await this.supabase
         .from('invoices')
         .update({ status: 'cancelled' })
@@ -198,7 +198,7 @@ export class InvoiceService extends BaseService {
   }
 
   async getInvoicesByStatus(status: Invoice['status']): Promise<void> {
-    return this.executeServiceMethod('getInvoicesByStatus', async () => {
+    return this.executeServiceMethod('getInvoicesByStatus', async (): Promise<any> => {
       const { data, error } = await this.supabase
         .from('invoices')
         .select()

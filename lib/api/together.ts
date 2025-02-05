@@ -14,7 +14,7 @@ export class Together {
         temperature?: number;
         max_tokens?: number;
         stream?: boolean;
-      }) => {
+      }): Promise<{ data: any; error?: string }> => {
         const response = await fetch(`${this.baseUrl}/chat/completions`, {
           method: 'POST',
           headers: {
@@ -31,10 +31,10 @@ export class Together {
         });
 
         if (!response.ok) {
-          throw new Error(`Together API error: ${response.statusText}`);
+          return { data: null, error: `Together API error: ${response.statusText}` };
         }
 
-        return await response.json();
+        return { data: await response.json(), error: undefined };
       },
     },
   };

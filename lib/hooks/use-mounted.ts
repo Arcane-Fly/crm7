@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 export function useMounted(): boolean {
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
+  useEffect((): void => {
     setMounted(true);
   }, []);
 

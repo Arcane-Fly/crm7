@@ -1,4 +1,4 @@
-export default function NotFound() {
+export default function NotFound(): React.JSX.Element {
   return (
     <div className='flex min-h-screen flex-col items-center justify-center'>
       <h2 className='mb-4 text-2xl font-bold'>404 - Page Not Found</h2>

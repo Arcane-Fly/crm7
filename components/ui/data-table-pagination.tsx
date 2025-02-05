@@ -1,4 +1,3 @@
-import { type ReactElement } from 'react';
 import { type Table } from '@tanstack/react-table';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 
@@ -23,7 +22,7 @@ export function DataTablePagination<TData>({
           <p className="text-sm font-medium">Rows per page</p>
           <Select
             value={`${table.getState().pagination.pageSize}`}
-            onValueChange={(value) => {
+            onValueChange={(value): void => {
               table.setPageSize(Number(value));
             }}
           >

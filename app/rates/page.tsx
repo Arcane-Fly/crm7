@@ -7,6 +7,6 @@ export const metadata: Metadata = {
   description: 'Calculate and manage rates for apprentices, trainees, and employees',
 };
 
-export default function RatesPage() {
+export default function RatesPage(): React.JSX.Element {
   return <RatesClient />;
 }

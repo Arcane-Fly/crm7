@@ -4,7 +4,7 @@ import { Plus } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
-export default function AwardsPage() {
+export default function AwardsPage(): React.JSX.Element {
   return (
     <div className='flex flex-col gap-6 p-6'>
       <div className='flex items-center justify-between'>

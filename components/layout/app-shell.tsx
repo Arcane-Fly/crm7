@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactElement, ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 
 import { AppHeader } from './app-header';

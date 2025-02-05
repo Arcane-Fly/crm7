@@ -16,8 +16,8 @@ export function useAuth(): UseAuthReturn {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  useEffect(() => {
-    const checkAuth = async () => {
+  useEffect((): void => {
+    const checkAuth = async (): Promise<void> => {
       try {
         const { data: { user: auth0User }, error: auth0Error } = await supabase.auth.getUser();
 
@@ -46,7 +46,7 @@ export function useAuth(): UseAuthReturn {
     void checkAuth();
   }, [supabase]);
 
-  const login = async () => {
+  const login = async (): Promise<void> => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'auth0',
@@ -65,7 +65,7 @@ export function useAuth(): UseAuthReturn {
     }
   };
 
-  const logout = async () => {
+  const logout = async (): Promise<void> => {
     try {
       const { error } = await supabase.auth.signOut();
       if (typeof error !== "undefined" && error !== null) throw error;

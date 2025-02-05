@@ -111,10 +111,10 @@ export function monitorFunction(
   const span = startPerformanceSpan(name, 'function', tags);
 
   return {
-    finish: () => {
+    finish: (): void => {
       finishPerformanceSpan(span, SpanStatus.Ok);
     },
-    error: (err: unknown) => {
+    error: (err: unknown): void => {
       finishPerformanceSpan(span, SpanStatus.InternalError, {
         error: toErrorMetadata(err),
       });
@@ -129,10 +129,10 @@ export function monitorMeasurement(
   const span = startPerformanceSpan(name, 'measurement', tags);
 
   return {
-    finish: () => {
+    finish: (): void => {
       finishPerformanceSpan(span, SpanStatus.Ok);
     },
-    error: (err: unknown) => {
+    error: (err: unknown): void => {
       finishPerformanceSpan(span, SpanStatus.InternalError, {
         error: toErrorMetadata(err),
       });

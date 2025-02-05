@@ -4,12 +4,14 @@ import { type Employee, type Attendance, type AttendanceStats } from '@/lib/type
 
 const supabase = createClient();
 
-export function HRDashboard(): JSX.Element {
+export function HRDashboard(): React.ReactElement {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [attendance, setAttendance] = useState<Attendance[]>([]);
-  const [stats, setStats] = useState<AttendanceStats | null>(null);
+  const [stats, _setStats] = useState<AttendanceStats>({
+    attendanceRate: 0,
+  });
 
-  useEffect(() => {
+  useEffect((): void => {
     const fetchData = async (): Promise<void> => {
       try {
         const { data: employeeData, error: employeeError } = await supabase
@@ -53,7 +55,7 @@ export function HRDashboard(): JSX.Element {
       <div className="grid gap-4 md:grid-cols-3">
         <div className="rounded-lg bg-white p-6 shadow">
           <h3 className="text-lg font-medium">Attendance Rate</h3>
-          <p className="text-2xl">{stats?.attendanceRate.toFixed(1) || 0}%</p>
+          <p className="text-2xl">{stats.attendanceRate.toFixed(1) || 0}%</p>
         </div>
       </div>
 

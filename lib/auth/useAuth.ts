@@ -17,7 +17,7 @@ export function useAuth(): UseAuthReturn {
   const [user, setUser] = useState<Auth0User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
 
-  const login = async () => {
+  const login = async (): Promise<void> => {
     try {
       setIsLoading(true);
       // Implement login logic here
@@ -30,7 +30,7 @@ export function useAuth(): UseAuthReturn {
     }
   };
 
-  const logout = async () => {
+  const logout = async (): Promise<void> => {
     try {
       setIsLoading(true);
       setUser(null);
@@ -46,7 +46,7 @@ export function useAuth(): UseAuthReturn {
     }
   };
 
-  const refreshToken = async () => {
+  const refreshToken = async (): Promise<void> => {
     try {
       // Implement token refresh logic here
       // This is just a placeholder
@@ -68,7 +68,7 @@ export function useAuth(): UseAuthReturn {
     }
   };
 
-  useEffect(() => {
+  useEffect((): void => {
     refreshToken();
   }, []);
 

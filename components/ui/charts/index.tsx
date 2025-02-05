@@ -1,5 +1,3 @@
-import { type ReactElement } from 'react';
-
 interface ChartContainerProps {
   children: React.ReactNode;
   width?: number;

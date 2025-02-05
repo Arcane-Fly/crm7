@@ -12,7 +12,7 @@ import { useLockBody } from '@/lib/hooks/use-lock-body';
 //
 // Accessibility: "Skip to content" link so that keyboard/screen reader users can bypass nav
 //
-const SkipToContent: React.FC = () => {
+const SkipToContent: React.FC = (): React.ReactElement => {
   return (
     <a 
       href="#main-content" 
@@ -65,7 +65,7 @@ const TopNavigation: React.FC<TopNavigationProps> = React.memo(({ pathname }) =>
       }
     };
     window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
+    return (): React.ReactElement => window.removeEventListener('keydown', handleKeyPress);
   }, [router]);
 
   return (
@@ -138,7 +138,7 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = React.memo(({ active
     };
 
     window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
+    return (): React.ReactElement => window.removeEventListener('keydown', handleKeyPress);
   }, []);
 
   return (
@@ -199,7 +199,7 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
   useLockBody(isOpen);
 
   // Auto focus the first link when the mobile menu opens
-  useEffect(() => {
+  useEffect((): React.ReactElement => {
     if (isOpen && firstLinkRef.current) {
       firstLinkRef.current.focus();
     }
@@ -212,13 +212,13 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
     }
   }, [onClose]);
 
-  useEffect(() => {
+  useEffect((): React.ReactElement => {
     if (isOpen) {
       window.addEventListener('keydown', handleKeyDown);
     } else {
       window.removeEventListener('keydown', handleKeyDown);
     }
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return (): React.ReactElement => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, handleKeyDown]);
 
   if (!isOpen) return null;
@@ -307,7 +307,7 @@ export const UnifiedNavigation: React.FC<UnifiedNavigationProps> = ({ children }
         <main id="main-content" className="flex-1 p-6">
           <div className="md:hidden mb-4">
             <button
-              onClick={() => setIsMobileNavOpen(true)}
+              onClick={(): React.ReactElement => setIsMobileNavOpen(true)}
               className="p-2 rounded hover:bg-accent"
               aria-label="Open navigation menu"
             >
@@ -319,7 +319,7 @@ export const UnifiedNavigation: React.FC<UnifiedNavigationProps> = ({ children }
       </div>
       <MobileNavigation
         isOpen={isMobileNavOpen}
-        onClose={() => setIsMobileNavOpen(false)}
+        onClose={(): React.ReactElement => setIsMobileNavOpen(false)}
         sectionItems={sectionItems}
         activeNavLabel={activeNav.label || activeNav.title || ''}
         pathname={pathname}
