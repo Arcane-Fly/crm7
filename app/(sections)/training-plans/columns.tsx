@@ -1,22 +1,12 @@
-import type { ColumnDef } from '@tanstack/react-table';
-import { Badge } from '@/components/ui/badge';
-import styles from './training-plans.module.css';
+'use client';
 
-export const columns: ColumnDef<TrainingPlan>[] = [
-  // ... other columns ...
+export const columns = [
   {
-    accessorKey: 'progress',
-    header: 'Progress',
-    cell: ({ row }) => {
-      const progress = row.getValue('progress') as number;
-      const progressClass = progress < 30 ? 'low' : progress < 70 ? 'medium' : 'high';
-
-      return (
-        <div className={styles['progressBar']}>
-          <div className={`${styles['progressFill']} ${styles[progressClass]}`} />
-        </div>
-      );
-    },
+    accessorKey: 'name',
+    header: 'Name',
   },
-  // ... other columns ...
+  {
+    accessorKey: 'description',
+    header: 'Description',
+  },
 ];

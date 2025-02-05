@@ -37,7 +37,7 @@ export class CacheService {
     return this.keyPrefix ? `${this.keyPrefix}:${key}` : key;
   }
 
-  async get<T>(key: string): Promise<void> {
+  async get<T>(key: string): Promise<T | null> {
     const startTime = Date.now();
     try {
       const data = await this.client.get(this.getKey(key));
@@ -51,7 +51,7 @@ export class CacheService {
       cacheMonitoring.recordHit(latencyMs);
       return JSON.parse(data) as T;
     } catch (error) {
-      logger.error('Cache get error:', error);
+      logger.error('Cache get error:', { error, key });
       throw new CacheError(`Failed to get cache key ${key}`);
     }
   }
@@ -73,30 +73,33 @@ export class CacheService {
       }
 
       const latencyMs = Date.now() - startTime;
-      cacheMonitoring.recordHit(latencyMs);
+      cacheMonitoring.recordSet(latencyMs);
     } catch (error) {
-      logger.error('Cache set error:', error);
+      logger.error('Cache set error:', { error, key });
       throw new CacheError(`Failed to set cache key ${key}`);
     }
   }
 
-  async delete(key: string): Promise<void> {
+  async delete(key: string): Promise<boolean> {
     try {
-      await this.client.del(this.getKey(key));
+      const result = await this.client.del(this.getKey(key));
+      return result > 0;
     } catch (error) {
-      logger.error('Cache delete error:', error);
+      logger.error('Cache delete error:', { error, key });
       throw new CacheError(`Failed to delete cache key ${key}`);
     }
   }
 
-  async deletePattern(pattern: string): Promise<void> {
+  async deletePattern(pattern: string): Promise<number> {
     try {
       const keys = await this.client.keys(this.getKey(pattern));
       if (keys.length > 0) {
-        await this.client.del(...keys);
+        const result = await this.client.del(...keys);
+        return result;
       }
+      return 0;
     } catch (error) {
-      logger.error('Cache delete pattern error:', error);
+      logger.error('Cache delete pattern error:', { error, pattern });
       throw new CacheError(`Failed to delete cache pattern ${pattern}`);
     }
   }
@@ -105,7 +108,7 @@ export class CacheService {
     key: string,
     getter: () => Promise<T>,
     ttl?: number
-  ): Promise<void> {
+  ): Promise<T> {
     try {
       const cached = await this.get<T>(key);
       if (cached !== null) {
@@ -116,7 +119,7 @@ export class CacheService {
       await this.set(key, value, ttl);
       return value;
     } catch (error) {
-      logger.error('Cache getOrSet error:', error);
+      logger.error('Cache getOrSet error:', { error, key });
       throw new CacheError(`Failed to get or set cache key ${key}`);
     }
   }

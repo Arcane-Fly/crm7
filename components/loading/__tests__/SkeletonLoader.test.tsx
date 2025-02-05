@@ -1,30 +1,30 @@
 import { render, screen } from '@testing-library/react';
-
-import { SkeletonLoader } from '../SkeletonLoader';
+import SkeletonLoader from '../SkeletonLoader';
 
 describe('SkeletonLoader', () => {
-  it('renders with default number of lines', () => {
+  it('renders with default props', () => {
     render(<SkeletonLoader />);
-    const loader = screen.getByRole('status');
-    expect(loader).toBeInTheDocument();
+    const lines = screen.getAllByRole('presentation');
+    expect(lines).toHaveLength(3);
   });
 
   it('renders with custom number of lines', () => {
     render(<SkeletonLoader lines={5} />);
-    const loader = screen.getByRole('status');
-    expect(loader).toBeInTheDocument();
+    const lines = screen.getAllByRole('presentation');
+    expect(lines).toHaveLength(5);
   });
 
   it('applies custom className', () => {
-    render(<SkeletonLoader className='test-class' />);
-    const loader = screen.getByRole('status');
-    expect(loader).toHaveClass('test-class');
+    const { container } = render(<SkeletonLoader className="custom-class" />);
+    expect(container.firstChild).toHaveClass('custom-class');
   });
 
   it('applies custom lineClassName', () => {
-    render(<SkeletonLoader lineClassName='line-test-class' />);
-    const loader = screen.getByRole('status');
-    expect(loader).toHaveClass('line-test-class');
+    render(<SkeletonLoader lineClassName="custom-line" />);
+    const lines = screen.getAllByRole('presentation');
+    lines.forEach(line => {
+      expect(line).toHaveClass('custom-line');
+    });
   });
 
   it('has correct ARIA attributes', () => {

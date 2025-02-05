@@ -1,8 +1,6 @@
 import type { DashboardAlert } from '@/types/dashboard';
-import type { ReactElement } from 'react';
-
+import PlacementTrends from '@/components/dashboard/placement-trends';
 import { AlertsSection } from '@/components/dashboard/alerts-section';
-import { PlacementTrends } from '@/components/dashboard/placement-trends';
 import { QuickActions } from '@/components/dashboard/quick-actions';
 import { DashboardStats } from '@/components/dashboard/stats-cards';
 
@@ -13,13 +11,6 @@ const mockMonthlyData = [
   { month: 'Apr', placements: 81 },
   { month: 'May', placements: 56 },
   { month: 'Jun', placements: 55 },
-];
-
-const mockQuarterlyData = [
-  { month: 'Q1', placements: 204 },
-  { month: 'Q2', placements: 192 },
-  { month: 'Q3', placements: 153 },
-  { month: 'Q4', placements: 189 },
 ];
 
 const mockAlerts: DashboardAlert[] = [
@@ -50,10 +41,7 @@ export default function DashboardPage(): JSX.Element {
       />
       <div className="grid gap-6 md:grid-cols-7">
         <div className="col-span-5">
-          <PlacementTrends
-            monthlyData={mockMonthlyData}
-            quarterlyData={mockQuarterlyData}
-          />
+          <PlacementTrends data={mockMonthlyData.map(item => ({ date: item.month, count: item.placements }))} />
         </div>
         <div className="col-span-2 space-y-6">
           <QuickActions />

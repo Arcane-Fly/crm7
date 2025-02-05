@@ -93,7 +93,7 @@ export interface GetClassificationsParams {
   includeInactive?: boolean;
 }
 
-export interface Rate {
+export interface PayRate {
   baseRate: number;
   effectiveFrom: string;
   effectiveTo?: string;

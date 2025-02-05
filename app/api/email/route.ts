@@ -25,14 +25,14 @@ const notificationEmailSchema = z.object({
   actionText: z.string().min(1),
 });
 
-export async function POST(request: NextRequest): Promise<void> {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   const resendApiKey = process.env['RESEND_API_KEY'];
   if (!resendApiKey) {
     return NextResponse.json({ error: 'Resend API key not configured' }, { status: 500 });
   }
 
   try {
-    const body = (await request.json()) as unknown;
+    const body = await request.json();
     const validatedData = notificationEmailSchema.parse(body);
 
     const emailData: NotificationEmailRequest = {
@@ -46,9 +46,8 @@ export async function POST(request: NextRequest): Promise<void> {
     };
 
     await sendNotificationEmail(emailData);
-
     return NextResponse.json({ success: true });
-  } catch (error: unknown) {
+  } catch (error) {
     logger.error('Failed to send email', {
       error: error instanceof Error ? error.message : 'Unknown error',
     });
@@ -56,10 +55,9 @@ export async function POST(request: NextRequest): Promise<void> {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Invalid request data', details: error.errors },
-        { status: 400 },
-      ) as NextResponse;
+        { status: 400 }
+      );
     }
-
-    return NextResponse.json({ error: 'Failed to send email' }, { status: 500 }) as NextResponse;
+    return NextResponse.json({ error: 'Failed to send email' }, { status: 500 });
   }
 }

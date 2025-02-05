@@ -1,38 +1,38 @@
-import axios, { type AxiosInstance } from 'axios';
 import { logger } from '@/lib/logger';
-import type { 
-  Allowance, 
-  PayRate, 
-  Classification, 
+import axios, { type AxiosInstance } from 'axios';
+import type {
+  Allowance,
+  Award,
+  Classification,
+  FairWorkConfig,
   LeaveEntitlement,
+  PayCalculationRequest,
+  PayRate,
   RateValidationRequest,
   RateValidationResponse,
-  FairWorkConfig
+  SearchAwardsRequest
 } from './types';
 
 export class FairWorkClient {
   private client: AxiosInstance;
 
   constructor(config?: FairWorkConfig) {
-    if (config) {
-      this.client = axios.create({
-        baseURL: config.apiUrl,
-        timeout: config.timeout,
-        headers: {
-          Authorization: `Bearer ${config.apiKey}`,
-          'Content-Type': 'application/json',
-          'X-Environment': config.environment,
-        },
-      });
-    } else {
-      this.client = axios.create({
-        baseURL: process.env.FAIRWORK_API_URL || 'https://api.fairwork.gov.au',
-        timeout: 10000,
-      });
+    if (!config?.apiUrl) {
+      throw new Error('API URL is required');
     }
+
+    this.client = axios.create({
+      baseURL: config.apiUrl,
+      timeout: config.timeout || 10000,
+      headers: {
+        Authorization: `Bearer ${config.apiKey}`,
+        'Content-Type': 'application/json',
+        'X-Environment': config.environment,
+      },
+    });
   }
 
-  private async fetch<T>(path: string, params?: { date?: string }): Promise<T> {
+  private async fetch<T>(path: string, params?: Record<string, unknown>): Promise<T> {
     try {
       const response = await this.client.get<T>(path, { params });
       return response.data;
@@ -42,38 +42,12 @@ export class FairWorkClient {
     }
   }
 
-  async getRates(
-    awardCode: string,
-    classificationCode: string,
-    params?: { date?: string }
-  ): Promise<PayRate[]> {
-    return this.fetch(`/awards/${awardCode}/classifications/${classificationCode}/rates`, params);
+  async getAward(awardCode: string): Promise<Award> {
+    return this.fetch(`/awards/${awardCode}`);
   }
 
-  async getAllowances(
-    awardCode: string,
-    classificationCode: string,
-    params?: { date?: string }
-  ): Promise<Allowance[]> {
-    return this.fetch(`/awards/${awardCode}/classifications/${classificationCode}/allowances`, params);
-  }
-
-  async getLeaveEntitlements(
-    awardCode: string,
-    classificationCode: string,
-    params?: { date?: string }
-  ): Promise<LeaveEntitlement[]> {
-    return this.fetch(`/awards/${awardCode}/classifications/${classificationCode}/leave-entitlements`, params);
-  }
-
-  async validateRate(request: RateValidationRequest): Promise<RateValidationResponse> {
-    try {
-      const response = await this.client.post<RateValidationResponse>('/validate', request);
-      return response.data;
-    } catch (error) {
-      logger.error('Failed to validate rate', { error, request });
-      throw error;
-    }
+  async searchAwards(params: SearchAwardsRequest): Promise<Award[]> {
+    return this.fetch('/awards', params);
   }
 
   async getClassification(
@@ -83,19 +57,56 @@ export class FairWorkClient {
     return this.fetch(`/awards/${awardCode}/classifications/${classificationCode}`);
   }
 
-  async getFutureRates(
+  async calculatePay(
     awardCode: string,
     classificationCode: string,
-    params?: { date?: string }
-  ): Promise<PayRate[]> {
-    return this.fetch(`/awards/${awardCode}/classifications/${classificationCode}/future-rates`, params);
+    request: PayCalculationRequest
+  ): Promise<PayRate> {
+    try {
+      const response = await this.client.post<PayRate>(
+        `/awards/${awardCode}/classifications/${classificationCode}/calculate`,
+        request
+      );
+      return response.data;
+    } catch (error) {
+      logger.error('Failed to calculate pay', { error, awardCode, classificationCode, request });
+      throw error;
+    }
   }
 
-  async getRateHistory(
+  async validatePayRate(
     awardCode: string,
     classificationCode: string,
-    params?: { date?: string }
-  ): Promise<PayRate[]> {
-    return this.fetch(`/awards/${awardCode}/classifications/${classificationCode}/rate-history`, params);
+    request: RateValidationRequest
+  ): Promise<RateValidationResponse> {
+    try {
+      const response = await this.client.post<RateValidationResponse>(
+        `/awards/${awardCode}/classifications/${classificationCode}/validate`,
+        request
+      );
+      return response.data;
+    } catch (error) {
+      logger.error('Failed to validate pay rate', { error, awardCode, classificationCode, request });
+      throw error;
+    }
+  }
+
+  async getPenalties(awardCode: string, params?: { date?: string }): Promise<PayRate[]> {
+    return this.fetch(`/awards/${awardCode}/penalties`, { params });
+  }
+
+  async getAllowances(awardCode: string, params?: { date?: string; type?: string }): Promise<Allowance[]> {
+    return this.fetch(`/awards/${awardCode}/allowances`, { params });
+  }
+
+  async getLeaveEntitlements(
+    awardCode: string,
+    params?: { date?: string; employmentType?: string }
+  ): Promise<LeaveEntitlement[]> {
+    return this.fetch(`/awards/${awardCode}/leave-entitlements`, { params });
+  }
+
+  async getPublicHolidays(params?: { state?: string; year?: number }): Promise<string[]> {
+    return this.fetch('/public-holidays', params);
   }
 }

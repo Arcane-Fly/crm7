@@ -1,22 +1,25 @@
-import { type NextRequest } from 'next/server';
+import { createApiResponse, createErrorResponse } from '@/lib/api/response';
 import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
-import { defaultConfig } from '@/lib/services/fairwork/fairwork.config';
-import { createApiResponse } from '@/lib/api/response';
+import { NextRequest, NextResponse } from 'next/server';
 
-const fairworkClient = new FairWorkClient(defaultConfig);
+const fairworkClient = new FairWorkClient();
 
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,  // renamed to _req since it is not used
   context: { params: { awardCode: string; classificationCode: string } }
-): Promise<void> {
+): Promise<NextResponse> {
   try {
     const classification = await fairworkClient.getClassification(
       context.params.awardCode,
       context.params.classificationCode
     );
-    
     return createApiResponse(classification);
-  } catch (error) {
-    return createApiResponse({ error: 'Failed to fetch classification' }, { status: 500 });
+  } catch (_error) {
+    return createErrorResponse(
+      'CLASSIFICATION_FETCH_ERROR',
+      'Failed to fetch classification',
+      undefined,
+      500
+    );
   }
 }

@@ -1,27 +1,26 @@
-import { type NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
-import { defaultConfig } from '@/lib/services/fairwork/fairwork.config';
-import { createApiResponse } from '@/lib/api/response';
-import { DateParamsSchema } from '@/lib/schemas/fairwork';
+import { createApiResponse, createErrorResponse } from '@/lib/api/response';
+import { logger } from '@/lib/logger';
 
-const fairworkClient = new FairWorkClient(defaultConfig);
+const fairworkClient = new FairWorkClient();
 
 export async function GET(
   req: NextRequest,
-  context: { params: { awardCode: string; classificationCode: string } }
-): Promise<void> {
+  { params }: { params: { awardCode: string; classificationCode: string } }
+): Promise<NextResponse> {
   try {
-    const { searchParams } = new URL(req.url);
-    const params = DateParamsSchema.parse(Object.fromEntries(searchParams));
-    
+    const searchParams = req.nextUrl.searchParams;
+    const date = searchParams.get('date') ?? undefined;
+    const options = date ? { date } : {};
     const rates = await fairworkClient.getFutureRates(
-      context.params.awardCode,
-      context.params.classificationCode,
-      params
+      params.awardCode,
+      params.classificationCode,
+      options
     );
-    
     return createApiResponse(rates);
   } catch (error) {
-    return createApiResponse({ error: 'Failed to fetch future rates' }, { status: 500 });
+    logger.error('Failed to fetch future rates', { error });
+    return createErrorResponse('FUTURE_RATES_FETCH_ERROR', 'Failed to fetch future rates', undefined, 500);
   }
 }

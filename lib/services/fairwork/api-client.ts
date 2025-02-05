@@ -1,17 +1,27 @@
-import { fetch } from '@/lib/utils/fetch';
-
-import type {
+import axios, { type AxiosInstance } from 'axios';
+import { logger } from '@/lib/logger';
+import type { 
+  ApiError,
   Award,
-  RateValidationResponse,
-  RateValidationRequest,
-  Rate,
-  GetClassificationsParams,
   Classification,
   ClassificationHierarchy,
-  RateTemplate,
   Page,
-  ApiError,
+  PayRate,
+  RateTemplate,
+  RateValidationRequest,
+  RateValidationResponse
 } from './types';
+
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public status: number,
+    public context?: Record<string, unknown>
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
 
 export interface FairWorkApiConfig {
   apiKey: string;
@@ -21,92 +31,103 @@ export interface FairWorkApiConfig {
 }
 
 export class FairWorkApiClient {
-  private readonly config: FairWorkApiConfig;
+  private client: AxiosInstance;
 
   constructor(config: FairWorkApiConfig) {
-    this.config = config;
+    this.client = axios.create({
+      baseURL: config.baseUrl,
+      timeout: config.timeout,
+      headers: {
+        Authorization: `Bearer ${config.apiKey}`,
+        'Content-Type': 'application/json',
+        'X-Environment': config.environment,
+      },
+    });
   }
 
-  private async request<T>(
-    method: 'GET' | 'POST' | 'PUT' | 'DELETE',
-    path: string,
-    data?: unknown,
-  ): Promise<void> {
-    const url = `${this.config.baseUrl}${path}`;
-    const headers = {
-      'Content-Type': 'application/json',
-      'X-Api-Key': this.config.apiKey,
-      'X-Environment': this.config.environment,
-    };
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.config.timeout);
-
+  private async request<T>(path: string, config: Parameters<AxiosInstance['request']>[0] = {}): Promise<T> {
     try {
-      const response = await fetch(url, {
-        method,
-        headers,
-        body: data ? JSON.stringify(data) : null,
-        signal: controller.signal,
-        retry: {
-          // Don't retry 4xx errors
-          maxRetries: 0,
-        },
+      const response = await this.client.request<T>({
+        ...config,
+        url: path,
       });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        const error = await response.json() as ApiError;
-        const apiError = {
-          ...error,
-          status: response.status,
-          message: error.message || response.statusText,
-        };
-        throw apiError;
-      }
-
-      return response.json() as Promise<T>;
+      return response.data;
     } catch (error) {
-      clearTimeout(timeoutId);
-      
-      if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-          throw new Error('Request timed out');
-        }
-        throw error;
+      if (axios.isAxiosError(error)) {
+        throw new ApiError(
+          error.message,
+          error.response?.status || 500,
+          error.response?.data
+        );
       }
-      
       throw error;
     }
   }
 
-  async validateRate(params: RateValidationRequest): Promise<void> {
-    return this.request<RateValidationResponse>('POST', '/rates/validate', params);
+  async validateRate(params: RateValidationRequest): Promise<RateValidationResponse> {
+    try {
+      return await this.request<RateValidationResponse>('/rates/validate', {
+        method: 'POST',
+        data: params,
+      });
+    } catch (error) {
+      logger.error('Failed to validate rate', { error, params });
+      throw error;
+    }
   }
 
-  async getActiveAwards(): Promise<void> {
-    return this.request<Page<Award>>('GET', '/awards/active');
+  async getActiveAwards(): Promise<Page<Award>> {
+    try {
+      return await this.request<Page<Award>>('/awards/active');
+    } catch (error) {
+      logger.error('Failed to fetch active awards', { error });
+      throw error;
+    }
   }
 
-  async getCurrentRates(awardCode: string): Promise<void> {
-    return this.request<Rate[]>('GET', `/awards/${awardCode}/rates/current`);
+  async getCurrentRates(awardCode: string): Promise<PayRate[]> {
+    try {
+      return await this.request<PayRate[]>(`/awards/${awardCode}/rates/current`);
+    } catch (error) {
+      logger.error('Failed to fetch current rates', { error, awardCode });
+      throw error;
+    }
   }
 
-  async getRatesForDate(awardCode: string, date: string): Promise<void> {
-    return this.request<Rate[]>('GET', `/awards/${awardCode}/rates/${date}`);
+  async getRatesForDate(awardCode: string, date: string): Promise<PayRate[]> {
+    try {
+      return await this.request<PayRate[]>(`/awards/${awardCode}/rates/${date}`);
+    } catch (error) {
+      logger.error('Failed to fetch rates for date', { error, awardCode, date });
+      throw error;
+    }
   }
 
-  async getClassifications(awardCode: string): Promise<void> {
-    return this.request<Classification[]>('GET', `/awards/${awardCode}/classifications`);
+  async getClassifications(awardCode: string): Promise<Classification[]> {
+    try {
+      return await this.request<Classification[]>(`/awards/${awardCode}/classifications`);
+    } catch (error) {
+      logger.error('Failed to fetch classifications', { error, awardCode });
+      throw error;
+    }
   }
 
-  async getClassificationHierarchy(awardCode: string): Promise<void> {
-    return this.request<ClassificationHierarchy>('GET', `/awards/${awardCode}/classifications/hierarchy`);
+  async getClassificationHierarchy(awardCode: string): Promise<ClassificationHierarchy> {
+    try {
+      return await this.request<ClassificationHierarchy>(`/awards/${awardCode}/classifications/hierarchy`);
+    } catch (error) {
+      logger.error('Failed to fetch classification hierarchy', { error, awardCode });
+      throw error;
+    }
   }
 
-  async getRateTemplates(awardCode: string): Promise<void> {
-    return this.request<RateTemplate[]>('GET', `/awards/${awardCode}/templates`);
+  async getRateTemplates(awardCode: string): Promise<RateTemplate[]> {
+    try {
+      return await this.request<RateTemplate[]>(`/awards/${awardCode}/templates`);
+    } catch (error) {
+      logger.error('Failed to fetch rate templates', { error, awardCode });
+      throw error;
+    }
   }
 }
 
