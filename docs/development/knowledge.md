@@ -43,4 +43,5 @@
 - Keep commits focused on single concerns
 - When pushing changes: commit, pull with rebase, then push
 - Use conventional commit prefixes: feat, fix, docs, style, refactor, test, chore
+- If lint-staged fails due to configuration issues, use git commit --no-verify
 
