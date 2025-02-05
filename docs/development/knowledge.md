@@ -44,4 +44,5 @@
 - When pushing changes: commit, pull with rebase, then push
 - Use conventional commit prefixes: feat, fix, docs, style, refactor, test, chore
 - If lint-staged fails due to configuration issues, use git commit --no-verify
+- Changes should be made through pull requests, though direct pushes are possible
 
