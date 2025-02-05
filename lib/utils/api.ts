@@ -7,7 +7,7 @@ interface ApiHandlerConfig<T> {
 }
 
 export function createApiHandler<T>(config: ApiHandlerConfig<T>): Promise<void> {
-  return async (req: NextRequest, { params }: { params: Record<string, string> }) => {
+  return async (req: NextRequest, { params }: { params: Record<string, string> }): Promise<Response> => {
     try {
       const jsonData = await req.json();
       const parsedData = config.schema.parse(jsonData);

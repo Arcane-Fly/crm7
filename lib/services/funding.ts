@@ -24,7 +24,7 @@ export class FundingService extends BaseService {
     start_date?: string;
     end_date?: string;
   }): Promise<void> {
-    return this.executeServiceMethod('getFundingEntries', async () => {
+    return this.executeServiceMethod('getFundingEntries', async (): Promise<any> => {
       let query = this.supabase.from('funding_entries').select();
 
       if (params.status) {
@@ -50,7 +50,7 @@ export class FundingService extends BaseService {
   }
 
   async getFundingEntry(id: string): Promise<void> {
-    return this.executeServiceMethod('getFundingEntry', async () => {
+    return this.executeServiceMethod('getFundingEntry', async (): Promise<any> => {
       const { data, error } = await this.supabase
         .from('funding_entries')
         .select()
@@ -66,7 +66,7 @@ export class FundingService extends BaseService {
   }
 
   async createFundingEntry(entry: Omit<FundingEntry, 'id' | 'status'>): Promise<void> {
-    return this.executeServiceMethod('createFundingEntry', async () => {
+    return this.executeServiceMethod('createFundingEntry', async (): Promise<any> => {
       const { data, error } = await this.supabase
         .from('funding_entries')
         .insert({
@@ -85,7 +85,7 @@ export class FundingService extends BaseService {
   }
 
   async updateFundingEntry(id: string, updates: Partial<FundingEntry>): Promise<void> {
-    return this.executeServiceMethod('updateFundingEntry', async () => {
+    return this.executeServiceMethod('updateFundingEntry', async (): Promise<any> => {
       const { data, error } = await this.supabase
         .from('funding_entries')
         .update(updates)
@@ -102,7 +102,7 @@ export class FundingService extends BaseService {
   }
 
   async deleteFundingEntry(id: string): Promise<void> {
-    return this.executeServiceMethod('deleteFundingEntry', async () => {
+    return this.executeServiceMethod('deleteFundingEntry', async (): Promise<void> => {
       const { error } = await this.supabase
         .from('funding_entries')
         .delete()

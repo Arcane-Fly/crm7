@@ -1,33 +1,29 @@
 import { useState, useEffect } from 'react';
-import { useUser } from './use-user';
+import { createClient } from '@/lib/supabase/client';
 
-export function useAdminAccess(): void {
-  const { user } = useUser();
+export function useAdminAccess(): { isAdmin: boolean } {
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const supabase = createClient();
 
   useEffect(() => {
-    if (!user) {
-      setIsAdmin(false);
-      setIsLoading(false);
-      return;
-    }
-
-    const checkAdminAccess = async () => {
-      try {
-        // Check if user has admin role
-        const hasAdminRole = user.roles?.includes('admin') ?? false;
-        setIsAdmin(hasAdminRole);
-      } catch (error) {
-        console.error('Error checking admin access:', error);
+    const checkAdminStatus = async (): Promise<void> => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         setIsAdmin(false);
-      } finally {
-        setIsLoading(false);
+        return;
       }
+
+      const { data: userRoles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', session.user.id)
+        .single();
+
+      setIsAdmin(userRoles?.role === 'admin');
     };
 
-    void checkAdminAccess();
-  }, [user]);
+    void checkAdminStatus();
+  }, [supabase]);
 
-  return { isAdmin, isLoading };
+  return { isAdmin };
 }

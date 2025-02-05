@@ -28,7 +28,7 @@ export class BillingService extends BaseService {
   }
 
   async createTimesheet(timesheet: Omit<Timesheet, 'id'>): Promise<void> {
-    return this.executeServiceMethod('createTimesheet', async () => {
+    return this.executeServiceMethod('createTimesheet', async (): Promise<any> => {
       const { data, error } = await this.supabase
         .from('timesheets')
         .insert(timesheet)
@@ -41,7 +41,7 @@ export class BillingService extends BaseService {
   }
 
   async createBillingEntry(entry: Omit<BillingEntry, 'id'>): Promise<void> {
-    return this.executeServiceMethod('createBillingEntry', async () => {
+    return this.executeServiceMethod('createBillingEntry', async (): Promise<any> => {
       const { data, error } = await this.supabase
         .from('billing_entries')
         .insert(entry)
@@ -54,7 +54,7 @@ export class BillingService extends BaseService {
   }
 
   async getBillingEntries(status?: BillingEntry['status']): Promise<void> {
-    return this.executeServiceMethod('getBillingEntries', async () => {
+    return this.executeServiceMethod('getBillingEntries', async (): Promise<any> => {
       const query = this.supabase.from('billing_entries').select();
 
       if (typeof status !== "undefined" && status !== null) {
@@ -69,7 +69,7 @@ export class BillingService extends BaseService {
   }
 
   async processBillingEntry(id: string): Promise<void> {
-    return this.executeServiceMethod('processBillingEntry', async () => {
+    return this.executeServiceMethod('processBillingEntry', async (): Promise<any> => {
       const { data, error } = await this.supabase
         .from('billing_entries')
         .update({ status: 'processed' })
@@ -83,7 +83,7 @@ export class BillingService extends BaseService {
   }
 
   async markBillingEntryAsPaid(id: string): Promise<void> {
-    return this.executeServiceMethod('markBillingEntryAsPaid', async () => {
+    return this.executeServiceMethod('markBillingEntryAsPaid', async (): Promise<any> => {
       const { data, error } = await this.supabase
         .from('billing_entries')
         .update({ status: 'paid' })

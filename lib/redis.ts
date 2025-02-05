@@ -4,7 +4,7 @@ const client: RedisClientType = createClient({
   scripts: {},
 });
 
-client.connect().catch((error) => {
+client.connect().catch((error): void => {
   console.error('Failed to connect to Redis:', error);
 });
 

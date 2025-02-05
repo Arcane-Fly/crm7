@@ -14,7 +14,7 @@ export function RateComparison({ orgId }: RateComparisonProps): JSX.Element {
   const [error, setError] = useState<string | null>(null);
   const [templates, setTemplates] = useState<RateTemplate[]>([]);
 
-  useEffect(() => {
+  useEffect((): void => {
     const fetchTemplates = async (): Promise<void> => {
       try {
         const { data, error } = await supabase

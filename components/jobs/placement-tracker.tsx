@@ -18,8 +18,7 @@ import {
   ChevronDown,
   DollarSign,
   MoreHorizontal,
-  Search,
-  User,
+  Search
 } from 'lucide-react';
 import * as React from 'react';
 
@@ -163,7 +162,7 @@ const columns: ColumnDef<Placement>[] = [
   {
     accessorKey: 'candidate',
     header: 'Candidate',
-    cell: ({ row }) => {
+    cell: ({ row }): React.JSX.Element => {
       const candidate = row.getValue('candidate') as Placement['candidate'];
       return (
         <div className="flex items-center gap-2">
@@ -194,7 +193,7 @@ const columns: ColumnDef<Placement>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => (
+    cell: ({ row }): React.JSX.Element => (
       <div className="flex items-center gap-2">
         <Building2 className="h-4 w-4 text-muted-foreground" />
         {row.getValue('company')}
@@ -208,14 +207,14 @@ const columns: ColumnDef<Placement>[] = [
   {
     accessorKey: 'type',
     header: 'Type',
-    cell: ({ row }) => (
+    cell: ({ row }): React.JSX.Element => (
       <Badge variant="outline">{row.getValue('type')}</Badge>
     ),
   },
   {
     accessorKey: 'status',
     header: 'Status',
-    cell: ({ row }) => {
+    cell: ({ row }): React.JSX.Element => {
       const status = row.getValue('status') as Placement['status'];
       return (
         <Badge
@@ -237,7 +236,7 @@ const columns: ColumnDef<Placement>[] = [
   {
     accessorKey: 'salary',
     header: 'Salary',
-    cell: ({ row }) => {
+    cell: ({ row }): React.JSX.Element => {
       const salary = row.getValue('salary') as Placement['salary'];
       return (
         <div className="flex items-center">
@@ -260,13 +259,13 @@ const columns: ColumnDef<Placement>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => {
+    cell: ({ row }): string => {
       return new Date(row.getValue('startDate')).toLocaleDateString();
     },
   },
   {
     id: 'actions',
-    cell: ({ row }) => {
+    cell: ({ row }): React.JSX.Element => {
       const placement = row.original;
 
       return (
@@ -295,7 +294,7 @@ const columns: ColumnDef<Placement>[] = [
   },
 ];
 
-export function PlacementTracker(): JSX.Element {
+export function PlacementTracker(): React.ReactElement {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
@@ -352,7 +351,7 @@ export function PlacementTracker(): JSX.Element {
             <Input
               placeholder="Search placements..."
               value={globalFilter}
-              onChange={(e) => setGlobalFilter(e.target.value)}
+              onChange={(e): void => setGlobalFilter(e.target.value)}
               className="h-8 w-[150px] lg:w-[250px]"
             />
           </div>

@@ -13,7 +13,7 @@ export function withErrorBoundary<P extends object>(
   return function WithErrorBoundary(props: P): React.ReactElement {
     return (
       <ErrorBoundary
-        onError={(error, errorInfo) => {
+        onError={(error, errorInfo): void => {
           options.onError?.(error, errorInfo);
         }}
         fallback={options.fallback}

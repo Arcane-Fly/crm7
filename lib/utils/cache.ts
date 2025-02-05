@@ -18,11 +18,11 @@ export class CacheService {
     this.client = client;
 
     // Set up error handlers
-    void this.client.on('error', (error: Error) => {
+    void this.client.on('error', (error: Error): void => {
       this.cacheLogger.error('Redis client error', { error: error.message });
     });
 
-    void this.client.on('end', () => {
+    void this.client.on('end', (): void => {
       this.cacheLogger.warn('Redis connection ended');
     });
   }

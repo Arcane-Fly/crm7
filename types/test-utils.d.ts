@@ -1,34 +1,33 @@
-import type { RenderOptions } from '@testing-library/react';
-import type { ReactElement } from 'react';
+import type { PostgrestError } from '@supabase/supabase-js';
 
-declare global {
-  namespace jest {
-    interface Matchers<R> {
-      toHaveNoViolations(): R;
-    }
-  }
-}
+export class PostgrestErrorType implements PostgrestError {
+  message: string;
+  details: string;
+  hint: string;
+  code: string;
 
-export interface TestRenderOptions extends RenderOptions {
-  route?: string;
-  initialState?: Record<string, unknown>;
-}
-
-export interface TestError extends Error {
-  code?: string;
-  details?: Record<string, unknown>;
-}
-
-export class TestError extends Error {
   constructor(message: string) {
-    super(message);
-    this.name = 'TestError';
+    this.message = message;
+    this.details = '';
+    this.hint = '';
+    this.code = 'TEST_ERROR';
   }
 }
 
-export function render(
-  ui: ReactElement,
-  options?: TestRenderOptions,
-): ReturnType<typeof import('@testing-library/react')['render']>;
+export interface MockQueryResult<T> {
+  data: T | null;
+  error: Error | null;
+  isLoading: boolean;
+}
 
-export * from '@testing-library/react';
+export function createMockQueryResult<T>(params: {
+  data?: T;
+  error?: Error | null;
+  isLoading?: boolean;
+}): MockQueryResult<T> {
+  return {
+    data: params.data ?? null,
+    error: params.error ?? null,
+    isLoading: params.isLoading ?? false
+  };
+}

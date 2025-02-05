@@ -2,35 +2,43 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { createApiResponse } from './response';
 import { logger } from '@/lib/logger';
 
+type ErrorResponse = {
+  message: string;
+  status: number;
+  details?: Record<string, unknown>;
+};
+
 export function withErrorHandler<T>(
   handler: (req: NextRequest, context: unknown) => Promise<NextResponse<T>>
-): Promise<void> {
-  return async (req: NextRequest, context: unknown) => {
+): (req: NextRequest, context: unknown) => Promise<NextResponse<ErrorResponse>> {
+  return async (req: NextRequest, context: unknown): Promise<NextResponse<ErrorResponse>> => {
     try {
       return await handler(req, context);
     } catch (error) {
       logger.error('API Error:', error);
       
-      if (error instanceof Error) {
-        return createApiResponse(
-          undefined,
-          { 
-            code: 'INTERNAL_SERVER_ERROR',
-            message: error.message,
-            details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
-          },
-          500
-        );
-      }
+      const errorResponse = errorHandler(error);
 
       return createApiResponse(
         undefined,
-        { 
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'An unexpected error occurred'
-        },
-        500
+        errorResponse,
+        errorResponse.status
       );
     }
   };
 }
+
+export const errorHandler = (error: unknown): ErrorResponse => {
+  if (error instanceof Error) {
+    return {
+      message: error.message,
+      status: 500,
+      details: { stack: error.stack }
+    };
+  }
+  
+  return {
+    message: 'An unknown error occurred',
+    status: 500
+  };
+};

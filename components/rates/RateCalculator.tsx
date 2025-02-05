@@ -13,8 +13,8 @@ export function RateCalculator({ orgId, onCalculate }: RateCalculatorProps): JSX
   const { toast } = useToast();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<CalculationResult | null>(null);
-  const [selectedTemplate, setSelectedTemplate] = useState<string>('');
+  const [rate, setRate] = useState<number>(0);
+  const [multiplier, setMultiplier] = useState<number>(1);
 
   const calculateRate = (template: unknown): void => {
     const baseAmount = template.baseRate;
@@ -48,20 +48,17 @@ export function RateCalculator({ orgId, onCalculate }: RateCalculatorProps): JSX
       totalAmount,
     };
 
-    setResult(result);
     onCalculate?.(totalAmount);
   };
 
   const handleTemplateChange = (value: string): void => {
-    setSelectedTemplate(value);
-
     const template = templates?.find((t) => t.id === value);
     if (typeof template !== "undefined" && template !== null) {
       calculateRate(template);
     }
   };
 
-  useEffect(() => {
+  useEffect((): void => {
     const fetchTemplates = async (): Promise<void> => {
       try {
         const { data, error } = await supabase

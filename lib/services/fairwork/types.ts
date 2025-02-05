@@ -94,6 +94,7 @@ export interface GetClassificationsParams {
 }
 
 export interface PayRate {
+  classificationCode?: string;
   baseRate: number;
   effectiveFrom: string;
   effectiveTo?: string;

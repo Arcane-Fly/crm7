@@ -1,7 +1,4 @@
 'use client';
-
-import { type ReactElement } from 'react';
-
 import { RateCalculator } from '@/components/rates/RateCalculator';
 import { RateTemplateBuilder } from '@/components/rates/RateTemplateBuilder';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

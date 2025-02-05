@@ -4,7 +4,7 @@ import { AlertTriangle, CheckCircle2, Download } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
-export default function ComplianceLogsPage() {
+export default function ComplianceLogsPage(): React.JSX.Element {
   return (
     <div className='flex flex-col gap-6 p-6'>
       <div className='flex items-center justify-between'>

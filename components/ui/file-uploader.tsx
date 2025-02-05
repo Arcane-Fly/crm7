@@ -1,4 +1,4 @@
-import { useState, type ReactElement } from 'react';
+import { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 
 interface FileUploaderProps {
@@ -16,7 +16,7 @@ export function FileUploader({
 }: FileUploaderProps): JSX.Element {
   const [error, setError] = useState<string | null>(null);
 
-  const onDrop = (acceptedFiles: File[]) => {
+  const onDrop = (acceptedFiles: File[]): void => {
     try {
       setError(null);
       if (acceptedFiles.length > maxFiles) {

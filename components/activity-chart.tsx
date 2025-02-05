@@ -1,63 +1,51 @@
 'use client';
 
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import * as React from 'react';
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend
+} from 'recharts';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+interface ActivityChartProps {
+  data: Array<{
+    date: string;
+    value: number;
+  }>;
+}
 
-const data = [
-  { name: 'Jan', value: 400 },
-  { name: 'Feb', value: 300 },
-  { name: 'Mar', value: 600 },
-  { name: 'Apr', value: 400 },
-  { name: 'May', value: 500 },
-  { name: 'Jun', value: 350 },
-  { name: 'Jul', value: 450 },
-  { name: 'Aug', value: 550 },
-  { name: 'Sep', value: 600 },
-  { name: 'Oct', value: 550 },
-  { name: 'Nov', value: 650 },
-  { name: 'Dec', value: 700 },
-];
-
-export function ActivityChart(): void {
+export function ActivityChart({ data }: ActivityChartProps): React.ReactElement {
   return (
-    <Card className='col-span-4'>
-      <CardHeader>
-        <CardTitle>Activity Overview</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className='h-[300px]'>
-          <ResponsiveContainer
-            width='100%'
-            height='100%'
-          >
-            <LineChart data={data}>
-              <XAxis
-                dataKey='name'
-                stroke='#888888'
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis
-                stroke='#888888'
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(value: unknown) => `${value}`}
-              />
-              <Tooltip />
-              <Line
-                type='monotone'
-                dataKey='value'
-                stroke='#8884d8'
-                strokeWidth={2}
-                dot={false}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </CardContent>
-    </Card>
+    <ResponsiveContainer width="100%" height={400}>
+      <LineChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis
+          dataKey="date"
+          fontSize={12}
+          tickLine={false}
+          axisLine={false}
+          tickFormatter={(value: unknown): string => `${value}`}
+        />
+        <YAxis
+          fontSize={12}
+          tickLine={false}
+          axisLine={false}
+          tickFormatter={(value: unknown): string => `${value}`}
+        />
+        <Tooltip />
+        <Legend />
+        <Line
+          type="monotone"
+          dataKey="value"
+          stroke="#8884d8"
+          activeDot={{ r: 8 }}
+        />
+      </LineChart>
+    </ResponsiveContainer>
   );
 }

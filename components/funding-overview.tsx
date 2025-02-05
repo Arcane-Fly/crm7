@@ -16,7 +16,7 @@ export function FundingOverview({ data }: FundingOverviewProps): JSX.Element {
             nameKey="name"
             cx="50%"
             cy="50%"
-            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+            label={({ name, percent }): string => `${name} ${(percent * 100).toFixed(0)}%`}
           />
         </PieChart>
       </ResponsiveContainer>

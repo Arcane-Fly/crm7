@@ -1,15 +1,17 @@
-import { type NextRequest } from 'next/server';
 import { logger } from '@/lib/logger';
+import { type NextRequest, type NextResponse } from 'next/server';
 
-export function monitorAPIEndpoint<T extends (...args: unknown[]) => Promise<any>>(
+type Handler<T> = (req: NextRequest) => Promise<NextResponse<T>>;
+
+export function monitorAPIEndpoint<T extends Handler<unknown>>(
   originalMethod: T,
   endpointName: string
 ): T {
-  return async function monitoredMethod(this: unknown, ...args: Parameters<T>): Promise<ReturnType<T>> {
+  return async function monitoredMethod(req: NextRequest): Promise<NextResponse<unknown>> {
     const startTime = Date.now();
 
     try {
-      const result = await originalMethod.apply(this, args);
+      const result = await originalMethod(req);
       const duration = Date.now() - startTime;
 
       logger.info(`API endpoint ${endpointName} completed`, {
@@ -30,3 +32,14 @@ export function monitorAPIEndpoint<T extends (...args: unknown[]) => Promise<any
     }
   } as T;
 }
+
+export const withEndpoint = <T>(handler: Handler<T>): Handler<T> => {
+  return async (req: NextRequest): Promise<NextResponse<T>> => {
+    try {
+      return await handler(req);
+    } catch (error) {
+      console.error('Endpoint error:', error);
+      return new NextResponse('Internal Server Error', { status: 500 });
+    }
+  };
+};

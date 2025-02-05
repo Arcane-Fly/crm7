@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { Project, SyntaxKind } from 'ts-morph';
+import { loggerModule as logger } from './logger';
 
 const project = new Project({
   tsConfigFilePath: path.join(process.cwd(), 'tsconfig.json'),
@@ -50,6 +51,7 @@ srcFiles.forEach(filePath => {
 // Add return types to functions
 function addMissingReturnTypes(): void {
   const sourceFiles = project.getSourceFiles();
+  const typeChecker = project.getTypeChecker();
 
   sourceFiles.forEach((sourceFile) => {
     const functions = sourceFile.getFunctions();
@@ -57,21 +59,66 @@ function addMissingReturnTypes(): void {
     const methods = sourceFile.getDescendantsOfKind(SyntaxKind.MethodDeclaration);
 
     [...functions, ...arrowFunctions, ...methods].forEach((func) => {
+      // Skip array method callbacks and React event handlers
+      const isArrayMethodCallback = func.getParent()?.getKind() === SyntaxKind.CallExpression &&
+        ['map', 'filter', 'reduce', 'forEach', 'find', 'findIndex'].some(method =>
+          func.getParent()?.getText().includes(`.${method}(`));
+      
+      const isEventHandler = func.getParent()?.getText().includes('onClick=') ||
+        func.getParent()?.getText().includes('onChange=') ||
+        func.getParent()?.getText().includes('onSubmit=');
+
+      if (isArrayMethodCallback || isEventHandler) {
+        return;
+      }
+
       if (!func.getReturnTypeNode()) {
         try {
           const signature = func.getSignature();
-          if (typeof signature !== "undefined" && signature !== null) {
-            const returnType = project.getTypeChecker().getReturnTypeOfSignature(signature);
-            const typeText = returnType.getText();
+          if (!signature) {
+            return;
+          }
 
-            if (typeText !== 'void' && typeText !== 'any' && !typeText.includes('Promise')) {
-              func.setReturnType(typeText);
-            } else if (typeText === 'void') {
-              func.setReturnType('void');
-            }
+          const returnType = typeChecker.getReturnTypeOfSignature(signature);
+          if (!returnType) {
+            return;
+          }
+
+          const typeText = returnType.getText();
+          const isReactComponent = sourceFile.getFilePath().endsWith('.tsx') && 
+            (func.getFirstAncestorByKind(SyntaxKind.VariableDeclaration)?.getType().getText().includes('React.') || false);
+
+          // Handle different cases
+          if (isReactComponent) {
+            func.setReturnType('React.ReactElement');
+          } else if (typeText.includes('Promise')) {
+            const promiseType = typeText.match(/Promise<(.+)>/)?.[1] || 'unknown';
+            func.setReturnType(`Promise<${promiseType}>`);
+          } else if (typeText !== 'any' && !typeText.includes('unknown')) {
+            func.setReturnType(typeText);
           }
         } catch (error) {
-          console.warn('Could not get return type for function:', func.getText());
+          const location = sourceFile.getFilePath();
+          let functionName = 'anonymous';
+          
+          // Try to get the function name from various possible locations
+          const varDecl = func.getFirstAncestorByKind(SyntaxKind.VariableDeclaration);
+          const methodDecl = func.getFirstAncestorByKind(SyntaxKind.MethodDeclaration);
+          const funcDecl = func.getFirstAncestorByKind(SyntaxKind.FunctionDeclaration);
+          
+          if (varDecl) {
+            functionName = varDecl.getName();
+          } else if (methodDecl) {
+            functionName = methodDecl.getName();
+          } else if (funcDecl) {
+            functionName = funcDecl.getName();
+          }
+          
+          logger.warn(
+            `Could not infer return type for function "${functionName}" in ${location}:`,
+            `\nError: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            `\nFunction text: ${func.getText().slice(0, 100)}...`
+          );
         }
       }
     });
@@ -144,44 +191,64 @@ function fixEmptyInterfaces(): void {
 function removeUnusedImports(): void {
   const sourceFiles = project.getSourceFiles();
 
-  sourceFiles.forEach((sourceFile) => {
-    const imports = sourceFile.getImportDeclarations();
-
-    imports.forEach((importDecl) => {
+  sourceFiles.forEach(sourceFile => {
+    const importDeclarations = sourceFile.getImportDeclarations();
+    const allIdentifiers = sourceFile.getDescendantsOfKind(SyntaxKind.Identifier);
+    
+    // First collect all imports to remove
+    const importsToRemove: { 
+      importDecl: ImportDeclaration; 
+      namedImport: ImportSpecifier;
+    }[] = [];
+    
+    importDeclarations.forEach(importDecl => {
       const namedImports = importDecl.getNamedImports();
-
-      namedImports.forEach((namedImport) => {
-        const symbol = namedImport.getSymbol();
-        if (typeof symbol !== "undefined" && symbol !== null) {
-          const references = symbol.findReferences();
-          if (references.length === 1) { // Only import, no usage
-            namedImport.remove();
-          }
+      
+      namedImports.forEach(namedImport => {
+        const importName = namedImport.getName();
+        
+        // Check if the import is used anywhere else in the file
+        const isUsed = allIdentifiers.some(identifier => 
+          identifier.getText() === importName && 
+          !identifier.getParent()?.isKind(SyntaxKind.ImportSpecifier)
+        );
+        
+        if (!isUsed) {
+          importsToRemove.push({ importDecl, namedImport });
         }
       });
-
-      // Remove import declaration if it has no specifiers
-      if (importDecl.getNamedImports().length === 0 && !importDecl.getDefaultImport()) {
-        importDecl.remove();
+    });
+    
+    // Then remove them all at once
+    importsToRemove.forEach(({ importDecl, namedImport }) => {
+      try {
+        namedImport.remove();
+        
+        // Remove the entire import if it has no named imports left
+        if (importDecl.getNamedImports().length === 0 && !importDecl.getDefaultImport()) {
+          importDecl.remove();
+        }
+      } catch (error) {
+        // Ignore errors from already removed nodes
+        if (!(error instanceof Error && error.message.includes('removed or forgotten'))) {
+          throw error;
+        }
       }
     });
   });
 }
 
 // Main execution
-console.log('Fixing ESLint issues...');
+logger.info('Fixing ESLint issues...');
 
 try {
   addMissingReturnTypes();
-  fixUnusedVariables();
-  fixEmptyInterfaces();
-  removeUnusedImports();
-
-  // Save all changes
   project.saveSync();
-
-  console.log('ESLint fixes applied successfully ?? undefined');
+  
+  removeUnusedImports();
+  project.saveSync();
+  
+  logger.info('Successfully fixed ESLint issues');
 } catch (error) {
-  console.error('Error fixing ESLint issues:', error);
-  process.exit(1);
+  logger.error('Error fixing ESLint issues:', error);
 }

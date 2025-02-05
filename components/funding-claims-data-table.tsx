@@ -99,17 +99,17 @@ export const columns: ColumnDef<FundingClaim>[] = [
   {
     accessorKey: 'programCode',
     header: 'Program Code',
-    cell: ({ row }) => <div>{row.getValue('programCode')}</div>,
+    cell: ({ row }): React.JSX.Element => <div>{row.getValue('programCode')}</div>,
   },
   {
     accessorKey: 'apprenticeName',
     header: 'Apprentice Name',
-    cell: ({ row }) => <div>{row.getValue('apprenticeName')}</div>,
+    cell: ({ row }): React.JSX.Element => <div>{row.getValue('apprenticeName')}</div>,
   },
   {
     accessorKey: 'employerName',
     header: 'Employer Name',
-    cell: ({ row }) => <div>{row.getValue('employerName')}</div>,
+    cell: ({ row }): React.JSX.Element => <div>{row.getValue('employerName')}</div>,
   },
   {
     accessorKey: 'claimDate',
@@ -124,17 +124,17 @@ export const columns: ColumnDef<FundingClaim>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div>{row.getValue('claimDate')}</div>,
+    cell: ({ row }): React.JSX.Element => <div>{row.getValue('claimDate')}</div>,
   },
   {
     accessorKey: 'amount',
     header: 'Amount',
-    cell: ({ row }) => <div>${row.getValue('amount')}</div>,
+    cell: ({ row }): React.JSX.Element => <div>${row.getValue('amount')}</div>,
   },
   {
     accessorKey: 'status',
     header: 'Status',
-    cell: ({ row }) => <div className='capitalize'>{row.getValue('status')}</div>,
+    cell: ({ row }): React.JSX.Element => <div className='capitalize'>{row.getValue('status')}</div>,
   },
   {
     id: 'actions',
@@ -155,7 +155,7 @@ export const columns: ColumnDef<FundingClaim>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align='end'>
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(claim.id)}>
+            <DropdownMenuItem onClick={(): Promise<void> => navigator.clipboard.writeText(claim.id)}>
               Copy claim ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />

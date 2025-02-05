@@ -1,4 +1,3 @@
-import { type ReactElement } from 'react';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import * as React from 'react';
 
@@ -33,7 +32,7 @@ export function Combobox({
 }: ComboboxProps): JSX.Element {
   const [open, setOpen] = React.useState<boolean>(false);
 
-  const getDisplayValue = () => {
+  const getDisplayValue = (): string => {
     if (!value) return '';
 
     if (multiple && Array.isArray(value)) {
@@ -46,7 +45,7 @@ export function Combobox({
     return options.find(option => option.value === value)?.label || placeholder;
   };
 
-  const isSelected = (optionValue: string) => {
+  const isSelected = (optionValue: string): boolean => {
     if (!value) return false;
 
     if (multiple && Array.isArray(value)) {
@@ -77,7 +76,7 @@ export function Combobox({
             {options.map(option => (
               <CommandItem
                 key={option.value}
-                onSelect={() => {
+                onSelect={(): void => {
                   if (multiple && Array.isArray(value)) {
                     const newValue = isSelected(option.value)
                       ? value.filter(v => v !== option.value)

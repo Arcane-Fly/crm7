@@ -2,7 +2,6 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CalendarIcon } from 'lucide-react';
-import { ReactElement } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
@@ -76,7 +75,7 @@ type JobFormValues = z.infer<typeof jobFormSchema>;
 
 interface JobFormProps {
   initialData?: Partial<JobFormValues>;
-  onSubmit: (data: JobFormValues) => void;
+  onSubmit: (data: JobFormValues) => Promise<void>;
 }
 
 export function JobForm({
@@ -102,13 +101,13 @@ export function JobForm({
     },
   });
 
-  function onFormSubmit(data: JobFormValues) {
-    onSubmit(data);
+  const onFormSubmit = async (data: JobFormValues): Promise<void> => {
+    await onSubmit(data);
     toast({
       title: 'Job posted',
       description: 'The job has been successfully posted.',
     });
-  }
+  };
 
   return (
     <Form {...form}>
@@ -117,7 +116,7 @@ export function JobForm({
           <FormField
             control={form.control}
             name="title"
-            render={({ field }) => (
+            render={({ field }): React.JSX.Element => (
               <FormItem>
                 <FormLabel>Job Title</FormLabel>
                 <FormControl>
@@ -131,7 +130,7 @@ export function JobForm({
           <FormField
             control={form.control}
             name="company"
-            render={({ field }) => (
+            render={({ field }): React.JSX.Element => (
               <FormItem>
                 <FormLabel>Company</FormLabel>
                 <FormControl>
@@ -145,7 +144,7 @@ export function JobForm({
           <FormField
             control={form.control}
             name="location"
-            render={({ field }) => (
+            render={({ field }): React.JSX.Element => (
               <FormItem>
                 <FormLabel>Location</FormLabel>
                 <FormControl>
@@ -159,7 +158,7 @@ export function JobForm({
           <FormField
             control={form.control}
             name="type"
-            render={({ field }) => (
+            render={({ field }): React.JSX.Element => (
               <FormItem>
                 <FormLabel>Job Type</FormLabel>
                 <Select
@@ -187,7 +186,7 @@ export function JobForm({
         <FormField
           control={form.control}
           name="description"
-          render={({ field }) => (
+          render={({ field }): React.JSX.Element => (
             <FormItem>
               <FormLabel>Job Description</FormLabel>
               <FormControl>
@@ -205,7 +204,7 @@ export function JobForm({
         <FormField
           control={form.control}
           name="requirements"
-          render={({ field }) => (
+          render={({ field }): React.JSX.Element => (
             <FormItem>
               <FormLabel>Requirements</FormLabel>
               <FormControl>
@@ -224,7 +223,7 @@ export function JobForm({
           <FormField
             control={form.control}
             name="salary.currency"
-            render={({ field }) => (
+            render={({ field }): React.JSX.Element => (
               <FormItem>
                 <FormLabel>Currency</FormLabel>
                 <Select
@@ -287,7 +286,7 @@ export function JobForm({
         <FormField
           control={form.control}
           name="benefits"
-          render={({ field }) => (
+          render={({ field }): React.JSX.Element => (
             <FormItem>
               <FormLabel>Benefits</FormLabel>
               <FormControl>
@@ -308,7 +307,7 @@ export function JobForm({
           <FormField
             control={form.control}
             name="deadline"
-            render={({ field }) => (
+            render={({ field }): React.JSX.Element => (
               <FormItem className="flex flex-col">
                 <FormLabel>Application Deadline</FormLabel>
                 <Popover>
@@ -335,7 +334,7 @@ export function JobForm({
                       mode="single"
                       selected={field.value}
                       onSelect={field.onChange}
-                      disabled={(date) =>
+                      disabled={(date): boolean =>
                         date < new Date() || date > new Date('2100-01-01')
                       }
                       initialFocus
@@ -350,7 +349,7 @@ export function JobForm({
           <FormField
             control={form.control}
             name="status"
-            render={({ field }) => (
+            render={({ field }): React.JSX.Element => (
               <FormItem>
                 <FormLabel>Status</FormLabel>
                 <Select

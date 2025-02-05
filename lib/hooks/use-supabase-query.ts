@@ -13,10 +13,10 @@ export function useSupabaseQuery<T extends TableName>(
   supabase: SupabaseClient<Database>,
   table: T,
   options?: QueryOptions
-) {
+): import("/home/braden/Desktop/Dev/crm7r/node_modules/.pnpm/@tanstack+react-query@5.66.0_react@18.2.0/node_modules/@tanstack/react-query/build/modern/types").UseQueryResult<any, Error> {
   return useQuery({
     queryKey: [table, options?.filter],
-    queryFn: async () => {
+    queryFn: async (): Promise<any> => {
       try {
         const query = supabase.from(table).select(options?.select || '*');
 
@@ -52,7 +52,7 @@ export function useSupabaseMutation<T extends TableName>(
     }: {
       data: Record<string, unknown>;
       match?: Record<string, unknown>;
-    }) => {
+    }): Promise<any> => {
       try {
         const query = supabase.from(table);
 

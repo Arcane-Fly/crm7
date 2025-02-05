@@ -12,7 +12,7 @@ export function useRealtimeData<T>(
   table: keyof Database['public']['Tables'],
   initialData: T[] = [],
   options: UseRealtimeDataOptions<T> = {}
-) {
+): { data: T[]; error: Error | null; isLoading: boolean; } {
   const supabase = createClient();
   const [data, setData] = useState<T[]>(initialData);
   const [error, setError] = useState<Error | null>(null);
@@ -21,7 +21,7 @@ export function useRealtimeData<T>(
   useEffect(() => {
     let subscription: RealtimeChannel;
 
-    const fetchData = async () => {
+    const fetchData = async (): Promise<void> => {
       try {
         let query = supabase.from(table).select('*');
 
@@ -47,7 +47,7 @@ export function useRealtimeData<T>(
       }
     };
 
-    const setupSubscription = () => {
+    const setupSubscription = (): void => {
       subscription = supabase
         .channel(`${table}_changes`)
         .on(
@@ -57,7 +57,7 @@ export function useRealtimeData<T>(
             schema: 'public',
             table,
           },
-          () => {
+          (): void => {
             void fetchData();
           }
         )
@@ -67,7 +67,7 @@ export function useRealtimeData<T>(
     void fetchData();
     setupSubscription();
 
-    return () => {
+    return (): void => {
       subscription?.unsubscribe();
     };
   }, [table, options, supabase]);

@@ -1,5 +1,4 @@
 import { AlertCircle } from 'lucide-react';
-import { type ReactElement } from 'react';
 import type { FallbackProps } from 'react-error-boundary';
 
 import { Button } from '@/components/ui/button';

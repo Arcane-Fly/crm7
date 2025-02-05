@@ -9,7 +9,7 @@ interface LoadingSpinnerProps {
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ 
   size = 'md', 
   className 
-}) => {
+}): React.ReactElement => {
   const sizeClasses = {
     sm: 'h-4 w-4',
     md: 'h-6 w-6',

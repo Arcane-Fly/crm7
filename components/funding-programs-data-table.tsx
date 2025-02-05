@@ -1,6 +1,4 @@
 import { Badge } from '@/components/ui/badge';
-import { type FundingProgram } from '@/lib/types';
-
 const getStatusVariant = (status: string): string => {
   switch (status) {
     case 'Active':

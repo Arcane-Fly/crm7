@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { type TrainingStats } from '@/lib/types';
 
-export function TrainingDashboard(): JSX.Element {
-  const [stats, setStats] = useState<TrainingStats>({
+export function TrainingDashboard(): React.ReactElement {
+  const [stats, _setStats] = useState<TrainingStats>({
     completionRate: 0,
     averageScore: 0,
-    totalEnrollments: 0
+    totalCourses: 0
   });
 
   return (

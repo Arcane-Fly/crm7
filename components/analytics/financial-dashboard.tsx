@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
 import { type Transaction, type FinancialStats } from '@/lib/types';
 
-export function FinancialDashboard(): JSX.Element {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [stats, setStats] = useState<FinancialStats>({
-    totalAmount: 0,
-    successRate: 0,
-    averageAmount: 0
+export function FinancialDashboard(): React.ReactElement {
+  const [_transactions, _setTransactions] = useState<Transaction[]>([]);
+  const [stats, _setStats] = useState<FinancialStats>({
+    revenue: 0,
+    expenses: 0,
+    profit: 0
   });
 
-  useEffect(() => {
+  useEffect((): void => {
     const fetchData = async (): Promise<void> => {
       try {
         const { data, error } = await supabase.from('transactions').select('*');
@@ -18,7 +18,7 @@ export function FinancialDashboard(): JSX.Element {
         
         if (typeof data !== "undefined" && data !== null) {
           const typedTransactions = data as Transaction[];
-          setTransactions(typedTransactions);
+          _setTransactions(typedTransactions);
           calculateStats(typedTransactions);
         }
       } catch (error) {
@@ -29,7 +29,7 @@ export function FinancialDashboard(): JSX.Element {
     void fetchData();
   }, []); // Empty dependency array since supabase is stable
 
-  const formatCurrency = (amount: number): string => {
+  const _formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('en-AU', {
       style: 'currency',
       currency: 'AUD',
@@ -37,21 +37,23 @@ export function FinancialDashboard(): JSX.Element {
     }).format(amount);
   };
 
-  const getStatusColor = (status: string): string => {
+  const _getStatusColor = (status: string): string => {
     switch (status) {
-      case 'completed':
+      case 'positive':
         return 'text-green-500';
-      case 'failed':
+      case 'negative':
         return 'text-red-500';
-      case 'pending':
-        return 'text-yellow-500';
       default:
         return 'text-gray-500';
     }
   };
 
-  const formatDate = (dateString: string): string => {
-    return new Date(dateString).toLocaleDateString();
+  const _formatDate = (date: Date): string => {
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    }).format(date);
   };
 
   return (
@@ -59,15 +61,15 @@ export function FinancialDashboard(): JSX.Element {
       <div className="grid gap-4 md:grid-cols-3">
         <div className="rounded-lg bg-white p-6 shadow">
           <h3 className="text-lg font-medium">Total Volume</h3>
-          <p className="mt-1 text-sm text-gray-500">{formatCurrency(stats.totalAmount)}</p>
+          <p className="mt-1 text-sm text-gray-500">{_formatCurrency(stats.revenue)}</p>
         </div>
         <div className="rounded-lg bg-white p-6 shadow">
           <h3 className="text-lg font-medium">Average Transaction</h3>
-          <p className="mt-1 text-sm text-gray-500">{formatCurrency(stats.averageAmount)}</p>
+          <p className="mt-1 text-sm text-gray-500">{_formatCurrency(stats.expenses)}</p>
         </div>
         <div className="rounded-lg bg-white p-6 shadow">
           <h3 className="text-lg font-medium">Success Rate</h3>
-          <p className="mt-1 text-sm text-gray-500">{stats.successRate.toFixed(1)}%</p>
+          <p className="mt-1 text-sm text-gray-500">{stats.profit.toFixed(1)}%</p>
         </div>
       </div>
 

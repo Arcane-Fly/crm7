@@ -1,7 +1,5 @@
 import { CacheService } from '../cache/cache-service';
 import { type FairWorkApiClient } from './api-client';
-import { logger } from '@/lib/logger';
-
 const TTL_CONFIG = {
   baseRate: 3600, // 1 hour
   classifications: 7200, // 2 hours
@@ -34,7 +32,7 @@ export class FairWorkCacheMiddleware {
 
   private getCacheKey(endpoint: string, params: Record<string, unknown>): string {
     const sortedParams = Object.entries(params)
-      .sort(([a], [b]) => a.localeCompare(b))
+      .sort(([a], [b]): number => a.localeCompare(b))
       .map(([key, value]) => `${key}:${JSON.stringify(value)}`)
       .join(',');
 

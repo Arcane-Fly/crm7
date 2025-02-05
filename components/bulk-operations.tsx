@@ -39,7 +39,7 @@ export function BulkOperations({ table, selectedIds, onComplete }: BulkOperation
       setIsLoading(true);
 
       const reader = new FileReader();
-      reader.onload = async (e) => {
+      reader.onload = async (e): Promise<void> => {
         if (!e.target?.result) return;
 
         const data = e.target.result;
@@ -89,7 +89,7 @@ export function BulkOperations({ table, selectedIds, onComplete }: BulkOperation
       </button>
       <input
         type="file"
-        onChange={(e) => {
+        onChange={(e): void => {
           const file = e.target.files?.[0];
           if (typeof file !== "undefined" && file !== null) void handleImport(file);
         }}

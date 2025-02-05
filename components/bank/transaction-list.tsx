@@ -1,19 +1,20 @@
-import { useState } from 'react';
-import { type Transaction } from '@/lib/types';
 import { DataTable } from '@/components/ui/data-table';
 import { Select } from '@/components/ui/select';
+import { type Transaction } from '@/lib/types';
+import { useState } from 'react';
 
 interface TransactionListProps {
-  transactions: Transaction[];
 }
 
-export function TransactionList({ transactions }: TransactionListProps): JSX.Element {
+export function TransactionList(): React.ReactElement {
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [typeFilter, setTypeFilter] = useState<'credit' | 'debit' | ''>('');
 
-  const formatCurrency = (amount: number): string => {
+  const _formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('en-AU', {
       style: 'currency',
-      currency: 'AUD'
+      currency: 'AUD',
+      minimumFractionDigits: 2
     }).format(amount);
   };
 
@@ -22,7 +23,7 @@ export function TransactionList({ transactions }: TransactionListProps): JSX.Ele
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <Select
           value={typeFilter}
-          onValueChange={(value: 'credit' | 'debit' | '') => setTypeFilter(value)}
+          onValueChange={(value: 'credit' | 'debit' | ''): void => setTypeFilter(value)}
         >
           <option value="">All Types</option>
           <option value="credit">Credit</option>

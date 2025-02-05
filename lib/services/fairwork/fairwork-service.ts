@@ -48,9 +48,10 @@ export class FairWorkServiceImpl extends BaseService implements FairWorkService 
         if (cachedAwards) {
           return cachedAwards;
         }
-        const { data } = await this.apiClient.getActiveAwards();
-        await this.cache.set(cacheKey, data, this.CACHE_TTL);
-        return data;
+        const page = await this.apiClient.getActiveAwards();
+        const awards = page.items;
+        await this.cache.set(cacheKey, awards, this.CACHE_TTL);
+        return awards;
       } catch (error) {
         this.serviceLogger.error('Failed to get active awards', { error });
         return [];

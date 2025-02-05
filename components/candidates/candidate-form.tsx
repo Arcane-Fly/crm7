@@ -1,8 +1,6 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CalendarIcon } from 'lucide-react';
-import { ReactElement } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
@@ -79,7 +77,7 @@ type CandidateFormValues = z.infer<typeof candidateFormSchema>;
 
 interface CandidateFormProps {
   initialData?: Partial<CandidateFormValues>;
-  onSubmit: (data: CandidateFormValues) => void;
+  onSubmit: (data: CandidateFormValues) => Promise<void>;
 }
 
 export function CandidateForm({
@@ -112,13 +110,21 @@ export function CandidateForm({
     },
   });
 
-  function onFormSubmit(data: CandidateFormValues) {
-    onSubmit(data);
-    toast({
-      title: 'Candidate saved',
-      description: 'The candidate information has been successfully saved.',
-    });
-  }
+  const onFormSubmit = async (data: CandidateFormValues): Promise<void> => {
+    try {
+      await onSubmit(data);
+      toast({
+        title: 'Candidate saved',
+        description: 'The candidate information has been successfully saved.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to save candidate information.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   return (
     <Form {...form}>
@@ -127,7 +133,7 @@ export function CandidateForm({
           <FormField
             control={form.control}
             name="name"
-            render={({ field }) => (
+            render={({ field }): React.JSX.Element => (
               <FormItem>
                 <FormLabel>Full Name</FormLabel>
                 <FormControl>
@@ -141,7 +147,7 @@ export function CandidateForm({
           <FormField
             control={form.control}
             name="email"
-            render={({ field }) => (
+            render={({ field }): React.JSX.Element => (
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
@@ -155,7 +161,7 @@ export function CandidateForm({
           <FormField
             control={form.control}
             name="phone"
-            render={({ field }) => (
+            render={({ field }): React.JSX.Element => (
               <FormItem>
                 <FormLabel>Phone</FormLabel>
                 <FormControl>
@@ -169,7 +175,7 @@ export function CandidateForm({
           <FormField
             control={form.control}
             name="location"
-            render={({ field }) => (
+            render={({ field }): React.JSX.Element => (
               <FormItem>
                 <FormLabel>Current Location</FormLabel>
                 <FormControl>
@@ -183,7 +189,7 @@ export function CandidateForm({
           <FormField
             control={form.control}
             name="title"
-            render={({ field }) => (
+            render={({ field }): React.JSX.Element => (
               <FormItem>
                 <FormLabel>Job Title</FormLabel>
                 <FormControl>
@@ -197,7 +203,7 @@ export function CandidateForm({
           <FormField
             control={form.control}
             name="status"
-            render={({ field }) => (
+            render={({ field }): React.JSX.Element => (
               <FormItem>
                 <FormLabel>Status</FormLabel>
                 <Select
@@ -225,7 +231,7 @@ export function CandidateForm({
         <FormField
           control={form.control}
           name="about"
-          render={({ field }) => (
+          render={({ field }): React.JSX.Element => (
             <FormItem>
               <FormLabel>About</FormLabel>
               <FormControl>
@@ -245,7 +251,7 @@ export function CandidateForm({
         <FormField
           control={form.control}
           name="skills"
-          render={({ field }) => (
+          render={({ field }): React.JSX.Element => (
             <FormItem>
               <FormLabel>Skills</FormLabel>
               <FormControl>
@@ -266,7 +272,7 @@ export function CandidateForm({
           <FormField
             control={form.control}
             name="availability"
-            render={({ field }) => (
+            render={({ field }): React.JSX.Element => (
               <FormItem>
                 <FormLabel>Availability</FormLabel>
                 <FormControl>
@@ -280,7 +286,7 @@ export function CandidateForm({
           <FormField
             control={form.control}
             name="preferredLocation"
-            render={({ field }) => (
+            render={({ field }): React.JSX.Element => (
               <FormItem>
                 <FormLabel>Preferred Location</FormLabel>
                 <FormControl>
@@ -296,7 +302,7 @@ export function CandidateForm({
           <FormField
             control={form.control}
             name="salary.currency"
-            render={({ field }) => (
+            render={({ field }): React.JSX.Element => (
               <FormItem>
                 <FormLabel>Currency</FormLabel>
                 <Select
@@ -360,7 +366,7 @@ export function CandidateForm({
           <FormField
             control={form.control}
             name="links.linkedin"
-            render={({ field }) => (
+            render={({ field }): React.JSX.Element => (
               <FormItem>
                 <FormLabel>LinkedIn</FormLabel>
                 <FormControl>
@@ -374,7 +380,7 @@ export function CandidateForm({
           <FormField
             control={form.control}
             name="links.github"
-            render={({ field }) => (
+            render={({ field }): React.JSX.Element => (
               <FormItem>
                 <FormLabel>GitHub</FormLabel>
                 <FormControl>
@@ -388,7 +394,7 @@ export function CandidateForm({
           <FormField
             control={form.control}
             name="links.portfolio"
-            render={({ field }) => (
+            render={({ field }): React.JSX.Element => (
               <FormItem>
                 <FormLabel>Portfolio</FormLabel>
                 <FormControl>

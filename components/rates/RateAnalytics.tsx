@@ -15,7 +15,7 @@ export function RateAnalytics({ orgId }: RateAnalyticsProps): JSX.Element {
   const [error, setError] = useState<string | null>(null);
   const [analytics, setAnalytics] = useState<RateAnalytics | null>(null);
 
-  useEffect(() => {
+  useEffect((): void => {
     const loadAnalytics = async (): Promise<void> => {
       try {
         setLoading(true);

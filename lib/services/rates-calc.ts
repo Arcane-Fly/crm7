@@ -84,7 +84,7 @@ export class RatesCalculator {
     return cost * (1 + this.MARKUP_PERCENTAGE / 100);
   }
 
-  generateQuote(calculation: RateCalculation) {
+  generateQuote(calculation: RateCalculation): { summary: { baseRate: number; totalRate: number; weeklyRate: number; annualRate: number; }; breakdown: { wages: number; loadings: number; allowances: number; penalties: number; superannuation: number; workersComp: number; payrollTax: number; markup: number; }; components: { amount: number; name: string; rate: number; type: "base" | "loading" | "allowance" | "penalty"; description?: string | undefined; }[]; } {
     return {
       summary: {
         baseRate: calculation.baseRate,

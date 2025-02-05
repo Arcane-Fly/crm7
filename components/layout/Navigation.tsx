@@ -1,14 +1,6 @@
 import {
   Users,
-  Calendar,
-  FileText,
-  Settings,
-  BarChart2,
-  Database,
-  Briefcase,
-  Mail,
-  Phone,
-  MessageSquare,
+  BarChart2
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -44,8 +36,8 @@ export const Navigation: React.FC = () => {
   const router = useRouter();
   const [activeItem, setActiveItem] = React.useState<string | null>(null);
 
-  const isActive = (href: string) => router.pathname === href;
-  const isActiveParent = (item: NavItem) =>
+  const isActive = (href: string): boolean => router.pathname === href;
+  const isActiveParent = (item: NavItem): boolean =>
     item.subItems?.some((subItem: NavItem) => router.pathname.startsWith(subItem.href)) || false;
 
   return (
@@ -71,7 +63,7 @@ export const Navigation: React.FC = () => {
                     ? 'bg-primary text-primary-foreground'
                     : 'hover:bg-accent hover:text-accent-foreground'
                 }`}
-                onClick={() => setActiveItem(activeItem === item.href ? null : item.href)}
+                onClick={(): React.ReactElement => setActiveItem(activeItem === item.href ? null : item.href)}
               >
                 {item.icon}
                 <span className='ml-3'>{item.label}</span>

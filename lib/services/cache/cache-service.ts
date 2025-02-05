@@ -130,7 +130,7 @@ export class CacheService {
       if (Date.now() - startTime > maxWaitMs) {
         throw new CacheTimeoutError(`Timeout waiting for lock on key ${key}`);
       }
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve): NodeJS.Timeout => setTimeout(resolve, 100));
     }
   }
 }
