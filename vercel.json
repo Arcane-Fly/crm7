@@ -1,6 +1,6 @@
 {
-  "buildCommand": "corepack enable && COREPACK_DISABLE_SIGNATURES=1 pnpm install --no-frozen-lockfile && pnpm run build",
-  "installCommand": "corepack enable && COREPACK_DISABLE_SIGNATURES=1 pnpm install --no-frozen-lockfile",
+  "buildCommand": "corepack enable && COREPACK_DISABLE_SIGNATURES=1 pnpm install && pnpm run build",
+  "installCommand": "corepack enable && COREPACK_DISABLE_SIGNATURES=1 pnpm install",
   "framework": "nextjs",
   "outputDirectory": ".next",
   "regions": ["syd1", "sin1"],
