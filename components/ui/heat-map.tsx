@@ -1,68 +1,148 @@
+import * as React from 'react';
+
+import styles from './heat-map.module.css';
+
 interface HeatMapProps {
   data: number[][];
-  startColor?: string;
-  endColor?: string;
+  colorScale?: (value: number) => string;
   cellSize?: number;
   gap?: number;
+  onCellClick?: (row: number, col: number, value: number) => void;
 }
+
+const defaultColorScale = (value: number): string => {
+  const hue = ((1 - value) * 120).toString(10);
+  return `hsl(${hue}, 70%, 50%)`;
+};
 
 export function HeatMap({
   data,
-  startColor = '#ffffff',
-  endColor = '#ff0000',
-  cellSize = 40,
-  gap = 4,
-}: HeatMapProps): JSX.Element {
+  colorScale = defaultColorScale,
+  cellSize = 30,
+  gap = 2,
+  onCellClick,
+}: HeatMapProps): React.ReactElement {
+  const [focusPosition, setFocusPosition] = React.useState<[number, number]>([0, 0]);
+  const [selectedValue, setSelectedValue] = React.useState<number | null>(null);
+
+  React.useEffect(() => {
+    const [focusRow, focusCol] = focusPosition;
+    const element = document.querySelector(
+      `[data-row="${focusRow}"][data-col="${focusCol}"]`,
+    ) as HTMLElement;
+    element?.focus();
+  }, [focusPosition]);
+
+  if (!data.length || !data[0]?.length) {
+    return (
+      <div
+        role='alert'
+        className={styles.empty}
+      >
+        No data available for heat map visualization
+      </div>
+    );
+  }
+
   const maxValue = Math.max(...data.flat());
-  const minValue = Math.min(...data.flat());
+  const normalizedData = data.map((row) => row.map((value) => value / maxValue));
 
-  const getColor = (value: number, maxValue: number): string => {
-    const intensity = value / maxValue;
-    return `rgb(0, ${Math.round(intensity * 255)}, 0)`;
+  const handleKeyDown = (
+    event: React.KeyboardEvent<HTMLDivElement>,
+    rowIndex: number,
+    colIndex: number,
+    value: number,
+  ): void => {
+    const [currentRow, currentCol] = [rowIndex, colIndex];
+    const maxRow = data.length - 1;
+    const maxCol = (data[0]?.length || 0) - 1;
+
+    switch (event.key) {
+      case 'Enter':
+      case ' ':
+        event.preventDefault();
+        onCellClick?.(rowIndex, colIndex, value);
+        setSelectedValue(value);
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        setFocusPosition([Math.max(0, currentRow - 1), currentCol]);
+        break;
+      case 'ArrowDown':
+        event.preventDefault();
+        setFocusPosition([Math.min(maxRow, currentRow + 1), currentCol]);
+        break;
+      case 'ArrowLeft':
+        event.preventDefault();
+        setFocusPosition([currentRow, Math.max(0, currentCol - 1)]);
+        break;
+      case 'ArrowRight':
+        event.preventDefault();
+        setFocusPosition([currentRow, Math.min(maxCol, currentCol + 1)]);
+        break;
+      case 'Home':
+        event.preventDefault();
+        setFocusPosition([currentRow, 0]);
+        break;
+      case 'End':
+        event.preventDefault();
+        setFocusPosition([currentRow, maxCol]);
+        break;
+    }
   };
 
-  const formatTooltip = (value: number): string => {
-    return `Value: ${value}`;
+  const handleClick = (rowIndex: number, colIndex: number, value: number): void => {
+    setSelectedValue(value);
+    onCellClick?.(rowIndex, colIndex, value);
   };
-
-  function interpolateColor(start: string, end: string, ratio: number): string {
-    const startRGB = hexToRGB(start);
-    const endRGB = hexToRGB(end);
-
-    const r = Math.round(startRGB.r + (endRGB.r - startRGB.r) * ratio);
-    const g = Math.round(startRGB.g + (endRGB.g - startRGB.g) * ratio);
-    const b = Math.round(startRGB.b + (endRGB.b - startRGB.b) * ratio);
-
-    return `rgb(${r}, ${g}, ${b})`;
-  }
-
-  function hexToRGB(hex: string): { r: number; g: number; b: number } {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return { r, g, b };
-  }
 
   return (
-    <div className="inline-grid" style={{ gap }}>
-      {data.map((row, i) => (
-        <div key={i} className="flex" style={{ gap }}>
-          {row.map((value, j) => (
-            <div
-              key={j}
-              className="flex items-center justify-center"
-              style={{
-                width: cellSize,
-                height: cellSize,
-                backgroundColor: getColor(value, maxValue),
-              }}
-              title={formatTooltip(value)}
-            >
-              {value}
-            </div>
-          ))}
+    <div className={styles.container}>
+      <div
+        className={styles.heatmap}
+        role='grid'
+        aria-label='Heat map visualization'
+      >
+        <div
+          aria-live='polite'
+          className={styles.visuallyHidden}
+        >
+          {selectedValue !== null && `Selected value: ${selectedValue}`}
         </div>
-      ))}
+        {normalizedData.map((row, rowIndex) => (
+          <div
+            key={rowIndex}
+            className={styles.row}
+            role='row'
+          >
+            {row.map((value, colIndex) => {
+              const isSelected = rowIndex === focusPosition[0] && colIndex === focusPosition[1];
+              return (
+                <div
+                  key={colIndex}
+                  className={styles.cell}
+                  style={{
+                    backgroundColor: colorScale(value),
+                    width: cellSize,
+                    height: cellSize,
+                    margin: gap / 2,
+                  }}
+                  onClick={() => handleClick(rowIndex, colIndex, data[rowIndex][colIndex])}
+                  onKeyDown={(e) => handleKeyDown(e, rowIndex, colIndex, data[rowIndex][colIndex])}
+                  role='gridcell'
+                  aria-label={`Value: ${data[rowIndex][colIndex]}`}
+                  data-selected={isSelected}
+                  data-row={rowIndex}
+                  data-col={colIndex}
+                  tabIndex={isSelected ? 0 : -1}
+                />
+              );
+            })}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
+
+export default HeatMap;

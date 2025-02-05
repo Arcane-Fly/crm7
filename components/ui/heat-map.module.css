@@ -1,0 +1,67 @@
+.container {
+  position: relative;
+  width: fit-content;
+}
+
+.heatmap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 1rem;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+}
+
+.cell {
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  border-radius: 2px;
+  outline: none;
+  position: relative;
+}
+
+.cell:hover {
+  transform: scale(1.1);
+  z-index: 1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.cell:focus {
+  outline: 2px solid #0070f3;
+  transform: scale(1.1);
+  z-index: 2;
+  box-shadow: 0 2px 12px rgba(0, 112, 243, 0.2);
+}
+
+.cell[data-selected="true"] {
+  outline: 2px solid #0070f3;
+  z-index: 2;
+  box-shadow: 0 2px 12px rgba(0, 112, 243, 0.2);
+}
+
+.empty {
+  padding: 1rem;
+  color: #666;
+  text-align: center;
+  border: 1px dashed #ccc;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+  width: 100%;
+  min-width: 200px;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  pointer-events: none;
+}
