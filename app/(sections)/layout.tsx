@@ -1,5 +1,19 @@
-// ... existing imports and code ...
-// Removed unused variable:
-// const sectionItems = segments[0] && SECTIONS[segments[0]] ? (SECTIONS[segments[0]] as any[]) : [];
+import { type ReactNode } from 'react';
+import { SideNav } from '@/components/navigation/side-nav';
+import { TopNav } from '@/components/navigation/top-nav';
 
-// ... rest of the code remains unchanged ...
+interface SectionsLayoutProps {
+  children: ReactNode;
+}
+
+export default function SectionsLayout({ children }: SectionsLayoutProps) {
+  return (
+    <div className="flex h-screen">
+      <SideNav />
+      <div className="flex flex-1 flex-col">
+        <TopNav />
+        <main className="flex-1 overflow-y-auto bg-background p-4">{children}</main>
+      </div>
+    </div>
+  );
+}

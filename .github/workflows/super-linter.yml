@@ -44,9 +44,9 @@ jobs:
           VALIDATE_TYPESCRIPT_STANDARD: true
           VALIDATE_SECURITY: true
           # Use project's existing configs
-          TYPESCRIPT_ES_CONFIG_FILE: .eslintrc.json
-          JAVASCRIPT_ES_CONFIG_FILE: .eslintrc.json
-          MARKDOWN_CONFIG_FILE: .markdownlint.json
+          TYPESCRIPT_ES_CONFIG_FILE: /github/workspace/.eslintrc.json
+          JAVASCRIPT_ES_CONFIG_FILE: /github/workspace/.eslintrc.json
+          MARKDOWN_CONFIG_FILE: /github/workspace/.markdownlint.json
           # Enable prettier formatting validation
           VALIDATE_TYPESCRIPT_PRETTIER: true
           VALIDATE_JAVASCRIPT_PRETTIER: true
@@ -54,6 +54,6 @@ jobs:
           VALIDATE_JSON_PRETTIER: true
           VALIDATE_MARKDOWN_PRETTIER: true
           VALIDATE_YAML_PRETTIER: true
-          # Enable GitHub Actions features
+          # Enable GitHub Actions group titles and step summaries
           ENABLE_GITHUB_ACTIONS_GROUP_TITLE: true
           ENABLE_GITHUB_ACTIONS_STEP_SUMMARY: true
