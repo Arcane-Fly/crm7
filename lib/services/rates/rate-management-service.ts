@@ -577,4 +577,4 @@ export class RateManagementServiceImpl implements IRateManagementService {
   }
 }
 
-export { RateManagementServiceImpl as RateManagementService, type IRateManagementService };
+export default RateManagementServiceImpl;
