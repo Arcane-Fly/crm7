@@ -144,7 +144,7 @@
     "@vitest/ui": "^1.2.2",
     "autoprefixer": "^10.4.17",
     "canvas": "^3.0.0",
-    "cssnano": "^6.0.3",
+    "cssnano": "^7.0.0",
     "depcheck": "^1.4.7",
     "eslint": "^8.56.0",
     "eslint-config-next": "^14.1.0",
