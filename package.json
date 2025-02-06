@@ -18,7 +18,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "preinstall": "npx only-allow pnpm",
-    "postinstall": "husky install",
+    "postinstall": "if [ -d .git ]; then husky install; fi",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "lint:next": "next lint",

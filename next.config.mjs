@@ -52,7 +52,7 @@ const nextConfig = {
     // Ensure punycode module is not used directly
     config.resolve.alias = {
       ...config.resolve.alias,
-      punycode: false,
+      punycode: require('punycode/'),
     };
 
     return config;
