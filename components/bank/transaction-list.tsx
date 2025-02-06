@@ -1,163 +1,144 @@
-'use client';
-
-import { Button } from '@/components/ui/button';
-import { DataTable } from '@/components/ui/data-table';
+import { useState } from 'react';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { createClient } from '@/lib/supabase/client';
-import { type Transaction } from '@/lib/types';
-import { type ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
-import React from 'react';
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { handleApiError } from '@/lib/api-error';
 
-export function TransactionList(): React.ReactElement {
-  const [transactions, setTransactions] = React.useState<Transaction[]>([]);
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [error, setError] = React.useState<Error | null>(null);
-  const supabase = createClient();
+interface Transaction {
+  id: string;
+  date: string;
+  description: string;
+  amount: number;
+  type: 'credit' | 'debit';
+  status: 'pending' | 'completed' | 'failed';
+  category?: string;
+}
 
-  const columns: ColumnDef<Transaction>[] = [
-    {
-      accessorKey: 'date',
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Date
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => new Date(row.getValue('date')).toLocaleDateString('en-AU'),
-    },
-    {
-      accessorKey: 'description',
-      header: 'Description',
-      cell: ({ row }) => row.getValue('description'),
-    },
-    {
-      accessorKey: 'category',
-      header: 'Category',
-      cell: ({ row }) => <div className="capitalize">{row.getValue('category')}</div>,
-    },
-    {
-      accessorKey: 'amount',
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Amount
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => {
-        const amount = row.getValue('amount') as number;
-        const type = row.getValue('type') as Transaction['type'];
-        const formatted = new Intl.NumberFormat('en-AU', {
-          style: 'currency',
-          currency: 'AUD',
-        }).format(Math.abs(amount));
+interface TransactionListProps {
+  transactions: Transaction[];
+  onStatusChange?: (id: string, status: Transaction['status']) => Promise<void>;
+}
 
-        return (
-          <div className={type === 'credit' ? 'text-green-600' : 'text-red-600'}>
-            {type === 'credit' ? '+' : '-'}{formatted}
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: 'type',
-      header: 'Type',
-      cell: ({ row }) => (
-        <div className="capitalize">
-          {row.getValue('type')}
-        </div>
-      ),
-    },
-    {
-      accessorKey: 'status',
-      header: 'Status',
-      cell: ({ row }) => (
-        <div className="capitalize">
-          {row.getValue('status')}
-        </div>
-      ),
-    },
-    {
-      id: 'actions',
-      cell: ({ row }) => {
-        const transaction = row.original;
+export function TransactionList({ transactions, onStatusChange }: TransactionListProps) {
+  const [filter, setFilter] = useState('');
+  const [loading, setLoading] = useState<string | null>(null);
 
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(transaction.id)}
-              >
-                Copy transaction ID
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>View details</DropdownMenuItem>
-              <DropdownMenuItem>Edit transaction</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      },
-    },
-  ];
+  const filteredTransactions = transactions.filter((transaction) =>
+    transaction.description.toLowerCase().includes(filter.toLowerCase()) ||
+    transaction.category?.toLowerCase().includes(filter.toLowerCase())
+  );
 
-  React.useEffect(() => {
-    const fetchTransactions = async (): Promise<void> => {
-      try {
-        const { data, error: fetchError } = await supabase
-          .from('transactions')
-          .select('*')
-          .order('date', { ascending: false });
+  const handleStatusUpdate = async (id: string, status: Transaction['status']) => {
+    if (!onStatusChange) return;
+    
+    try {
+      setLoading(id);
+      await onStatusChange(id, status);
+    } catch (error) {
+      const { message } = handleApiError(error);
+      // You might want to show this error in a toast notification
+      console.error(message);
+    } finally {
+      setLoading(null);
+    }
+  };
 
-        if (fetchError) throw fetchError;
-        setTransactions(data as Transaction[]);
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to fetch transactions'));
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const formatAmount = (amount: number, type: Transaction['type']) => {
+    const formattedAmount = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(Math.abs(amount));
+    
+    return type === 'debit' ? `-${formattedAmount}` : formattedAmount;
+  };
 
-    void fetchTransactions();
-  }, [supabase]);
-
-  if (isLoading) {
-    return <div>Loading transactions...</div>;
-  }
-
-  if (error) {
-    return <div>Error loading transactions: {error.message}</div>;
-  }
+  const getStatusColor = (status: Transaction['status']) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'failed':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   return (
-    <div>
-      <DataTable
-        data={transactions}
-        columns={columns}
-      />
+    <div className="space-y-4">
+      <div className="flex items-center space-x-2">
+        <Input
+          placeholder="Filter transactions..."
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="max-w-sm"
+        />
+      </div>
+
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Date</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead className="text-right">Amount</TableHead>
+              <TableHead>Status</TableHead>
+              {onStatusChange && <TableHead className="text-right">Actions</TableHead>}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredTransactions.map((transaction) => (
+              <TableRow key={transaction.id}>
+                <TableCell>{new Date(transaction.date).toLocaleDateString()}</TableCell>
+                <TableCell>{transaction.description}</TableCell>
+                <TableCell>{transaction.category || '-'}</TableCell>
+                <TableCell className="text-right">
+                  <span className={transaction.type === 'debit' ? 'text-red-600' : 'text-green-600'}>
+                    {formatAmount(transaction.amount, transaction.type)}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <Badge className={getStatusColor(transaction.status)}>
+                    {transaction.status}
+                  </Badge>
+                </TableCell>
+                {onStatusChange && (
+                  <TableCell className="text-right">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={loading === transaction.id}
+                      onClick={() => handleStatusUpdate(
+                        transaction.id,
+                        transaction.status === 'pending' ? 'completed' : 'pending'
+                      )}
+                    >
+                      {loading === transaction.id ? 'Updating...' : 'Toggle Status'}
+                    </Button>
+                  </TableCell>
+                )}
+              </TableRow>
+            ))}
+            {filteredTransactions.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={onStatusChange ? 6 : 5} className="text-center text-muted-foreground">
+                  No transactions found
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }
