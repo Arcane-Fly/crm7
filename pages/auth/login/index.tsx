@@ -2,17 +2,17 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { createClient } from '@/utils/supabase/client';
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
-  const supabase = createClientComponentClient();
+  const supabase = createClient();
 
   const handleAuthChange = async (event: any, session: any) => {
     if (event === 'SIGNED_IN' && session) {
@@ -24,9 +24,10 @@ export default function LoginPage() {
           description: 'You have successfully signed in.',
         });
       } catch (error) {
+        console.error('Error redirecting:', error);
         toast({
           title: 'Error',
-          description: 'An error occurred while signing in.',
+          description: 'Failed to redirect after login',
           variant: 'destructive',
         });
       } finally {
@@ -55,7 +56,7 @@ export default function LoginPage() {
                 },
               },
             }}
-            providers={['google', 'github']}
+            providers={['github', 'google']}
             redirectTo={`${window.location.origin}/auth/callback`}
             onAuthStateChange={handleAuthChange}
             theme="dark"
