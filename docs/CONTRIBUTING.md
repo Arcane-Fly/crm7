@@ -17,6 +17,7 @@ By participating in this project, you agree to abide by our Code of Conduct. Ple
    ```
 
 3. Add upstream remote:
+
    ```bash
    git remote add upstream https://github.com/Arcane-Fly/crm7.git
    ```

@@ -1,6 +1,13 @@
 'use client';
 
-import { ArrowDownIcon, ArrowUpIcon } from 'lucide-react';
+import {
+  AlertTriangleIcon,
+  ArrowDownIcon,
+  ArrowUpIcon,
+  BriefcaseIcon,
+  LayersIcon,
+  UsersIcon,
+} from 'lucide-react';
 import { ReactElement } from 'react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,13 +32,12 @@ const StatsCard = ({ title, value, change, icon }: StatsCardProps): ReactElement
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>
         <p className="flex items-center text-xs text-muted-foreground">
-          <span
-            className={cn(
-              'mr-1',
-              isPositive ? 'text-emerald-500' : 'text-destructive',
+          <span className={cn('mr-1', isPositive ? 'text-emerald-500' : 'text-destructive')}>
+            {isPositive ? (
+              <ArrowUpIcon className="h-4 w-4" />
+            ) : (
+              <ArrowDownIcon className="h-4 w-4" />
             )}
-          >
-            {isPositive ? <ArrowUpIcon className="h-4 w-4" /> : <ArrowDownIcon className="h-4 w-4" />}
             {Math.abs(change)}%
           </span>
           vs last month

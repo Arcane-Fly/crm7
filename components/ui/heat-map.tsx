@@ -1,5 +1,5 @@
 import * as React from 'react';
-
+import classNames from 'classnames';
 import styles from './heat-map.module.css';
 
 interface HeatMapProps {
@@ -28,17 +28,20 @@ export function HeatMap({
   React.useEffect(() => {
     const [focusRow, focusCol] = focusPosition;
     const element = document.querySelector(
-      `[data-row="${focusRow}"][data-col="${focusCol}"]`,
+      `[data-row="${focusRow}"][data-col="${focusCol}"]`
     ) as HTMLElement;
     element?.focus();
   }, [focusPosition]);
 
+  React.useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty('--cell-size', `${cellSize}px`);
+    root.style.setProperty('--cell-gap', `${gap / 2}px`);
+  }, [cellSize, gap]);
+
   if (!data.length || !data[0]?.length) {
     return (
-      <div
-        role='alert'
-        className={styles.empty}
-      >
+      <div role="alert" className={styles.empty}>
         No data available for heat map visualization
       </div>
     );
@@ -47,11 +50,15 @@ export function HeatMap({
   const maxValue = Math.max(...data.flat());
   const normalizedData = data.map((row) => row.map((value) => value / maxValue));
 
+  const getHeatLevel = (value: number): number => {
+    return Math.round(value * 10);
+  };
+
   const handleKeyDown = (
     event: React.KeyboardEvent<HTMLDivElement>,
     rowIndex: number,
     colIndex: number,
-    value: number,
+    value: number
   ): void => {
     const [currentRow, currentCol] = [rowIndex, colIndex];
     const maxRow = data.length - 1;
@@ -98,38 +105,23 @@ export function HeatMap({
 
   return (
     <div className={styles.container}>
-      <div
-        className={styles.heatmap}
-        role='grid'
-        aria-label='Heat map visualization'
-      >
-        <div
-          aria-live='polite'
-          className={styles.visuallyHidden}
-        >
-          {selectedValue !== null && `Selected value: ${selectedValue}`}
-        </div>
+      <div aria-live="polite" className={styles.visuallyHidden}>
+        {selectedValue !== null && `Selected value: ${selectedValue}`}
+      </div>
+      <div className={styles.heatmap} role="grid" aria-label="Heat map visualization">
         {normalizedData.map((row, rowIndex) => (
-          <div
-            key={rowIndex}
-            className={styles.row}
-            role='row'
-          >
+          <div key={rowIndex} className={styles.row} role="row">
             {row.map((value, colIndex) => {
               const isSelected = rowIndex === focusPosition[0] && colIndex === focusPosition[1];
+              const heatLevel = getHeatLevel(value);
+
               return (
                 <div
                   key={colIndex}
-                  className={styles.cell}
-                  style={{
-                    backgroundColor: colorScale(value),
-                    width: cellSize,
-                    height: cellSize,
-                    margin: gap / 2,
-                  }}
+                  className={classNames(styles.cell, styles[`heat-${heatLevel}`])}
                   onClick={() => handleClick(rowIndex, colIndex, data[rowIndex][colIndex])}
                   onKeyDown={(e) => handleKeyDown(e, rowIndex, colIndex, data[rowIndex][colIndex])}
-                  role='gridcell'
+                  role="gridcell"
                   aria-label={`Value: ${data[rowIndex][colIndex]}`}
                   data-selected={isSelected}
                   data-row={rowIndex}

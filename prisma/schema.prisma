@@ -897,25 +897,18 @@ model knowledge_sources {
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model leads {
-  id                                                             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                                                           String
-  company                                                        String?
-  email                                                          String?
-  phone                                                          String?
-  status                                                         String?         @default("new")
-  score                                                          Int?            @default(50)
-  owner_id                                                       String?         @db.Uuid
-  created_at                                                     DateTime?       @default(dbgenerated("timezone('utc'::text, now())")) @db.Timestamptz(6)
-  last_activity                                                  DateTime?       @default(dbgenerated("timezone('utc'::text, now())")) @db.Timestamptz(6)
-  value                                                          Decimal?        @default(0) @db.Decimal
-  converted_to_opportunity_id                                    String?         @db.Uuid
-  converted_to_account_id                                        String?         @db.Uuid
-  service_type                                                   String?
-  clients                                                        clients?        @relation(fields: [converted_to_account_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_converted_account")
-  opportunities_leads_converted_to_opportunity_idToopportunities opportunities?  @relation("leads_converted_to_opportunity_idToopportunities", fields: [converted_to_opportunity_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_converted_opportunity")
-  users                                                          users?          @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  opportunities_opportunities_lead_idToleads                     opportunities[] @relation("opportunities_lead_idToleads")
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  email       String?
+  status      String
+  org_id      String        @db.Uuid
+  created_at  DateTime      @default(dbgenerated("timezone('utc'::text, now())")) @db.Timestamptz(6)
+  updated_at  DateTime      @default(dbgenerated("timezone('utc'::text, now())")) @db.Timestamptz(6)
+  organization organizations @relation(fields: [org_id], references: [id], onDelete: Cascade)
 
+  @@index([org_id])
+  @@index([status])
+  @@index([org_id, status])
   @@schema("public")
 }
 
@@ -983,33 +976,21 @@ model nods_page_section {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model opportunities {
-  id                                                     String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                                                   String
-  value                                                  Decimal                   @db.Decimal
-  stage                                                  String
-  probability                                            Int
-  expected_close_date                                    DateTime                  @db.Date
-  owner_id                                               String?                   @db.Uuid
-  account_id                                             String?                   @db.Uuid
-  contact_id                                             String?                   @db.Uuid
-  description                                            String?
-  created_at                                             DateTime                  @default(dbgenerated("timezone('utc'::text, now())")) @db.Timestamptz(6)
-  updated_at                                             DateTime                  @default(dbgenerated("timezone('utc'::text, now())")) @db.Timestamptz(6)
-  status                                                 String?                   @default("active")
-  last_activity_date                                     DateTime?                 @db.Timestamptz(6)
-  source                                                 String?
-  pipeline                                               String?                   @default("default")
-  currency                                               String?                   @default("USD")
-  tags                                                   String[]
-  lead_id                                                String?                   @db.Uuid
-  leads_leads_converted_to_opportunity_idToopportunities leads[]                   @relation("leads_converted_to_opportunity_idToopportunities")
-  clients                                                clients?                  @relation(fields: [account_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  contacts                                               contacts?                 @relation(fields: [contact_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  leads_opportunities_lead_idToleads                     leads?                    @relation("opportunities_lead_idToleads", fields: [lead_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users                                                  users?                    @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  opportunity_activities                                 opportunity_activities[]
-  opportunity_attachments                                opportunity_attachments[]
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  value       Decimal       @db.Decimal
+  status      String
+  org_id      String        @db.Uuid
+  user_id     String?       @db.Uuid
+  created_at  DateTime      @default(dbgenerated("timezone('utc'::text, now())")) @db.Timestamptz(6)
+  updated_at  DateTime      @default(dbgenerated("timezone('utc'::text, now())")) @db.Timestamptz(6)
+  organization organizations @relation(fields: [org_id], references: [id], onDelete: Cascade)
+  user        users?        @relation(fields: [user_id], references: [id])
 
+  @@index([org_id])
+  @@index([user_id])
+  @@index([status])
+  @@index([org_id, status])
   @@schema("public")
 }
 
@@ -1045,25 +1026,19 @@ model opportunity_attachments {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model organizations {
-  id                                                                    String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                                                                  String
-  is_gto                                                                Boolean?             @default(false)
-  labour_hire_licence_no                                                String?
-  created_at                                                            DateTime?            @default(now()) @db.Timestamptz(6)
-  updated_at                                                            DateTime?            @default(now()) @db.Timestamptz(6)
-  owner_id                                                              String?              @db.Uuid
-  chat_threads                                                          chat_threads[]
-  documents                                                             documents[]
-  external_portals                                                      external_portals[]
-  jobs                                                                  jobs[]
-  knowledge_sources                                                     knowledge_sources[]
-  profiles                                                              profiles?            @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  saved_searches                                                        saved_searches[]
-  training_contracts_training_contracts_gto_idToorganizations           training_contracts[] @relation("training_contracts_gto_idToorganizations")
-  training_contracts_training_contracts_host_employer_idToorganizations training_contracts[] @relation("training_contracts_host_employer_idToorganizations")
-  user_roles                                                            user_roles[]
-  web_search_results                                                    web_search_results[]
+  id              String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String
+  is_gto          Boolean?        @default(false)
+  parent_org_id   String?         @db.Uuid
+  created_at      DateTime        @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime        @default(now()) @db.Timestamptz(6)
+  opportunities   opportunities[]
+  leads           leads[]
+  parent_org      organizations?  @relation("OrgHierarchy", fields: [parent_org_id], references: [id])
+  child_orgs      organizations[] @relation("OrgHierarchy")
 
+  @@index([parent_org_id])
+  @@index([is_gto])
   @@schema("public")
 }
 

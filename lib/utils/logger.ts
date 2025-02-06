@@ -23,32 +23,27 @@ class ConsoleLogger implements Logger {
 
   debug(message: string, context?: Record<string, unknown>): void {
     if (env.NODE_ENV === 'development') {
-      console.debug(
-        this.formatMessage('debug', message) + this.formatContext(context)
-      );
+      console.debug(this.formatMessage('debug', message) + this.formatContext(context));
     }
   }
 
   info(message: string, context?: Record<string, unknown>): void {
-    console.info(
-      this.formatMessage('info', message) + this.formatContext(context)
-    );
+    console.info(this.formatMessage('info', message) + this.formatContext(context));
   }
 
   warn(message: string, context?: Record<string, unknown>): void {
-    console.warn(
-      this.formatMessage('warn', message) + this.formatContext(context)
-    );
+    console.warn(this.formatMessage('warn', message) + this.formatContext(context));
   }
 
   error(message: string, context?: Record<string, unknown>): void {
-    console.error(
-      this.formatMessage('error', message) + this.formatContext(context)
-    );
+    console.error(this.formatMessage('error', message) + this.formatContext(context));
   }
 }
 
 class LoggerFactory {
+  error(arg0: string, logError: LogError) {
+    throw new Error('Method not implemented.');
+  }
   private loggers = new Map<string, Logger>();
 
   createLogger(namespace: string): Logger {
