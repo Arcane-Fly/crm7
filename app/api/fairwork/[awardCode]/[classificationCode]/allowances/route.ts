@@ -1,19 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { logger } from '@/lib/logger';
 import { getAllowances } from '@/lib/services/fairwork/allowances';
-import { createApiResponse, createErrorResponse } from '@/lib/api/response';
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
-  const { awardCode, classificationCode } = req.query;
+  const { searchParams } = req.nextUrl;
+  const awardCode = searchParams.get('awardCode');
+  const classificationCode = searchParams.get('classificationCode');
 
   try {
     const allowances = await getAllowances(awardCode, classificationCode);
-    return createApiResponse({
-      allowances,
-      timestamp: new Date().toISOString(),
-    });
+    return NextResponse.json({ allowances });
   } catch (error) {
-    logger.error('Failed to get allowances', { error });
-    return createErrorResponse('ALLOWANCES_FETCH_ERROR', 'Failed to get allowances', undefined, 500);
+    return NextResponse.json({ error: 'Failed to fetch allowances' }, { status: 500 });
   }
 }
