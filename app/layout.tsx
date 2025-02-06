@@ -12,6 +12,13 @@ import { cn } from '@/lib/utils';
 
 const inter = Inter({ subsets: ['latin'] });
 
+// Define the EmitWarningOptions type
+type EmitWarningOptions = {
+  type?: string;
+  code?: string;
+  ctor?: Function;
+};
+
 // Suppress punycode deprecation warning until dependencies are updated
 if (process.emitWarning && typeof process.emitWarning === 'function') {
   const originalEmitWarning = process.emitWarning;
