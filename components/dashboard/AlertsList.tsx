@@ -2,22 +2,32 @@
 
 import { Bell } from 'lucide-react';
 
-const alerts = [
+interface Alert {
+  type: 'error' | 'info';
+  title: string;
+  description: string;
+  date: string;
+  priority: 'HIGH' | 'MEDIUM';
+}
+
+const alerts: Alert[] = [
   {
+    type: 'error',
     title: 'License Renewals Due',
     description: '8 apprentices have licenses expiring this month',
+    date: '2024-02-06',
     priority: 'HIGH',
-    type: 'error',
   },
   {
+    type: 'info',
     title: 'Available Funding',
     description: 'New government incentives available for electrical apprentices',
+    date: '2024-02-05',
     priority: 'MEDIUM',
-    type: 'info',
   },
 ];
 
-export function AlertsList(): void {
+export function AlertsList(): JSX.Element {
   return (
     <div className='rounded-lg border bg-white'>
       <div className='border-b p-4'>
@@ -27,7 +37,7 @@ export function AlertsList(): void {
         </div>
       </div>
       <div className='divide-y'>
-        {alerts.map((alert: unknown, index) => (
+        {alerts.map((alert, index) => (
           <div
             key={index}
             className={`p-4 ${alert.type === 'error' ? 'bg-red-50' : 'bg-blue-50'}`}

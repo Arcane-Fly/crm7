@@ -1,18 +1,17 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { FormProvider, useForm } from 'react-hook-form';
 import * as z from 'zod';
 
 import { Button } from '@/components/ui/button';
 import {
-  Form,
   FormControl,
   FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
+  FormMessage
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import {
@@ -23,37 +22,32 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { toast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 const candidateFormSchema = z.object({
-  name: z
-    .string()
-    .min(2, {
-      message: 'Name must be at least 2 characters.',
-    })
-    .max(30, {
-      message: 'Name must not be longer than 30 characters.',
-    }),
-  email: z.string().email({
-    message: 'Please enter a valid email address.',
+  name: z.string().min(1, {
+    message: 'Please enter name.',
   }),
-  phone: z.string().min(10, {
-    message: 'Please enter a valid phone number.',
+  email: z.string().email({
+    message: 'Please enter valid email.',
+  }),
+  phone: z.string().min(1, {
+    message: 'Please enter phone number.',
   }),
   location: z.string().min(1, {
-    message: 'Please enter a location.',
+    message: 'Please enter location.',
   }),
   title: z.string().min(1, {
-    message: 'Please enter a job title.',
+    message: 'Please enter job title.',
   }),
-  about: z.string().max(500, {
-    message: 'Bio must not be longer than 500 characters.',
+  status: z.string().min(1, {
+    message: 'Please select status.',
   }),
-  status: z.enum(['active', 'inactive', 'placed', 'interviewing'], {
-    required_error: 'Please select a status.',
+  about: z.string().min(1, {
+    message: 'Please enter about.',
   }),
   skills: z.string().min(1, {
-    message: 'Please enter at least one skill.',
+    message: 'Please enter skills.',
   }),
   availability: z.string().min(1, {
     message: 'Please enter availability.',
@@ -61,19 +55,34 @@ const candidateFormSchema = z.object({
   preferredLocation: z.string().min(1, {
     message: 'Please enter preferred location.',
   }),
-  salary: z.object({
-    min: z.number().min(0),
-    max: z.number().min(0),
-    currency: z.string().min(1),
-  }),
-  links: z.object({
-    linkedin: z.string().url().optional(),
-    github: z.string().url().optional(),
-    portfolio: z.string().url().optional(),
-  }),
+  salaryAmount: z.string(),
+  salaryCurrency: z.string(),
+  salaryPeriod: z.string(),
+  linkedinUrl: z.string().url().optional(),
+  githubUrl: z.string().url().optional(),
+  portfolioUrl: z.string().url().optional(),
 });
 
-type CandidateFormValues = z.infer<typeof candidateFormSchema>;
+interface CandidateFormValues {
+  name: string;
+  email: string;
+  phone: string;
+  location: string;
+  title: string;
+  status: string;
+  about: string;
+  skills: string;
+  availability: string;
+  preferredLocation: string;
+  salaryAmount: string;
+  salaryCurrency: string;
+  salaryPeriod: string;
+  linkedinUrl: string;
+  githubUrl: string;
+  portfolioUrl: string;
+}
+
+type FormFieldPath = keyof CandidateFormValues;
 
 interface CandidateFormProps {
   initialData?: Partial<CandidateFormValues>;
@@ -86,29 +95,27 @@ export function CandidateForm({
 }: CandidateFormProps): JSX.Element {
   const form = useForm<CandidateFormValues>({
     resolver: zodResolver(candidateFormSchema),
-    defaultValues: initialData || {
-      name: '',
-      email: '',
-      phone: '',
-      location: '',
-      title: '',
-      about: '',
-      status: 'active',
-      skills: '',
-      availability: '',
-      preferredLocation: '',
-      salary: {
-        min: 0,
-        max: 0,
-        currency: 'USD',
-      },
-      links: {
-        linkedin: '',
-        github: '',
-        portfolio: '',
-      },
+    defaultValues: {
+      name: initialData?.name ?? '',
+      email: initialData?.email ?? '',
+      phone: initialData?.phone ?? '',
+      location: initialData?.location ?? '',
+      title: initialData?.title ?? '',
+      status: initialData?.status ?? '',
+      about: initialData?.about ?? '',
+      skills: initialData?.skills ?? '',
+      availability: initialData?.availability ?? '',
+      preferredLocation: initialData?.preferredLocation ?? '',
+      salaryAmount: initialData?.salaryAmount ?? '',
+      salaryCurrency: initialData?.salaryCurrency ?? 'USD',
+      salaryPeriod: initialData?.salaryPeriod ?? '',
+      linkedinUrl: initialData?.linkedinUrl ?? '',
+      githubUrl: initialData?.githubUrl ?? '',
+      portfolioUrl: initialData?.portfolioUrl ?? '',
     },
   });
+
+  const { toast } = useToast();
 
   const onFormSubmit = async (data: CandidateFormValues): Promise<void> => {
     try {
@@ -127,7 +134,7 @@ export function CandidateForm({
   };
 
   return (
-    <Form {...form}>
+    <FormProvider {...form}>
       <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-8">
         <div className="grid gap-6 md:grid-cols-2">
           <FormField
@@ -301,42 +308,12 @@ export function CandidateForm({
         <div className="grid gap-6 md:grid-cols-3">
           <FormField
             control={form.control}
-            name="salary.currency"
+            name="salaryAmount"
             render={({ field }): React.JSX.Element => (
               <FormItem>
-                <FormLabel>Currency</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select currency" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="USD">USD</SelectItem>
-                    <SelectItem value="EUR">EUR</SelectItem>
-                    <SelectItem value="GBP">GBP</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="salary.min"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Minimum Salary</FormLabel>
+                <FormLabel>Salary Amount</FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    {...field}
-                    onChange={(e) => field.onChange(Number(e.target.value))}
-                  />
+                  <Input placeholder="100000" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -345,16 +322,26 @@ export function CandidateForm({
 
           <FormField
             control={form.control}
-            name="salary.max"
-            render={({ field }) => (
+            name="salaryCurrency"
+            render={({ field }): React.JSX.Element => (
               <FormItem>
-                <FormLabel>Maximum Salary</FormLabel>
+                <FormLabel>Currency</FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    {...field}
-                    onChange={(e) => field.onChange(Number(e.target.value))}
-                  />
+                  <Input placeholder="USD" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="salaryPeriod"
+            render={({ field }): React.JSX.Element => (
+              <FormItem>
+                <FormLabel>Salary Period</FormLabel>
+                <FormControl>
+                  <Input placeholder="Yearly" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -365,7 +352,7 @@ export function CandidateForm({
         <div className="grid gap-6 md:grid-cols-3">
           <FormField
             control={form.control}
-            name="links.linkedin"
+            name="linkedinUrl"
             render={({ field }): React.JSX.Element => (
               <FormItem>
                 <FormLabel>LinkedIn</FormLabel>
@@ -379,7 +366,7 @@ export function CandidateForm({
 
           <FormField
             control={form.control}
-            name="links.github"
+            name="githubUrl"
             render={({ field }): React.JSX.Element => (
               <FormItem>
                 <FormLabel>GitHub</FormLabel>
@@ -393,7 +380,7 @@ export function CandidateForm({
 
           <FormField
             control={form.control}
-            name="links.portfolio"
+            name="portfolioUrl"
             render={({ field }): React.JSX.Element => (
               <FormItem>
                 <FormLabel>Portfolio</FormLabel>
@@ -417,6 +404,6 @@ export function CandidateForm({
           <Button type="submit">Save Candidate</Button>
         </div>
       </form>
-    </Form>
+    </FormProvider>
   );
 }

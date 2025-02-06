@@ -13,25 +13,15 @@ import { cn } from '@/lib/utils';
 const inter = Inter({ subsets: ['latin'] });
 
 // Suppress punycode deprecation warning until dependencies are updated
-if (process.emitWarning && typeof process.emitWarning === 'function') {
-  const originalEmitWarning = process.emitWarning;
-
-  const warningWrapper = function(
-    warning: string | Error,
-    ...args: any[]
-  ): void {
-    // Check if warning is about punycode
+const originalEmitWarning = process.emitWarning;
+if (originalEmitWarning) {
+  process.emitWarning = ((warning: string | Error, ...args: any[]) => {
     const warningText = warning instanceof Error ? warning.message : warning;
     if (warningText.includes('punycode')) {
-      return;
+      return; // Ignore punycode deprecation warnings
     }
-
-    // Forward the call with all original arguments
-    originalEmitWarning.apply(process, arguments);
-  };
-
-  // Use type assertion to match Node's process.emitWarning type
-  process.emitWarning = warningWrapper as typeof process.emitWarning;
+    return (originalEmitWarning as (warning: string | Error, ...args: any[]) => void).apply(process, [warning, ...args]);
+  }) as typeof process.emitWarning;
 }
 
 export const metadata: Metadata = {
@@ -76,6 +66,16 @@ export default function RootLayout({
 }): JSX.Element {
   return (
     <html lang='en'>
+      <head>
+        {(process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview") && (
+          // eslint-disable-next-line @next/next/no-sync-scripts
+          <script
+            data-recording-token="dIhQ6zTg94bm6TlHhZVrK5pwWfrh7bdeAwRI6VrP"
+            data-is-production-environment="false"
+            src="https://snippet.meticulous.ai/v1/meticulous.js"
+          />
+        )}
+      </head>
       <body className={cn('min-h-screen bg-background antialiased', inter.className)}>
         <PerformanceProvider>
           <Providers>

@@ -1,12 +1,7 @@
 'use client';
 
-import React from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { type Transaction } from '@/lib/types';
-import { DataTable } from '@/components/ui/data-table';
-import { type ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { DataTable } from '@/components/ui/data-table';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +10,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { createClient } from '@/lib/supabase/client';
+import { type Transaction } from '@/lib/types';
+import { type ColumnDef } from '@tanstack/react-table';
+import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
+import React from 'react';
 
 export function TransactionList(): React.ReactElement {
   const [transactions, setTransactions] = React.useState<Transaction[]>([]);
@@ -70,8 +70,8 @@ export function TransactionList(): React.ReactElement {
         }).format(Math.abs(amount));
 
         return (
-          <div className={type === 'income' ? 'text-green-600' : 'text-red-600'}>
-            {type === 'income' ? '+' : '-'}{formatted}
+          <div className={type === 'credit' ? 'text-green-600' : 'text-red-600'}>
+            {type === 'credit' ? '+' : '-'}{formatted}
           </div>
         );
       },

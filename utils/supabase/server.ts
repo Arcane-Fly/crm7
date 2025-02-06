@@ -1,32 +1,35 @@
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
-export function createClient() {
-  const cookieStore = cookies()
+export const createClient = () => {
+  const cookieStore = cookies();
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
+        get: async (name: string) => {
+          const cookie = await cookieStore.get(name);
+          return cookie?.value;
         },
-        set(name: string, value: string, options: { path: string; maxAge: number }) {
+        set: async (name: string, value: string, options: CookieOptions) => {
           try {
-            cookieStore.set({ name, value, ...options })
+            await cookieStore.set(name, value, options);
           } catch (error) {
-            // Handle cookies in edge functions
+            // Handle error
+            console.error('Failed to set cookie:', error);
           }
         },
-        remove(name: string, options: { path: string }) {
+        remove: async (name: string, options: CookieOptions) => {
           try {
-            cookieStore.set({ name, value: '', ...options })
+            await cookieStore.set(name, '', { ...options, maxAge: 0 });
           } catch (error) {
-            // Handle cookies in edge functions
+            // Handle error
+            console.error('Failed to remove cookie:', error);
           }
         },
       },
     }
-  )
-}
+  );
+};

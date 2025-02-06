@@ -94,7 +94,7 @@ export function FinancialDashboard(): React.ReactElement {
             <div key={transaction.id} className="p-4 flex justify-between items-center">
               <div>
                 <p className="font-medium">{transaction.description}</p>
-                <p className="text-sm text-muted-foreground">{formatDate(transaction.date)}</p>
+                <p className="text-sm text-muted-foreground">{formatDate(transaction.createdAt)}</p>
               </div>
               <div className={`font-medium ${transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'}`}>
                 {formatCurrency(transaction.amount)}

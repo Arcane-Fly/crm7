@@ -2,18 +2,26 @@ import { type NextApiRequest, type NextApiResponse } from 'next';
 import { z } from 'zod';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { NextResponse } from 'next/server';
 
 import { createLogger } from '@/lib/services/logger';
 import { RateManagementServiceImpl } from '@/lib/services/rates/rate-management-service';
+import { FairWorkService } from '@/lib/services/fairwork';
+import { logger } from '@/lib/logger';
 
 import type { ApiResponse } from '@/lib/types/api';
-import type { RateTemplate, RateCalculationResponse } from '@/lib/types/rates';
+import type { RateTemplate, RateCalculationResult } from '@/lib/types/rates';
 
 export const config = {
   runtime: 'edge',
 };
 
-const logger = createLogger('RateCalculationAPI');
+const loggerInstance = createLogger('RateCalculationAPI');
+
+const fairworkService = new FairWorkService({
+  apiUrl: process.env.RATE_SERVICE_URL ?? 'http://localhost:4000',
+  apiKey: process.env.RATE_SERVICE_KEY ?? '',
+});
 
 const calculateRequestBodySchema = z.object({
   orgId: z.string(),
@@ -34,28 +42,31 @@ const rateService = new RateManagementServiceImpl({
   apiKey: process.env.RATE_SERVICE_KEY ?? '',
 });
 
+async function getCookie(name: string): Promise<string | undefined> {
+  const cookieStore = cookies();
+  const cookie = cookieStore.get(name);
+  return cookie?.value;
+}
+
 /**
  * POST /api/rates/calculate
  * Calculates rates based on template and parameters
  */
-export default async function handler(req: NextApiRequest): Promise<Response> {
+export default async function handler(req: NextApiRequest): Promise<NextResponse> {
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+    return new NextResponse(JSON.stringify({ error: 'Method not allowed' }), {
       status: 405,
       headers: { 'Content-Type': 'application/json' },
     });
   }
 
   // Create Supabase client
-  const cookieStore = cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
+        get: getCookie,
       },
     }
   );
@@ -65,7 +76,7 @@ export default async function handler(req: NextApiRequest): Promise<Response> {
     data: { session },
   } = await supabase.auth.getSession();
   if (!session) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+    return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
     });
@@ -75,7 +86,7 @@ export default async function handler(req: NextApiRequest): Promise<Response> {
     const parsedBody = calculateRequestBodySchema.safeParse(req.body);
 
     if (!parsedBody.success) {
-      return new Response(
+      return new NextResponse(
         JSON.stringify({
           error: parsedBody.error.issues.map((issue) => issue.message).join(', '),
         }),
@@ -97,7 +108,7 @@ export default async function handler(req: NextApiRequest): Promise<Response> {
     const validationResult = await rateService.validateRateTemplate(template);
 
     if (!validationResult.isValid) {
-      return new Response(
+      return new NextResponse(
         JSON.stringify({
           error: validationResult.error ?? 'Invalid rate template',
         }),
@@ -110,7 +121,7 @@ export default async function handler(req: NextApiRequest): Promise<Response> {
 
     const result = await rateService.calculateRate(template);
 
-    return new Response(
+    return new NextResponse(
       JSON.stringify({
         data: result,
       }),
@@ -119,8 +130,8 @@ export default async function handler(req: NextApiRequest): Promise<Response> {
       }
     );
   } catch (error: unknown) {
-    logger.error('Failed to calculate rate', { error });
-    return new Response(
+    loggerInstance.error('Failed to calculate rate', { error });
+    return new NextResponse(
       JSON.stringify({
         error: error instanceof Error ? error.message : 'Unknown error',
       }),

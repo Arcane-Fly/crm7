@@ -1,11 +1,25 @@
+import { createBrowserClient } from '@supabase/ssr';
 import { useState } from 'react';
 import * as XLSX from 'xlsx';
-import { supabase } from '@/lib/supabase/client';
+
+const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 interface BulkOperationsProps {
   table: string;
   selectedIds: string[];
   onComplete: () => void;
+}
+
+interface TableData {
+  [key: string]: unknown;
+}
+
+interface SupabaseResponse {
+  data: TableData[] | null;
+  error: Error | null;
 }
 
 export function BulkOperations({ table, selectedIds, onComplete }: BulkOperationsProps): JSX.Element {
@@ -15,11 +29,12 @@ export function BulkOperations({ table, selectedIds, onComplete }: BulkOperation
     try {
       setIsLoading(true);
 
-      const { data, error } = await supabase
+      const { data, error }: SupabaseResponse = await supabase
         .from(table)
         .select('*');
 
-      if (typeof error !== "undefined" && error !== null) throw error;
+      if (error) throw error;
+      if (!data) throw new Error('No data returned');
 
       const ws = XLSX.utils.json_to_sheet(data);
       const wb = XLSX.utils.book_new();
@@ -48,8 +63,8 @@ export function BulkOperations({ table, selectedIds, onComplete }: BulkOperation
         const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
         // Insert data into Supabase
-        const { error } = await supabase.from(table).insert(jsonData);
-        if (typeof error !== "undefined" && error !== null) throw error;
+        const { error }: SupabaseResponse = await supabase.from(table).insert(jsonData);
+        if (error) throw error;
 
         onComplete();
       };
@@ -66,9 +81,9 @@ export function BulkOperations({ table, selectedIds, onComplete }: BulkOperation
     try {
       setIsLoading(true);
 
-      const { error } = await supabase.from(table).delete().in('id', selectedIds);
+      const { error }: SupabaseResponse = await supabase.from(table).delete().in('id', selectedIds);
 
-      if (typeof error !== "undefined" && error !== null) throw error;
+      if (error) throw error;
 
       onComplete();
     } catch (error) {

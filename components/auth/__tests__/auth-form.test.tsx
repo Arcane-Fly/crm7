@@ -13,37 +13,37 @@ jest.mock('@supabase/supabase-js', () => ({
 }));
 
 describe('AuthForm', () => {
-  const mockSupabase = createClient('', '');
+  const mockSupabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
   
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('renders sign in form when mode is signin', () => {
-    render(<AuthForm mode="signin" supabase={mockSupabase} />);
+    render(<AuthForm mode="signin" />);
     expect(screen.getByText('Sign In')).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
   });
 
   it('validates email format', async () => {
-    const user = userEvent.setup();
-    render(<AuthForm mode="signin" supabase={mockSupabase} />);
+    render(<AuthForm mode="signin" />);
     
     const emailInput = screen.getByLabelText(/email/i);
-    await user.type(emailInput, 'invalid-email');
-    
     const submitButton = screen.getByRole('button', { name: /sign in/i });
-    await user.click(submitButton);
-    
-    await waitFor(() => {
-      expect(screen.getByText('Please enter a valid email address')).toBeInTheDocument();
-    });
+
+    await userEvent.type(emailInput, 'invalid-email');
+    await userEvent.click(submitButton);
+
+    expect(screen.getByText('Please enter a valid email address')).toBeInTheDocument();
   });
 
   it('validates password requirements', async () => {
     const user = userEvent.setup();
-    render(<AuthForm mode="signin" supabase={mockSupabase} />);
+    render(<AuthForm mode="signin" />);
     
     const passwordInput = screen.getByLabelText(/password/i);
     await user.type(passwordInput, 'weak');
@@ -61,7 +61,7 @@ describe('AuthForm', () => {
     const mockSignIn = jest.fn().mockResolvedValue({ error: null });
     mockSupabase.auth.signInWithPassword = mockSignIn;
 
-    render(<AuthForm mode="signin" supabase={mockSupabase} />);
+    render(<AuthForm mode="signin" />);
     
     await user.type(screen.getByLabelText(/email/i), 'test@example.com');
     await user.type(screen.getByLabelText(/password/i), 'StrongP@ss1');
@@ -80,7 +80,7 @@ describe('AuthForm', () => {
     const mockError = { message: 'Invalid credentials' };
     mockSupabase.auth.signInWithPassword = jest.fn().mockResolvedValue({ error: mockError });
 
-    render(<AuthForm mode="signin" supabase={mockSupabase} />);
+    render(<AuthForm mode="signin" />);
     
     await user.type(screen.getByLabelText(/email/i), 'test@example.com');
     await user.type(screen.getByLabelText(/password/i), 'StrongP@ss1');
@@ -92,7 +92,7 @@ describe('AuthForm', () => {
   });
 
   it('renders signup form when mode is signup', () => {
-    render(<AuthForm mode="signup" supabase={mockSupabase} />);
+    render(<AuthForm mode="signup" />);
     expect(screen.getByText('Create an Account')).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();

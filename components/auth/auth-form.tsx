@@ -44,12 +44,17 @@ interface AuthFormProps {
   mode: 'signin' | 'signup';
 }
 
-export function AuthForm({ mode }: AuthFormProps) {
+interface FormValues {
+  email: string;
+  password: string;
+}
+
+export function AuthForm({ mode }: AuthFormProps): JSX.Element {
   const [loading, setLoading] = React.useState(false);
   const router = useRouter();
   const { toast } = useToast();
 
-  const form = useForm<FormData>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: '',
@@ -62,7 +67,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  async function onSubmit(data: FormData) {
+  async function onSubmit(data: FormValues) {
     setLoading(true);
     try {
       if (mode === 'signup') {

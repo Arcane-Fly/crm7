@@ -1,19 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { Training, TrainingEnrollment, TrainingStats } from '@/lib/types';
+import { useEffect, useState } from 'react';
 
 export function TrainingDashboard(): React.ReactElement {
   const [trainings, setTrainings] = useState<Training[]>([]);
   const [enrollments, setEnrollments] = useState<TrainingEnrollment[]>([]);
   const [stats, setStats] = useState<TrainingStats>({
-    completionRate: 0,
-    averageScore: 0,
-    totalCourses: 0,
-    inProgressCount: 0,
-    completedCount: 0,
-    failedCount: 0
+    totalEnrollments: 0,
+    completedEnrollments: 0,
+    averageProgress: 0,
+    averageCompletionTime: 0
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -60,24 +58,18 @@ export function TrainingDashboard(): React.ReactElement {
     const totalCourses = trainings.length;
     const completed = enrollments.filter(e => e.status === 'completed').length;
     const inProgress = enrollments.filter(e => e.status === 'in_progress').length;
-    const failed = enrollments.filter(e => e.status === 'failed').length;
     const totalEnrollments = enrollments.length;
 
-    const scores = enrollments
-      .filter(e => e.status === 'completed' && typeof e.score === 'number')
-      .map(e => e.score as number);
-    
-    const averageScore = scores.length > 0
-      ? scores.reduce((a, b) => a + b, 0) / scores.length
-      : 0;
+    // Calculate average progress for completed enrollments
+    const averageProgress = enrollments
+      .filter(e => e.status === 'completed')
+      .reduce((acc, e) => acc + e.progress, 0) / (completed || 1);
 
     setStats({
-      completionRate: totalEnrollments > 0 ? (completed / totalEnrollments) * 100 : 0,
-      averageScore,
-      totalCourses,
-      inProgressCount: inProgress,
-      completedCount: completed,
-      failedCount: failed
+      totalEnrollments,
+      completedEnrollments: completed,
+      averageProgress,
+      averageCompletionTime: 0 // This value is not calculated in the original code
     });
   };
 
@@ -95,8 +87,6 @@ export function TrainingDashboard(): React.ReactElement {
         return 'text-green-600';
       case 'in_progress':
         return 'text-blue-600';
-      case 'failed':
-        return 'text-red-600';
       default:
         return 'text-gray-600';
     }
@@ -107,30 +97,30 @@ export function TrainingDashboard(): React.ReactElement {
       <div className="grid gap-4 md:grid-cols-3">
         <div className="p-4 bg-card rounded-lg shadow">
           <h3 className="text-lg font-medium">Completion Rate</h3>
-          <p className="text-2xl font-bold">{formatPercent(stats.completionRate)}</p>
+          <p className="text-2xl font-bold">{formatPercent(stats.averageProgress)}</p>
         </div>
         <div className="p-4 bg-card rounded-lg shadow">
-          <h3 className="text-lg font-medium">Average Score</h3>
-          <p className="text-2xl font-bold">{formatPercent(stats.averageScore)}</p>
+          <h3 className="text-lg font-medium">Average Progress</h3>
+          <p className="text-2xl font-bold">{stats.averageProgress}%</p>
         </div>
         <div className="p-4 bg-card rounded-lg shadow">
           <h3 className="text-lg font-medium">Active Courses</h3>
-          <p className="text-2xl font-bold">{stats.totalCourses}</p>
+          <p className="text-2xl font-bold">{stats.totalEnrollments}</p>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         <div className="p-4 bg-card rounded-lg shadow">
           <h3 className="text-lg font-medium">In Progress</h3>
-          <p className="text-2xl font-bold text-blue-600">{stats.inProgressCount}</p>
+          <p className="text-2xl font-bold text-blue-600">{stats.totalEnrollments - stats.completedEnrollments}</p>
         </div>
         <div className="p-4 bg-card rounded-lg shadow">
           <h3 className="text-lg font-medium">Completed</h3>
-          <p className="text-2xl font-bold text-green-600">{stats.completedCount}</p>
+          <p className="text-2xl font-bold text-green-600">{stats.completedEnrollments}</p>
         </div>
         <div className="p-4 bg-card rounded-lg shadow">
           <h3 className="text-lg font-medium">Failed</h3>
-          <p className="text-2xl font-bold text-red-600">{stats.failedCount}</p>
+          <p className="text-2xl font-bold text-red-600">{stats.totalEnrollments - stats.completedEnrollments}</p>
         </div>
       </div>
 
@@ -147,7 +137,7 @@ export function TrainingDashboard(): React.ReactElement {
               <div key={training.id} className="p-4 flex justify-between items-center">
                 <div>
                   <p className="font-medium">{training.title}</p>
-                  <p className="text-sm text-muted-foreground">{training.category}</p>
+                  <p className="text-sm text-muted-foreground">{training.description}</p>
                 </div>
                 <div className="text-right">
                   <p className="font-medium">{formatPercent(completionRate)} Complete</p>

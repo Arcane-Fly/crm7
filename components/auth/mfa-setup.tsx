@@ -1,11 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Form,
   FormControl,
@@ -15,9 +11,17 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createBrowserClient } from '@supabase/ssr';
 import { QrCode } from 'lucide-react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
+
+interface FormValues {
+  code: string;
+}
 
 const formSchema = z.object({
   code: z.string().min(6).max(6),
@@ -28,20 +32,36 @@ export function MFASetup() {
   const [secret, setSecret] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const supabase = createClientComponentClient();
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       code: '',
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: FormValues) => {
     try {
       setLoading(true);
+      // First get a challenge
+      const { data: challengeData } = await supabase.auth.mfa.challenge({ factorId: secret });
+      if (!challengeData?.id) {
+        toast({
+          title: 'Error',
+          description: 'Failed to create MFA challenge',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Then verify with the challenge
       const { data, error } = await supabase.auth.mfa.verify({
         factorId: secret,
+        challengeId: challengeData.id,
         code: values.code,
       });
 
