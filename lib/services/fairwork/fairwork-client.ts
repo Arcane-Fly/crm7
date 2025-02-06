@@ -10,11 +10,12 @@ import type {
   PayRate,
   RateValidationRequest,
   RateValidationResponse,
-  SearchAwardsRequest
+  SearchAwardsRequest,
 } from './types';
 
 export class FairWorkClient {
   private client: AxiosInstance;
+  getRates: any;
 
   constructor(config?: FairWorkConfig) {
     if (!config?.apiUrl) {
@@ -50,10 +51,7 @@ export class FairWorkClient {
     return this.fetch('/awards', params);
   }
 
-  async getClassification(
-    awardCode: string,
-    classificationCode: string
-  ): Promise<Classification> {
+  async getClassification(awardCode: string, classificationCode: string): Promise<Classification> {
     return this.fetch(`/awards/${awardCode}/classifications/${classificationCode}`);
   }
 
@@ -86,7 +84,12 @@ export class FairWorkClient {
       );
       return response.data;
     } catch (error) {
-      logger.error('Failed to validate pay rate', { error, awardCode, classificationCode, request });
+      logger.error('Failed to validate pay rate', {
+        error,
+        awardCode,
+        classificationCode,
+        request,
+      });
       throw error;
     }
   }
@@ -95,7 +98,10 @@ export class FairWorkClient {
     return this.fetch(`/awards/${awardCode}/penalties`, { params });
   }
 
-  async getAllowances(awardCode: string, params?: { date?: string; type?: string }): Promise<Allowance[]> {
+  async getAllowances(
+    awardCode: string,
+    params?: { date?: string; type?: string }
+  ): Promise<Allowance[]> {
     return this.fetch(`/awards/${awardCode}/allowances`, { params });
   }
 

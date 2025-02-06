@@ -15,13 +15,7 @@ import {
 import { logger } from '@/lib/utils/logger';
 
 import type { FairWorkService, PayRate } from '../fairwork/index';
-import type { Classification } from '../fairwork/types';
-
-interface LogError extends Error {
-  context: string;
-  code?: string;
-  [key: string]: unknown;
-}
+import type { Classification, ClassificationHierarchy } from '../fairwork/types';
 
 const SUPABASE_URL = process.env['NEXT_PUBLIC_SUPABASE_URL'];
 const SUPABASE_KEY = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'];
@@ -30,15 +24,10 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
   throw new Error('Missing Supabase environment variables');
 }
 
-interface CustomError extends Error {
-  details?: Record<string, unknown>;
-  code?: string;
-}
-
 export class RateManagementError extends Error {
   constructor(
     message: string,
-    public code: string,
+    public code: string
   ) {
     super(message);
     this.name = 'RateManagementError';
@@ -61,7 +50,7 @@ const DEFAULT_CONFIG: RateManagementConfig = {
   retryDelay: 1000, // 1 second
 };
 
-export interface RateManagementService {
+export interface IRateManagementService {
   getRateTemplates(orgId: string): Promise<RateTemplate[]>;
   getRateTemplate(id: string): Promise<RateTemplate | null>;
   createRateTemplate(template: RateTemplateInput): Promise<RateTemplate>;
@@ -69,7 +58,7 @@ export interface RateManagementService {
   updateRateTemplateStatus(
     id: string,
     status: RateTemplateStatus,
-    updatedBy: string,
+    updatedBy: string
   ): Promise<RateTemplate>;
   deleteRateTemplate(id: string): Promise<void>;
   getRateTemplateHistory(id: string): Promise<{ data: RateTemplateHistory[] }>;
@@ -86,398 +75,29 @@ export interface RateManagementService {
   clearCache(): void;
 }
 
-export class RateManagementServiceImpl implements RateManagementService {
+export class RateManagementServiceImpl implements IRateManagementService {
   private readonly client: SupabaseClient;
   private readonly fairWorkService: FairWorkService;
-  private readonly config: ServiceConfig;
   private cache: Map<string, { data: unknown; timestamp: number }> = new Map();
   private rateManagementConfig: RateManagementConfig;
 
-  private constructor(
+  constructor(
     fairWorkService: FairWorkService,
-    config: Partial<ServiceConfig> = {},
-    rateManagementConfig: RateManagementConfig = DEFAULT_CONFIG,
+    _config: Partial<ServiceConfig> = {},
+    rateManagementConfig: RateManagementConfig = DEFAULT_CONFIG
   ) {
     if (!SUPABASE_URL || !SUPABASE_KEY) {
       throw new Error('Missing Supabase environment variables');
     }
     this.client = createClient(SUPABASE_URL, SUPABASE_KEY);
     this.fairWorkService = fairWorkService;
-    this.config = {
-      minimumRate: 25.0,
-      ...config,
-    };
     this.rateManagementConfig = rateManagementConfig;
-  }
-  validateRateTemplate(template: RateTemplate): Promise<RateValidationResult> {
-    throw new Error('Method not implemented.');
-  }
-  calculateRate(template: RateTemplate): Promise<RateCalculationResult> {
-    throw new Error('Method not implemented.');
-  }
-  getBulkCalculations(orgId: string): Promise<{ data: BulkCalculation[] }> {
-    throw new Error('Method not implemented.');
+
+    // Bind methods used as callbacks
+    this.mapToRateTemplate = this.mapToRateTemplate.bind(this);
   }
 
-  async getRateTemplates(orgId: string): Promise<RateTemplate[]> {
-    try {
-      const { data, error } = await this.client
-        .from('rate_templates')
-        .select('*')
-        .eq('orgId', orgId)
-        .order('createdAt', { ascending: false });
-
-      if (typeof error !== 'undefined' && error !== null) {
-        const customError = new Error(error.message) as CustomError;
-        customError.details = { code: error.code };
-        throw customError;
-      }
-
-      return data ? data.map((item: Record<string, unknown>) => this.mapToRateTemplate(item)) : [];
-    } catch (error) {
-      const customError = error as PostgrestError;
-      const logError = new Error(customError.message) as LogError;
-      logError.context = 'getRateTemplates';
-      logError.code = customError.code;
-      logger.error('Error fetching rate templates', logError);
-      throw new RateManagementError(
-        'Failed to fetch rate templates',
-        customError.code ?? 'unknown',
-      );
-    }
-  }
-
-  async getRateTemplate(id: string): Promise<RateTemplate | null> {
-    if (!id) {
-      throw new Error('Template ID is required');
-    }
-
-    try {
-      const { data, error } = await this.client
-        .from('rate_templates')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (typeof error !== 'undefined' && error !== null) {
-        const customError = new Error(error.message) as CustomError;
-        customError.details = { code: error.code };
-        throw customError;
-      }
-
-      return data ? this.mapToRateTemplate(data) : null;
-    } catch (error) {
-      const customError = error as PostgrestError;
-      const logError = new Error(customError.message) as LogError;
-      logError.context = 'getRateTemplate';
-      logError.code = customError.code;
-      logger.error('Error fetching rate template', logError);
-      throw new RateManagementError('Failed to fetch rate template', customError.code ?? 'unknown');
-    }
-  }
-
-  async createRateTemplate(template: RateTemplateInput): Promise<RateTemplate> {
-    try {
-      const mappedTemplate = this.mapFromRateTemplate(template);
-      const { data, error } = await this.client
-        .from('rate_templates')
-        .insert([mappedTemplate])
-        .select()
-        .single();
-
-      if (typeof error !== 'undefined' && error !== null) {
-        const customError = new Error(error.message) as CustomError;
-        customError.details = { code: error.code };
-        throw customError;
-      }
-
-      if (!data) {
-        throw new Error('No data returned from insert operation');
-      }
-
-      return this.mapToRateTemplate(data);
-    } catch (error) {
-      const customError = error as PostgrestError;
-      const logError = new Error(customError.message) as LogError;
-      logError.context = 'createRateTemplate';
-      logError.code = customError.code;
-      logger.error('Error creating rate template', logError);
-      throw new RateManagementError(
-        'Failed to create rate template',
-        customError.code ?? 'unknown',
-      );
-    }
-  }
-
-  async updateRateTemplate(id: string, updates: RateTemplateUpdate): Promise<RateTemplate> {
-    try {
-      const mappedUpdates = this.mapFromRateTemplate(updates);
-      const { data, error } = await this.client
-        .from('rate_templates')
-        .update(mappedUpdates)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (typeof error !== 'undefined' && error !== null) {
-        const customError = new Error(error.message) as CustomError;
-        customError.details = { code: error.code };
-        throw customError;
-      }
-
-      if (!data) {
-        throw new Error('No data returned from update operation');
-      }
-
-      return this.mapToRateTemplate(data);
-    } catch (error) {
-      const customError = error as PostgrestError;
-      const logError = new Error(customError.message) as LogError;
-      logError.context = 'updateRateTemplate';
-      logError.code = customError.code;
-      logger.error('Error updating rate template', logError);
-      throw new RateManagementError(
-        'Failed to update rate template',
-        customError.code ?? 'unknown',
-      );
-    }
-  }
-
-  async updateRateTemplateStatus(
-    id: string,
-    status: RateTemplateStatus,
-    updatedBy: string,
-  ): Promise<RateTemplate> {
-    return this.updateRateTemplate(id, { id, status, updatedBy });
-  }
-
-  async deleteRateTemplate(id: string): Promise<void> {
-    try {
-      const { error } = await this.client.from('rate_templates').delete().eq('id', id);
-
-      if (typeof error !== 'undefined' && error !== null) {
-        throw new Error(error.message);
-      }
-    } catch (error) {
-      const customError = error as PostgrestError;
-      const logError = new Error(customError.message) as LogError;
-      logError.context = 'deleteRateTemplate';
-      logError.code = customError.code;
-      logger.error('Error deleting rate template', logError);
-      throw new RateManagementError(
-        'Failed to delete rate template',
-        customError.code ?? 'unknown',
-      );
-    }
-  }
-
-  async getRateTemplateHistory(id: string): Promise<{ data: RateTemplateHistory[] }> {
-    try {
-      const { data, error } = await this.client
-        .from('rate_template_history')
-        .select('*')
-        .eq('templateId', id)
-        .order('changedAt', { ascending: false });
-
-      if (typeof error !== 'undefined' && error !== null) {
-        throw new Error(error.message);
-      }
-
-      return { data: data ?? [] };
-    } catch (error) {
-      const customError = error as PostgrestError;
-      const logError = new Error(customError.message) as LogError;
-      logError.context = 'getRateTemplateHistory';
-      logError.code = customError.code;
-      logger.error('Error fetching rate template history', logError);
-      throw new RateManagementError(
-        'Failed to fetch rate template history',
-        customError.code ?? 'unknown',
-      );
-    }
-  }
-
-  async getRateCalculations(id: string): Promise<{ data: RateCalculationResult[] }> {
-    try {
-      const { data, error } = await this.client
-        .from('rate_calculations')
-        .select('*')
-        .eq('templateId', id)
-        .order('createdAt', { ascending: false });
-
-      if (typeof error !== 'undefined' && error !== null) {
-        throw new Error(error.message);
-      }
-
-      return { data: data ?? [] };
-    } catch (error) {
-      const customError = error as PostgrestError;
-      const logError = new Error(customError.message) as LogError;
-      logError.context = 'getRateCalculations';
-      logError.code = customError.code;
-      logger.error('Error fetching rate calculations', logError);
-      throw new RateManagementError(
-        'Failed to fetch rate calculations',
-        customError.code ?? 'unknown',
-      );
-    }
-  }
-
-  async createBulkCalculation(calculation: Omit<BulkCalculation, 'id'>): Promise<BulkCalculation> {
-    try {
-      const { data, error } = await this.client
-        .from('bulk_calculations')
-        .insert([calculation])
-        .select()
-        .single();
-
-      if (typeof error !== 'undefined' && error !== null) {
-        throw new Error(error.message);
-      }
-
-      if (!data) {
-        throw new Error('No data returned from insert operation');
-      }
-
-      return data;
-    } catch (error) {
-      const customError = error as PostgrestError;
-      const logError = new Error(customError.message) as LogError;
-      logError.context = 'createBulkCalculation';
-      logError.code = customError.code;
-      logger.error('Error creating bulk calculation', logError);
-      throw new RateManagementError(
-        'Failed to create bulk calculation',
-        customError.code ?? 'unknown',
-      );
-    }
-  }
-
-  async getAnalytics(orgId: string): Promise<{ data: RateAnalytics }> {
-    try {
-      const { data: templates, error: templatesError } = await this.client
-        .from('rate_templates')
-        .select('*')
-        .eq('orgId', orgId);
-
-      if (typeof templatesError !== 'undefined' && templatesError !== null) {
-        throw new Error(templatesError.message);
-      }
-
-      const { data: calculations, error: calculationsError } = await this.client
-        .from('rate_calculations')
-        .select('*')
-        .eq('orgId', orgId);
-
-      if (typeof calculationsError !== 'undefined' && calculationsError !== null) {
-        throw new Error(calculationsError.message);
-      }
-
-      const totalTemplates = templates.length ?? 0;
-      const averageRate =
-        calculations.reduce((acc, curr) => acc + curr.finalRate, 0) / (calculations.length || 1);
-
-      return {
-        data: {
-          totalTemplates,
-          averageRate,
-          lastUpdated: new Date().toISOString(),
-        },
-      };
-    } catch (error) {
-      const customError = error as PostgrestError;
-      const logError = new Error(customError.message) as LogError;
-      logError.context = 'getAnalytics';
-      logError.code = customError.code;
-      logger.error('Error fetching analytics', logError);
-      throw new RateManagementError('Failed to fetch analytics', customError.code ?? 'unknown');
-    }
-  }
-
-  async getCurrentRates(): Promise<PayRate[]> {
-    const cacheKey = 'currentRates';
-    const cached = this.getFromCache(cacheKey);
-    if (typeof cached !== 'undefined' && cached !== null) return cached as PayRate[];
-
-    try {
-      const rates = await fairWorkService.getCurrentRates();
-      this.setInCache(cacheKey, rates);
-      return rates;
-    } catch (error) {
-      logger.error('Failed to fetch current rates:', error);
-      throw new Error('Failed to fetch current rates');
-    }
-  }
-
-  async getRatesForDate(date: Date): Promise<PayRate[]> {
-    const cacheKey = `rates_${date.toISOString()}`;
-    const cached = this.getFromCache(cacheKey);
-    if (typeof cached !== 'undefined' && cached !== null) return cached as PayRate[];
-
-    try {
-      const rates = await fairWorkService.getRatesForDate(date);
-      this.setInCache(cacheKey, rates);
-      return rates;
-    } catch (error) {
-      logger.error('Failed to fetch rates for date:', error);
-      throw new Error(`Failed to fetch rates for date: ${date.toISOString()}`);
-    }
-  }
-
-  async getClassifications(): Promise<Classification[]> {
-    const cacheKey = 'classifications';
-    const cached = this.getFromCache(cacheKey);
-    if (typeof cached !== 'undefined' && cached !== null) return cached as Classification[];
-
-    try {
-      const classifications = await fairWorkService.getClassifications();
-      this.setInCache(cacheKey, classifications);
-      return classifications;
-    } catch (error) {
-      logger.error('Failed to fetch classifications:', error);
-      throw new Error('Failed to fetch classifications');
-    }
-  }
-
-  async getClassificationHierarchy(): Promise<Classification[]> {
-    const cacheKey = 'classificationHierarchy';
-    const cached = this.getFromCache(cacheKey);
-    if (typeof cached !== 'undefined' && cached !== null) return cached as Classification[];
-
-    try {
-      const hierarchy = await fairWorkService.getClassificationHierarchy();
-      this.setInCache(cacheKey, hierarchy);
-      return hierarchy;
-    } catch (error) {
-      logger.error('Failed to fetch classification hierarchy:', error);
-      throw new Error('Failed to fetch classification hierarchy');
-    }
-  }
-
-  private getFromCache<T>(key: string): T | null {
-    const cached = this.cache.get(key);
-    if (!cached) return null;
-
-    const now = Date.now();
-    if (now - cached.timestamp > this.rateManagementConfig.cacheTimeout) {
-      this.cache.delete(key);
-      return null;
-    }
-
-    return cached.data as T;
-  }
-
-  private setInCache<T>(key: string, data: T): void {
-    this.cache.set(key, {
-      data,
-      timestamp: Date.now(),
-    });
-  }
-
-  clearCache(): void {
-    this.cache.clear();
-  }
-
+  // Helper methods
   private mapToRateTemplate(data: Record<string, unknown>): RateTemplate {
     return {
       id: String(data.id),
@@ -507,7 +127,7 @@ export class RateManagementServiceImpl implements RateManagementService {
   }
 
   private mapFromRateTemplate(
-    template: RateTemplateInput | RateTemplateUpdate,
+    template: RateTemplateInput | RateTemplateUpdate
   ): Record<string, unknown> {
     const mapped: Record<string, unknown> = {};
 
@@ -519,9 +139,442 @@ export class RateManagementServiceImpl implements RateManagementService {
 
     return mapped;
   }
-}
 
-export { RateManagementServiceImpl as RateManagementService };
-export type { RateManagementService };
+  protected getFromCache<T>(key: string): T | null {
+    const cached = this.cache.get(key);
+    if (!cached) return null;
+
+    const now = Date.now();
+    if (now - cached.timestamp > this.rateManagementConfig.cacheTimeout) {
+      this.cache.delete(key);
+      return null;
+    }
+
+    return cached.data as T;
+  }
+
+  protected setInCache<T>(key: string, data: T): void {
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now(),
+    });
+  }
+
+  // Public methods
+  async getRateTemplates(orgId: string): Promise<RateTemplate[]> {
+    try {
+      const { data, error } = await this.client
+        .from('rate_templates')
+        .select('*')
+        .eq('orgId', orgId)
+        .order('createdAt', { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      return data ? data.map(this.mapToRateTemplate) : [];
+    } catch (error) {
+      logger.error('Failed to fetch rate templates', error as Error);
+      throw new RateManagementError(
+        'Failed to fetch rate templates',
+        (error as PostgrestError).code ?? 'unknown'
+      );
+    }
+  }
+
+  async getRateTemplate(id: string): Promise<RateTemplate | null> {
+    try {
+      const { data, error } = await this.client
+        .from('rate_templates')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      return data ? this.mapToRateTemplate(data) : null;
+    } catch (error) {
+      logger.error('Failed to fetch rate template', error as Error);
+      throw new RateManagementError(
+        'Failed to fetch rate template',
+        (error as PostgrestError).code ?? 'unknown'
+      );
+    }
+  }
+
+  async createRateTemplate(template: RateTemplateInput): Promise<RateTemplate> {
+    try {
+      const { data, error } = await this.client
+        .from('rate_templates')
+        .insert([this.mapFromRateTemplate(template)])
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data) {
+        throw new Error('No data returned from insert operation');
+      }
+
+      return this.mapToRateTemplate(data);
+    } catch (error) {
+      logger.error('Failed to create rate template', error as Error);
+      throw new RateManagementError(
+        'Failed to create rate template',
+        (error as PostgrestError).code ?? 'unknown'
+      );
+    }
+  }
+
+  async updateRateTemplate(id: string, updates: RateTemplateUpdate): Promise<RateTemplate> {
+    try {
+      const { data, error } = await this.client
+        .from('rate_templates')
+        .update(this.mapFromRateTemplate(updates))
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data) {
+        throw new Error('No data returned from update operation');
+      }
+
+      return this.mapToRateTemplate(data);
+    } catch (error) {
+      logger.error('Failed to update rate template', error as Error);
+      throw new RateManagementError(
+        'Failed to update rate template',
+        (error as PostgrestError).code ?? 'unknown'
+      );
+    }
+  }
+
+  async updateRateTemplateStatus(
+    id: string,
+    status: RateTemplateStatus,
+    updatedBy: string
+  ): Promise<RateTemplate> {
+    return this.updateRateTemplate(id, { id, status, updatedBy });
+  }
+
+  async deleteRateTemplate(id: string): Promise<void> {
+    try {
+      const { error } = await this.client.from('rate_templates').delete().eq('id', id);
+
+      if (error) {
+        throw error;
+      }
+    } catch (error) {
+      logger.error('Failed to delete rate template', error as Error);
+      throw new RateManagementError(
+        'Failed to delete rate template',
+        (error as PostgrestError).code ?? 'unknown'
+      );
+    }
+  }
+
+  async getRateTemplateHistory(id: string): Promise<{ data: RateTemplateHistory[] }> {
+    try {
+      const { data, error } = await this.client
+        .from('rate_template_history')
+        .select('*')
+        .eq('templateId', id)
+        .order('changedAt', { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      return { data: data ?? [] };
+    } catch (error) {
+      logger.error('Failed to fetch rate template history', error as Error);
+      throw new RateManagementError(
+        'Failed to fetch rate template history',
+        (error as PostgrestError).code ?? 'unknown'
+      );
+    }
+  }
+
+  async getRateCalculations(id: string): Promise<{ data: RateCalculationResult[] }> {
+    try {
+      const { data, error } = await this.client
+        .from('rate_calculations')
+        .select('*')
+        .eq('templateId', id)
+        .order('createdAt', { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      return { data: data ?? [] };
+    } catch (error) {
+      logger.error('Failed to fetch rate calculations', error as Error);
+      throw new RateManagementError(
+        'Failed to fetch rate calculations',
+        (error as PostgrestError).code ?? 'unknown'
+      );
+    }
+  }
+
+  async validateRateTemplate(template: RateTemplate): Promise<RateValidationResult> {
+    try {
+      const { baseRate, baseMargin, superRate } = template;
+      const errors: string[] = [];
+      const warnings: string[] = [];
+
+      if (baseRate <= 0) {
+        errors.push('Base rate must be greater than 0');
+      }
+
+      if (baseMargin < 0 || baseMargin > 100) {
+        errors.push('Base margin must be between 0 and 100');
+      }
+
+      if (superRate < 0 || superRate > 100) {
+        errors.push('Super rate must be between 0 and 100');
+      }
+
+      return {
+        isValid: errors.length === 0,
+        errors,
+        warnings,
+      };
+    } catch (error) {
+      logger.error('Failed to validate rate template', error as Error);
+      throw new RateManagementError(
+        'Failed to validate rate template',
+        (error as PostgrestError).code ?? 'unknown'
+      );
+    }
+  }
+
+  async calculateRate(template: RateTemplate): Promise<RateCalculationResult> {
+    try {
+      const { baseRate, baseMargin, superRate, casualLoading } = template;
+
+      const marginAmount = (baseRate * baseMargin) / 100;
+      const superAmount = ((baseRate + marginAmount) * superRate) / 100;
+      const loadingAmount = casualLoading
+        ? ((baseRate + marginAmount + superAmount) * casualLoading) / 100
+        : 0;
+
+      const rate = baseRate + marginAmount + superAmount + loadingAmount;
+
+      return {
+        id: crypto.randomUUID(),
+        templateId: template.id,
+        rate,
+        effectiveDate: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+    } catch (error) {
+      logger.error('Failed to calculate rate', error as Error);
+      throw new RateManagementError(
+        'Failed to calculate rate',
+        (error as PostgrestError).code ?? 'unknown'
+      );
+    }
+  }
+
+  async getBulkCalculations(orgId: string): Promise<{ data: BulkCalculation[] }> {
+    try {
+      const { data, error } = await this.client
+        .from('bulk_calculations')
+        .select('*')
+        .eq('orgId', orgId);
+
+      if (error) {
+        throw error;
+      }
+
+      return { data: data ?? [] };
+    } catch (error) {
+      logger.error('Failed to fetch bulk calculations', error as Error);
+      throw new RateManagementError(
+        'Failed to fetch bulk calculations',
+        (error as PostgrestError).code ?? 'unknown'
+      );
+    }
+  }
+
+  async createBulkCalculation(calculation: Omit<BulkCalculation, 'id'>): Promise<BulkCalculation> {
+    try {
+      const { data, error } = await this.client
+        .from('bulk_calculations')
+        .insert([calculation])
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data) {
+        throw new Error('No data returned from insert operation');
+      }
+
+      return data;
+    } catch (error) {
+      logger.error('Failed to create bulk calculation', error as Error);
+      throw new RateManagementError(
+        'Failed to create bulk calculation',
+        (error as PostgrestError).code ?? 'unknown'
+      );
+    }
+  }
+
+  async getAnalytics(orgId: string): Promise<{ data: RateAnalytics }> {
+    try {
+      const { data: templates, error: templatesError } = await this.client
+        .from('rate_templates')
+        .select('*')
+        .eq('orgId', orgId);
+
+      if (templatesError) {
+        throw templatesError;
+      }
+
+      const { data: calculations, error: calculationsError } = await this.client
+        .from('rate_calculations')
+        .select('*')
+        .eq('orgId', orgId);
+
+      if (calculationsError) {
+        throw calculationsError;
+      }
+
+      const totalTemplates = templates?.length ?? 0;
+      const activeTemplates = templates?.filter((t) => t.status === 'active').length ?? 0;
+      const averageRate =
+        calculations?.reduce((acc, curr) => acc + curr.rate, 0) / (calculations.length || 1);
+
+      const recentChanges = templates
+        ?.slice(-5)
+        .map((t) => ({
+          templateId: t.id,
+          action: t.createdAt === t.updatedAt ? ('created' as const) : ('updated' as const),
+          timestamp: t.updatedAt,
+        }))
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+      return {
+        data: {
+          totalTemplates,
+          activeTemplates,
+          averageRate,
+          recentChanges: recentChanges ?? [],
+        },
+      };
+    } catch (error) {
+      logger.error('Failed to fetch analytics', error as Error);
+      throw new RateManagementError(
+        'Failed to fetch analytics',
+        (error as PostgrestError).code ?? 'unknown'
+      );
+    }
+  }
+
+  async getCurrentRates(): Promise<PayRate[]> {
+    const cacheKey = 'currentRates';
+    const cached = this.getFromCache(cacheKey);
+    if (cached) {
+      return cached as PayRate[];
+    }
+
+    try {
+      const rates = await this.fairWorkService.getCurrentRates();
+      this.setInCache(cacheKey, rates);
+      return rates;
+    } catch (error) {
+      logger.error('Failed to fetch current rates:', error);
+      throw new Error('Failed to fetch current rates');
+    }
+  }
+
+  async getRatesForDate(date: Date): Promise<PayRate[]> {
+    const cacheKey = `rates_${date.toISOString()}`;
+    const cached = this.getFromCache(cacheKey);
+    if (cached) {
+      return cached as PayRate[];
+    }
+
+    try {
+      const rates = await this.fairWorkService.getRatesForDate(date);
+      this.setInCache(cacheKey, rates);
+      return rates;
+    } catch (error) {
+      logger.error('Failed to fetch rates for date:', error);
+      throw new Error(`Failed to fetch rates for date: ${date.toISOString()}`);
+    }
+  }
+
+  async getClassifications(): Promise<Classification[]> {
+    const cacheKey = 'classifications';
+    const cached = this.getFromCache(cacheKey);
+    if (cached) {
+      return cached as Classification[];
+    }
+
+    try {
+      const classifications = await this.fairWorkService.getClassifications();
+      this.setInCache(cacheKey, classifications);
+      return classifications;
+    } catch (error) {
+      logger.error('Failed to fetch classifications:', error);
+      throw new Error('Failed to fetch classifications');
+    }
+  }
+
+  async getClassificationHierarchy(): Promise<Classification[]> {
+    const cacheKey = 'classificationHierarchy';
+    const cached = this.getFromCache(cacheKey);
+    if (cached) {
+      return cached as Classification[];
+    }
+
+    try {
+      const hierarchy = await this.fairWorkService.getClassificationHierarchy();
+      if (!hierarchy) {
+        return [];
+      }
+
+      // Convert ClassificationHierarchy to Classification[]
+      const flattenHierarchy = (node: ClassificationHierarchy): Classification[] => {
+        const classification: Classification = {
+          code: node.code,
+          name: node.name,
+          level: '0', // Default level since ClassificationHierarchy doesn't have level
+          baseRate: 0, // Default rate since ClassificationHierarchy doesn't have rate
+          effectiveFrom: new Date().toISOString(), // Default date
+          parentCode: undefined,
+        };
+
+        return [classification, ...(node.children ?? []).flatMap(flattenHierarchy)];
+      };
+
+      const classifications = flattenHierarchy(hierarchy);
+      this.setInCache(cacheKey, classifications);
+      return classifications;
+    } catch (error) {
+      logger.error('Failed to fetch classification hierarchy:', error);
+      throw new Error('Failed to fetch classification hierarchy');
+    }
+  }
+
+  clearCache(): void {
+    this.cache.clear();
+  }
+}
 
 export default RateManagementServiceImpl;

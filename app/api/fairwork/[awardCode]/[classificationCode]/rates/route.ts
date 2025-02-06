@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
 import { createApiResponse, createErrorResponse } from '@/lib/api/response';
 import { logger } from '@/lib/logger';
+import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
+import { NextRequest, NextResponse } from 'next/server';
 
 const fairworkClient = new FairWorkClient();
 

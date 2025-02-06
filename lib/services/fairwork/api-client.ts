@@ -1,15 +1,13 @@
-import axios, { type AxiosInstance } from 'axios';
 import { logger } from '@/lib/logger';
-import type { 
-  ApiError,
+import axios, { type AxiosInstance } from 'axios';
+import type {
   Award,
   Classification,
   ClassificationHierarchy,
-  Page,
   PayRate,
   RateTemplate,
   RateValidationRequest,
-  RateValidationResponse
+  RateValidationResponse,
 } from './types';
 
 export class ApiError extends Error {
@@ -30,7 +28,19 @@ export interface FairWorkApiConfig {
   timeout: number;
 }
 
-export class FairWorkApiClient {
+export interface FairWorkApiClient {
+  getActiveAwards(): Promise<Award[]>;
+  getAward(id: string): Promise<Award | null>;
+  getCurrentRates(): Promise<PayRate[]>;
+  getRatesForDate(date: string): Promise<PayRate[]>;
+  getClassifications(): Promise<Classification[]>;
+  getClassificationHierarchy(): Promise<ClassificationHierarchy | null>;
+  getRateTemplates(): Promise<RateTemplate[]>;
+  validateRateTemplate(request: RateValidationRequest): Promise<RateValidationResponse>;
+  calculateBaseRate(templateId: string): Promise<number | null>;
+}
+
+export class FairWorkApiClientImpl implements FairWorkApiClient {
   private client: AxiosInstance;
 
   constructor(config: FairWorkApiConfig) {
@@ -45,7 +55,10 @@ export class FairWorkApiClient {
     });
   }
 
-  private async request<T>(path: string, config: Parameters<AxiosInstance['request']>[0] = {}): Promise<T> {
+  private async request<T>(
+    path: string,
+    config: Parameters<AxiosInstance['request']>[0] = {}
+  ): Promise<T> {
     try {
       const response = await this.client.request<T>({
         ...config,
@@ -54,83 +67,109 @@ export class FairWorkApiClient {
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        throw new ApiError(
-          error.message,
-          error.response?.status || 500,
-          error.response?.data
-        );
+        throw new ApiError(error.message, error.response?.status || 500, error.response?.data);
       }
       throw error;
     }
   }
 
-  async validateRate(params: RateValidationRequest): Promise<RateValidationResponse> {
+  async getActiveAwards(): Promise<Award[]> {
     try {
-      return await this.request<RateValidationResponse>('/rates/validate', {
-        method: 'POST',
-        data: params,
-      });
-    } catch (error) {
-      logger.error('Failed to validate rate', { error, params });
-      throw error;
-    }
-  }
-
-  async getActiveAwards(): Promise<Page<Award>> {
-    try {
-      return await this.request<Page<Award>>('/awards/active');
+      return await this.request<Award[]>('/awards/active');
     } catch (error) {
       logger.error('Failed to fetch active awards', { error });
       throw error;
     }
   }
 
-  async getCurrentRates(awardCode: string): Promise<PayRate[]> {
+  async getAward(id: string): Promise<Award | null> {
     try {
-      return await this.request<PayRate[]>(`/awards/${awardCode}/rates/current`);
+      return await this.request<Award>(`/awards/${id}`);
     } catch (error) {
-      logger.error('Failed to fetch current rates', { error, awardCode });
+      if ((error as Error).message.includes('404')) {
+        return null;
+      }
+      logger.error('Failed to fetch award', { error, id });
       throw error;
     }
   }
 
-  async getRatesForDate(awardCode: string, date: string): Promise<PayRate[]> {
+  async getCurrentRates(): Promise<PayRate[]> {
     try {
-      return await this.request<PayRate[]>(`/awards/${awardCode}/rates/${date}`);
+      return await this.request<PayRate[]>('/awards/active/rates/current');
     } catch (error) {
-      logger.error('Failed to fetch rates for date', { error, awardCode, date });
+      logger.error('Failed to fetch current rates', { error });
       throw error;
     }
   }
 
-  async getClassifications(awardCode: string): Promise<Classification[]> {
+  async getRatesForDate(date: string): Promise<PayRate[]> {
     try {
-      return await this.request<Classification[]>(`/awards/${awardCode}/classifications`);
+      return await this.request<PayRate[]>(`/awards/active/rates/${date}`);
     } catch (error) {
-      logger.error('Failed to fetch classifications', { error, awardCode });
+      logger.error('Failed to fetch rates for date', { error, date });
       throw error;
     }
   }
 
-  async getClassificationHierarchy(awardCode: string): Promise<ClassificationHierarchy> {
+  async getClassifications(): Promise<Classification[]> {
     try {
-      return await this.request<ClassificationHierarchy>(`/awards/${awardCode}/classifications/hierarchy`);
+      return await this.request<Classification[]>('/awards/active/classifications');
     } catch (error) {
-      logger.error('Failed to fetch classification hierarchy', { error, awardCode });
+      logger.error('Failed to fetch classifications', { error });
       throw error;
     }
   }
 
-  async getRateTemplates(awardCode: string): Promise<RateTemplate[]> {
+  async getClassificationHierarchy(): Promise<ClassificationHierarchy | null> {
     try {
-      return await this.request<RateTemplate[]>(`/awards/${awardCode}/templates`);
+      return await this.request<ClassificationHierarchy>(
+        '/awards/active/classifications/hierarchy'
+      );
     } catch (error) {
-      logger.error('Failed to fetch rate templates', { error, awardCode });
+      if ((error as Error).message.includes('404')) {
+        return null;
+      }
+      logger.error('Failed to fetch classification hierarchy', { error });
+      throw error;
+    }
+  }
+
+  async getRateTemplates(): Promise<RateTemplate[]> {
+    try {
+      return await this.request<RateTemplate[]>('/awards/active/templates');
+    } catch (error) {
+      logger.error('Failed to fetch rate templates', { error });
+      throw error;
+    }
+  }
+
+  async validateRateTemplate(request: RateValidationRequest): Promise<RateValidationResponse> {
+    try {
+      return await this.request<RateValidationResponse>('/rates/validate', {
+        method: 'POST',
+        data: request,
+      });
+    } catch (error) {
+      logger.error('Failed to validate rate template', { error, request });
+      throw error;
+    }
+  }
+
+  async calculateBaseRate(templateId: string): Promise<number | null> {
+    try {
+      const response = await this.request<{ baseRate: number }>(`/rates/calculate/${templateId}`);
+      return response.baseRate;
+    } catch (error) {
+      if ((error as Error).message.includes('404')) {
+        return null;
+      }
+      logger.error('Failed to calculate base rate', { error, templateId });
       throw error;
     }
   }
 }
 
 export function createClient(config: FairWorkApiConfig): FairWorkApiClient {
-  return new FairWorkApiClient(config);
+  return new FairWorkApiClientImpl(config);
 }
