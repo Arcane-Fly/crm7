@@ -19,7 +19,7 @@ if (process.emitWarning && typeof process.emitWarning === 'function') {
   // Define a wrapper that matches Node's process.emitWarning signatures
   const warningWrapper = function(
     warning: string | Error,
-    typeOrCtor?: string | Function,
+    typeOrCtor?: EmitWarningOptions | undefined,
     codeOrCtor?: string | Function,
     ctor?: Function
   ): void {
