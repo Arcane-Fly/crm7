@@ -15,11 +15,30 @@ const inter = Inter({ subsets: ['latin'] });
 // Suppress punycode deprecation warning until dependencies are updated
 if (process.emitWarning && typeof process.emitWarning === 'function') {
   const originalEmitWarning = process.emitWarning;
-  process.emitWarning = (...args: any[]) => {
-    if (args[0] && args[0].includes && args[0].includes('punycode')) {
+  type EmitWarningOptions = {
+    type?: string;
+    code?: string;
+    detail?: string;
+    [key: string]: any;
+  };
+
+  process.emitWarning = function(
+    warning: string | Error,
+    optionsOrType?: EmitWarningOptions | string,
+    code?: string
+  ): void {
+    // Check if the warning is about punycode
+    const warningText = warning instanceof Error ? warning.message : warning;
+    if (warningText.includes('punycode')) {
       return;
     }
-    return originalEmitWarning.apply(process, args);
+
+    // Handle both function signatures
+    if (typeof optionsOrType === 'string') {
+      originalEmitWarning.call(process, warning, optionsOrType, code);
+    } else {
+      originalEmitWarning.call(process, warning, optionsOrType);
+    }
   };
 }
 
