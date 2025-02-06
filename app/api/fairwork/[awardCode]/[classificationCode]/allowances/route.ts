@@ -4,6 +4,7 @@ import { getAllowances } from '@/lib/services/fairwork/allowances';
 import { NextRequest } from 'next/server';
 
 export async function GET(
+  request: NextRequest,
   { params }: { params: { awardCode: string; classificationCode: string } }
 ) {
   try {
