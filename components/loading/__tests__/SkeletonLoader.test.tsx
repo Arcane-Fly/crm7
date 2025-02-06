@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { SkeletonLoader } from '../SkeletonLoader';
+import SkeletonLoader from '../SkeletonLoader';
 
 describe('SkeletonLoader', () => {
   it('renders with default props', () => {

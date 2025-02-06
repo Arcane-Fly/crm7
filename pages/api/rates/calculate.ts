@@ -18,10 +18,10 @@ export const config = {
 
 const loggerInstance = createLogger('RateCalculationAPI');
 
-const fairworkService = new FairWorkService({
-  apiUrl: process.env.RATE_SERVICE_URL ?? 'http://localhost:4000',
-  apiKey: process.env.RATE_SERVICE_KEY ?? '',
-});
+const fairworkService = new FairWorkService(
+  process.env.RATE_SERVICE_URL ?? 'http://localhost:4000',
+  process.env.RATE_SERVICE_KEY ?? ''
+);
 
 const calculateRequestBodySchema = z.object({
   orgId: z.string(),
@@ -66,7 +66,12 @@ export default async function handler(req: NextApiRequest): Promise<NextResponse
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get: getCookie,
+        get: async (name: string) => {
+          const cookie = await getCookie(name);
+          return cookie ?? null;
+        },
+        set: () => {}, // Not needed for API routes
+        remove: () => {}, // Not needed for API routes
       },
     }
   );
@@ -99,18 +104,18 @@ export default async function handler(req: NextApiRequest): Promise<NextResponse
 
     const body = parsedBody.data;
 
-    const template: RateTemplate = {
+    const template: Partial<RateTemplate> = {
       ...body,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
-    const validationResult = await rateService.validateRateTemplate(template);
+    const validationResult = await rateService.validateRateTemplate(template as RateTemplate);
 
     if (!validationResult.isValid) {
       return new NextResponse(
         JSON.stringify({
-          error: validationResult.error ?? 'Invalid rate template',
+          error: validationResult.errors?.join(', ') ?? 'Invalid rate template',
         }),
         {
           status: 400,
@@ -119,7 +124,7 @@ export default async function handler(req: NextApiRequest): Promise<NextResponse
       );
     }
 
-    const result = await rateService.calculateRate(template);
+    const result = await rateService.calculateRate(template as RateTemplate);
 
     return new NextResponse(
       JSON.stringify({
@@ -130,7 +135,9 @@ export default async function handler(req: NextApiRequest): Promise<NextResponse
       }
     );
   } catch (error: unknown) {
-    loggerInstance.error('Failed to calculate rate', { error });
+    loggerInstance.error('Failed to calculate rate', {
+      error: error instanceof Error ? { message: error.message, stack: error.stack } : 'Unknown error',
+    });
     return new NextResponse(
       JSON.stringify({
         error: error instanceof Error ? error.message : 'Unknown error',

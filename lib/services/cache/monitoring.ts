@@ -34,6 +34,10 @@ export class CacheMonitoring {
     this.evictions++;
   }
 
+  recordSet(latencyMs: number): void {
+    this.recordLatency(latencyMs);
+  }
+
   private recordLatency(latencyMs: number): void {
     if (this.latencySamples.length >= this.maxLatencySamples) {
       this.latencySamples.shift();
@@ -78,7 +82,7 @@ export class CacheMonitoring {
   }
 }
 
-export interface CacheMetrics {
+export interface CacheMetrics extends Record<string, unknown> {
   hits: number;
   misses: number;
   errors: number;

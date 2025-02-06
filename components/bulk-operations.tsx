@@ -1,8 +1,8 @@
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { handleApiError } from '@/lib/api-error';
+import { useState } from 'react';
 
 interface BulkOperationsProps<T> {
   items: T[];
@@ -38,10 +38,9 @@ export function BulkOperations<T>({
     try {
       setProcessing(true);
       setProgress(0);
-      
+
       const selectedIds = Array.from(selectedItems);
       const batchSize = 10;
-      const totalBatches = Math.ceil(selectedIds.length / batchSize);
 
       for (let i = 0; i < selectedIds.length; i += batchSize) {
         const batch = selectedIds.slice(i, i + batchSize);
@@ -85,7 +84,7 @@ export function BulkOperations<T>({
             {selectedItems.size} selected
           </label>
         </div>
-        
+
         <div className="flex items-center space-x-2">
           {operations.map((op, index) => (
             <Button
