@@ -161,7 +161,7 @@
     "eslint-plugin-sonarjs": "^0.23.0",
     "eslint-plugin-testing-library": "^6.2.0",
     "eslint-plugin-unicorn": "^50.0.1",
-    "glob": "^10.3.10",
+    "glob": "^11.0.0",
     "globals": "^13.24.0",
     "husky": "^9.0.7",
     "ioredis-mock": "^8.9.0",
