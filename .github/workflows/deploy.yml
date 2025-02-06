@@ -1,15 +1,20 @@
 # yaml-language-server: $schema=../.github/workflow-schemas/deploy.json
-# yaml-language-server: $ignore-secrets-and-vars-validation
 name: Deploy
+
+# Define permissions explicitly for security
+permissions:
+  contents: read
+  deployments: write
+  pull-requests: write
+  actions: read
+  security-events: write
 
 on:
   push:
-    branches:
-      - main
-      - master
+    branches: [main, master]
   pull_request:
-    branches:
-      - main
+    branches: [main]
+    types: [opened, synchronize]
   workflow_dispatch:
 
 jobs:
@@ -19,11 +24,14 @@ jobs:
     env:
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 2
           ref: ${{ github.event.pull_request.base.ref || github.ref_name }}
 
       - name: Setup Node.js
@@ -32,8 +40,31 @@ jobs:
           node-version: '20.x'
           cache: 'pnpm'
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v4
+        name: Setup pnpm cache
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+        env:
+          NPM_CONFIG_AUDIT: false
+          NPM_CONFIG_FUND: false
 
       - name: Run linter
         run: pnpm lint
@@ -41,18 +72,47 @@ jobs:
       - name: Run type check
         run: pnpm type-check
 
-      - name: Run tests
+      - name: Run Tests
         run: pnpm test
+        env:
+          NODE_ENV: test
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
 
-  build:
+  security:
     needs: test
     runs-on: ubuntu-latest
-    environment: production
-    env:
-      NEXT_PUBLIC_SUPABASE_URL: ${{ github.secrets.NEXT_PUBLIC_SUPABASE_URL }}
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ github.secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          
+      - name: Run security scan
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+          
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript"
+
+  build:
+    needs: [test, security]
+    runs-on: ubuntu-latest
+    environment: production
+    outputs:
+      preview_url: ${{ steps.vercel-deploy.outputs.preview_url }}
+      
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -60,79 +120,65 @@ jobs:
           node-version: '20.x'
           cache: 'pnpm'
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          run_install: false
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+        env:
+          NPM_CONFIG_AUDIT: false
+          NPM_CONFIG_FUND: false
 
       - name: Build
         run: pnpm build --frozen-lockfile
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
 
   deploy:
     needs: build
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     environment: production
-    env:
-      NEXT_PUBLIC_SUPABASE_URL: ${{ github.secrets.NEXT_PUBLIC_SUPABASE_URL }}
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ github.secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-      VERCEL_PROJECT_ID: prj_ZcvIEwYIBFQBfbJafOjGuc2THSbA
-      VERCEL_DEPLOY_HOOK: MRewLE6RLO
+    concurrency: 
+      group: production
+      cancel-in-progress: false
+    
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build
-        run: pnpm build --frozen-lockfile
-
-      - name: Trigger Vercel Deployment
+      - name: Deploy to Production
         id: deploy
+        uses: actions/github-script@v7
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: |
-          DEPLOY_RESPONSE=$(curl -X POST \
-            -H "Authorization: Bearer $VERCEL_TOKEN" \
-            "https://api.vercel.com/v1/integrations/deploy/$VERCEL_PROJECT_ID/$VERCEL_DEPLOY_HOOK")
-          JOB_ID=$(echo $DEPLOY_RESPONSE | jq -r '.job.id')
-          echo "job_id=$JOB_ID" >> $GITHUB_OUTPUT
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        with:
+          script: |
+            const result = await exec.getExecOutput('vercel', [
+              '--prod',
+              '--token',
+              process.env.VERCEL_TOKEN,
+              '--yes'
+            ]);
+            console.log(result.stdout);
+            return result.stdout;
 
-      - name: Monitor Deployment
-        env:
-          JOB_ID: ${{ steps.deploy.outputs.job_id }}
-          VERCEL_TOKEN: ${{ github.secrets.VERCEL_TOKEN }}
-        run: |
-          echo "Monitoring deployment job: $JOB_ID"
-          MAX_ATTEMPTS=30
-          ATTEMPT=0
-
-          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-            RESPONSE=$(curl -H "Authorization: Bearer $VERCEL_TOKEN" \
-              "https://api.vercel.com/v1/deployments/$JOB_ID")
-            
-            STATE=$(echo $RESPONSE | jq -r '.state')
-            echo "Deployment state: $STATE"
-            
-            if [ "$STATE" = "READY" ]; then
-              URL=$(echo $RESPONSE | jq -r '.url')
-              echo "Deployment successful! URL: $URL"
-              exit 0
-            elif [ "$STATE" = "ERROR" ]; then
-              echo "Deployment failed!"
-              exit 1
-            fi
-            
-            ATTEMPT=$((ATTEMPT + 1))
-            sleep 10
-          done
-
-          echo "Deployment timed out after $MAX_ATTEMPTS attempts"
-          exit 1
+      - name: Comment Deployment URL
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `✅ Production deployment complete`
+            })
 
       - name: Notify on Success
         if: success()

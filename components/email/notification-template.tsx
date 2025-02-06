@@ -1,5 +1,4 @@
 import './notification-template.css';
-import { type NotificationTemplateProps } from '@/lib/types';
 
 interface NotificationTemplateProps {
   title: string;
@@ -16,28 +15,41 @@ export function NotificationTemplate({
   actionUrl,
   actionText,
 }: NotificationTemplateProps): React.ReactElement {
-  return `
-    <!DOCTYPE html>
+  return (
     <html>
       <head>
-        <meta charset="utf-8">
-        <title>${title}</title>
+        <meta charSet="utf-8" />
+        <title>{title}</title>
       </head>
       <body>
-        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h1 style="color: #333;">${title}</h1>
-          <p>Hello ${recipientName},</p>
-          <p>${message}</p>
-          ${actionUrl && actionText ? `
+        <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px' }}>
+          <h1 style={{ color: '#333' }}>{title}</h1>
+          <p>Hello {recipientName},</p>
+          <p>{message}</p>
+          {actionUrl && actionText && (
             <p>
-              <a href="${actionUrl}" style="background: #0070f3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px;">
-                ${actionText}
+              <a
+                href={actionUrl}
+                style={{
+                  backgroundColor: '#007bff',
+                  color: '#ffffff',
+                  padding: '10px 20px',
+                  textDecoration: 'none',
+                  borderRadius: '5px',
+                  display: 'inline-block',
+                }}
+              >
+                {actionText}
               </a>
             </p>
-          ` : ''}
-          <p>Best regards,<br>Your Team</p>
+          )}
+          <p>
+            Best regards,
+            <br />
+            Your Team
+          </p>
         </div>
       </body>
     </html>
-  `;
+  );
 }

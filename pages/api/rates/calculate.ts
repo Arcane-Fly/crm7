@@ -3,12 +3,14 @@ import { z } from 'zod';
 
 import { createLogger } from '@/lib/services/logger';
 import { RateManagementServiceImpl } from '@/lib/services/rates/rate-management-service';
+import { withApiAuthRequired } from '@auth0/nextjs-auth0/edge';
 
 import type { ApiResponse } from '@/lib/types/api';
-import type {
-  RateTemplate,
-  RateCalculationResponse,
-} from '@/lib/types/rates';
+import type { RateTemplate, RateCalculationResponse } from '@/lib/types/rates';
+
+export const config = {
+  runtime: 'edge',
+};
 
 const logger = createLogger('RateCalculationAPI');
 
@@ -35,21 +37,27 @@ const rateService = new RateManagementServiceImpl({
  * POST /api/rates/calculate
  * Calculates rates based on template and parameters
  */
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<ApiResponse<RateCalculationResponse>>
-): Promise<void> {
+export default withApiAuthRequired(async function handler(req: NextApiRequest): Promise<Response> {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   try {
     const parsedBody = calculateRequestBodySchema.safeParse(req.body);
 
     if (!parsedBody.success) {
-      return res.status(400).json({
-        error: parsedBody.error.issues.map(issue => issue.message).join(', '),
-      });
+      return new Response(
+        JSON.stringify({
+          error: parsedBody.error.issues.map((issue) => issue.message).join(', '),
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     const body = parsedBody.data;
@@ -63,20 +71,37 @@ export default async function handler(
     const validationResult = await rateService.validateRateTemplate(template);
 
     if (!validationResult.isValid) {
-      return res.status(400).json({
-        error: validationResult.error ?? 'Invalid rate template',
-      });
+      return new Response(
+        JSON.stringify({
+          error: validationResult.error ?? 'Invalid rate template',
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     const result = await rateService.calculateRate(template);
 
-    return res.status(200).json({
-      data: result,
-    });
+    return new Response(
+      JSON.stringify({
+        data: result,
+      }),
+      {
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   } catch (error: unknown) {
     logger.error('Failed to calculate rate', { error });
-    return res.status(500).json({
-      error: error instanceof Error ? error.message : 'Unknown error',
-    });
+    return new Response(
+      JSON.stringify({
+        error: error instanceof Error ? error.message : 'Unknown error',
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   }
-}
+});
