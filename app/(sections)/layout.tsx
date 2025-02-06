@@ -2,7 +2,11 @@ import { type ReactNode } from 'react';
 import { SideNav } from '@/components/navigation/side-nav';
 import { TopNav } from '@/components/navigation/top-nav';
 
-export default function SectionsLayout({ children }: { children: React.ReactNode }) {
+interface LayoutProps {
+  children: ReactNode;
+}
+
+export default function SectionsLayout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen flex">
       <SideNav />

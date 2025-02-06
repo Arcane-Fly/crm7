@@ -1,6 +1,12 @@
-import '@/styles/globals.css';
-
+import { type ReactNode } from 'react';
+import { type Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { cookies } from 'next/headers';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { Toaster } from '@/components/ui/toaster';
+import { AuthProvider } from '@/lib/auth/context';
+import SupabaseProvider from '@/lib/supabase/supabase-provider';
+import '@/styles/globals.css';
 
 import { PerformanceMonitor } from '@/components/monitoring/PerformanceMonitor';
 import { Providers } from '@/components/providers';
@@ -9,11 +15,8 @@ import { Navbar } from '@/components/ui/navbar';
 import { Sidebar } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 
-import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { SupabaseProvider } from '@/lib/supabase/supabase-provider';
-import { AuthProvider } from '@/lib/auth/context';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -29,30 +32,15 @@ if (originalEmitWarning) {
   }) as typeof process.emitWarning;
 }
 
-export const metadata = {
-  title: 'CRM7',
-  description: 'Modern CRM for modern businesses',
+export const metadata: Metadata = {
+  title: 'CRM7R',
+  description: 'Next-generation CRM platform',
   viewport: 'width=device-width, initial-scale=1',
   icons: {
     icon: [
       {
         url: '/favicon.ico',
-        sizes: 'any',
-      },
-      {
-        url: '/icon.png',
-        type: 'image/png',
         sizes: '32x32',
-      },
-      {
-        url: '/icon.png',
-        type: 'image/png',
-        sizes: '192x192',
-      },
-      {
-        url: '/icon.png',
-        type: 'image/png',
-        sizes: '512x512',
       },
     ],
     apple: [
@@ -63,20 +51,60 @@ export const metadata = {
       },
     ],
   },
+  manifest: '/site.webmanifest',
 };
 
-interface RootLayoutProps {
-  children: React.ReactNode;
+async function getSession() {
+  const cookieStore = cookies();
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          try {
+            cookieStore.set({ name, value, ...options });
+          } catch (error) {
+            // Handle cookie setting error
+            console.error('Error setting cookie:', error);
+          }
+        },
+        remove(name: string, options: CookieOptions) {
+          try {
+            cookieStore.set({ name, value: '', ...options, maxAge: 0 });
+          } catch (error) {
+            // Handle cookie removal error
+            console.error('Error removing cookie:', error);
+          }
+        },
+      },
+    }
+  );
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  return session;
 }
 
-export default function RootLayout({ children }: RootLayoutProps) {
+export default async function RootLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const session = await getSession();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         {(process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview") && (
-          // eslint-disable-next-line @next/next/no-sync-scripts
           <script
             data-recording-token="dIhQ6zTg94bm6TlHhZVrK5pwWfrh7bdeAwRI6VrP"
             data-is-production-environment="false"
@@ -93,7 +121,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           disableTransitionOnChange
         >
           <SupabaseProvider>
-            <AuthProvider>
+            <AuthProvider initialSession={session}>
               <TooltipProvider>
                 <PerformanceProvider>
                   <Providers>

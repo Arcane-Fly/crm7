@@ -1,9 +1,8 @@
 'use client';
 
+import * as React from 'react';
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
 import { Check } from 'lucide-react';
-import * as React from 'react';
-
 import { cn } from '@/lib/utils';
 
 const Checkbox = React.forwardRef<
@@ -11,30 +10,45 @@ const Checkbox = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root> & {
     indeterminate?: boolean;
   }
->(({ className, indeterminate, ...props }, ref): React.ReactElement => (
-  <CheckboxPrimitive.Root
-    ref={(node) => {
-      if (node) {
-        (node as any).indeterminate = indeterminate;
-      }
-      if (typeof ref === 'function') ref(node);
-      else if (ref) ref.current = node;
-    }}
-    className={cn(
-      'peer h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground',
-      className,
-    )}
-    {...props}
-  >
-    <CheckboxPrimitive.Indicator className={cn('flex items-center justify-center text-current')}>
-      {indeterminate ? (
-        <div className="h-2 w-2 bg-current" />
-      ) : (
-        <Check className="h-4 w-4" />
+>(({ className, indeterminate, ...props }, ref) => {
+  const checkboxRef = React.useRef<HTMLButtonElement>(null);
+
+  React.useEffect(() => {
+    if (checkboxRef.current && typeof indeterminate === 'boolean') {
+      checkboxRef.current.dataset.state = indeterminate ? 'indeterminate' : props.checked ? 'checked' : 'unchecked';
+    }
+  }, [indeterminate, props.checked]);
+
+  return (
+    <CheckboxPrimitive.Root
+      ref={(node) => {
+        // Handle both the forwarded ref and our internal ref
+        if (typeof ref === 'function') {
+          ref(node);
+        } else if (ref) {
+          ref.current = node;
+        }
+        if (checkboxRef.current) {
+          checkboxRef.current = node;
+        }
+      }}
+      className={cn(
+        'peer h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[state=indeterminate]:bg-primary data-[state=indeterminate]:text-primary-foreground',
+        className
       )}
-    </CheckboxPrimitive.Indicator>
-  </CheckboxPrimitive.Root>
-));
+      {...props}
+    >
+      <CheckboxPrimitive.Indicator className={cn('flex items-center justify-center text-current')}>
+        {indeterminate ? (
+          <div className="h-2 w-2 bg-current" />
+        ) : (
+          <Check className="h-4 w-4" />
+        )}
+      </CheckboxPrimitive.Indicator>
+    </CheckboxPrimitive.Root>
+  );
+});
+
 Checkbox.displayName = CheckboxPrimitive.Root.displayName;
 
 export { Checkbox };
