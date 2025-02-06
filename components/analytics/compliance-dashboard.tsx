@@ -1,17 +1,20 @@
 import { useState, useEffect } from 'react';
 import { type ComplianceRecord } from '@/lib/types';
+import { createClient } from '@/lib/supabase/client';
+import { calculateStats } from '@/lib/utils/stats';
 
 export function ComplianceDashboard(): React.ReactElement {
   const [_records, setRecords] = useState<ComplianceRecord[]>([]);
+  const supabase = createClient();
 
   useEffect((): void => {
     const fetchData = async (): Promise<void> => {
       try {
         const { data, error } = await supabase.from('compliance_records').select('*');
-        
-        if (typeof error !== "undefined" && error !== null) throw error;
-        
-        if (typeof data !== "undefined" && data !== null) {
+
+        if (typeof error !== 'undefined' && error !== null) throw error;
+
+        if (typeof data !== 'undefined' && data !== null) {
           setRecords(data);
           calculateStats(data);
         }
@@ -36,5 +39,16 @@ export function ComplianceDashboard(): React.ReactElement {
     }
   };
 
-  // Rest of component implementation...
+  return (
+    <div className="p-4">
+      <h2 className="text-2xl font-bold mb-4">Compliance Dashboard</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Placeholder for compliance metrics */}
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h3 className="text-lg font-semibold mb-2">Compliance Rate</h3>
+          <p className="text-3xl font-bold text-green-500">95%</p>
+        </div>
+      </div>
+    </div>
+  );
 }

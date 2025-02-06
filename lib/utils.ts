@@ -42,7 +42,7 @@ export function generateId(): string {
 
 export function debounce<T extends (...args: unknown[]) => void>(
   func: T,
-  wait: number,
+  wait: number
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout;
 
@@ -55,4 +55,12 @@ export function debounce<T extends (...args: unknown[]) => void>(
     clearTimeout(timeout);
     timeout = setTimeout(later, wait);
   };
+}
+
+export function safeMap<T, U>(
+  items: T[] | null | undefined,
+  callback: (item: T, index: number) => U
+): U[] {
+  if (!items) return [];
+  return items.map(callback);
 }

@@ -14,7 +14,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { User } from '@supabase/supabase-js';
 
-export function UserButton() {
+interface UserMetadata {
+  avatar_url?: string;
+  full_name?: string;
+}
+
+export function UserButton(): React.ReactElement {
   const [user, setUser] = useState<User | null>(null);
   const supabase = createClient();
 
@@ -30,7 +35,7 @@ export function UserButton() {
     };
   }, [supabase.auth]);
 
-  const handleSignOut = async () => {
+  const handleSignOut = async (): Promise<void> => {
     const { error } = await supabase.auth.signOut();
     if (error) {
       console.error('Error signing out:', error.message);
@@ -45,12 +50,14 @@ export function UserButton() {
     );
   }
 
+  const metadata = user.user_metadata as UserMetadata;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={user.user_metadata.avatar_url} alt={user.email ?? ''} />
+            <AvatarImage src={metadata.avatar_url} alt={user.email ?? ''} />
             <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
           </Avatar>
         </Button>
@@ -58,9 +65,7 @@ export function UserButton() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">
-              {user.user_metadata.full_name || user.email}
-            </p>
+            <p className="text-sm font-medium leading-none">{metadata.full_name || user.email}</p>
             <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
           </div>
         </DropdownMenuLabel>
