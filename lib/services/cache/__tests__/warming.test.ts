@@ -31,7 +31,7 @@ describe('CacheWarming', () => {
   describe('Registration and Access', () => {
     it('should register and track cache entries', () => {
       const factory = jest.fn().mockResolvedValue('test-value');
-      warming.register({ key: 'test-key', factory });
+      warming.register('test-key', factory);
 
       const stats = warming.getStats();
       expect(stats.totalEntries).toBe(1);
@@ -39,7 +39,7 @@ describe('CacheWarming', () => {
 
     it('should track access patterns', () => {
       const factory = jest.fn().mockResolvedValue('test-value');
-      warming.register({ key: 'test-key', factory });
+      warming.register('test-key', factory);
       warming.recordAccess('test-key');
 
       const stats = warming.getStats();
@@ -48,7 +48,7 @@ describe('CacheWarming', () => {
 
     it('should unregister entries', () => {
       const factory = jest.fn().mockResolvedValue('test-value');
-      warming.register({ key: 'test-key', factory });
+      warming.register('test-key', factory);
       warming.unregister('test-key');
 
       const stats = warming.getStats();
@@ -61,8 +61,8 @@ describe('CacheWarming', () => {
       const factory1 = jest.fn().mockResolvedValue('value1');
       const factory2 = jest.fn().mockResolvedValue('value2');
 
-      warming.register({ key: 'low-priority', factory: factory1, priority: 1 });
-      warming.register({ key: 'high-priority', factory: factory2, priority: 2 });
+      warming.register('low-priority', factory1);
+      warming.register('high-priority', factory2);
 
       warming.start();
       await jest.runOnlyPendingTimersAsync();
@@ -83,7 +83,7 @@ describe('CacheWarming', () => {
           ),
       }));
 
-      factories.forEach(f => warming.register(f));
+      factories.forEach(f => warming.register(f.key, f.factory));
       warming.start();
 
       await jest.advanceTimersByTimeAsync(50);
@@ -104,7 +104,7 @@ describe('CacheWarming', () => {
         .mockRejectedValueOnce(new Error('Second attempt failed'))
         .mockResolvedValueOnce('success');
 
-      warming.register({ key: 'retry-test', factory });
+      warming.register('retry-test', factory);
       warming.start();
 
       await jest.runOnlyPendingTimersAsync();
@@ -117,7 +117,7 @@ describe('CacheWarming', () => {
     it('should handle permanent failures gracefully', async () => {
       const factory = jest.fn().mockRejectedValue(new Error('Permanent failure'));
 
-      warming.register({ key: 'failing-test', factory });
+      warming.register('failing-test', factory);
       warming.start();
 
       await jest.runOnlyPendingTimersAsync();
@@ -134,7 +134,7 @@ describe('CacheWarming', () => {
   describe('Periodic Warming', () => {
     it('should warm cache periodically', async () => {
       const factory = jest.fn().mockResolvedValue('test-value');
-      warming.register({ key: 'periodic-test', factory });
+      warming.register('periodic-test', factory);
       warming.start();
 
       // First warming
@@ -148,7 +148,7 @@ describe('CacheWarming', () => {
 
     it('should not start multiple warming cycles', async () => {
       const factory = jest.fn().mockResolvedValue('test-value');
-      warming.register({ key: 'test-key', factory });
+      warming.register('test-key', factory);
 
       warming.start();
       warming.start(); // Second call should be ignored
@@ -159,7 +159,7 @@ describe('CacheWarming', () => {
 
     it('should stop warming when requested', async () => {
       const factory = jest.fn().mockResolvedValue('test-value');
-      warming.register({ key: 'test-key', factory });
+      warming.register('test-key', factory);
 
       warming.start();
       await jest.runOnlyPendingTimersAsync();
@@ -174,7 +174,7 @@ describe('CacheWarming', () => {
   describe('Performance Monitoring', () => {
     it('should record cache hits and latency', async () => {
       const factory = jest.fn().mockResolvedValue('test-value');
-      warming.register({ key: 'test-key', factory });
+      warming.register('test-key', factory);
       warming.start();
 
       await jest.runOnlyPendingTimersAsync();
@@ -184,7 +184,7 @@ describe('CacheWarming', () => {
 
     it('should track warming statistics', async () => {
       const factory = jest.fn().mockResolvedValue('test-value');
-      warming.register({ key: 'stats-test', factory, priority: 2 });
+      warming.register('stats-test', factory);
       warming.recordAccess('stats-test');
 
       const stats = warming.getStats();
@@ -192,7 +192,7 @@ describe('CacheWarming', () => {
         expect.objectContaining({
           totalEntries: 1,
           activeEntries: 1,
-          entriesByPriority: { 2: 1 },
+          entriesByPriority: { 0: 1 },
           isWarming: false,
         }),
       );
