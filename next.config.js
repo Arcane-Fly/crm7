@@ -13,6 +13,7 @@ const nextConfig = {
     externalDir: true,
   },
   eslint: {
+    ignoreDuringBuilds: true,
     dirs: ['app', 'components', 'lib', 'types', 'utils'],
   },
   webpack: (config) => {

@@ -1,12 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getAllowances } from '@/lib/services/fairwork/allowances';
-import { logger } from '@/lib/logger';
 import { createApiResponse, createErrorResponse } from '@/lib/api/response';
+import { logger } from '@/lib/logger';
+import { getAllowances } from '@/lib/services/fairwork/allowances';
+import { NextRequest } from 'next/server';
 
 export async function GET(
-  req: NextRequest,
   { params }: { params: { awardCode: string; classificationCode: string } }
-): Promise<NextResponse> {
+) {
   try {
     const { awardCode, classificationCode } = params;
     if (!awardCode || !classificationCode) {

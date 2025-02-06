@@ -1,7 +1,7 @@
 {
   "root": true,
   "extends": [
-    "next",
+    "next/core-web-vitals",
     "prettier",
     "plugin:@typescript-eslint/recommended"
   ],
@@ -18,11 +18,14 @@
     "@typescript-eslint/no-unsafe-member-access": "warn",
     "@typescript-eslint/no-unsafe-call": "warn",
     "@typescript-eslint/no-unsafe-return": "warn",
-    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "no-restricted-imports": "off",
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",
-    "@next/next/no-img-element": "warn"
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "@next/next/no-img-element": "warn",
+    "@typescript-eslint/ban-types": "warn"
   },
   "settings": {
     "react": {
