@@ -15,31 +15,33 @@ const inter = Inter({ subsets: ['latin'] });
 // Suppress punycode deprecation warning until dependencies are updated
 if (process.emitWarning && typeof process.emitWarning === 'function') {
   const originalEmitWarning = process.emitWarning;
-  type EmitWarningOptions = {
-    type?: string;
-    code?: string;
-    detail?: string;
-    [key: string]: any;
-  };
-
-  process.emitWarning = function(
+  
+  // Define a wrapper that matches Node's process.emitWarning signatures
+  const warningWrapper = function(
     warning: string | Error,
-    optionsOrType?: EmitWarningOptions | string,
-    code?: string
+    typeOrCtor?: string | Function,
+    codeOrCtor?: string | Function,
+    ctor?: Function
   ): void {
-    // Check if the warning is about punycode
+    // Check if warning is about punycode
     const warningText = warning instanceof Error ? warning.message : warning;
     if (warningText.includes('punycode')) {
       return;
     }
 
-    // Handle both function signatures
-    if (typeof optionsOrType === 'string') {
-      originalEmitWarning.call(process, warning, optionsOrType, code);
+    // Forward the call with all original arguments
+    if (arguments.length === 1) {
+      originalEmitWarning.call(process, warning);
+    } else if (arguments.length === 2) {
+      originalEmitWarning.call(process, warning, typeOrCtor);
+    } else if (arguments.length === 3) {
+      originalEmitWarning.call(process, warning, typeOrCtor, codeOrCtor);
     } else {
-      originalEmitWarning.call(process, warning, optionsOrType);
+      originalEmitWarning.call(process, warning, typeOrCtor, codeOrCtor, ctor);
     }
   };
+
+  process.emitWarning = warningWrapper;
 }
 
 export const metadata: Metadata = {
