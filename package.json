@@ -143,7 +143,7 @@
     "@vitest/coverage-v8": "^1.2.2",
     "@vitest/ui": "^1.2.2",
     "autoprefixer": "^10.4.17",
-    "canvas": "^2.11.2",
+    "canvas": "^3.0.0",
     "cssnano": "^6.0.3",
     "depcheck": "^1.4.7",
     "eslint": "^8.56.0",
