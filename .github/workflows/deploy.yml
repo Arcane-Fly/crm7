@@ -11,16 +11,24 @@ permissions:
 
 on:
   push:
-    branches: [main, master]
+    branches: [master]
   pull_request:
-    branches: [main]
-    types: [opened, synchronize]
+    branches: [master]
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 20
+  PNPM_VERSION: 10.2.0
+
 jobs:
-  test:
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
-    environment: production
+    environment: development
     env:
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
@@ -30,47 +38,59 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-          ref: ${{ github.event.pull_request.base.ref || github.ref_name }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
-          cache: 'pnpm'
+          node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install pnpm
+      - name: Setup PNPM
         uses: pnpm/action-setup@v2
         with:
-          version: 8
+          version: ${{ env.PNPM_VERSION }}
           run_install: false
 
       - name: Get pnpm store directory
-        id: pnpm-cache
         shell: bash
         run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
-      - uses: actions/cache@v4
-        name: Setup pnpm cache
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
         with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          path: ${{ env.STORE_PATH }}
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-        env:
-          NPM_CONFIG_AUDIT: false
-          NPM_CONFIG_FUND: false
 
-      - name: Run linter
+      - name: Run ESLint
         run: pnpm lint
 
-      - name: Run type check
+      - name: Check Types
         run: pnpm type-check
+
+  test:
+    needs: lint
+    name: Test
+    runs-on: ubuntu-latest
+    environment: development
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
 
       - name: Run Tests
         run: pnpm test
@@ -81,56 +101,53 @@ jobs:
 
   security:
     needs: test
+    name: Security Scan
     runs-on: ubuntu-latest
+    environment: development
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
-          
-      - name: Run security scan
-        uses: github/codeql-action/init@v3
-        with:
-          languages: javascript
-          
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
-        with:
-          category: "/language:javascript"
+
+      - name: Run Security Scan
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   build:
-    needs: [test, security]
+    needs: security
+    name: Build
     runs-on: ubuntu-latest
-    environment: production
-    outputs:
-      preview_url: ${{ steps.vercel-deploy.outputs.preview_url }}
-      
+    environment: preview
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
-          cache: 'pnpm'
+          node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install pnpm
+      - name: Setup PNPM
         uses: pnpm/action-setup@v2
         with:
-          version: 8
+          version: ${{ env.PNPM_VERSION }}
           run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-        env:
-          NPM_CONFIG_AUDIT: false
-          NPM_CONFIG_FUND: false
 
       - name: Build
         run: pnpm build --frozen-lockfile
@@ -142,14 +159,13 @@ jobs:
 
   deploy:
     needs: build
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    name: Deploy
     runs-on: ubuntu-latest
     environment: production
-    concurrency: 
-      group: production
-      cancel-in-progress: false
-    
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
       - name: Deploy to Production
         id: deploy
         uses: actions/github-script@v7
@@ -165,28 +181,10 @@ jobs:
               process.env.VERCEL_TOKEN,
               '--yes'
             ]);
-            console.log(result.stdout);
-            return result.stdout;
-
-      - name: Comment Deployment URL
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `✅ Production deployment complete`
-            })
-
-      - name: Notify on Success
-        if: success()
-        run: |
-          echo " Deployment successful!"
-          echo "Visit: https://crm7.vercel.app"
-
-      - name: Notify on Failure
-        if: failure()
-        run: |
-          echo " Deployment failed!"
+            
+            console.log('Deployment Result:', result.stdout);
+            
+            if (result.exitCode !== 0) {
+              core.setFailed('Deployment failed');
+              throw new Error('Deployment failed');
+            }
