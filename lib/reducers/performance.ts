@@ -1,58 +1,40 @@
+import type { PerformanceState, PerformanceAction } from '@/lib/types';
+
 export interface PerformanceState {
-  metrics: {
-    fcp: number | null;
-    lcp: number | null;
-    fid: number | null;
-    cls: number | null;
-    ttfb: number | null;
-  };
+  memory: any | null;
+  timing: any | null;
+  navigation: any | null;
 }
 
 export const initialState: PerformanceState = {
-  metrics: {
-    fcp: null,
-    lcp: null,
-    fid: null,
-    cls: null,
-    ttfb: null,
-  },
+  memory: null,
+  timing: null,
+  navigation: null,
 };
 
 type PerformanceAction =
-  | { type: 'SET_FCP'; payload: number }
-  | { type: 'SET_LCP'; payload: number }
-  | { type: 'SET_FID'; payload: number }
-  | { type: 'SET_CLS'; payload: number }
-  | { type: 'SET_TTFB'; payload: number };
+  | { type: 'UPDATE_MEMORY'; payload: any }
+  | { type: 'UPDATE_TIMING'; payload: any }
+  | { type: 'UPDATE_NAVIGATION'; payload: any };
 
 export type { PerformanceAction }; // Export PerformanceAction
 
 export function performanceReducer(state: PerformanceState, action: PerformanceAction): PerformanceState {
   switch (action.type) {
-    case 'SET_FCP':
+    case 'UPDATE_MEMORY':
       return {
         ...state,
-        metrics: { ...state.metrics, fcp: action.payload },
+        memory: action.payload,
       };
-    case 'SET_LCP':
+    case 'UPDATE_TIMING':
       return {
         ...state,
-        metrics: { ...state.metrics, lcp: action.payload },
+        timing: action.payload,
       };
-    case 'SET_FID':
+    case 'UPDATE_NAVIGATION':
       return {
         ...state,
-        metrics: { ...state.metrics, fid: action.payload },
-      };
-    case 'SET_CLS':
-      return {
-        ...state,
-        metrics: { ...state.metrics, cls: action.payload },
-      };
-    case 'SET_TTFB':
-      return {
-        ...state,
-        metrics: { ...state.metrics, ttfb: action.payload },
+        navigation: action.payload,
       };
     default:
       return state;

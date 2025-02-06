@@ -1,6 +1,5 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
-import { type NextRequest, NextResponse } from 'next/server';
-import { updateSession } from '@/utils/supabase/middleware';
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { type NextRequest, NextResponse } from 'next/server'
 
 const PUBLIC_ROUTES = ['/auth', '/api/auth'];
 const SECURITY_HEADERS = {
@@ -11,34 +10,63 @@ const SECURITY_HEADERS = {
   'X-XSS-Protection': '1; mode=block',
 };
 
-const PROTECTED_ROUTES = {
-  '/admin': ['admin'],
-  '/api/admin': ['admin'],
-};
-
-export async function middleware(request: NextRequest): Promise<NextResponse> {
-  const path = request.nextUrl.pathname;
-
-  // Allow public routes
-  const isPublicRoute = PUBLIC_ROUTES.some((route) => path.startsWith(route));
-  if (isPublicRoute) {
-    const response = NextResponse.next();
-    // Add security headers
-    Object.entries(SECURITY_HEADERS).forEach(([key, value]) => {
-      response.headers.set(key, value);
-    });
-    return response;
-  }
-
-  // Update auth session
-  const response = await updateSession(request);
+export async function middleware(request: NextRequest) {
+  let response = NextResponse.next()
 
   // Add security headers to all responses
   Object.entries(SECURITY_HEADERS).forEach(([key, value]) => {
-    response.headers.set(key, value);
-  });
+    response.headers.set(key, value)
+  })
 
-  return response;
+  // Allow public routes without authentication
+  const path = request.nextUrl.pathname
+  if (PUBLIC_ROUTES.some((route) => path.startsWith(route))) {
+    return response
+  }
+
+  // Create Supabase client for auth
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        async get(name: string) {
+          const cookie = await request.cookies.get(name)
+          return cookie?.value
+        },
+        async set(name: string, value: string, options: CookieOptions) {
+          response.cookies.set({
+            name,
+            value,
+            ...options,
+          })
+        },
+        async remove(name: string, options: CookieOptions) {
+          response.cookies.set({
+            name,
+            value: '',
+            ...options,
+          })
+        },
+      },
+    }
+  )
+
+  // Refresh session if it exists
+  const { data: { session }, error } = await supabase.auth.getSession()
+
+  if (error) {
+    console.error('Error refreshing session:', error)
+  }
+
+  // Redirect to login if no session and not on a public route
+  if (!session && !PUBLIC_ROUTES.some(route => path.startsWith(route))) {
+    const redirectUrl = new URL('/auth/login', request.url)
+    redirectUrl.searchParams.set('redirectedFrom', request.nextUrl.pathname)
+    return NextResponse.redirect(redirectUrl)
+  }
+
+  return response
 }
 
 export const config = {
@@ -49,7 +77,8 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public folder
+     * - static assets
      */
-    '/((?!_next/static|_next/image|favicon.ico|public/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|site.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
-};
+}

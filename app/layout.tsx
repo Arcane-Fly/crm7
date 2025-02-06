@@ -1,5 +1,5 @@
 import { type ReactNode } from 'react';
-import { type Metadata } from 'next';
+import { type Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { cookies } from 'next/headers';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
@@ -32,10 +32,21 @@ if (originalEmitWarning) {
   }) as typeof process.emitWarning;
 }
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: 'white' },
+    { media: '(prefers-color-scheme: dark)', color: 'black' }
+  ]
+};
+
 export const metadata: Metadata = {
   title: 'CRM7R',
   description: 'Next-generation CRM platform',
-  viewport: 'width=device-width, initial-scale=1',
+  manifest: '/site.webmanifest',
   icons: {
     icon: [
       {
@@ -51,7 +62,6 @@ export const metadata: Metadata = {
       },
     ],
   },
-  manifest: '/site.webmanifest',
 };
 
 async function getSession() {
@@ -62,24 +72,15 @@ async function getSession() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
+        async get(name: string) {
+          const cookie = await cookieStore.get(name);
+          return cookie?.value;
         },
-        set(name: string, value: string, options: CookieOptions) {
-          try {
-            cookieStore.set({ name, value, ...options });
-          } catch (error) {
-            // Handle cookie setting error
-            console.error('Error setting cookie:', error);
-          }
+        async set(name: string, value: string, options: CookieOptions) {
+          await cookieStore.set({ name, value, ...options });
         },
-        remove(name: string, options: CookieOptions) {
-          try {
-            cookieStore.set({ name, value: '', ...options, maxAge: 0 });
-          } catch (error) {
-            // Handle cookie removal error
-            console.error('Error removing cookie:', error);
-          }
+        async remove(name: string, options: CookieOptions) {
+          await cookieStore.delete({ name, ...options });
         },
       },
     }
@@ -103,7 +104,6 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
         {(process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview") && (
           <script
             data-recording-token="dIhQ6zTg94bm6TlHhZVrK5pwWfrh7bdeAwRI6VrP"
@@ -127,7 +127,7 @@ export default async function RootLayout({
                   <Providers>
                     <div className='relative flex min-h-screen flex-col'>
                       <Navbar />
-                      <div className='flex-1 items-start md:grid md:grid-cols-[220px_minmax(0: unknown,1fr)] md:gap-6 lg:grid-cols-[240px_minmax(0: unknown,1fr)] lg:gap-10'>
+                      <div className='flex-1 items-start md:grid md:grid-cols-[220px_minmax(0,1fr)] md:gap-6 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-10'>
                         <aside className='fixed top-14 z-30 -ml-2 hidden h-[calc(100vh-3.5rem)] w-full shrink-0 overflow-y-auto border-r md:sticky md:block'>
                           <Sidebar />
                         </aside>

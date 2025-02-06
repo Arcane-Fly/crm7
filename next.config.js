@@ -11,13 +11,20 @@ const nextConfig = {
   },
   experimental: {
     externalDir: true,
+    serverActions: {
+      allowedOrigins: ['localhost:3000'],
+    },
   },
   eslint: {
     ignoreDuringBuilds: true,
     dirs: ['app', 'components', 'lib', 'types', 'utils'],
   },
-  webpack: (config) => {
+  webpack: (config, { isServer }) => {
     config.resolve.alias['@/hooks'] = path.join(__dirname, 'hooks');
+    // Suppress punycode warning
+    config.ignoreWarnings = [
+      { module: /node_modules\/punycode/ }
+    ];
     return config;
   },
 };
