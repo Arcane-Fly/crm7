@@ -7,7 +7,7 @@ export default function AuthPage(): React.ReactElement {
         <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
         <p className="text-sm text-muted-foreground">Enter your email to sign in to your account</p>
       </div>
-      <AuthForm />
+      <AuthForm mode="signin" />
     </div>
   );
 }

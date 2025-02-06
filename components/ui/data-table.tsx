@@ -30,6 +30,10 @@ import { DataTableToolbar } from '@/components/ui/data-table-toolbar';
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  filterColumn?: string;
+  enableColumnVisibility?: boolean;
+  enableRowSelection?: boolean;
+  onSelectedIdsChange?: (ids: string[]) => void;
   filterableColumns?: {
     id: string;
     title: string;
@@ -52,6 +56,10 @@ export function DataTable<TData, TValue>({
   filterableColumns = [],
   searchableColumns = [],
   deleteRowsAction,
+  filterColumn,
+  enableColumnVisibility,
+  enableRowSelection,
+  onSelectedIdsChange,
 }: DataTableProps<TData, TValue>): React.ReactElement {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
@@ -67,7 +75,7 @@ export function DataTable<TData, TValue>({
       rowSelection,
       columnFilters,
     },
-    enableRowSelection: true,
+    enableRowSelection: enableRowSelection ?? true,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -79,6 +87,13 @@ export function DataTable<TData, TValue>({
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
+
+  React.useEffect(() => {
+    if (onSelectedIdsChange) {
+      const selectedIds = table.getSelectedRowModel().flatRows.map((row) => row.id);
+      onSelectedIdsChange(selectedIds);
+    }
+  }, [table, onSelectedIdsChange]);
 
   return (
     <div className="space-y-4">

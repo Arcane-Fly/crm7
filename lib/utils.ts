@@ -107,3 +107,8 @@ export function parseJSON<T>(jsonString: string, fallback: T): T {
     return fallback;
   }
 }
+
+export function safeMap<T, U>(items: T[] | undefined | null, fn: (item: T) => U): U[] {
+  if (!items) return [];
+  return items.map(fn);
+}
