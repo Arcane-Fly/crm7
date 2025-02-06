@@ -275,7 +275,7 @@ importers:
         specifier: ^1.50.0
         version: 1.50.1
       '@sentry/types':
-        specifier: ^8.54.0
+        specifier: ^8.53.0
         version: 8.54.0
       '@testing-library/jest-dom':
         specifier: ^6.4.2
