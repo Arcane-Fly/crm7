@@ -209,43 +209,32 @@
 
 ## Next Steps
 
-1. **Immediate Actions**
+### 1. Immediate Actions
 
-   - Form project teams
-   - Set up development environment
-   - Begin initial development
-   - Schedule kickoff meetings
+1. Form project teams
+2. Set up development environment
+3. Begin initial development
+4. Schedule kickoff meetings
 
-1. **Planning Requirements**
+### 2. Planning Requirements
 
-   - Detailed technical specifications
-   - Resource allocation
-   - Timeline confirmation
-   - Budget approval
+1. Detailed technical specifications
+2. Resource allocation
+3. Timeline confirmation
+4. Budget approval
 
-1. **Development Preparation**
-   - Code repository setup
-   - Development guidelines
-   - Testing framework
-   - Deployment strategy
-     Great. I will research the compliance, funding, and fair work/industrial requirements of the Vocational Education and Training (VET) industry and Group Training Organisations (GTOs) in Australia, particularly focusing on WAAMS (WA) and ADMS (national) funding structures while identifying equivalent systems in other states.
+### 3. Development Preparation
 
-Additionally, I will structure a detailed table outlining the perfect layout for your apprentice/employee management system, incorporating:
+1. Code repository setup
+2. Development guidelines
+3. Testing framework
+4. Deployment strategy
 
-- Navigation structure and modular system design
-- Key panels and required fields for each role
-- Compliance tracking features
-- Reporting capabilities for audits, funding applications, and workforce planning
-- Role-based access control and security considerations
-- Recommendations for integrations with payroll and compliance platforms
+## Compliance, Funding, and System Design for GTOs in Australian VET
 
-I will provide this information in a structured format with supporting documentation for implementation. I’ll update you when the research is complete.
+### 1. Regulatory Compliance
 
-# Compliance, Funding, and System Design for GTOs in Australian VET
-
-## 1. Regulatory Compliance
-
-### GTO Registration and Standards (National & State)
+#### 1.1 GTO Registration and Standards (National & State)
 
 **National Standards:** Group Training Organisations (GTOs) in Australia must be formally registered and comply with the _National Standards for Group Training Organisations_. These standards ensure GTOs operate ethically and effectively in recruiting, employing, and supporting apprentices/trainees through to completion ([Revised National Standards for Group Training Organisations. January 2017](https://static1.squarespace.com/static/623d648709262468921d0d04/t/623ff978bbcf3c4d242abbb5/1648359808662/GTO-National-Standards.pdf#:~:text=The%20key%20outcome%20for%20a,the%20quality%20assurance%20framework%20for)) ([Revised National Standards for Group Training Organisations. January 2017](https://static1.squarespace.com/static/623d648709262468921d0d04/t/623ff978bbcf3c4d242abbb5/1648359808662/GTO-National-Standards.pdf#:~:text=GTOs%20must%20comply%20with%20the,use%20the%20Group%20Training%20logo)) Compliance with the national standards is mandatory for registration, and only registered GTOs are eligible for government funding programs ([Revised National Standards for Group Training Organisations. January 2017](https://static1.squarespace.com/static/623d648709262468921d0d04/t/623ff978bbcf3c4d242abbb5/1648359808662/GTO-National-Standards.pdf#:~:text=GTOs%20must%20comply%20with%20the,use%20the%20Group%20Training%20logo)) Key focus areas include proper recruitment and induction, ongoing support and monitoring of apprentices, and sound governance and administration ([Revised National Standards for Group Training Organisations. January 2017](https://static1.squarespace.com/static/623d648709262468921d0d04/t/623ff978bbcf3c4d242abbb5/1648359808662/GTO-National-Standards.pdf#:~:text=a%20recognised%20qualification,the%20quality%20assurance%20framework%20for)) GTOs are listed on a national register once approved, signaling they meet these quality benchmarks ([Revised National Standards for Group Training Organisations. January 2017](https://static1.squarespace.com/static/623d648709262468921d0d04/t/623ff978bbcf3c4d242abbb5/1648359808662/GTO-National-Standards.pdf#:~:text=Only%20registered%20GTOs%20are%20eligible,use%20the%20Group%20Training%20logo))
 
@@ -253,7 +242,7 @@ I will provide this information in a structured format with supporting documenta
 
 **Employer Responsibilities:** A GTO is the legal employer of its apprentices and trainees, even though day-to-day work is carried out with host employers. As the legal employer, the GTO must uphold all obligations under the training contract and employment law ([Operating requirements for group training organisations | Department of Trade, Employment and Training](https://desbt.qld.gov.au/training/employers/gto/manual/requirements#:~:text=,principles%20of%20accountability%20and%20transparency)) This includes signing the official Training Contract with each apprentice/trainee, arranging a suitable Registered Training Organisation (RTO) for training delivery, and ensuring the apprentice is provided with the necessary work and support to fulfill the qualification. GTOs are accountable for the continuity and quality of employment and training – for example, if a host cannot provide required training experiences, the GTO must rotate the apprentice to another host to gain those skills ([Operating requirements for group training organisations | Department of Trade, Employment and Training](https://desbt.qld.gov.au/training/employers/gto/manual/requirements#:~:text=,any%20matters%20that%20may%20significantly)) They must also have governance and policies in place to ensure apprentices get the full range of work experience and that any host used is not a prohibited or unsafe employer ([Operating requirements for group training organisations | Department of Trade, Employment and Training](https://desbt.qld.gov.au/training/employers/gto/manual/requirements#:~:text=,any%20matters%20that%20may%20significantly)) In summary, GTOs act as an “umbrella” employer, taking on compliance duties so that host employers can participate in training without needing to manage the administrative burden of an apprenticeship.
 
-### Fair Work and Industrial Relations Standards
+### 1.2 Fair Work and Industrial Relations Standards
 
 **Award Wages:** GTOs, as employers, must comply with the Fair Work Act 2009 and relevant industrial instruments for their apprentices and trainees. Apprentices and trainees are usually covered by a modern award or enterprise agreement that specifies their minimum wage rates (often as a percentage of a qualified worker’s rate, increasing each year of the apprenticeship or as skills progress). For example, first-year apprentices may start at 50–60% of the tradesperson’s rate, with wages rising each year or upon reaching certain milestones ([[PDF] Adjustment of adult apprentice and trainee wages](https://www.fwc.gov.au/documents/wage-reviews/2022-23/background-paper-adjustment-of-adult-apprentice-and-trainee-wages.pdf#:~:text=43%20Where%20provisions%20for%20adult,Part%202%20of)) If the apprentice is an adult (over 21) or has prior experience, different wage provisions may apply according to the award. It is essential that GTOs pay at least these minimum rates and apply any penalty rates, loadings or allowances that the award requires. The **Fair Work Ombudsman’s Pay and Conditions Tool** is commonly used to calculate the correct pay rates for apprentices and trainees ([Hire an apprentice or trainee | business.gov.au](https://business.gov.au/people/employees/hire-an-apprentice-or-trainee#:~:text=,apprentice%20entitlements)) This ensures compliance with current award wage schedules, which are updated by the Fair Work Commission.
 
@@ -265,13 +254,13 @@ I will provide this information in a structured format with supporting documenta
 - **Allowances**: Any award-specific allowances (for example, tool allowances for trades, travel allowances, etc.) must be provided if the apprentice’s duties meet the criteria.
 - **Other conditions**: Apprentices also benefit from conditions like rest breaks and meal breaks as per the award, and they must be given a fair and safe system of work.
 
-Notably, **time spent attending formal training** (trade school or RTO training days) is considered time worked and must be paid at the appropriate rate ([Apprentice entitlements - Fair Work Ombudsman | FCTA Trade School Adelaide RTO#40057](https://www.fcta.com.au/apprentice-entitlements-fair-work-ombudsman/#:~:text=As%20an%20apprentice%20you%E2%80%99ll%20get,leave%2C%20public%20holidays%20and%20breaks)) ([Hire an apprentice or trainee | business.gov.au](https://business.gov.au/people/employees/hire-an-apprentice-or-trainee#:~:text=Other%20working%20conditions%20you%20need,your%20apprentice%20or%20trainee%20are)) The Fair Work Ombudsman explicitly notes that apprentices should be paid for their off-the-job training hours and that this time counts toward their ordinary hours ([Apprentice entitlements - Fair Work Ombudsman | FCTA Trade School Adelaide RTO#40057](https://www.fcta.com.au/apprentice-entitlements-fair-work-ombudsman/#:~:text=As%20an%20apprentice%20you%E2%80%99ll%20get,leave%2C%20public%20holidays%20and%20breaks)) Additionally, any fees for training or textbooks might be subject to either reimbursement or particular arrangements under the award or state legislation, so GTOs need to clarify who bears those costs (in many cases, employers/GTOs pay the RTO fees, but this can vary).
+Notably, **time spent attending formal training** (trade school or RTO training days) is considered time worked and must be paid at the appropriate rate ([Apprentice entitlements - Fair Work Ombudsman | FCTA Trade School Adelaide RTO#40057](https://www.fcta.com.au/apprentice-entitlements-fair-work-ombudsman/#:~:text=As%20an%20apprentice%20you%E2%80%99ll%20get,leave%2C%20public%20holidays%20and%20breaks)) ([Hire an apprentice or trainee | business.gov.au](https://business.gov.au/people/employees/hire-an-apprentice-or-trainee#:~:text=Other%20working%20conditions%20you%20need,your%20apprentice%20or%20trainee%20are)) The Fair Work system supports this by requiring that apprentices be paid for this training time ([Apprentice entitlements - Fair Work Ombudsman | FCTA Trade School Adelaide RTO#40057](https://www.fcta.com.au/apprentice-entitlements-fair-work-ombudsman/#:~:text=As%20an%20apprentice%20you%E2%80%99ll%20get,leave%2C%20public%20holidays%20and%20breaks)) Additionally, any fees for training or textbooks might be subject to either reimbursement or particular arrangements under the award or state legislation, so GTOs need to clarify who bears those costs (in many cases, employers/GTOs pay the RTO fees, but this can vary).
 
 **Employment Contracts:** While the Training Contract is a legal document binding the apprentice, GTO, and state training authority, it’s also best practice for the GTO to issue a formal **employment contract or letter of engagement** to the apprentice. This contract will outline the apprentice’s employment conditions (wage, work hours, duration of probation, etc.), reference the applicable award, and state that continued employment is subject to maintaining their training contract. The contract should also clarify the hosted employment arrangement (i.e. that the apprentice may be placed with various host employers but the GTO remains the primary employer) ([Revised National Standards for Group Training Organisations. January 2017](https://static1.squarespace.com/static/623d648709262468921d0d04/t/623ff978bbcf3c4d242abbb5/1648359808662/GTO-National-Standards.pdf#:~:text=Group%20Training%20Organisations%20,completion%20of%20the%20Training%20Contract)) All terms must meet or exceed the minimum standards in the Fair Work Act and relevant award.
 
 In summary, GTOs must mirror the standards of any good employer: **paying correct wages, providing entitlements, and having clear employment agreements**, while also managing the unique aspects of apprenticeships. They should maintain thorough records (timesheets, pay records, training attendance) as Fair Work inspectors can audit GTOs just like any other employer to ensure compliance with workplace laws.
 
-### Work Health & Safety (WHS) Obligations
+### 1.3 Work Health & Safety (WHS) Obligations
 
 **Shared Duty of Care:** Under Australia’s harmonized WHS laws (or equivalent state laws), both the GTO **and** the host employer have a duty to ensure the health and safety of the apprentice or trainee. A GTO is considered a PCBU (Person Conducting a Business or Undertaking) who is directing the apprentice’s work at a host site. SafeWork NSW guidance, for example, states _“As a GTO PCBU under the WHS laws, it is your duty to ensure, so far as is reasonably practicable, the health and safety of workers during their placement with host PCBU/s.”_ ([Group training: duties of persons conducting a business or undertaking | SafeWork NSW](https://www.safework.nsw.gov.au/resource-library/labour-hire/group-training-duties-of-persons-conducting-a-business-or-undertaking#:~:text=As%20a%20GTO%20PCBU%20under,have%20not%20been%20adequately%20controlled)) This means the GTO must take reasonable steps to eliminate or minimize any risks the apprentice may encounter at the host’s workplace. In practical terms, **before placing** an apprentice, the GTO should vet and assess the host employer’s safety record and work environment ([Group training: duties of persons conducting a business or undertaking | SafeWork NSW](https://www.safework.nsw.gov.au/resource-library/labour-hire/group-training-duties-of-persons-conducting-a-business-or-undertaking#:~:text=Before%20you%20place%20a%20GTO,or%20trainee%2C%20you%20should%20consider)) ([Group training: duties of persons conducting a business or undertaking | SafeWork NSW](https://www.safework.nsw.gov.au/resource-library/labour-hire/group-training-duties-of-persons-conducting-a-business-or-undertaking#:~:text=work%20will%20be%20conducted%20outdoors,is%20not%20reasonably%20practicable%2C%20minimised)) Many GTOs perform a pre-placement WHS inspection or require the host to fill out a safety checklist. If the GTO identifies serious safety risks that cannot be mitigated, they should not place (or should withdraw) the apprentice from that host until it’s safe ([Group training: duties of persons conducting a business or undertaking | SafeWork NSW](https://www.safework.nsw.gov.au/resource-library/labour-hire/group-training-duties-of-persons-conducting-a-business-or-undertaking#:~:text=As%20a%20GTO%20PCBU%20under,have%20not%20been%20adequately%20controlled))
 
@@ -287,7 +276,7 @@ In summary, GTOs must mirror the standards of any good employer: **paying correc
 
 In summary, **WHS is a shared responsibility** in group training arrangements. The GTO must exercise diligence in choosing safe hosts and monitoring conditions, and the host must treat the apprentice as their own in safety matters. By actively consulting and coordinating, the GTO and host together provide the highest level of protection that is reasonably practicable ([Group training: duties of persons conducting a business or undertaking | SafeWork NSW](https://www.safework.nsw.gov.au/resource-library/labour-hire/group-training-duties-of-persons-conducting-a-business-or-undertaking#:~:text=As%20a%20host%20PCBU%20you,and%20reasonable%20in%20the%20circumstances)) ([Group training: duties of persons conducting a business or undertaking | SafeWork NSW](https://www.safework.nsw.gov.au/resource-library/labour-hire/group-training-duties-of-persons-conducting-a-business-or-undertaking#:~:text=As%20a%20GTO%20PCBU%20under,have%20not%20been%20adequately%20controlled))
 
-### Training Contracts and RTO Integration
+### 1.4 Training Contracts and RTO Integration
 
 **Training Contract Requirements:** For each apprentice or trainee, a formal Training Contract must be signed and lodged with the state/territory training authority (often via an Australian Apprenticeship Support Network provider). This contract is a legal agreement between the apprentice, the employer (GTO), and the state, and it also involves nomination of an RTO who will deliver the off-the-job training. Each state has specific rules, but generally the training contract must be signed within a certain timeframe of the apprentice’s commencement (e.g. within 14 days in some states ([Rights and obligations | apprenticeships.vic.gov.au](https://www.apprenticeships.vic.gov.au/rights-and-obligations#:~:text=apprenticeships,everyone%20knows%20what%20their)) . The contract will specify the qualification the apprentice is working towards, the expected duration (which can be full-time or part-time over a set term), and the probationary period. The **GTO is responsible for ensuring the Training Contract is in place and approved** by the state authority – an apprenticeship or traineeship is not official until that happens ([Training Contract and registration | NSW Government](https://www.nsw.gov.au/education-and-training/apprentices-and-trainees/employers/training-contract#:~:text=For%20an%20apprenticeship%20or%20traineeship,Contract%20and%20get%20it%20approved)) If any details change (like a change of RTO, suspension of the apprenticeship, or an extension of the training term), the GTO must submit a contract variation for approval through the state’s system.
 
@@ -307,7 +296,7 @@ Overall, the GTO’s systems should **link training and employment data**. This 
 
 ## 2. Funding and Financial Tracking
 
-### Apprenticeship Funding Systems (Federal and State)
+### 2.1 Apprenticeship Funding Systems (Federal and State)
 
 **WAAMS (Western Australia):** Western Australia operates the **Western Australian Apprenticeship Management System (WAAMS)**, an online portal for managing training contracts and related incentives in WA. WAAMS provides 24/7 access for employers (including GTOs) to **view and manage training contracts, and to lodge employer incentive or wage subsidy claims** ([Western Australian Apprenticeship Management System | Western Australian Government](https://www.wa.gov.au/service/education-and-training/vocational-education/western-australian-apprenticeship-management-system#:~:text=The%20Western%20Australian%20Apprenticeship%20Management,incentive%20%2F%20wage%20subsidy%20claims)) Through WAAMS, GTO staff can initiate changes to training contracts (such as updating details, transferring a contract to a new employer, suspensions, etc.) and submit these requests digitally, often with instant or faster approvals ([Western Australian Apprenticeship Management System | Western Australian Government](https://www.wa.gov.au/service/education-and-training/vocational-education/western-australian-apprenticeship-management-system#:~:text=Through%20WAAMS%2C%20you%20can%20view,incentives%20and%2For%20wage%20subsidy%20claims)) WAAMS also handles **state-based incentives** like the Jobs & Skills WA Employer Incentive, construction training fund subsidies, or other local funding – users can view and claim these incentives in the portal ([Western Australian Apprenticeship Management System | Western Australian Government](https://www.wa.gov.au/service/education-and-training/vocational-education/western-australian-apprenticeship-management-system#:~:text=The%20Western%20Australian%20Apprenticeship%20Management,incentive%20%2F%20wage%20subsidy%20claims)) The system improves efficiency by allowing bulk submissions and tracking of requests and claims. For a GTO operating in WA, WAAMS would be a critical tool to integrate with or use, as it is the primary interface with the WA Apprenticeship Office for all training contract matters and state incentive payments.
 
@@ -324,7 +313,7 @@ Importantly, ADMS also interfaces with state training authorities’ systems for
 
 In summary, **WAAMS** is a state-specific comprehensive portal (especially relevant to WA GTOs), while **ADMS** is the nationwide system for incentives and data exchange. GTOs working across multiple states need to be familiar with each relevant platform. Ideally, an apprentice management system for a GTO would integrate with or at least export/import data to these systems to avoid double entry. For instance, if a GTO’s internal system can produce a file or use an API to upload a new apprentice’s details to ADMS/WAAMS, it would streamline the sign-up process. Conversely, downloading updates (like notification of incentive payment approval or a confirmation when a contract is registered) from these systems into the GTO’s database would ensure data consistency.
 
-### Wage Tracking and Government Incentive Claims
+### 2.2 Wage Tracking and Government Incentive Claims
 
 **Wage Tracking:** GTOs handle wages for a large pool of apprentices across potentially many awards and host arrangements. Keeping track of wages is important for both compliance and business reasons:
 
@@ -346,7 +335,7 @@ The **tracking aspect** means maintaining a ledger or schedule of expected incen
 
 For example, the BAC wage subsidy was typically paid to the employer (GTO) – the GTO might then reduce the host’s charge-out rate or invoice by the equivalent amount since the government was covering that portion of wages. A **best practice financial tracking** would be to tie the subsidy to the apprentice’s wage record so you can see that for Q1 2022, 50% of Johnny Apprentice’s wages were covered by BAC, and thus the host was charged the remaining 50% only. This kind of linkage ensures transparency and that the GTO isn’t “double-dipping” (i.e., getting subsidy and still charging the full wage to the host).
 
-### Host Employer Charge-Out Models and Financial Reconciliation
+### 2.3 Host Employer Charge-Out Models and Financial Reconciliation
 
 **Charge-Out Model:** GTOs charge host employers a fee for every hour (or week) an apprentice works with that host. This _charge-out rate_ is typically an all-inclusive rate that covers all the direct wage costs and on-costs of employing the apprentice, plus an administrative margin for the GTO’s services. The Apprentice Employment Network (AEN) describes it as: _“With Group Training, the charge out rate is inclusive of all costs – even the hidden costs that you may not realise are costing your business”_ ([Costs - Apprentice Employment Network WA](https://aenwa.com.au/costs/#:~:text=With%20Group%20Training%2C%20the%20charge,are%20costing%20your%20business%20thousands)) In other words, the host pays one bill, and the GTO handles paying the apprentice’s wages, super, workers comp, leave, etc. Key components factored into the charge-out rate usually include:
 
@@ -381,7 +370,7 @@ In summary, the financial module of the system should ensure **every dollar is a
 
 Building an apprentice/employee management system for a GTO calls for a **modular design** that reflects the various functions discussed. Below is a suggested high-level modular structure, including key panels/screens and features, with an indication of which user roles would access each. The system should enforce **role-based access control (RBAC)**, meaning users only see and do what their role permits.
 
-### Modular System Components and Key Features
+### 3.1 Modular System Components and Key Features
 
 | **Module / Panel**                  | **Description & Key Functions**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | **GTO Staff**                                                                                             | **Host Employer**                                                                                                      | **Apprentice**                                                                                                  | **Finance Team**                                                        |
 | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
@@ -402,7 +391,7 @@ Building an apprentice/employee management system for a GTO calls for a **modula
 
 This table outlines a **modular design** where each module corresponds to a specific aspect of GTO operations. The system should be built such that modules are somewhat independent (for ease of maintenance and potential future upgrades). For example, one could update the **Funding module** (if new incentives are introduced by government) without affecting the Timesheet or Profile modules. A modular approach also allows implementing the system in phases – perhaps start with core HR (profiles, placements, timesheets, payroll) then add funding and compliance features in subsequent iterations.
 
-### Role-Based Access Control (RBAC) Framework
+### 3.2 Role-Based Access Control (RBAC) Framework
 
 As seen above, the system will have multiple user roles: **GTO staff**, **Host employers**, **Apprentices/trainees**, and **Finance staff** (which can be considered a subset of GTO staff with additional privileges). Implementing RBAC ensures each role sees only the data they should and can perform only allowed actions:
 
@@ -418,7 +407,7 @@ As seen above, the system will have multiple user roles: **GTO staff**, **Host e
 
 The RBAC framework should follow the principle of **least privilege** – each role only has the minimum access necessary to perform their functions. Also, all sensitive actions (like accessing personal data of apprentices) should be audited in logs (e.g., who viewed or edited a record and when).
 
-### Automated Compliance Tracking & Alerts
+### 3.3 Automated Compliance Tracking & Alerts
 
 One of the major advantages of a dedicated system is automated tracking of compliance obligations. Given the heavy regulatory environment (training contracts, industrial relations, WHS, funding), the system should actively assist staff in staying compliant. Some recommended features:
 
@@ -430,12 +419,12 @@ One of the major advantages of a dedicated system is automated tracking of compl
 - **Funding Deadlines:** As noted, the funding module should send alerts for claims. For example, many incentive claims must be submitted within 12 months of an apprentice achieving the milestone. The system can notify responsible staff, _“Apprentice Jane – 12-month Commencement incentive window closing in 30 days, not yet claimed.”_ ([ADMS & Claims Support - Apprenticeship Support Australia - WA](https://asa.cciwa.com/employer/adms-claims-support/#:~:text=)) This prevents missed opportunities (which are effectively lost revenue).
 - **Audit Reports:** To prepare for external audits (like a government audit of GTO compliance or a financial audit), the system can generate a “Compliance Report” that checks for any missing pieces of data or documentation. For instance, an audit report could list all current apprentices and confirm: do we have a signed training contract on file? Is there a host agreement for each host? Has each apprentice received an induction (yes/no)? These reports make internal self-auditing easier so the GTO can fix issues proactively. In some states, GTOs must submit an annual compliance return – much of that info could be output by the system in the required format.
 
-### Recommendations for Modular Implementation
+### 3.4 Recommendations for Modular Implementation
 
 Given the breadth of features, a **phased implementation** is advisable:
 
 1. **Core Apprentice Management & Timesheets (Phase 1):** Start by implementing the fundamental HR database (Apprentice and Host profiles, placements) and the Timesheet module with basic payroll export. This immediately replaces spreadsheets or disparate records and ensures accurate tracking of work hours and pay.
-2. **Payroll/Billing Integration (Phase 2):** Next, integrate the system with payroll and accounting. Introduce the Billing module so invoices can be generated from approved timesheets, and hook into Xero/MYOB via their APIs ([Payroll AU API Overview - Xero Developer](https://developer.xero.com/documentation/api/payrollau/overview#:~:text=The%20Payroll%20API%20exposes%20payroll,as%20syncing%20employee%20details%2C)) Also bring in the leave tracking and ensure payslip info can flow back to apprentices.
+2. **Payroll/Billing Integration (Phase 2):** Next, integrate the system with payroll and accounting. Introduce the Billing module so invoices can be generated from approved timesheets and agreed rates. Hook into Xero/MYOB via their APIs ([Payroll AU API Overview - Xero Developer](https://developer.xero.com/documentation/api/payrollau/overview#:~:text=The%20Payroll%20API%20exposes%20payroll,as%20syncing%20employee%20details%2C)) Also bring in the leave tracking and ensure payslip info can flow back to apprentices.
 3. **Compliance & Training (Phase 3):** Build out the Compliance and Training modules. Input all existing apprentices’ training plans and set up reminders for each. Launch WHS tracking features for new host assessments and schedule visits. At this stage, also implement the notifications/alerts engine that will drive reminders for all compliance items (probation, etc.).
 4. **Funding & Advanced Features (Phase 4):** Add the Funding module and connect to ADMS. Perhaps use ADMS’s APIs or at least set the system to produce claim files that can be uploaded. Train staff on recording incentives in the system. Also, roll out the apprentice/host self-service portals fully now that internal data is robust.
 5. **Refinement & Analytics (Phase 5):** Finally, polish the reporting module and analytics dashboards. Gather feedback from users and add any additional features needed (for example, maybe a mobile app interface for apprentices to do timesheets, or a digital signature integration for training contracts). Security hardening and data protection reviews should also be done in this phase if not earlier.
@@ -446,7 +435,7 @@ By implementing the system in modules, the GTO can deliver incremental value (us
 
 ## 4. Reporting and Integration
 
-### Compliance Reporting and Workforce Analytics
+### 4.1 Compliance Reporting and Workforce Analytics
 
 A well-designed system will serve not just as a transactional tool but also as a rich source of **reports and analytics**. GTOs often need to report to government departments, their own boards, and sometimes to industry bodies on various metrics. Important reporting capabilities include:
 
@@ -462,7 +451,7 @@ A well-designed system will serve not just as a transactional tool but also as a
 
 Many systems also allow **custom queries**, so staff can slice and dice data without needing a developer. For instance, filtering apprentices by those who have not had a contact in >30 days, or those whose training plan has units overdue. This ad-hoc reporting capability is important for on-the-fly compliance checks.
 
-### Integration with Payroll and External Systems
+### 4.2 Integration with Payroll and External Systems
 
 Integration ensures the GTO’s system doesn’t operate in isolation but rather exchanges information seamlessly with other software and platforms:
 
@@ -484,7 +473,7 @@ When integrating with external platforms, consider **data consistency and error 
 
 Overall, integration aims to create a **single source of truth** for all apprenticeship data. The GTO staff shouldn’t have to manually cross-check multiple systems; the integration should ensure that their central system reflects reality across payroll, training, and compliance domains.
 
-### Security and Data Protection Considerations
+### 4.3 Security and Data Protection Considerations
 
 Security is paramount given the sensitive nature of the data (personal information of apprentices, confidential host business info, and financial records). The system must adhere to both legal requirements and best practices in IT security:
 
