@@ -1,153 +1,151 @@
 'use client';
 
-import React from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { QrCode } from 'lucide-react';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
-export function MFASetup(): React.ReactElement {
-  const [secret, setSecret] = React.useState<string>('');
-  const [qrCode, setQrCode] = React.useState<string>('');
-  const [token, setToken] = React.useState<string>('');
-  const [isVerifying, setIsVerifying] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const [isSuccess, setIsSuccess] = React.useState(false);
-  const supabase = createClient();
+const formSchema = z.object({
+  code: z.string().min(6).max(6),
+});
 
-  React.useEffect(() => {
-    const setupMFA = async (): Promise<void> => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error('User not found');
+export function MFASetup() {
+  const [qrCode, setQrCode] = useState<string>('');
+  const [secret, setSecret] = useState<string>('');
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const supabase = createClientComponentClient();
 
-        const { data, error: setupError } = await supabase.functions.invoke('generate-mfa-secret', {
-          body: { userId: user.id }
-        });
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      code: '',
+    },
+  });
 
-        if (setupError) throw setupError;
-        if (!data?.secret || !data?.qrCode) throw new Error('Failed to generate MFA secret');
-
-        setSecret(data.secret);
-        setQrCode(data.qrCode);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to setup MFA');
-      }
-    };
-
-    void setupMFA();
-  }, [supabase]);
-
-  const handleVerify = async (): Promise<void> => {
-    if (!token || token.length !== 6) {
-      setError('Please enter a valid 6-digit token');
-      return;
-    }
-
-    setIsVerifying(true);
-    setError(null);
-
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not found');
-
-      const { error: verifyError } = await supabase.functions.invoke('verify-mfa-token', {
-        body: { userId: user.id, token, secret }
+      setLoading(true);
+      const { data, error } = await supabase.auth.mfa.verify({
+        factorId: secret,
+        code: values.code,
       });
 
-      if (verifyError) throw verifyError;
+      if (error) throw error;
 
-      setIsSuccess(true);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to verify token');
+      toast({
+        title: 'MFA Setup Complete',
+        description: 'Two-factor authentication has been enabled for your account.',
+      });
+
+      // Redirect or update UI state
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to verify MFA code. Please try again.',
+        variant: 'destructive',
+      });
     } finally {
-      setIsVerifying(false);
+      setLoading(false);
     }
   };
 
-  if (isSuccess) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>MFA Setup Complete</CardTitle>
-          <CardDescription>
-            Two-factor authentication has been successfully enabled for your account.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Alert>
-            <CheckCircle2 className="h-4 w-4" />
-            <AlertTitle>Success</AlertTitle>
-            <AlertDescription>
-              Your account is now more secure with two-factor authentication.
-            </AlertDescription>
-          </Alert>
-        </CardContent>
-      </Card>
-    );
-  }
+  const setupMFA = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.auth.mfa.enroll({
+        factorType: 'totp',
+      });
+
+      if (error) throw error;
+
+      setQrCode(data.totp.qr_code);
+      setSecret(data.totp.secret);
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to setup MFA. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <Card>
+    <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>Set Up Two-Factor Authentication</CardTitle>
-        <CardDescription>
-          Enhance your account security by enabling two-factor authentication.
-        </CardDescription>
+        <CardTitle>Setup Two-Factor Authentication</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {error && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
-        {qrCode && (
-          <div className="space-y-4">
-            <div>
-              <Label>1. Scan QR Code</Label>
-              <div className="mt-2 flex justify-center">
-                <img
-                  src={qrCode}
-                  alt="QR Code for MFA setup"
-                  className="h-48 w-48"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="token">2. Enter Verification Code</Label>
-              <Input
-                id="token"
-                type="text"
-                placeholder="Enter 6-digit code"
-                value={token}
-                onChange={(e) => setToken(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                maxLength={6}
+      <CardContent>
+        {!qrCode ? (
+          <Button
+            onClick={setupMFA}
+            disabled={loading}
+            className="w-full"
+          >
+            <QrCode className="mr-2 h-4 w-4" />
+            Begin MFA Setup
+          </Button>
+        ) : (
+          <div className="space-y-6">
+            <div className="flex flex-col items-center space-y-4">
+              <img
+                src={qrCode}
+                alt="QR Code for MFA"
+                className="w-48 h-48"
               />
+              <p className="text-sm text-muted-foreground text-center">
+                Scan this QR code with your authenticator app
+              </p>
             </div>
+
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="code"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Verification Code</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter 6-digit code"
+                          {...field}
+                          maxLength={6}
+                          disabled={loading}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={loading}
+                >
+                  Verify and Enable
+                </Button>
+              </form>
+            </Form>
           </div>
         )}
       </CardContent>
-      <CardFooter className="flex justify-end space-x-2">
-        <Button
-          variant="outline"
-          onClick={() => window.location.href = '/settings'}
-        >
-          Cancel
-        </Button>
-        <Button
-          onClick={() => void handleVerify()}
-          disabled={isVerifying || !token || token.length !== 6}
-        >
-          {isVerifying ? 'Verifying...' : 'Verify'}
-        </Button>
-      </CardFooter>
     </Card>
   );
 }

@@ -1,4 +1,4 @@
-import { type RedisClient } from './redis-client';
+import { Redis } from '@upstash/redis';
 import { cacheMonitoring } from './monitoring';
 import { logger } from '@/lib/logger';
 
@@ -16,62 +16,52 @@ export class CacheTimeoutError extends Error {
   }
 }
 
-interface CacheConfig {
-  defaultTtl?: number;
-  keyPrefix?: string;
+export interface CacheServiceConfig {
+  prefix: string;
+  ttl: number;
 }
 
 export class CacheService {
-  private readonly defaultTtl: number;
-  private readonly keyPrefix: string;
+  private redis: Redis;
+  private prefix: string;
+  private ttl: number;
 
-  constructor(
-    private readonly client: RedisClient,
-    config: CacheConfig = {}
-  ) {
-    this.defaultTtl = config.defaultTtl ?? 3600;
-    this.keyPrefix = config.keyPrefix ?? '';
+  constructor(config: CacheServiceConfig) {
+    this.prefix = config.prefix;
+    this.ttl = config.ttl;
+    this.redis = new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL!,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+    });
   }
 
   private getKey(key: string): string {
-    return this.keyPrefix ? `${this.keyPrefix}:${key}` : key;
+    return `${this.prefix}${key}`;
   }
 
   async get<T>(key: string): Promise<T | null> {
     const startTime = Date.now();
     try {
-      const data = await this.client.get(this.getKey(key));
+      const value = await this.redis.get<T>(this.getKey(key));
       const latencyMs = Date.now() - startTime;
 
-      if (!data) {
+      if (!value) {
         cacheMonitoring.recordMiss(latencyMs);
         return null;
       }
 
       cacheMonitoring.recordHit(latencyMs);
-      return JSON.parse(data) as T;
+      return value;
     } catch (error) {
       logger.error('Cache get error:', { error, key });
       throw new CacheError(`Failed to get cache key ${key}`);
     }
   }
 
-  async set<T>(
-    key: string,
-    value: T,
-    ttl?: number
-  ): Promise<void> {
+  async set<T>(key: string, value: T): Promise<void> {
     const startTime = Date.now();
     try {
-      const serializedValue = JSON.stringify(value);
-      const effectiveTtl = ttl ?? this.defaultTtl;
-
-      if (effectiveTtl > 0) {
-        await this.client.setex(this.getKey(key), effectiveTtl, serializedValue);
-      } else {
-        await this.client.set(this.getKey(key), serializedValue);
-      }
-
+      await this.redis.set(this.getKey(key), value, { ex: this.ttl });
       const latencyMs = Date.now() - startTime;
       cacheMonitoring.recordSet(latencyMs);
     } catch (error) {
@@ -80,10 +70,9 @@ export class CacheService {
     }
   }
 
-  async delete(key: string): Promise<boolean> {
+  async delete(key: string): Promise<void> {
     try {
-      const result = await this.client.del(this.getKey(key));
-      return result > 0;
+      await this.redis.del(this.getKey(key));
     } catch (error) {
       logger.error('Cache delete error:', { error, key });
       throw new CacheError(`Failed to delete cache key ${key}`);
@@ -92,9 +81,9 @@ export class CacheService {
 
   async deletePattern(pattern: string): Promise<number> {
     try {
-      const keys = await this.client.keys(this.getKey(pattern));
+      const keys = await this.redis.keys(`${this.getKey(pattern)}*`);
       if (keys.length > 0) {
-        const result = await this.client.del(...keys);
+        const result = await this.redis.del(...keys);
         return result;
       }
       return 0;
@@ -106,8 +95,7 @@ export class CacheService {
 
   async getOrSet<T>(
     key: string,
-    getter: () => Promise<T>,
-    ttl?: number
+    getter: () => Promise<T>
   ): Promise<T> {
     try {
       const cached = await this.get<T>(key);
@@ -116,7 +104,7 @@ export class CacheService {
       }
 
       const value = await getter();
-      await this.set(key, value, ttl);
+      await this.set(key, value);
       return value;
     } catch (error) {
       logger.error('Cache getOrSet error:', { error, key });
@@ -132,5 +120,21 @@ export class CacheService {
       }
       await new Promise((resolve): NodeJS.Timeout => setTimeout(resolve, 100));
     }
+  }
+
+  async clear(): Promise<void> {
+    try {
+      const keys = await this.redis.keys(`${this.prefix}*`);
+      if (keys.length > 0) {
+        await this.redis.del(...keys);
+      }
+    } catch (error) {
+      logger.error('Cache clear error:', { error });
+      throw new CacheError('Failed to clear cache');
+    }
+  }
+
+  async close(): Promise<void> {
+    // No need to explicitly close Redis connection as it's REST-based
   }
 }

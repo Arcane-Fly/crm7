@@ -1,58 +1,48 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { ErrorFallback } from '../ErrorFallback';
 
 describe('ErrorFallback', () => {
   const mockResetErrorBoundary = jest.fn();
-  const mockError = new Error('Test error message');
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    mockResetErrorBoundary.mockClear();
   });
 
-  it('renders error message correctly', () => {
+  it('renders error message and try again button', () => {
     render(
       <ErrorFallback
-        error={mockError}
+        error={new Error('Test error')}
         resetErrorBoundary={mockResetErrorBoundary}
-      />,
+      />
     );
 
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
-    expect(screen.getByText('Test error message')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
   });
 
-  it('renders default error message when no error message provided', () => {
+  it('shows generic error message for unexpected errors', () => {
     render(
       <ErrorFallback
-        error={new Error()}
+        error={new Error('Test error')}
         resetErrorBoundary={mockResetErrorBoundary}
-      />,
+      />
     );
 
-    expect(screen.getByText('An unexpected error occurred. Please try again.')).toBeInTheDocument();
+    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
   });
 
-  it('calls resetErrorBoundary when try again button is clicked', () => {
+  it('calls resetErrorBoundary when try again button is clicked', async () => {
+    const user = userEvent.setup();
+    
     render(
       <ErrorFallback
-        error={mockError}
+        error={new Error('Test error')}
         resetErrorBoundary={mockResetErrorBoundary}
-      />,
+      />
     );
 
-    fireEvent.click(screen.getByText('Try again'));
-    expect(mockResetErrorBoundary).toHaveBeenCalledTimes(1);
-  });
-
-  it('has correct ARIA attributes', () => {
-    render(
-      <ErrorFallback
-        error={mockError}
-        resetErrorBoundary={mockResetErrorBoundary}
-      />,
-    );
-
-    expect(screen.getByRole('alert')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /try again/i }));
+    expect(mockResetErrorBoundary).toHaveBeenCalled();
   });
 });

@@ -1,82 +1,91 @@
-interface CacheMetrics {
-  hits: number;
-  misses: number;
-  latencyMs: number[];
-}
+import { logger } from '@/lib/services/logger';
 
-class CacheMonitoring {
-  private metrics: CacheMetrics;
-  private readonly maxLatencySamples: number;
+export class CacheMonitoring {
+  private hits = 0;
+  private misses = 0;
+  private errors = 0;
+  private evictions = 0;
+  private latencySamples: number[] = [];
+  private readonly maxLatencySamples = 1000;
+  private memoryUsageBytes = 0;
+  private readonly reportInterval = 60_000; // 1 minute
 
-  constructor(maxLatencySamples = 1000) {
-    this.maxLatencySamples = maxLatencySamples;
-    this.resetMetrics();
-  }
-
-  private resetMetrics(): void {
-    this.metrics = {
-      hits: 0,
-      misses: 0,
-      latencyMs: [],
-    };
+  constructor() {
+    if (typeof window !== 'undefined') {
+      setInterval(() => this.reportMetrics(), this.reportInterval);
+    }
   }
 
   recordHit(latencyMs: number): void {
-    this.metrics.hits++;
+    this.hits++;
     this.recordLatency(latencyMs);
   }
 
   recordMiss(latencyMs: number): void {
-    this.metrics.misses++;
+    this.misses++;
     this.recordLatency(latencyMs);
   }
 
+  recordError(): void {
+    this.errors++;
+  }
+
+  recordEviction(): void {
+    this.evictions++;
+  }
+
   private recordLatency(latencyMs: number): void {
-    this.metrics.latencyMs.push(latencyMs);
-
-    if (this.metrics.latencyMs.length > this.maxLatencySamples) {
-      this.metrics.latencyMs.shift();
+    if (this.latencySamples.length >= this.maxLatencySamples) {
+      this.latencySamples.shift();
     }
+    this.latencySamples.push(latencyMs);
   }
 
-  private calculatePercentile(values: number[], percentile: number): number {
-    if (values.length === 0) return 0;
-
-    const sorted = [...values].sort((a, b): number => a - b);
-    const index = Math.ceil((percentile / 100) * sorted.length) - 1;
-    return sorted[index];
-  }
-
-  getMetrics(): {
-    hitRate: string;
-    totalRequests: number;
-    latency: {
-      avg: string;
-      p95: string;
-      p99: string;
-    };
-  } {
-    const total = this.metrics.hits + this.metrics.misses;
-    const hitRate = total === 0 ? 0 : (this.metrics.hits / total) * 100;
-
-    const latencies = this.metrics.latencyMs;
-    const avgLatency = latencies.length === 0
-      ? 0
-      : latencies.reduce((sum, val) => sum + val, 0) / latencies.length;
-
-    const p95Latency = this.calculatePercentile(latencies, 95);
-    const p99Latency = this.calculatePercentile(latencies, 99);
+  getMetrics(): CacheMetrics {
+    const totalRequests = this.hits + this.misses;
+    const hitRate = totalRequests > 0 ? this.hits / totalRequests : 0;
+    const avgLatencyMs = this.latencySamples.length > 0
+      ? this.latencySamples.reduce((a, b) => a + b, 0) / this.latencySamples.length
+      : 0;
 
     return {
-      hitRate: `${hitRate.toFixed(2)}%`,
-      totalRequests: total,
-      latency: {
-        avg: `${avgLatency.toFixed(2)}ms`,
-        p95: `${p95Latency.toFixed(2)}ms`,
-        p99: `${p99Latency.toFixed(2)}ms`,
-      },
+      hits: this.hits,
+      misses: this.misses,
+      errors: this.errors,
+      evictions: this.evictions,
+      hitRate,
+      avgLatencyMs,
+      memoryUsageBytes: this.memoryUsageBytes,
     };
   }
+
+  private reportMetrics(): void {
+    const metrics = this.getMetrics();
+    logger.info('Cache metrics report:', metrics);
+    this.reset();
+  }
+
+  reset(): void {
+    this.hits = 0;
+    this.misses = 0;
+    this.errors = 0;
+    this.evictions = 0;
+    this.latencySamples = [];
+  }
+
+  updateMemoryUsage(bytes: number): void {
+    this.memoryUsageBytes = bytes;
+  }
+}
+
+export interface CacheMetrics {
+  hits: number;
+  misses: number;
+  errors: number;
+  evictions: number;
+  hitRate: number;
+  avgLatencyMs: number;
+  memoryUsageBytes: number;
 }
 
 export const cacheMonitoring = new CacheMonitoring();
