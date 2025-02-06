@@ -12,22 +12,26 @@ import { cn } from '@/lib/utils';
 
 const inter = Inter({ subsets: ['latin'] });
 
-// Define the EmitWarningOptions type
-type EmitWarningOptions = {
-  type?: string;
-  code?: string;
-  ctor?: Function;
-};
-
 // Suppress punycode deprecation warning until dependencies are updated
 if (process.emitWarning && typeof process.emitWarning === 'function') {
   const originalEmitWarning = process.emitWarning;
-  
-  // Define a wrapper that matches Node's process.emitWarning signatures
-  const warningWrapper = function(
+
+  type EmitWarningOptions = {
+    type?: string;
+    code?: string;
+    detail?: string;
+    [key: string]: any;
+  };
+
+  // Create a wrapper with the same overloads as process.emitWarning
+  function warningWrapper(warning: string | Error, ctor?: Function): void;
+  function warningWrapper(warning: string | Error, type?: string, ctor?: Function): void;
+  function warningWrapper(warning: string | Error, type?: string, code?: string, ctor?: Function): void;
+  function warningWrapper(warning: string | Error, options?: EmitWarningOptions): void;
+  function warningWrapper(
     warning: string | Error,
-    typeOrCtor?: EmitWarningOptions | undefined,
-    codeOrCtor?: string | Function,
+    typeOrOptions?: string | Function | EmitWarningOptions,
+    code?: string | Function,
     ctor?: Function
   ): void {
     // Check if warning is about punycode
@@ -37,16 +41,8 @@ if (process.emitWarning && typeof process.emitWarning === 'function') {
     }
 
     // Forward the call with all original arguments
-    if (arguments.length === 1) {
-      originalEmitWarning.call(process, warning);
-    } else if (arguments.length === 2) {
-      (originalEmitWarning as any).call(process, warning, typeOrCtor);
-    } else if (arguments.length === 3) {
-      (originalEmitWarning as any).call(process, warning, typeOrCtor, codeOrCtor);
-    } else {
-      (originalEmitWarning as any).call(process, warning, typeOrCtor, codeOrCtor, ctor);
-    }
-  };
+    originalEmitWarning.apply(process, arguments as any);
+  }
 
   process.emitWarning = warningWrapper;
 }
