@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { type ComplianceRecord } from '@/lib/types';
+import { createClient } from '@/lib/supabase/client';
 
 export function ComplianceDashboard(): React.ReactElement {
   const [_records, setRecords] = useState<ComplianceRecord[]>([]);
+  const supabase = createClient();
 
   useEffect((): void => {
     const fetchData = async (): Promise<void> => {
