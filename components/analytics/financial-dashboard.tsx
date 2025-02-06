@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import type { Transaction, FinancialStats } from '@/lib/types';
+import type { FinancialStats, Transaction } from '@/lib/types';
+import { useEffect, useState } from 'react';
 
 export function FinancialDashboard(): React.ReactElement {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -19,9 +19,9 @@ export function FinancialDashboard(): React.ReactElement {
     const fetchData = async (): Promise<void> => {
       try {
         const { data, error } = await supabase.from('transactions').select('*');
-        
+
         if (error) throw error;
-        
+
         setTransactions(data as Transaction[]);
         calculateStats(data as Transaction[]);
       } catch (err) {
@@ -59,13 +59,13 @@ export function FinancialDashboard(): React.ReactElement {
 
   const calculateStats = (transactions: Transaction[]): void => {
     const revenue = transactions
-      .filter(t => t.type === 'income')
+      .filter(t => t.type === 'credit')
       .reduce((acc, t) => acc + t.amount, 0);
-    
+
     const expenses = transactions
-      .filter(t => t.type === 'expense')
+      .filter(t => t.type === 'debit')
       .reduce((acc, t) => acc + t.amount, 0);
-    
+
     const profit = revenue - expenses;
     setStats({ revenue, expenses, profit });
   };
@@ -86,7 +86,7 @@ export function FinancialDashboard(): React.ReactElement {
           <p className="text-2xl font-bold">{formatCurrency(stats.profit)}</p>
         </div>
       </div>
-      
+
       <div className="bg-card rounded-lg shadow">
         <h3 className="p-4 text-lg font-medium border-b">Recent Transactions</h3>
         <div className="divide-y">
@@ -96,7 +96,7 @@ export function FinancialDashboard(): React.ReactElement {
                 <p className="font-medium">{transaction.description}</p>
                 <p className="text-sm text-muted-foreground">{formatDate(transaction.date)}</p>
               </div>
-              <div className={`font-medium ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+              <div className={`font-medium ${transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'}`}>
                 {formatCurrency(transaction.amount)}
               </div>
             </div>

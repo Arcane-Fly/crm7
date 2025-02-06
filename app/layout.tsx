@@ -12,6 +12,17 @@ import { cn } from '@/lib/utils';
 
 const inter = Inter({ subsets: ['latin'] });
 
+// Suppress punycode deprecation warning until dependencies are updated
+if (process.emitWarning && typeof process.emitWarning === 'function') {
+  const originalEmitWarning = process.emitWarning;
+  process.emitWarning = (...args: any[]) => {
+    if (args[0] && args[0].includes && args[0].includes('punycode')) {
+      return;
+    }
+    return originalEmitWarning.apply(process, args);
+  };
+}
+
 export const metadata: Metadata = {
   title: 'CRM System',
   description: 'A modern CRM system built with Next.js',

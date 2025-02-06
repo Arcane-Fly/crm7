@@ -133,14 +133,11 @@ describe('Startup Service', () => {
         require('../startup');
       });
 
-      // Get the registered handler
-      const handler = processOnSpy.mock.calls.find(call => call[0] === 'SIGTERM')?.[1];
-      if (!handler) {
-        throw new Error('SIGTERM handler not found');
-      }
+      expect(processOnSpy).toHaveBeenCalledWith('SIGTERM', expect.any(Function));
+      expect(sigtermHandler).toBeDefined();
 
       // Call the handler
-      await handler();
+      await sigtermHandler();
 
       expect(logger.info).toHaveBeenCalledWith('SIGTERM received. Starting graceful shutdown...');
       expect(processExitSpy).toHaveBeenCalledWith(0);
@@ -159,14 +156,11 @@ describe('Startup Service', () => {
         require('../startup');
       });
 
-      // Get the registered handler
-      const handler = processOnSpy.mock.calls.find(call => call[0] === 'SIGINT')?.[1];
-      if (!handler) {
-        throw new Error('SIGINT handler not found');
-      }
+      expect(processOnSpy).toHaveBeenCalledWith('SIGINT', expect.any(Function));
+      expect(sigintHandler).toBeDefined();
 
       // Call the handler
-      await handler();
+      await sigintHandler();
 
       expect(logger.info).toHaveBeenCalledWith('SIGINT received. Starting graceful shutdown...');
       expect(processExitSpy).toHaveBeenCalledWith(0);
