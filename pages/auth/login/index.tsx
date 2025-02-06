@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
@@ -11,14 +11,9 @@ import { createClient } from '@/utils/supabase/client';
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
-  const [origin, setOrigin] = useState<string>('');
   const router = useRouter();
   const { toast } = useToast();
   const supabase = createClient();
-
-  useEffect(() => {
-    setOrigin(window.location.origin);
-  }, []);
 
   const handleAuthChange = async (event: any, session: any) => {
     if (event === 'SIGNED_IN' && session) {
@@ -41,14 +36,6 @@ export default function LoginPage() {
       }
     }
   };
-
-  if (!origin) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Spinner className="h-8 w-8" />
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
@@ -76,7 +63,7 @@ export default function LoginPage() {
                 },
               }}
               providers={['github', 'google']}
-              redirectTo={`${origin}/auth/callback`}
+              redirectTo="/auth/callback"
               onAuthStateChange={handleAuthChange}
               theme="dark"
               socialLayout="horizontal"
