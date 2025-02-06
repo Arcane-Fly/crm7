@@ -94,6 +94,40 @@ crm7/
 - [Environment Setup](docs/ENVIRONMENT.md)
 - [Production Checklist](docs/PRODUCTION_CHECKLIST.md)
 
+## Deployment Environments
+
+The project uses three environments for deployment:
+
+### Development Environment
+
+- Branch: `development`
+- Purpose: Active development and testing
+- URL: [development.crm7.vercel.app](https://development.crm7.vercel.app)
+- Auto-deploys: All commits to `development` branch
+
+### Preview Environment
+
+- Branch: `preview`
+- Purpose: Testing and reviewing changes before production
+- URL: Unique URL per pull request
+- Auto-deploys: All pull requests
+
+### Production Environment
+
+- Branch: `master`
+- Purpose: Live production environment
+- URL: [crm7.vercel.app](https://crm7.vercel.app)
+- Auto-deploys: Merged PRs to `master` after review
+- Protection: Requires review and 5-minute wait
+
+## Development Workflow
+
+1. Create a feature branch from `development`
+2. Make your changes and push to the feature branch
+3. Create a PR to merge into `development`
+4. After testing in development, create a PR to `preview`
+5. Once approved, create a PR to `master` for production deployment
+
 ## Contributing
 
 We welcome contributions! Please see our [Contributing Guidelines](docs/CONTRIBUTING.md) for details on how to get started.
