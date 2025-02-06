@@ -40,11 +40,11 @@ if (process.emitWarning && typeof process.emitWarning === 'function') {
     if (arguments.length === 1) {
       originalEmitWarning.call(process, warning);
     } else if (arguments.length === 2) {
-      originalEmitWarning.call(process, warning, typeOrCtor);
+      (originalEmitWarning as any).call(process, warning, typeOrCtor);
     } else if (arguments.length === 3) {
-      originalEmitWarning.call(process, warning, typeOrCtor, codeOrCtor);
+      (originalEmitWarning as any).call(process, warning, typeOrCtor, codeOrCtor);
     } else {
-      originalEmitWarning.call(process, warning, typeOrCtor, codeOrCtor, ctor);
+      (originalEmitWarning as any).call(process, warning, typeOrCtor, codeOrCtor, ctor);
     }
   };
 
