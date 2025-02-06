@@ -1,28 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
+import { z } from 'zod';
+
+import { getAllowances } from '@/lib/services/fairwork/allowances';
 import { createApiResponse, createErrorResponse } from '@/lib/api/response';
-import { logger } from '@/lib/logger';
-import { defaultConfig } from '@/lib/services/fairwork/fairwork.config';
 
-const fairworkClient = new FairWorkClient(defaultConfig);
+const querySchema = z.object({
+  awardCode: z.string(),
+  classificationCode: z.string(),
+  date: z.string().optional(),
+});
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { awardCode: string; classificationCode: string } }
-): Promise<NextResponse> {
+export async function GET(req: NextRequest, { params }: { params: { awardCode: string; classificationCode: string } }) {
+  const query = querySchema.safeParse(req.query);
+
+  if (!query.success) {
+    return createErrorResponse('INVALID_QUERY', 'Invalid query parameters', query.error.errors, 400);
+  }
+
   try {
-    // Extract the "date" query parameter
-    const date = req.nextUrl.searchParams.get('date') || undefined;
-    // Build a query object only if a date exists.
-    const query = date ? { date } : undefined;
-    const allowances = await fairworkClient.getAllowances(
+    const allowances = await getAllowances(
       params.awardCode,
-      params.classificationCode,
-      query
+      params.classificationCode
     );
     return createApiResponse(allowances);
   } catch (error) {
-    logger.error('Failed to fetch allowances', { error });
-    return createErrorResponse('ALLOWANCES_FETCH_ERROR', 'Failed to fetch allowances', undefined, 500);
+    return createErrorResponse('ALLOWANCES_FETCH_ERROR', 'Failed to fetch allowances', error, 500);
   }
 }
