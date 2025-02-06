@@ -1,112 +1,165 @@
 'use client';
 
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, Cell } from 'recharts';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Progress } from '@/components/ui/progress';
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+interface ProgressData {
+  module: string;
+  progress: number;
+  status: 'completed' | 'in_progress' | 'not_started';
+  lastActivity?: string;
+}
 
-const data = [
-  { name: 'Year 1', 'In Progress': 450, Completed: 200 },
-  { name: 'Year 2', 'In Progress': 380, Completed: 240 },
-  { name: 'Year 3', 'In Progress': 300, Completed: 280 },
-  { name: 'Year 4', 'In Progress': 200, Completed: 320 },
-];
+interface Assessment {
+  name: string;
+  score: number;
+  date: string;
+  feedback?: string;
+}
 
-const qualificationData = [
-  { name: 'Certificate III in Electrical', value: 30 },
-  { name: 'Certificate III in Plumbing', value: 25 },
-  { name: 'Certificate III in Carpentry', value: 20 },
-  { name: 'Certificate IV in Building and Construction', value: 15 },
-  { name: 'Diploma of Engineering', value: 10 },
-];
+export function ApprenticeProgress(): React.ReactElement {
+  const modules: ProgressData[] = [
+    {
+      module: 'Foundation Skills',
+      progress: 100,
+      status: 'completed',
+      lastActivity: '2024-02-01',
+    },
+    {
+      module: 'Core Competencies',
+      progress: 75,
+      status: 'in_progress',
+      lastActivity: '2024-02-05',
+    },
+    {
+      module: 'Advanced Topics',
+      progress: 0,
+      status: 'not_started',
+    },
+  ];
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+  const assessments: Assessment[] = [
+    {
+      name: 'Foundation Skills Assessment',
+      score: 92,
+      date: '2024-02-01',
+      feedback: 'Excellent understanding of core concepts',
+    },
+    {
+      name: 'Core Competencies Mid-Module',
+      score: 85,
+      date: '2024-02-05',
+      feedback: 'Good progress, focus on practical applications',
+    },
+  ];
 
-export function ApprenticeProgress(): void {
+  const getStatusColor = (status: ProgressData['status']): string => {
+    switch (status) {
+      case 'completed':
+        return 'text-green-600';
+      case 'in_progress':
+        return 'text-blue-600';
+      case 'not_started':
+        return 'text-gray-600';
+      default:
+        return 'text-gray-600';
+    }
+  };
+
+  const formatDate = (date: string): string => {
+    return new Intl.DateTimeFormat('en-AU', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }).format(new Date(date));
+  };
+
   return (
     <Tabs
-      defaultValue='progress'
-      className='space-y-4'
+      defaultValue="progress"
+      className="space-y-4"
     >
       <TabsList>
-        <TabsTrigger value='progress'>Progress by Year</TabsTrigger>
-        <TabsTrigger value='qualifications'>Top Qualifications</TabsTrigger>
+        <TabsTrigger value="progress">Progress</TabsTrigger>
+        <TabsTrigger value="assessments">Assessments</TabsTrigger>
       </TabsList>
-      <TabsContent value='progress'>
-        <ResponsiveContainer
-          width='100%'
-          height={350}
-        >
-          <BarChart data={data}>
-            <XAxis
-              dataKey='name'
-              stroke='#888888'
-              fontSize={12}
-              tickLine={false}
-              axisLine={false}
-            />
-            <YAxis
-              stroke='#888888'
-              fontSize={12}
-              tickLine={false}
-              axisLine={false}
-              tickFormatter={(value: unknown): string => `${value}`}
-            />
-            <Tooltip />
-            <Legend />
-            <Bar
-              dataKey='In Progress'
-              stackId='a'
-              fill='#adfa1d'
-              radius={[4, 4, 0, 0]}
-            />
-            <Bar
-              dataKey='Completed'
-              stackId='a'
-              fill='#2563eb'
-              radius={[4, 4, 0, 0]}
-            />
-          </BarChart>
-        </ResponsiveContainer>
-      </TabsContent>
-      <TabsContent value='qualifications'>
-        <ResponsiveContainer
-          width='100%'
-          height={350}
-        >
-          <BarChart
-            data={qualificationData}
-            layout='vertical'
-          >
-            <XAxis
-              type='number'
-              stroke='#888888'
-              fontSize={12}
-              tickLine={false}
-              axisLine={false}
-            />
-            <YAxis
-              dataKey='name'
-              type='category'
-              stroke='#888888'
-              fontSize={12}
-              tickLine={false}
-              axisLine={false}
-              width={150}
-            />
-            <Tooltip />
-            <Bar
-              dataKey='value'
-              radius={[0, 4, 4, 0]}
-            >
-              {qualificationData.map((_: unknown, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={COLORS[index % COLORS.length]}
-                />
+
+      <TabsContent value="progress" className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Module Progress</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {modules.map((module) => (
+                <div key={module.module} className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="font-medium">{module.module}</p>
+                      <p className={`text-sm ${getStatusColor(module.status)}`}>
+                        {module.status.replace('_', ' ').charAt(0).toUpperCase() + module.status.slice(1)}
+                      </p>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {module.progress}%
+                    </p>
+                  </div>
+                  <Progress value={module.progress} />
+                  {module.lastActivity && (
+                    <p className="text-sm text-muted-foreground">
+                      Last activity: {formatDate(module.lastActivity)}
+                    </p>
+                  )}
+                </div>
               ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="assessments">
+        <Card>
+          <CardHeader>
+            <CardTitle>Assessment Results</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Assessment</TableHead>
+                  <TableHead>Score</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Feedback</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {assessments.map((assessment) => (
+                  <TableRow key={assessment.name}>
+                    <TableCell className="font-medium">
+                      {assessment.name}
+                    </TableCell>
+                    <TableCell>
+                      <span className={assessment.score >= 85 ? 'text-green-600' : 'text-yellow-600'}>
+                        {assessment.score}%
+                      </span>
+                    </TableCell>
+                    <TableCell>{formatDate(assessment.date)}</TableCell>
+                    <TableCell>{assessment.feedback}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       </TabsContent>
     </Tabs>
   );
