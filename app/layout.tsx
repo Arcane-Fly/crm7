@@ -16,23 +16,9 @@ const inter = Inter({ subsets: ['latin'] });
 if (process.emitWarning && typeof process.emitWarning === 'function') {
   const originalEmitWarning = process.emitWarning;
 
-  type EmitWarningOptions = {
-    type?: string;
-    code?: string;
-    detail?: string;
-    [key: string]: any;
-  };
-
-  // Create a wrapper with the same overloads as process.emitWarning
-  function warningWrapper(warning: string | Error, ctor?: Function): void;
-  function warningWrapper(warning: string | Error, type?: string, ctor?: Function): void;
-  function warningWrapper(warning: string | Error, type?: string, code?: string, ctor?: Function): void;
-  function warningWrapper(warning: string | Error, options?: EmitWarningOptions): void;
-  function warningWrapper(
+  const warningWrapper = function(
     warning: string | Error,
-    typeOrOptions?: string | Function | EmitWarningOptions,
-    code?: string | Function,
-    ctor?: Function
+    ...args: any[]
   ): void {
     // Check if warning is about punycode
     const warningText = warning instanceof Error ? warning.message : warning;
@@ -41,10 +27,11 @@ if (process.emitWarning && typeof process.emitWarning === 'function') {
     }
 
     // Forward the call with all original arguments
-    originalEmitWarning.apply(process, arguments as any);
-  }
+    originalEmitWarning.apply(process, arguments);
+  };
 
-  process.emitWarning = warningWrapper;
+  // Use type assertion to match Node's process.emitWarning type
+  process.emitWarning = warningWrapper as typeof process.emitWarning;
 }
 
 export const metadata: Metadata = {
