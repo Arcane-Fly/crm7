@@ -1,7 +1,8 @@
 'use client';
 
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { FormProvider, useForm } from 'react-hook-form';
 import * as z from 'zod';
 
 import { Button } from '@/components/ui/button';
@@ -11,16 +12,9 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
+  FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -82,8 +76,6 @@ interface CandidateFormValues {
   portfolioUrl: string;
 }
 
-type FormFieldPath = keyof CandidateFormValues;
-
 interface CandidateFormProps {
   initialData?: Partial<CandidateFormValues>;
   onSubmit: (data: CandidateFormValues) => Promise<void>;
@@ -93,6 +85,8 @@ export function CandidateForm({
   initialData,
   onSubmit,
 }: CandidateFormProps): JSX.Element {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const form = useForm<CandidateFormValues>({
     resolver: zodResolver(candidateFormSchema),
     defaultValues: {
@@ -117,139 +111,38 @@ export function CandidateForm({
 
   const { toast } = useToast();
 
-  const onFormSubmit = async (data: CandidateFormValues): Promise<void> => {
+  const handleSubmit = async (data: CandidateFormValues): Promise<void> => {
     try {
+      setIsSubmitting(true);
       await onSubmit(data);
       toast({
         title: 'Candidate saved',
         description: 'The candidate information has been successfully saved.',
       });
+      form.reset();
     } catch (error) {
       toast({
         title: 'Error',
         description: 'Failed to save candidate information.',
         variant: 'destructive',
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <FormProvider {...form}>
-      <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-8">
-        <div className="grid gap-6 md:grid-cols-2">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }): React.JSX.Element => (
-              <FormItem>
-                <FormLabel>Full Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="John Smith" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }): React.JSX.Element => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input placeholder="john.smith@example.com" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="phone"
-            render={({ field }): React.JSX.Element => (
-              <FormItem>
-                <FormLabel>Phone</FormLabel>
-                <FormControl>
-                  <Input placeholder="+1 (555) 123-4567" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="location"
-            render={({ field }): React.JSX.Element => (
-              <FormItem>
-                <FormLabel>Current Location</FormLabel>
-                <FormControl>
-                  <Input placeholder="New York, NY" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="title"
-            render={({ field }): React.JSX.Element => (
-              <FormItem>
-                <FormLabel>Job Title</FormLabel>
-                <FormControl>
-                  <Input placeholder="Senior Software Engineer" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="status"
-            render={({ field }): React.JSX.Element => (
-              <FormItem>
-                <FormLabel>Status</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                    <SelectItem value="placed">Placed</SelectItem>
-                    <SelectItem value="interviewing">Interviewing</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
+    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+      <div className="grid gap-6 md:grid-cols-2">
         <FormField
           control={form.control}
-          name="about"
+          name="name"
           render={({ field }): React.JSX.Element => (
             <FormItem>
-              <FormLabel>About</FormLabel>
+              <FormLabel>Full Name</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder="Tell us about the candidate..."
-                  {...field}
-                />
+                <Input placeholder="John Smith" {...field} />
               </FormControl>
-              <FormDescription>
-                Brief description of the candidate's background and expertise.
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -257,153 +150,245 @@ export function CandidateForm({
 
         <FormField
           control={form.control}
-          name="skills"
+          name="email"
           render={({ field }): React.JSX.Element => (
             <FormItem>
-              <FormLabel>Skills</FormLabel>
+              <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="React, TypeScript, Node.js"
-                  {...field}
-                />
+                <Input placeholder="john.smith@example.com" {...field} />
               </FormControl>
-              <FormDescription>
-                Comma-separated list of skills
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <div className="grid gap-6 md:grid-cols-2">
-          <FormField
-            control={form.control}
-            name="availability"
-            render={({ field }): React.JSX.Element => (
-              <FormItem>
-                <FormLabel>Availability</FormLabel>
-                <FormControl>
-                  <Input placeholder="Immediately" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <FormField
+          control={form.control}
+          name="phone"
+          render={({ field }): React.JSX.Element => (
+            <FormItem>
+              <FormLabel>Phone</FormLabel>
+              <FormControl>
+                <Input placeholder="+1 (555) 123-4567" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <FormField
-            control={form.control}
-            name="preferredLocation"
-            render={({ field }): React.JSX.Element => (
-              <FormItem>
-                <FormLabel>Preferred Location</FormLabel>
-                <FormControl>
-                  <Input placeholder="Remote / New York, NY" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="location"
+          render={({ field }): React.JSX.Element => (
+            <FormItem>
+              <FormLabel>Current Location</FormLabel>
+              <FormControl>
+                <Input placeholder="New York, NY" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-        <div className="grid gap-6 md:grid-cols-3">
-          <FormField
-            control={form.control}
-            name="salaryAmount"
-            render={({ field }): React.JSX.Element => (
-              <FormItem>
-                <FormLabel>Salary Amount</FormLabel>
-                <FormControl>
-                  <Input placeholder="100000" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }): React.JSX.Element => (
+            <FormItem>
+              <FormLabel>Job Title</FormLabel>
+              <FormControl>
+                <Input placeholder="Senior Software Engineer" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <FormField
-            control={form.control}
-            name="salaryCurrency"
-            render={({ field }): React.JSX.Element => (
-              <FormItem>
-                <FormLabel>Currency</FormLabel>
-                <FormControl>
-                  <Input placeholder="USD" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <FormField
+          control={form.control}
+          name="status"
+          render={({ field }): React.JSX.Element => (
+            <FormItem>
+              <FormLabel>Status</FormLabel>
+              <FormControl>
+                <Input placeholder="Select status" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
 
-          <FormField
-            control={form.control}
-            name="salaryPeriod"
-            render={({ field }): React.JSX.Element => (
-              <FormItem>
-                <FormLabel>Salary Period</FormLabel>
-                <FormControl>
-                  <Input placeholder="Yearly" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+      <FormField
+        control={form.control}
+        name="about"
+        render={({ field }): React.JSX.Element => (
+          <FormItem>
+            <FormLabel>About</FormLabel>
+            <FormControl>
+              <Textarea
+                placeholder="Tell us about the candidate..."
+                {...field}
+              />
+            </FormControl>
+            <FormDescription>
+              Brief description of the candidate's background and expertise.
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
-        <div className="grid gap-6 md:grid-cols-3">
-          <FormField
-            control={form.control}
-            name="linkedinUrl"
-            render={({ field }): React.JSX.Element => (
-              <FormItem>
-                <FormLabel>LinkedIn</FormLabel>
-                <FormControl>
-                  <Input placeholder="https://linkedin.com/in/..." {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+      <FormField
+        control={form.control}
+        name="skills"
+        render={({ field }): React.JSX.Element => (
+          <FormItem>
+            <FormLabel>Skills</FormLabel>
+            <FormControl>
+              <Input
+                placeholder="React, TypeScript, Node.js"
+                {...field}
+              />
+            </FormControl>
+            <FormDescription>
+              Comma-separated list of skills
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
-          <FormField
-            control={form.control}
-            name="githubUrl"
-            render={({ field }): React.JSX.Element => (
-              <FormItem>
-                <FormLabel>GitHub</FormLabel>
-                <FormControl>
-                  <Input placeholder="https://github.com/..." {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+      <div className="grid gap-6 md:grid-cols-2">
+        <FormField
+          control={form.control}
+          name="availability"
+          render={({ field }): React.JSX.Element => (
+            <FormItem>
+              <FormLabel>Availability</FormLabel>
+              <FormControl>
+                <Input placeholder="Immediately" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <FormField
-            control={form.control}
-            name="portfolioUrl"
-            render={({ field }): React.JSX.Element => (
-              <FormItem>
-                <FormLabel>Portfolio</FormLabel>
-                <FormControl>
-                  <Input placeholder="https://..." {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="preferredLocation"
+          render={({ field }): React.JSX.Element => (
+            <FormItem>
+              <FormLabel>Preferred Location</FormLabel>
+              <FormControl>
+                <Input placeholder="Remote / New York, NY" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
 
-        <div className="flex justify-end space-x-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => form.reset()}
-          >
-            Reset
-          </Button>
-          <Button type="submit">Save Candidate</Button>
-        </div>
-      </form>
-    </FormProvider>
+      <div className="grid gap-6 md:grid-cols-3">
+        <FormField
+          control={form.control}
+          name="salaryAmount"
+          render={({ field }): React.JSX.Element => (
+            <FormItem>
+              <FormLabel>Salary Amount</FormLabel>
+              <FormControl>
+                <Input placeholder="100000" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="salaryCurrency"
+          render={({ field }): React.JSX.Element => (
+            <FormItem>
+              <FormLabel>Currency</FormLabel>
+              <FormControl>
+                <Input placeholder="USD" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="salaryPeriod"
+          render={({ field }): React.JSX.Element => (
+            <FormItem>
+              <FormLabel>Salary Period</FormLabel>
+              <FormControl>
+                <Input placeholder="Yearly" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-3">
+        <FormField
+          control={form.control}
+          name="linkedinUrl"
+          render={({ field }): React.JSX.Element => (
+            <FormItem>
+              <FormLabel>LinkedIn</FormLabel>
+              <FormControl>
+                <Input placeholder="https://linkedin.com/in/..." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="githubUrl"
+          render={({ field }): React.JSX.Element => (
+            <FormItem>
+              <FormLabel>GitHub</FormLabel>
+              <FormControl>
+                <Input placeholder="https://github.com/..." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="portfolioUrl"
+          render={({ field }): React.JSX.Element => (
+            <FormItem>
+              <FormLabel>Portfolio</FormLabel>
+              <FormControl>
+                <Input placeholder="https://..." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+
+      <div className="flex justify-end space-x-4">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => form.reset()}
+        >
+          Reset
+        </Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Submitting...' : 'Save Candidate'}
+        </Button>
+      </div>
+    </form>
   );
 }
