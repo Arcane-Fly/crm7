@@ -1,9 +1,10 @@
 import { type NextApiRequest, type NextApiResponse } from 'next';
 import { z } from 'zod';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
 import { createLogger } from '@/lib/services/logger';
 import { RateManagementServiceImpl } from '@/lib/services/rates/rate-management-service';
-import { withApiAuthRequired } from '@auth0/nextjs-auth0/edge';
 
 import type { ApiResponse } from '@/lib/types/api';
 import type { RateTemplate, RateCalculationResponse } from '@/lib/types/rates';
@@ -37,10 +38,35 @@ const rateService = new RateManagementServiceImpl({
  * POST /api/rates/calculate
  * Calculates rates based on template and parameters
  */
-export default withApiAuthRequired(async function handler(req: NextApiRequest): Promise<Response> {
+export default async function handler(req: NextApiRequest): Promise<Response> {
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
       status: 405,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Create Supabase client
+  const cookieStore = cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
+  );
+
+  // Check authentication
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
       headers: { 'Content-Type': 'application/json' },
     });
   }
@@ -104,4 +130,4 @@ export default withApiAuthRequired(async function handler(req: NextApiRequest): 
       }
     );
   }
-});
+}

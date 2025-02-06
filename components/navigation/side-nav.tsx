@@ -1,3 +1,5 @@
+'use client';
+
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { BarChart, FileText, Home, Settings, Shield, Users } from 'lucide-react';
@@ -12,7 +14,7 @@ const navItems = [
 ];
 
 export function SideNav() {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? '/';
 
   return (
     <nav className="flex h-screen w-64 flex-col border-r bg-card px-3 py-4">

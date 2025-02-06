@@ -1,8 +1,7 @@
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
-import { getSession } from '@auth0/nextjs-auth0';
 
-const PUBLIC_ROUTES = ['/login', '/auth', '/api/auth'];
+const PUBLIC_ROUTES = ['/auth', '/api/auth'];
 const SECURITY_HEADERS = {
   'X-Frame-Options': 'DENY',
   'X-Content-Type-Options': 'nosniff',
@@ -22,7 +21,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
   // Allow public routes
   const isPublicRoute = PUBLIC_ROUTES.some((route) => path.startsWith(route));
-  if (typeof isPublicRoute !== "undefined" && isPublicRoute !== null) {
+  if (isPublicRoute) {
     // Add security headers
     Object.entries(SECURITY_HEADERS).forEach(([key, value]) => {
       response.headers.set(key, value);
@@ -43,60 +42,49 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     throw new Error('Missing Supabase environment variables');
   }
 
-  const supabase = createServerClient(supabaseUrl, supabaseKey, {
-    cookies: {
-      get(name: string) {
-        const cookie = request.cookies.get(name);
-        return cookie?.value;
-      },
-      set(name: string, value: string, options: { path: string }) {
-        // If the cookie is being updated, update the request and response
-        response.cookies.set({
-          name,
-          value,
-          ...options,
-        });
-      },
-      remove(name: string, options: { path: string }) {
-        response.cookies.delete({
-          name,
-          ...options,
-        });
-      },
+  const cookieStore = {
+    get(name: string) {
+      return request.cookies.get(name)?.value;
     },
+    set(name: string, value: string, options: CookieOptions) {
+      response.cookies.set({
+        name,
+        value,
+        ...options,
+      });
+    },
+    remove(name: string, options: CookieOptions) {
+      response.cookies.delete({
+        name,
+        ...options,
+      });
+    },
+  };
+
+  const supabase = createServerClient(supabaseUrl, supabaseKey, {
+    cookies: cookieStore,
   });
 
   try {
-    // Get session
     const {
       data: { session },
     } = await supabase.auth.getSession();
 
-    // Check Auth0 session if needed
+    // Redirect to login if not authenticated
     if (!session) {
-      const auth0Session = await getSession(request, response);
-      if (!auth0Session) {
-        return NextResponse.redirect(new URL('/login', request.url));
-      }
+      const redirectUrl = new URL('/auth', request.url);
+      redirectUrl.searchParams.set('redirectedFrom', request.nextUrl.pathname);
+      return NextResponse.redirect(redirectUrl);
     }
 
-    // Check role-based access
-    if (session?.user) {
-      const { data: userRoles } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', session.user.id);
+    // Check role-based access for protected routes
+    const userRole = session.user.user_metadata.role || 'user';
+    const requiredRoles = Object.entries(PROTECTED_ROUTES).find(([route]) =>
+      path.startsWith(route)
+    )?.[1];
 
-      const roles = userRoles?.map((ur) => ur.role) || [];
-
-      // Find if current path requires specific roles
-      const requiredRoles = Object.entries(PROTECTED_ROUTES).find(([route]) =>
-        path.startsWith(route),
-      )?.[1];
-
-      if (requiredRoles && !requiredRoles.some((role) => roles.includes(role))) {
-        return NextResponse.redirect(new URL('/unauthorized', request.url));
-      }
+    if (requiredRoles && !requiredRoles.includes(userRole)) {
+      return NextResponse.redirect(new URL('/unauthorized', request.url));
     }
 
     return response;
