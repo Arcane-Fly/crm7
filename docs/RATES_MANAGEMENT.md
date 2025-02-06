@@ -26,6 +26,7 @@ The Rates Management System is a core component of our CRM platform, responsible
 ### Core Services
 
 1. **FairWork Service**
+
    - Award management and retrieval
    - Rate validation against Fair Work standards
    - Classification hierarchy management
@@ -61,7 +62,7 @@ The Rates Management System is a core component of our CRM platform, responsible
   - Machine Learning for pattern recognition
   - Rule-based validation engine
 
-### 1. Calculation Engine Service
+### 2. Calculation Engine Service
 
 - Rule-based calculation engine for:
   - Base rates
@@ -74,7 +75,7 @@ The Rates Management System is a core component of our CRM platform, responsible
   - Compliance validation
   - Rate simulation
 
-### 1. Validation System
+### 3. Validation System
 
 - Comprehensive validation against:
   - Fair Work standards
@@ -114,11 +115,13 @@ The Rates Management System is a core component of our CRM platform, responsible
 ## Future Enhancements (Q3-Q4 2025)
 
 1. Machine Learning Enhancements
+
    - Improved agreement parsing accuracy
    - Automated classification suggestions
    - Anomaly detection
 
 2. Real-time Updates
+
    - WebSocket integration for rate changes
    - Push notifications for compliance issues
    - Live dashboard updates
