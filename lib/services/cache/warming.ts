@@ -7,6 +7,7 @@ interface CacheEntry {
   getter: () => Promise<unknown>;
   ttl?: number;
   lastWarmed?: number;
+  accessCount?: number;
 }
 
 interface CacheWarmingConfig {
@@ -30,7 +31,7 @@ export class CacheWarming {
     getter: () => Promise<unknown>,
     ttl?: number
   ): void {
-    this.entries.set(key, { key, getter, ttl });
+    this.entries.set(key, { key, getter, ttl, accessCount: 0 });
   }
 
   unregister(key: string): void {
@@ -43,6 +44,30 @@ export class CacheWarming {
       return entry;
     }
     return undefined;
+  }
+
+  recordAccess(key: string): void {
+    const entry = this.entries.get(key);
+    if (entry) {
+      entry.accessCount = (entry.accessCount ?? 0) + 1;
+    }
+  }
+
+  getStats(): Record<string, unknown> {
+    const totalEntries = this.entries.size;
+    const activeEntries = Array.from(this.entries.values()).filter(entry => entry.accessCount && entry.accessCount > 0).length;
+    const entriesByPriority = Array.from(this.entries.values()).reduce((acc, entry) => {
+      const priority = entry.ttl ?? 0;
+      acc[priority] = (acc[priority] ?? 0) + 1;
+      return acc;
+    }, {} as Record<number, number>);
+
+    return {
+      totalEntries,
+      activeEntries,
+      entriesByPriority,
+      isWarming: this.isWarming,
+    };
   }
 
   async warmAll(): Promise<void> {
@@ -111,6 +136,10 @@ export class CacheWarming {
   async start(): Promise<void> {
     await this.warmAll();
     this.scheduleNextWarm();
+  }
+
+  stop(): void {
+    this.isWarming = false;
   }
 
   private scheduleNextWarm(): void {
