@@ -16,6 +16,11 @@ export default {
       },
     },
     extend: {
+      spacing: {
+        'header-height': '4rem',
+        'sidebar-width': '16rem',
+        'content-area': 'calc(100vh - 4rem)',
+      },
       backgroundColor: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
@@ -69,12 +74,12 @@ export default {
       },
       keyframes: {
         "accordion-down": {
-          from: { height: 0 },
+          from: { height: "0" },
           to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
           from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: 0 },
+          to: { height: "0" },
         },
       },
       animation: {
@@ -83,8 +88,5 @@ export default {
       },
     },
   },
-  plugins: [
-    require("@tailwindcss/typography"),
-    require("@tailwindcss/forms"),
-  ],
+  plugins: [require("tailwindcss-animate")],
 }
