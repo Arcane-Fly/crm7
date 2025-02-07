@@ -1,6 +1,3 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { type TableSchema } from '@/lib/types/schema-component';
-import * as d3 from 'd3';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -9,6 +6,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { type TableSchema } from '@/lib/types/schema-component';
+import * as d3 from 'd3';
+import { useEffect, useRef, useState } from 'react';
 
 interface Node extends d3.SimulationNodeDatum {
   id: string;
@@ -27,14 +27,14 @@ interface Link extends d3.SimulationLinkDatum<Node> {
 }
 
 interface RelationshipGraphProps {
-  tables: TableSchema[];
+  schema: TableSchema[];
   width?: number;
   height?: number;
   onTableSelect?: (tableName: string) => void;
 }
 
-export function RelationshipGraph({ 
-  tables,
+export function RelationshipGraph({
+  schema,
   width = 800,
   height = 600,
   onTableSelect,
@@ -52,7 +52,7 @@ export function RelationshipGraph({
     d3.select(svgRef.current).selectAll('*').remove();
 
     // Create nodes from tables
-    const nodes: Node[] = tables.map(table => ({
+    const nodes: Node[] = schema.map(table => ({
       id: table.name,
       label: table.name,
       fields: table.fields.map(f => f.name),
@@ -60,12 +60,12 @@ export function RelationshipGraph({
     }));
 
     // Create links from relationships
-    const links: Link[] = tables.flatMap(table =>
+    const links: Link[] = schema.flatMap(table =>
       table.fields
         .filter(field => field.references)
         .map(field => {
-          const targetTable = tables.find(t => t.name === field.references!.table);
-          const type = targetTable?.fields.some(f => 
+          const targetTable = schema.find(t => t.name === field.references!.table);
+          const type = targetTable?.fields.some(f =>
             f.references?.table === table.name
           ) ? 'many-to-many' : 'one-to-many';
 
@@ -125,9 +125,9 @@ export function RelationshipGraph({
       .enter()
       .append('g')
       .attr('class', 'link')
-      .style('opacity', d => 
-        !highlightedTable || 
-        d.source === highlightedTable || 
+      .style('opacity', d =>
+        !highlightedTable ||
+        d.source === highlightedTable ||
         d.target === highlightedTable ? 1 : 0.2
       );
 
@@ -152,10 +152,10 @@ export function RelationshipGraph({
       .enter()
       .append('g')
       .attr('class', 'node')
-      .style('opacity', d => 
-        !highlightedTable || 
-        d.id === highlightedTable || 
-        links.some(l => 
+      .style('opacity', d =>
+        !highlightedTable ||
+        d.id === highlightedTable ||
+        links.some(l =>
           (l.source === highlightedTable && l.target === d.id) ||
           (l.target === highlightedTable && l.source === d.id)
         ) ? 1 : 0.2
@@ -262,7 +262,7 @@ export function RelationshipGraph({
     return () => {
       simulation.stop();
     };
-  }, [tables, width, height, layout, showFields, highlightedTable, onTableSelect]);
+  }, [schema, width, height, layout, showFields, highlightedTable, onTableSelect]);
 
   return (
     <div className="space-y-4">

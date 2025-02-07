@@ -1,6 +1,12 @@
-import { createClient } from '@supabase/ssr';
-import { useCallback, useEffect, useState } from 'react';
-import { type TableSchema } from '@/lib/types/schema-component';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -9,23 +15,18 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
+import { type TableSchema } from '@/lib/types/schema-component';
+import { createClient } from '@supabase/ssr';
+import { useCallback, useEffect, useState } from 'react';
 
 interface DataPreviewProps {
-  table: TableSchema;
+  schema: TableSchema[];
   limit?: number;
 }
 
-export function DataPreview({ table, limit = 5 }: DataPreviewProps) {
+export function DataPreview({ schema, limit = 5 }: DataPreviewProps) {
+  const [selectedTable, setSelectedTable] = useState<TableSchema | null>(schema[0] || null);
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -34,12 +35,14 @@ export function DataPreview({ table, limit = 5 }: DataPreviewProps) {
   const [filters, setFilters] = useState<Record<string, { value: string; operator: string }>>({});
 
   const fetchData = useCallback(async () => {
+    if (!selectedTable) return;
+    
     try {
       setLoading(true);
       const supabase = createClient();
 
       let query = supabase
-        .from(table.name)
+        .from(selectedTable.name)
         .select('*')
         .limit(limit);
 
@@ -57,7 +60,7 @@ export function DataPreview({ table, limit = 5 }: DataPreviewProps) {
               query = query.lt(field, filter.value);
               break;
             case 'like':
-              query = query.ilike(field, `%${filter.value}%`);
+              query = query.like(field, `%${filter.value}%`);
               break;
           }
         }
@@ -68,158 +71,166 @@ export function DataPreview({ table, limit = 5 }: DataPreviewProps) {
         query = query.order(orderBy, { ascending: orderDir === 'asc' });
       }
 
-      const { data: result, error } = await query;
+      const { data: result, error: queryError } = await query;
 
-      if (error) throw error;
-      setData(result);
+      if (queryError) throw queryError;
+      setData(result || []);
       setError(null);
     } catch (err) {
+      console.error('Failed to fetch data:', err);
       setError(err as Error);
       toast({
+        title: 'Error',
+        description: 'Failed to fetch data. Please try again.',
         variant: 'destructive',
-        title: 'Error fetching data',
-        description: (err as Error).message,
       });
     } finally {
       setLoading(false);
     }
-  }, [table.name, limit, orderBy, orderDir, filters]);
+  }, [selectedTable, limit, filters, orderBy, orderDir]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  const handleFilterChange = (field: string, value: string, operator: string) => {
-    setFilters(prev => ({
-      ...prev,
-      [field]: { value, operator },
-    }));
-  };
-
-  const renderFilterOperator = (field: string) => (
-    <Select
-      value={filters[field]?.operator || 'eq'}
-      onValueChange={(value) => handleFilterChange(field, filters[field]?.value || '', value)}
-    >
-      <SelectTrigger className="w-[100px]">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="eq">Equals</SelectItem>
-        <SelectItem value="gt">Greater</SelectItem>
-        <SelectItem value="lt">Less</SelectItem>
-        <SelectItem value="like">Contains</SelectItem>
-      </SelectContent>
-    </Select>
-  );
+  if (!selectedTable) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        No tables available for preview
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">
-          {table.name} Preview
-        </h3>
-        <div className="flex items-center gap-2">
-          <Select value={orderBy} onValueChange={setOrderBy}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Order by..." />
+      <div className="flex items-center gap-4">
+        <Select
+          value={selectedTable.name}
+          onValueChange={(value) => {
+            const table = schema.find(t => t.name === value);
+            if (table) {
+              setSelectedTable(table);
+              setFilters({});
+              setOrderBy('');
+              setOrderDir('asc');
+            }
+          }}
+        >
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Select table" />
+          </SelectTrigger>
+          <SelectContent>
+            {schema.map((table) => (
+              <SelectItem key={table.name} value={table.name}>
+                {table.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={orderBy} onValueChange={setOrderBy}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Order by" />
+          </SelectTrigger>
+          <SelectContent>
+            {selectedTable.fields.map((field) => (
+              <SelectItem key={field.name} value={field.name}>
+                {field.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {orderBy && (
+          <Select value={orderDir} onValueChange={(value) => setOrderDir(value as 'asc' | 'desc')}>
+            <SelectTrigger className="w-[120px]">
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {table.fields.map(field => (
-                <SelectItem key={field.name} value={field.name}>
-                  {field.name}
-                </SelectItem>
-              ))}
+              <SelectItem value="asc">Ascending</SelectItem>
+              <SelectItem value="desc">Descending</SelectItem>
             </SelectContent>
           </Select>
-          {orderBy && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setOrderDir(prev => prev === 'asc' ? 'desc' : 'asc')}
-            >
-              {orderDir === 'asc' ? '↑' : '↓'}
-            </Button>
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={fetchData}
-            disabled={loading}
-          >
-            Refresh
-          </Button>
-        </div>
+        )}
+
+        <Button onClick={() => fetchData()} disabled={loading}>
+          Refresh
+        </Button>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              {table.fields.map(field => (
-                <TableHead key={field.name}>
-                  <div className="space-y-2">
-                    <div>{field.name}</div>
-                    <div className="flex items-center gap-2">
-                      {renderFilterOperator(field.name)}
-                      <Input
-                        placeholder="Filter..."
-                        value={filters[field.name]?.value || ''}
-                        onChange={(e) => handleFilterChange(
-                          field.name,
-                          e.target.value,
-                          filters[field.name]?.operator || 'eq'
-                        )}
-                        className="w-[150px]"
-                      />
-                    </div>
-                  </div>
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
+      {/* Filters */}
+      <div className="flex flex-wrap gap-4">
+        {selectedTable.fields.map((field) => (
+          <div key={field.name} className="flex items-center gap-2">
+            <Input
+              placeholder={`Filter ${field.name}`}
+              value={filters[field.name]?.value || ''}
+              onChange={(e) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  [field.name]: { ...prev[field.name], value: e.target.value },
+                }))
+              }
+              className="w-[200px]"
+            />
+            <Select
+              value={filters[field.name]?.operator || 'eq'}
+              onValueChange={(value) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  [field.name]: { ...prev[field.name], operator: value },
+                }))
+              }
+            >
+              <SelectTrigger className="w-[100px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="eq">=</SelectItem>
+                <SelectItem value="gt">&gt;</SelectItem>
+                <SelectItem value="lt">&lt;</SelectItem>
+                <SelectItem value="like">Contains</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        ))}
+      </div>
+
+      {/* Data Table */}
+      {loading ? (
+        <div className="text-center py-12">Loading...</div>
+      ) : error ? (
+        <div className="text-center py-12 text-destructive">
+          {error.message}
+        </div>
+      ) : data.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground">
+          No data available
+        </div>
+      ) : (
+        <div className="border rounded-lg">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell
-                  colSpan={table.fields.length}
-                  className="h-24 text-center"
-                >
-                  Loading...
-                </TableCell>
+                {selectedTable.fields.map((field) => (
+                  <TableHead key={field.name}>{field.name}</TableHead>
+                ))}
               </TableRow>
-            ) : error ? (
-              <TableRow>
-                <TableCell
-                  colSpan={table.fields.length}
-                  className="h-24 text-center text-destructive"
-                >
-                  {error.message}
-                </TableCell>
-              </TableRow>
-            ) : data.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={table.fields.length}
-                  className="h-24 text-center text-muted-foreground"
-                >
-                  No data available
-                </TableCell>
-              </TableRow>
-            ) : (
-              data.map((row, i) => (
+            </TableHeader>
+            <TableBody>
+              {data.map((row, i) => (
                 <TableRow key={i}>
-                  {table.fields.map(field => (
+                  {selectedTable.fields.map((field) => (
                     <TableCell key={field.name}>
                       {formatValue(row[field.name], field.type)}
                     </TableCell>
                   ))}
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
     </div>
   );
 }
@@ -227,7 +238,7 @@ export function DataPreview({ table, limit = 5 }: DataPreviewProps) {
 function formatValue(value: any, type: string): string {
   if (value === null) return 'null';
   if (value === undefined) return '';
-  
+
   switch (type) {
     case 'date':
       return new Date(value).toLocaleString();
