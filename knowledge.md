@@ -5,7 +5,7 @@
 - Next.js version: 15.1.6 (required)
 - Node.js: ^18.17.0
 - TypeScript: ^5.0.0
-- Package manager: pnpm (version 10.2.0)
+- Package manager: pnpm (version 10.2.1)
 
 ## Project Path
 
@@ -16,7 +16,7 @@
 ## Build Tools
 
 - Uses Next.js for development and production builds
-- Package manager: pnpm (version 10.2.0)
+- Package manager: pnpm (version 10.2.1)
 - Node version: ^18.17.0
 
 ## Version Management
@@ -82,3 +82,12 @@
 - Route handler functions must be async
 - Route handlers should use NextRequest type
 - Each route file should export a single HTTP method handler
+
+## Package Management
+
+- Use pnpm as the package manager
+- Version: 10.2.1
+- No npm lock files allowed
+- Use .npmrc for configuration
+- Use pnpm-lock.yaml for dependency locking
+- Use `engine-strict=true` for Node version enforcement

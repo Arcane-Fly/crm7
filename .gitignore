@@ -1,4 +1,5 @@
 # Dependencies
+node_modules/
 **/node_modules
 /node_modules/*
 
@@ -22,6 +23,9 @@ yarn-error.log*
 !.yarn/sdks
 !.yarn/versions
 .yarn-integrity
+package-lock.json
+yarn.lock
+.yarn/
 
 # Testing
 /coverage
