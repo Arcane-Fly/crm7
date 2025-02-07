@@ -59,6 +59,26 @@ export function ComplianceAlerts(): JSX.Element {
             </div>
           ))}
         </div>
+        <div className='mt-6'>
+          <h3 className='text-lg font-semibold'>Document Storage & Versioning</h3>
+          <p>Manage and store compliance-related documents with version control.</p>
+        </div>
+        <div className='mt-6'>
+          <h3 className='text-lg font-semibold'>Automated Monitoring</h3>
+          <p>Continuously monitor compliance requirements and statuses.</p>
+        </div>
+        <div className='mt-6'>
+          <h3 className='text-lg font-semibold'>Alert System</h3>
+          <p>Generate alerts for compliance issues, such as missing or expiring certifications.</p>
+        </div>
+        <div className='mt-6'>
+          <h3 className='text-lg font-semibold'>Audit Trail</h3>
+          <p>Maintain a detailed log of compliance-related activities and changes.</p>
+        </div>
+        <div className='mt-6'>
+          <h3 className='text-lg font-semibold'>Regulatory Reporting</h3>
+          <p>Generate reports to meet regulatory requirements.</p>
+        </div>
       </CardContent>
     </Card>
   );
