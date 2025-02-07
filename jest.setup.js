@@ -8,8 +8,19 @@ global.TextDecoder = TextDecoder;
 
 // Mock canvas
 jest.mock('canvas', () => ({
-  createCanvas: jest.fn(),
-  loadImage: jest.fn(),
+  createCanvas: jest.fn(() => ({
+    getContext: jest.fn(() => ({
+      fillStyle: '',
+      fillRect: jest.fn(),
+      drawImage: jest.fn(),
+      getImageData: jest.fn(() => ({ data: new Uint8ClampedArray() })),
+      putImageData: jest.fn(),
+    })),
+    toBuffer: jest.fn(),
+    width: 0,
+    height: 0,
+  })),
+  loadImage: jest.fn(() => Promise.resolve({})),
 }));
 
 // Mock Next.js router
