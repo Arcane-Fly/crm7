@@ -1,62 +1,62 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
-export function createClient(): void {
-  const cookieStore = cookies();
+export async function createClient() {
+  const cookieStore = await cookies();
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL ?? undefined,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? undefined,
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
+        async get(name: string) {
+          return (await cookieStore.get(name))?.value;
         },
-        set(name: string, value: string, options: CookieOptions): void {
+        async set(name: string, value: string, options: CookieOptions) {
           try {
-            cookieStore.set({ name, value, ...options });
+            await cookieStore.set({ name, value, ...options, path: '/' });
           } catch (error) {
-            // Handle cookie error
+            console.error('Error setting cookie:', error);
           }
         },
-        remove(name: string, options: CookieOptions): void {
+        async remove(name: string, options: CookieOptions) {
           try {
-            cookieStore.set({ name, value: '', ...options });
+            await cookieStore.set({ name, value: '', ...options, path: '/', maxAge: 0 });
           } catch (error) {
-            // Handle cookie error
+            console.error('Error removing cookie:', error);
           }
         },
       },
-    },
+    }
   );
 }
 
-export function createAdminClient(): void {
-  const cookieStore = cookies();
+export async function createAdminClient() {
+  const cookieStore = await cookies();
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL ?? undefined,
-    process.env.SUPABASE_SERVICE_KEY ?? undefined,
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
+        async get(name: string) {
+          return (await cookieStore.get(name))?.value;
         },
-        set(name: string, value: string, options: CookieOptions): void {
+        async set(name: string, value: string, options: CookieOptions) {
           try {
-            cookieStore.set({ name, value, ...options });
+            await cookieStore.set({ name, value, ...options, path: '/' });
           } catch (error) {
-            // Handle cookie error
+            console.error('Error setting cookie:', error);
           }
         },
-        remove(name: string, options: CookieOptions): void {
+        async remove(name: string, options: CookieOptions) {
           try {
-            cookieStore.set({ name, value: '', ...options });
+            await cookieStore.set({ name, value: '', ...options, path: '/', maxAge: 0 });
           } catch (error) {
-            // Handle cookie error
+            console.error('Error removing cookie:', error);
           }
         },
       },
-    },
+    }
   );
 }

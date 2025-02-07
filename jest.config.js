@@ -13,19 +13,34 @@ const config = {
   testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
+    '\\.(css|less|sass|scss)$': 'identity-obj-proxy',
   },
-  coverageProvider: 'v8',
+  transform: {
+    '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }],
+  },
+  transformIgnorePatterns: [
+    '/node_modules/(?!(@radix-ui|@babel|@floating-ui|lucide-react)/)',
+  ],
+  testEnvironmentOptions: {
+    customExportConditions: [''],
+  },
+  moduleDirectories: ['node_modules', '<rootDir>/'],
   collectCoverageFrom: [
-    'app/**/*.{js,jsx,ts,tsx}',
-    'components/**/*.{js,jsx,ts,tsx}',
-    'lib/**/*.{js,jsx,ts,tsx}',
+    '**/*.{js,jsx,ts,tsx}',
     '!**/*.d.ts',
     '!**/node_modules/**',
+    '!**/.next/**',
+    '!**/coverage/**',
+    '!jest.config.js',
   ],
-  testMatch: [
-    '<rootDir>/**/__tests__/**/*.[jt]s?(x)',
-    '<rootDir>/**/?(*.)+(spec|test).[jt]s?(x)',
-  ],
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
+    },
+  },
 };
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
