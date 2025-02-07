@@ -24,10 +24,10 @@ export default async function RootLayout({
         get(name: string) {
           return cookieStore.get(name)?.value;
         },
-        set(name: string, value: string, options: { path: string }) {
+        set(name: string, value: string, options: any) {
           cookieStore.set({ name, value, ...options });
         },
-        remove(name: string, options: { path: string }) {
+        remove(name: string, options: any) {
           cookieStore.set({ name, value: '', ...options, maxAge: 0 });
         },
       },
