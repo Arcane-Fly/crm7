@@ -6,6 +6,7 @@ import { AppLayout } from '@/components/layout/app-layout';
 import { cookies } from 'next/headers';
 import { AuthProvider } from '@/lib/auth/context';
 import { createClient } from '@/utils/supabase/server';
+import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -35,14 +36,16 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <AuthProvider initialSession={session}>
-              {session ? (
-                <AppLayout>{children}</AppLayout>
-              ) : (
-                children
-              )}
-              <Toaster />
-            </AuthProvider>
+            <ErrorBoundary>
+              <AuthProvider initialSession={session}>
+                {session ? (
+                  <AppLayout>{children}</AppLayout>
+                ) : (
+                  children
+                )}
+                <Toaster />
+              </AuthProvider>
+            </ErrorBoundary>
           </ThemeProvider>
         </body>
       </html>
@@ -62,10 +65,12 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <AuthProvider initialSession={null}>
-              {children}
-              <Toaster />
-            </AuthProvider>
+            <ErrorBoundary>
+              <AuthProvider initialSession={null}>
+                {children}
+                <Toaster />
+              </AuthProvider>
+            </ErrorBoundary>
           </ThemeProvider>
         </body>
       </html>
