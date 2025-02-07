@@ -1,9 +1,9 @@
-import { Puck, type Config } from '@measured/puck';
+import { Puck, type Config, type Field } from '@measured/puck';
 import { createClient } from '@supabase/supabase-js';
 import { useCallback, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
-interface SchemaField {
+export interface SchemaField {
   name: string;
   type: string;
   nullable?: boolean;
@@ -29,7 +29,7 @@ interface TableConfig {
 const schemaConfig: Config = {
   components: {
     Table: {
-      render: ({ name, fields, indices }) => (
+      render: ({ name, fields, indices }: { name: string; fields: SchemaField[]; indices?: { name: string; fields: string[] }[] }) => (
         <div className="p-6 border border-gray-200 rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">{name}</h3>
@@ -102,55 +102,29 @@ const schemaConfig: Config = {
         </div>
       ),
       fields: {
-        name: { type: 'text', label: 'Table Name' },
+        name: { type: 'text', label: 'Table Name' } as Field,
         fields: {
           type: 'array',
           label: 'Fields',
-          arrayFields: {
-            name: { type: 'text', label: 'Field Name' },
-            type: {
+          itemType: 'object',
+          defaultValue: [],
+          fields: {
+            name: { type: 'text', label: 'Field Name' } as Field,
+            type: { 
               type: 'select',
-              label: 'Data Type',
+              label: 'Field Type',
               options: [
                 { label: 'Text', value: 'text' },
-                { label: 'Integer', value: 'integer' },
+                { label: 'Number', value: 'number' },
                 { label: 'Boolean', value: 'boolean' },
-                { label: 'UUID', value: 'uuid' },
-                { label: 'Timestamp', value: 'timestamptz' },
-                { label: 'JSON', value: 'jsonb' },
-                { label: 'Float', value: 'float8' },
-                { label: 'Serial', value: 'serial' }
+                { label: 'Date', value: 'date' },
+                { label: 'JSON', value: 'json' }
               ]
-            },
-            nullable: { type: 'boolean', label: 'Nullable' },
-            defaultValue: { type: 'text', label: 'Default Value' },
-            references: {
-              type: 'object',
-              label: 'Foreign Key',
-              objectFields: {
-                table: { type: 'text', label: 'Referenced Table' },
-                field: { type: 'text', label: 'Referenced Field' },
-                onDelete: {
-                  type: 'select',
-                  label: 'On Delete',
-                  options: [
-                    { label: 'CASCADE', value: 'CASCADE' },
-                    { label: 'SET NULL', value: 'SET NULL' },
-                    { label: 'RESTRICT', value: 'RESTRICT' }
-                  ]
-                }
-              }
-            }
+            } as Field,
+            nullable: { type: 'text', label: 'Nullable' } as Field,
+            defaultValue: { type: 'text', label: 'Default Value' } as Field
           }
-        },
-        indices: {
-          type: 'array',
-          label: 'Indices',
-          arrayFields: {
-            name: { type: 'text', label: 'Index Name' },
-            fields: { type: 'array', label: 'Fields', arrayFields: { type: 'text' } }
-          }
-        }
+        } as Field
       },
       defaultProps: {
         name: '',

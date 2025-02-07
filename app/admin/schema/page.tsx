@@ -1,15 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { type TableSchema } from '@/lib/types/schema-component';
-import { RelationshipGraph } from '@/components/schema/RelationshipGraph';
-import { DataPreview } from '@/components/schema/DataPreview';
-import { migrationGenerator } from '@/lib/schema/migration-generator';
-import { MigrationHandler } from '@/lib/schema/migration-handler';
-import { SchemaHistory } from '@/lib/schema/schema-history';
-import { SchemaEditor } from '@/components/schema/SchemaEditor';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -17,10 +8,24 @@ import { toast } from '@/components/ui/use-toast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { type TableSchema } from '@/lib/types/schema-component';
+import { RelationshipGraph } from '@/components/schema/RelationshipGraph';
+import { DataPreview } from '@/components/schema/DataPreview';
+import { migrationGenerator } from '@/lib/schema/migration-generator';
+import { MigrationHandler } from '@/lib/schema/migration-handler';
+import { SchemaHistory } from '@/lib/schema/schema-history';
+import { SchemaEditor } from '@/components/schema/SchemaEditor';
 import path from 'path';
 
 const migrationHandler = new MigrationHandler(path.join(process.cwd(), 'migrations'));
 const schemaHistory = new SchemaHistory();
+
+interface Profile {
+  role: string;
+  can_manage_schema: boolean;
+}
 
 export default async function SchemaPage() {
   const cookieStore = cookies();
