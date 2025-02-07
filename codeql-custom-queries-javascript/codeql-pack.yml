@@ -1,0 +1,17 @@
+---
+library: false
+warnOnImplicitThis: false
+name: crm7r/security-queries
+version: 1.0.0
+description: Custom security queries for CRM7R project
+dependencies:
+  codeql/javascript-all: ^2.4.0
+  codeql/dataflow: ^2.0.0
+  codeql/threat-models: ^1.0.16
+  codeql/typescript: ^0.6.0
+defaultSuite:
+  - security-checks
+suites:
+  security-checks:
+    - "*.ql"
+    - "!test"
