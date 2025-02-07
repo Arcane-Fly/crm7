@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { UserButton } from '@/components/auth/user-button';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
+import { Tooltip } from '@/components/ui/tooltip';
 
 interface NavItem {
   label: string;
@@ -119,18 +120,19 @@ export function TopNav(): React.ReactElement {
           </Link>
           <div className="flex items-center space-x-6 text-sm font-medium">
             {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center space-x-2 transition-colors hover:text-foreground/80 ${
-                  pathname?.startsWith(item.href)
-                    ? 'text-foreground'
-                    : 'text-foreground/60'
-                }`}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </Link>
+              <Tooltip key={item.href} content={item.label}>
+                <Link
+                  href={item.href}
+                  className={`flex items-center space-x-2 transition-colors hover:text-foreground/80 ${
+                    pathname?.startsWith(item.href)
+                      ? 'text-foreground'
+                      : 'text-foreground/60'
+                  }`}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </Link>
+              </Tooltip>
             ))}
           </div>
         </div>
