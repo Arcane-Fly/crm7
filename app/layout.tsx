@@ -65,27 +65,45 @@ export const metadata: Metadata = {
 };
 
 async function getSession() {
-  const cookieStore = cookies();
-
   try {
+    // Get the cookie store asynchronously
+    const cookieStore = await cookies();
+
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
           get(name: string) {
-            return cookieStore.get(name)?.value;
+            try {
+              return cookieStore.get(name)?.value;
+            } catch (error) {
+              console.error('Error getting cookie:', error);
+              return undefined;
+            }
           },
           set(name: string, value: string, options: CookieOptions) {
             try {
-              cookieStore.set(name, value, options);
+              // Ensure path is set as required in Next.js
+              cookieStore.set({
+                name,
+                value,
+                ...options,
+                path: options.path || '/'
+              });
             } catch (error) {
               console.error('Error setting cookie:', error);
             }
           },
           remove(name: string, options: CookieOptions) {
             try {
-              cookieStore.set(name, '', { ...options, maxAge: 0 });
+              cookieStore.set({
+                name,
+                value: '',
+                ...options,
+                path: options.path || '/',
+                maxAge: 0
+              });
             } catch (error) {
               console.error('Error removing cookie:', error);
             }
@@ -94,7 +112,16 @@ async function getSession() {
       }
     );
 
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+      error
+    } = await supabase.auth.getSession();
+
+    if (error) {
+      console.error('Supabase session error:', error);
+      return null;
+    }
+
     return session;
   } catch (error) {
     console.error('Error in getSession:', error);

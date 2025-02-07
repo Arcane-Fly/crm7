@@ -1,11 +1,14 @@
 export default {
   plugins: {
-    'postcss-import': {},
-    'postcss-nesting': {},
-    '@tailwindcss/postcss': {},
+    'tailwindcss/nesting': {},
+    tailwindcss: {},
     autoprefixer: {},
-    'postcss-preset-env': {
-      features: { 'nesting-rules': false },
-    },
-  },
+    ...(process.env.NODE_ENV === 'production'
+      ? {
+          'cssnano': {
+            preset: ['default', { discardComments: { removeAll: true } }]
+          }
+        }
+      : {})
+  }
 }
