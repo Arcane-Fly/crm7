@@ -18,10 +18,15 @@
 
 ### 3. Compliance System
 - Document storage & versioning
+  - Manage and store compliance-related documents with version control.
 - Automated monitoring
+  - Continuously monitor compliance requirements and statuses.
 - Alert system
+  - Generate alerts for compliance issues, such as missing or expiring certifications.
 - Audit trail
+  - Maintain a detailed log of compliance-related activities and changes.
 - Regulatory reporting
+  - Generate reports to meet regulatory requirements.
 
 ### 4. Financial Operations
 - Timesheet processing
