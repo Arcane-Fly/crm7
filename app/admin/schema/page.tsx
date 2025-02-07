@@ -1,8 +1,26 @@
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
+import { type TableSchema } from '@/lib/types/schema-component';
+import { RelationshipGraph } from '@/components/schema/RelationshipGraph';
+import { DataPreview } from '@/components/schema/DataPreview';
+import { migrationGenerator } from '@/lib/schema/migration-generator';
+import { MigrationHandler } from '@/lib/schema/migration-handler';
+import { SchemaHistory } from '@/lib/schema/schema-history';
 import { SchemaEditor } from '@/components/schema/SchemaEditor';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { toast } from '@/components/ui/use-toast';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import path from 'path';
+
+const migrationHandler = new MigrationHandler(path.join(process.cwd(), 'migrations'));
+const schemaHistory = new SchemaHistory();
 
 export default async function SchemaPage() {
   const cookieStore = cookies();
@@ -34,61 +52,220 @@ export default async function SchemaPage() {
     return redirect('/dashboard');
   }
 
+  const [currentSchema, setCurrentSchema] = useState<TableSchema[]>([]);
+  const [selectedTable, setSelectedTable] = useState<string | null>(null);
+  const [migrationDescription, setMigrationDescription] = useState('');
+  const [showMigrationDialog, setShowMigrationDialog] = useState(false);
+  const [migrationHistory, setMigrationHistory] = useState<Array<{
+    filename: string;
+    timestamp: string;
+    description: string;
+  }>>([]);
+
+  useEffect(() => {
+    // Load migration history
+    migrationHandler.getMigrationHistory().then(setMigrationHistory);
+  }, []);
+
+  const handleSchemaChange = useCallback((newSchema: TableSchema[]) => {
+    setCurrentSchema(newSchema);
+    schemaHistory.push(newSchema, 'Schema update');
+  }, []);
+
+  const handleUndo = useCallback(() => {
+    const previous = schemaHistory.undo();
+    if (previous) {
+      setCurrentSchema(previous.schema);
+      toast({
+        title: 'Changes Undone',
+        description: `Reverted to: ${previous.description}`,
+      });
+    }
+  }, []);
+
+  const handleRedo = useCallback(() => {
+    const next = schemaHistory.redo();
+    if (next) {
+      setCurrentSchema(next.schema);
+      toast({
+        title: 'Changes Redone',
+        description: `Applied: ${next.description}`,
+      });
+    }
+  }, []);
+
+  const handleGenerateMigration = useCallback(async () => {
+    if (!migrationDescription) {
+      toast({
+        variant: 'destructive',
+        title: 'Missing Description',
+        description: 'Please provide a description for the migration.',
+      });
+      return;
+    }
+
+    try {
+      const current = schemaHistory.getCurrentState();
+      const previous = schemaHistory.getHistory()[schemaHistory.getHistory().length - 2];
+
+      if (!current || !previous) {
+        toast({
+          variant: 'destructive',
+          title: 'No Changes',
+          description: 'No schema changes to migrate.',
+        });
+        return;
+      }
+
+      const filename = await migrationHandler.saveMigration(
+        previous.schema,
+        current.schema,
+        migrationDescription
+      );
+
+      setShowMigrationDialog(false);
+      setMigrationDescription('');
+
+      // Refresh migration history
+      const history = await migrationHandler.getMigrationHistory();
+      setMigrationHistory(history);
+
+      toast({
+        title: 'Migration Generated',
+        description: `Migration file ${filename} has been created.`,
+      });
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error Generating Migration',
+        description: (error as Error).message,
+      });
+    }
+  }, [migrationDescription]);
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Database Schema Editor</h1>
-              <p className="mt-1 text-sm text-gray-500">
-                Design and manage your database structure visually
-              </p>
-            </div>
-            <div className="flex items-center gap-4">
+    <div className="container mx-auto py-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Schema Management</h1>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={handleUndo}
+            disabled={!schemaHistory.canUndo()}
+          >
+            Undo
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleRedo}
+            disabled={!schemaHistory.canRedo()}
+          >
+            Redo
+          </Button>
+          <Dialog open={showMigrationDialog} onOpenChange={setShowMigrationDialog}>
+            <DialogTrigger asChild>
               <Button
-                variant="outline"
-                onClick={() => window.location.href = '/dashboard'}
+                variant="default"
+                disabled={currentSchema.length === 0}
               >
-                Back to Dashboard
+                Generate Migration
               </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Generate Migration</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="description">Migration Description</Label>
+                  <Input
+                    id="description"
+                    value={migrationDescription}
+                    onChange={(e) => setMigrationDescription(e.target.value)}
+                    placeholder="e.g., Add user preferences table"
+                  />
+                </div>
+                <Button
+                  onClick={handleGenerateMigration}
+                  disabled={!migrationDescription}
+                >
+                  Generate
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      <Tabs defaultValue="editor" className="w-full">
+        <TabsList>
+          <TabsTrigger value="editor">Schema Editor</TabsTrigger>
+          <TabsTrigger value="relationships">Relationships</TabsTrigger>
+          <TabsTrigger value="preview">Data Preview</TabsTrigger>
+          <TabsTrigger value="history">Migration History</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="editor" className="mt-6">
+          <SchemaEditor
+            initialSchema={currentSchema}
+            onChange={handleSchemaChange}
+            onSelectTable={setSelectedTable}
+          />
+        </TabsContent>
+
+        <TabsContent value="relationships" className="mt-6">
+          <div className="border rounded-lg bg-white">
+            <RelationshipGraph
+              tables={currentSchema}
+              width={1200}
+              height={800}
+              onTableSelect={setSelectedTable}
+            />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="preview" className="mt-6">
+          {selectedTable ? (
+            <DataPreview
+              table={currentSchema.find(t => t.name === selectedTable)!}
+              limit={10}
+            />
+          ) : (
+            <div className="text-center py-12 text-muted-foreground">
+              Select a table from the schema editor to preview its data
             </div>
-          </div>
-        </div>
-      </header>
+          )}
+        </TabsContent>
 
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-6">
-          <div className="bg-white shadow-sm ring-1 ring-gray-900/5 rounded-lg p-6">
-            <h2 className="text-base font-semibold leading-7 text-gray-900">Quick Guide</h2>
-            <p className="mt-1 text-sm leading-6 text-gray-500">
-              Follow these steps to create and manage your database schema
-            </p>
-            <ul className="mt-4 grid grid-cols-1 gap-4 text-sm leading-6 text-gray-600 sm:grid-cols-2">
-              <li className="flex gap-x-3">
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-[0.625rem] font-medium text-blue-700">1</div>
-                Click the <strong className="mx-1">+ Add Table</strong> button to create a new table
-              </li>
-              <li className="flex gap-x-3">
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-[0.625rem] font-medium text-blue-700">2</div>
-                Define fields with appropriate data types and constraints
-              </li>
-              <li className="flex gap-x-3">
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-[0.625rem] font-medium text-blue-700">3</div>
-                Add indices for better query performance
-              </li>
-              <li className="flex gap-x-3">
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-[0.625rem] font-medium text-blue-700">4</div>
-                Create relationships between tables using foreign keys
-              </li>
-            </ul>
+        <TabsContent value="history" className="mt-6">
+          <div className="border rounded-lg divide-y">
+            {migrationHistory.length === 0 ? (
+              <div className="p-6 text-center text-muted-foreground">
+                No migrations yet
+              </div>
+            ) : (
+              migrationHistory.map((migration, i) => (
+                <div
+                  key={i}
+                  className="p-4 hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-medium">{migration.description}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(migration.timestamp).toLocaleString()}
+                      </p>
+                    </div>
+                    <code className="text-sm text-muted-foreground">
+                      {migration.filename}
+                    </code>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
-
-          <div className="bg-white shadow-sm ring-1 ring-gray-900/5 rounded-lg overflow-hidden">
-            <SchemaEditor />
-          </div>
-        </div>
-      </main>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
