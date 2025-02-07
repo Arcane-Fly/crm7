@@ -5,10 +5,10 @@ import { NextRequest } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { awardCode: string; classificationCode: string } }
+  context: { params: { awardCode: string; classificationCode: string } }
 ) {
   try {
-    const { awardCode, classificationCode } = params;
+    const { awardCode, classificationCode } = context.params;
     if (!awardCode || !classificationCode) {
       return createErrorResponse(
         'MISSING_PARAMS',

@@ -1,8 +1,8 @@
+import { toast } from '@/hooks/use-toast';
 import { type ComponentConfig } from '@measured/puck';
-import { type SchemaComponentConfig, type SchemaField } from '../types/schema-component';
 import { createClient } from '@supabase/ssr';
 import { useCallback, useEffect, useState } from 'react';
-import { toast } from '@/components/ui/use-toast';
+import { type SchemaComponentConfig } from '../types/schema-component';
 
 interface CreateSchemaComponentOptions {
   name: string;
@@ -26,7 +26,7 @@ export function createSchemaComponent({
       try {
         setLoading(true);
         const supabase = createClient();
-        
+
         // Build query based on schema
         let query = supabase
           .from(schema.dbTable)
@@ -75,7 +75,7 @@ export function createSchemaComponent({
             if (typeof config === 'function') {
               const isValid = config(value);
               if (!isValid) {
-                const message = schema.validation?.messages?.[`${key}.${rule}`] 
+                const message = schema.validation?.messages?.[`${key}.${rule}`]
                   || `Invalid value for ${key}`;
                 toast({
                   variant: 'destructive',

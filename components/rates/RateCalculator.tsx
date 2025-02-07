@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
-import { type CalculationResult } from '@/lib/types/rates';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useSupabase } from '@/lib/supabase/supabase-provider';
+import { useEffect, useState } from 'react';
 
 interface RateCalculatorProps {
   orgId: string;

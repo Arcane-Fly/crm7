@@ -1,10 +1,10 @@
 'use client';
 
-import { type ReactNode, createContext, useContext, useEffect, useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { createClient } from '@/utils/supabase/client';
 import { type Session, type User } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { type ReactNode, createContext, useContext, useEffect, useState } from 'react';
 
 interface AuthProviderProps {
   children: ReactNode;

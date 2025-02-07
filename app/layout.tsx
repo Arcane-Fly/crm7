@@ -1,11 +1,11 @@
-import '@/styles/globals.css';
-import { Inter } from 'next/font/google';
+import { AppLayout } from '@/components/layout/app-layout';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
-import { AppLayout } from '@/components/layout/app-layout';
-import { createServerClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
 import { AuthProvider } from '@/lib/auth/context';
+import '@/styles/globals.css';
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { Inter } from 'next/font/google';
+import { cookies } from 'next/headers';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -16,7 +16,7 @@ export default async function RootLayout({
 }) {
   const cookieStore = cookies();
 
-  const supabase = createServerClient(
+  const supabase = createServerComponentClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
