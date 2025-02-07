@@ -65,3 +65,20 @@
 - Check bundle size changes after updates
 - Validate security headers in production
 - Test canary releases when needed
+
+### Supabase Integration
+
+- Use @supabase/ssr for server-side rendering
+- Implement createServerClient for server components
+- Use createBrowserClient for client components
+- Local development requires Docker and Supabase CLI
+- Enforce type safety with generated types
+- Reference: <https://supabase.com/docs/guides/local-development>
+
+### Route Handler Requirements
+
+- Route handlers must use typed params interface
+- Context params are no longer Promise types in App Router
+- Route handler functions must be async
+- Route handlers should use NextRequest type
+- Each route file should export a single HTTP method handler

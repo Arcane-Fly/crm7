@@ -1,11 +1,11 @@
-import { AppLayout } from '@/components/layout/app-layout';
+import { Inter } from 'next/font/google';
+import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
-import { AuthProvider } from '@/lib/auth/context';
-import '@/styles/globals.css';
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
-import { Inter } from 'next/font/google';
+import { AppLayout } from '@/components/layout/app-layout';
 import { cookies } from 'next/headers';
+import { AuthProvider } from '@/lib/auth/context';
+import { createClient } from '@/utils/supabase/server';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -15,24 +15,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const cookieStore = cookies();
-
-  const supabase = createServerComponentClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-        set(name: string, value: string, options: any) {
-          cookieStore.set({ name, value, ...options });
-        },
-        remove(name: string, options: any) {
-          cookieStore.set({ name, value: '', ...options, maxAge: 0 });
-        },
-      },
-    }
-  );
+  const supabase = await createClient();
 
   try {
     const {
