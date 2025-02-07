@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { migrationGenerator } from '@/lib/schema/migration-generator';
 import { SchemaHistory } from '@/lib/schema/schema-history';
 import { type TableSchema } from '@/lib/types/schema-component';

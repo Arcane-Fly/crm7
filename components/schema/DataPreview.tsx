@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { type TableSchema } from '@/lib/types/schema-component';
 import { createClient } from '@supabase/ssr';
 import { useCallback, useEffect, useState } from 'react';
@@ -36,7 +36,7 @@ export function DataPreview({ schema, limit = 5 }: DataPreviewProps) {
 
   const fetchData = useCallback(async () => {
     if (!selectedTable) return;
-    
+
     try {
       setLoading(true);
       const supabase = createClient();
