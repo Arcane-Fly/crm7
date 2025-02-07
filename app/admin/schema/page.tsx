@@ -1,8 +1,8 @@
 import { SchemaEditor } from '@/components/schema/SchemaEditor';
+import { Button } from '@/components/ui/button';
 import { createClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { Button } from '@/components/ui/button';
 
 export default async function SchemaPage() {
   const cookieStore = cookies();

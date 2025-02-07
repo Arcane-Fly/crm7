@@ -2,19 +2,15 @@ import '@testing-library/jest-dom';
 import { TextEncoder, TextDecoder } from 'util';
 import { jest } from '@jest/globals';
 
-// Polyfill for encoding which isn't present globally in jsdom
-global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder;
-
 // Mock canvas
 jest.mock('canvas', () => ({
   createCanvas: jest.fn(() => ({
     getContext: jest.fn(() => ({
-      fillStyle: '',
-      fillRect: jest.fn(),
       drawImage: jest.fn(),
       getImageData: jest.fn(() => ({ data: new Uint8ClampedArray() })),
       putImageData: jest.fn(),
+      fillRect: jest.fn(),
+      fillStyle: '',
     })),
     toBuffer: jest.fn(),
     width: 0,
@@ -68,6 +64,10 @@ global.IntersectionObserver = class IntersectionObserver {
   unobserve() {}
   disconnect() {}
 };
+
+// Add TextEncoder/Decoder to global
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
