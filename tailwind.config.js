@@ -16,6 +16,17 @@ export default {
       },
     },
     extend: {
+      backgroundColor: {
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+      },
+      textColor: {
+        foreground: "hsl(var(--foreground))",
+        background: "hsl(var(--background))",
+      },
+      borderColor: {
+        border: "hsl(var(--border))",
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

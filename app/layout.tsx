@@ -1,12 +1,12 @@
-import { type ReactNode } from 'react';
-import { type Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
-import { cookies } from 'next/headers';
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/lib/auth/context';
 import SupabaseProvider from '@/lib/supabase/supabase-provider';
 import '@/styles/globals.css';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { Viewport, type Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import { cookies } from 'next/headers';
+import { type ReactNode } from 'react';
 
 import { PerformanceMonitor } from '@/components/monitoring/PerformanceMonitor';
 import { Providers } from '@/components/providers';
@@ -67,30 +67,39 @@ export const metadata: Metadata = {
 async function getSession() {
   const cookieStore = cookies();
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        async get(name: string) {
-          const cookie = await cookieStore.get(name);
-          return cookie?.value;
+  try {
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value;
+          },
+          set(name: string, value: string, options: CookieOptions) {
+            try {
+              cookieStore.set(name, value, options);
+            } catch (error) {
+              console.error('Error setting cookie:', error);
+            }
+          },
+          remove(name: string, options: CookieOptions) {
+            try {
+              cookieStore.set(name, '', { ...options, maxAge: 0 });
+            } catch (error) {
+              console.error('Error removing cookie:', error);
+            }
+          },
         },
-        async set(name: string, value: string, options: CookieOptions) {
-          await cookieStore.set({ name, value, ...options });
-        },
-        async remove(name: string, options: CookieOptions) {
-          await cookieStore.delete({ name, ...options });
-        },
-      },
-    }
-  );
+      }
+    );
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  return session;
+    const { data: { session } } = await supabase.auth.getSession();
+    return session;
+  } catch (error) {
+    console.error('Error in getSession:', error);
+    return null;
+  }
 }
 
 export default async function RootLayout({
@@ -104,13 +113,6 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
-        {(process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview") && (
-          <script
-            data-recording-token="dIhQ6zTg94bm6TlHhZVrK5pwWfrh7bdeAwRI6VrP"
-            data-is-production-environment="false"
-            src="https://snippet.meticulous.ai/v1/meticulous.js"
-          />
-        )}
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body className={cn('min-h-screen bg-background antialiased', inter.className)}>
@@ -144,6 +146,14 @@ export default async function RootLayout({
             </AuthProvider>
           </SupabaseProvider>
         </ThemeProvider>
+        {(process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview") && (
+          <script
+            defer
+            data-recording-token="dIhQ6zTg94bm6TlHhZVrK5pwWfrh7bdeAwRI6VrP"
+            data-is-production-environment="false"
+            src="https://snippet.meticulous.ai/v1/meticulous.js"
+          />
+        )}
       </body>
     </html>
   );
