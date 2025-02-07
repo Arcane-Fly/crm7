@@ -3,7 +3,7 @@ import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { AppLayout } from '@/components/layout/app-layout';
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { AuthProvider } from '@/lib/auth/context';
 

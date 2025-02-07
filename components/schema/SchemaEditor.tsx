@@ -1,8 +1,19 @@
 import { Puck, type Config } from '@measured/puck';
-import { createClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { useCallback, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
+interface SchemaField {
+  name: string;
+  type: string;
+  nullable?: boolean;
+  defaultValue?: string;
+  references?: {
+    table: string;
+    field: string;
+    onDelete?: 'CASCADE' | 'SET NULL' | 'RESTRICT';
+  };
+}
 
 interface TableConfig {
   name: string;
