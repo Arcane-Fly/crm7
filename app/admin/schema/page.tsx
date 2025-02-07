@@ -1,6 +1,6 @@
 import { SchemaEditor } from '@/components/schema/SchemaEditor';
 import { Button } from '@/components/ui/button';
-import { createClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
