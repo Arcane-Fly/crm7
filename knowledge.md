@@ -91,3 +91,19 @@
 - Use .npmrc for configuration
 - Use pnpm-lock.yaml for dependency locking
 - Use `engine-strict=true` for Node version enforcement
+
+## Git Hooks and Code Quality
+
+- Uses Husky for Git hooks management
+- lint-staged for pre-commit code quality checks
+- Enforces ESLint and Prettier on staged files
+- Pre-commit hook runs automatically on staged files
+- Requires proper Node and pnpm versions
+
+## Vercel Deployment Requirements
+
+- Use `engines` in package.json for Node.js version specification
+- Do not use `use-node-version` in .npmrc
+- Node.js version must be specified exactly (e.g., "20.11.1" not ">=20.11.1")
+- PNPM version must be specified exactly
+- Reference: <http://vercel.link/node-version>
