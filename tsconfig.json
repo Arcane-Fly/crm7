@@ -22,7 +22,8 @@
     "paths": {
       "@/*": ["./*"]
     },
-    "types": ["jest", "node"]
+    "types": ["jest", "node"],
+    "baseUrl": "."
   },
   "include": [
     "next-env.d.ts",

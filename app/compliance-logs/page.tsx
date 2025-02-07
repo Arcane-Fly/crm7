@@ -92,6 +92,51 @@ export default function ComplianceLogsPage(): React.JSX.Element {
             </div>
           </div>
         </div>
+
+        <div className='rounded-lg border bg-white'>
+          <div className='border-b p-4'>
+            <h2 className='text-lg font-medium'>Document Storage & Versioning</h2>
+          </div>
+          <div className='p-4'>
+            <p>Manage and store compliance-related documents with version control.</p>
+          </div>
+        </div>
+
+        <div className='rounded-lg border bg-white'>
+          <div className='border-b p-4'>
+            <h2 className='text-lg font-medium'>Automated Monitoring</h2>
+          </div>
+          <div className='p-4'>
+            <p>Continuously monitor compliance requirements and statuses.</p>
+          </div>
+        </div>
+
+        <div className='rounded-lg border bg-white'>
+          <div className='border-b p-4'>
+            <h2 className='text-lg font-medium'>Alert System</h2>
+          </div>
+          <div className='p-4'>
+            <p>Generate alerts for compliance issues, such as missing or expiring certifications.</p>
+          </div>
+        </div>
+
+        <div className='rounded-lg border bg-white'>
+          <div className='border-b p-4'>
+            <h2 className='text-lg font-medium'>Audit Trail</h2>
+          </div>
+          <div className='p-4'>
+            <p>Maintain a detailed log of compliance-related activities and changes.</p>
+          </div>
+        </div>
+
+        <div className='rounded-lg border bg-white'>
+          <div className='border-b p-4'>
+            <h2 className='text-lg font-medium'>Regulatory Reporting</h2>
+          </div>
+          <div className='p-4'>
+            <p>Generate reports to meet regulatory requirements.</p>
+          </div>
+        </div>
       </div>
     </div>
   );

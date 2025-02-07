@@ -1,4 +1,6 @@
 import React from 'react';
+import { errorTracker } from '@/lib/error-tracking';
+import { ErrorFallback } from '@/components/error/ErrorFallback';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -31,11 +33,12 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }
+    errorTracker.trackError(error, { additionalData: errorInfo });
   }
 
   render(): React.ReactNode {
     if (this.state.hasError) {
-      return this.props.fallback || <div>Something went wrong</div>;
+      return this.props.fallback || <ErrorFallback error={this.state.error} resetErrorBoundary={(): void => this.setState({ hasError: false, error: null })} />;
     }
 
     return this.props.children;

@@ -2,47 +2,57 @@
 
 ## Core Components
 
-### Authentication & Security
+### 1. Apprentice Management
+- Profile management
+- Training contract tracking
+- Progress monitoring
+- Performance tracking
+- Document management
 
-- Multi-factor authentication (MFA) support
-- Role-based access control
-- Session management
-- Security monitoring and logging
+### 2. Host Management
+- Company profiles
+- Placement management
+- Safety compliance
+- Financial arrangements
+- Capacity tracking
 
-### Data Management
+### 3. Compliance System
+- Document storage & versioning
+  - Manage and store compliance-related documents with version control.
+- Automated monitoring
+  - Continuously monitor compliance requirements and statuses.
+- Alert system
+  - Generate alerts for compliance issues, such as missing or expiring certifications.
+- Audit trail
+  - Maintain a detailed log of compliance-related activities and changes.
+- Regulatory reporting
+  - Generate reports to meet regulatory requirements.
 
-- React Query for efficient data fetching and caching
-- Optimistic updates
-- Real-time updates via Supabase
-- Type-safe database interactions
+### 4. Financial Operations
+- Timesheet processing
+- Award interpretation
+- Payroll integration
+- Host billing
+- Government funding
 
-### Analytics & Reporting
+### 5. Analytics & Reporting
+- Operational metrics
+- Compliance reporting
+- Financial analytics
+- Performance tracking
+- Government reporting
 
-- Financial analytics dashboard
-- Training progress tracking
-- Compliance monitoring
-- Real-time metrics
-- Performance monitoring
-
-### Integration Layer
-
-- LMS (Learning Management System)
-- Bank integration
-- Fair Work API
-- Government systems
-
-### Performance & Monitoring
-
-- Web Vitals tracking
-- Error tracking with Sentry
-- Performance metrics
-- Transaction monitoring
+### 6. Access Control
+- Role-based authentication
+- Multi-tenant security
+- Document permissions
+- Audit logging
+- Communication system
 
 ## Technical Stack
 
 ### Frontend
-
-- Next.js 13+ with App Router
+- Next.js 15.1.6
 - TypeScript
 - TailwindCSS
 - shadcn/ui components
@@ -50,170 +60,80 @@
 - Chart.js
 
 ### Backend
-
 - Supabase
 - PostgreSQL
 - Edge Functions
 - Real-time subscriptions
 
-### Testing
+### Integration Points
+- Auth0 for authentication
+- Fair Work API for awards
+- Document storage service
+- Email notification service
+- Payment gateway
 
-- Vitest
-- React Testing Library
-- E2E with Playwright
-- CI/CD with GitHub Actions
+## Data Models
 
-### Monitoring
+### Core Entities
+- Apprentices
+- Host Employers
+- Training Contracts
+- Placements
+- Documents
+- Timesheets
+- Financial Records
 
-- Sentry for error tracking
-- Custom performance monitoring
-- Web Vitals tracking
-- Logger service
+### Supporting Entities
+- Compliance Records
+- Progress Reports
+- Financial Transactions
+- Audit Logs
+- Notifications
 
-## Security Features
+## Security
 
 ### Authentication
-
-- Email/password authentication
-- Multi-factor authentication (MFA)
+- Multi-factor authentication
+- Role-based access control
 - Session management
-- JWT tokens
-
-### Authorization
-
-- Role-based access control (RBAC)
-- Row-level security (RLS)
-- API route protection
-- Middleware checks
+- API security
 
 ### Data Protection
+- End-to-end encryption
+- Data backup
+- Audit logging
+- Compliance tracking
 
-- Data encryption at rest
-- Secure communication (HTTPS)
-- Input validation
-- XSS protection
-- CSRF protection
+## Monitoring
 
-## Development Workflow
-
-### CI/CD Pipeline
-
-1. Automated testing
-2. Type checking
-3. Linting
-4. Build verification
-5. Deployment to staging
-6. Production deployment
-
-### Code Quality
-
-- ESLint configuration
-- Prettier formatting
-- TypeScript strict mode
-- Husky pre-commit hooks
-- Automated testing
-
-### Performance Optimization
-
-- React Query caching
-- Code splitting
-- Image optimization
-- Performance monitoring
-- Web Vitals tracking
-
-## Deployment
-
-### Environments
-
-- Development
-- Staging
-- Production
-
-### Infrastructure
-
-- Vercel deployment
-- Supabase database
-- Edge functions
-- CDN integration
-
-### Monitoring
-
+### Performance
+- API response times
+- Database performance
+- Cache efficiency
 - Error tracking
-- Performance metrics
-- Usage analytics
-- Health checks
 
-## Best Practices
-
-### Code Organization
-
-- Feature-based structure
-- Shared components
-- Type-safe interfaces
-- Custom hooks
-- Utility functions
-
-### State Management
-
-- React Query for server state
-- Context for global state
-- Local state when appropriate
-- Real-time updates
-
-### Testing Strategy
-
-- Unit tests
-- Integration tests
-- E2E tests
-- Performance testing
-- Accessibility testing
-
-### Security Measures
-
-- Regular security audits
-- Dependency updates
-- Security monitoring
-- Access control
-- Data encryption
+### Business Metrics
+- Apprentice progress
+- Financial health
+- Compliance status
+- System usage
 
 ## Future Enhancements
 
-### Planned Features
+### Phase 1: Core Features
+- Complete apprentice management
+- Enhanced document system
+- Timesheet processing
+- Basic reporting
 
-- Advanced analytics
-- Machine learning integration
-- Mobile application
-- Offline capabilities
-- Enhanced reporting
+### Phase 2: Advanced Features
+- AI-powered matching
+- Predictive analytics
+- Mobile applications
+- Advanced automation
 
-### Technical Improvements
-
-- GraphQL integration
-- Microservices architecture
-- Enhanced caching
-- Real-time collaboration
-- Advanced search
-
-### Infrastructure
-
-- Multi-region deployment
-- Enhanced backup strategy
-- Disaster recovery
-- Load balancing
-- Auto-scaling
-
-### Accessibility & UX
-
-- WCAG 2.1 AA compliance
-- Mobile-first design
-- Progressive enhancement
-- Performance budgets
-- User feedback loops
-
-### Developer Experience
-
-- Improved documentation
-- Development tooling
-- Code generation
-- Type safety
-- Debug tooling
+### Phase 3: Integration
+- RTO integration
+- Government systems
+- Payment providers
+- Learning platforms

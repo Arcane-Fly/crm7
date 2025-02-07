@@ -111,6 +111,53 @@ export interface PerformanceStats {
   margin: number;
 }
 
+export interface PerformanceState {
+  memory: {
+    usedJSHeapSize: number;
+    totalJSHeapSize: number;
+    jsHeapSizeLimit: number;
+  } | null;
+  timing: {
+    loadTime: number;
+    domContentLoaded: number;
+  } | null;
+  navigation: {
+    ttfb: number;
+    fcp: number;
+  } | null;
+}
+
+export type PerformanceAction =
+  | {
+      type: 'UPDATE_MEMORY';
+      payload: {
+        usedJSHeapSize: number;
+        totalJSHeapSize: number;
+        jsHeapSizeLimit: number;
+      };
+    }
+  | {
+      type: 'UPDATE_TIMING';
+      payload: {
+        loadTime: number;
+        domContentLoaded: number;
+      };
+    }
+  | {
+      type: 'UPDATE_NAVIGATION';
+      payload: {
+        ttfb: number;
+        fcp: number;
+      };
+    };
+
+export interface PerformanceContextType {
+  state: PerformanceState;
+  dispatch: React.Dispatch<PerformanceAction>;
+  startMonitoring: () => NodeJS.Timer;
+  stopMonitoring: () => void;
+}
+
 // Employee
 export interface Employee {
   id: string;

@@ -1,9 +1,10 @@
 'use client';
 
-import { type ReactNode, createContext, useContext, useEffect, useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { createClient } from '@/utils/supabase/client';
 import { type Session, type User } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
-import { createClient } from './config';
+import { type ReactNode, createContext, useContext, useEffect, useState } from 'react';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -25,6 +26,7 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps): R
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const supabase = createClient();
+  const { toast } = useToast();
 
   useEffect(() => {
     const {
@@ -50,9 +52,31 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps): R
     isLoading,
     signOut: async () => {
       try {
-        await supabase.auth.signOut();
+        const response = await fetch('/auth/sign-out', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || 'Failed to sign out');
+        }
+
+        toast({
+          title: 'Signed out',
+          description: 'You have been successfully signed out.',
+        });
+
+        router.push('/auth/login');
       } catch (error) {
         console.error('Error signing out:', error);
+        toast({
+          title: 'Error',
+          description: error instanceof Error ? error.message : 'Failed to sign out',
+          variant: 'destructive',
+        });
       }
     },
   };

@@ -1,23 +1,47 @@
+import { NextRequest } from 'next/server';
 import { createApiResponse, createErrorResponse } from '@/lib/api/response';
 import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
-import { NextRequest, NextResponse } from 'next/server';
 
-const fairworkClient = new FairWorkClient();
+const fairworkClient = new FairWorkClient({
+  apiUrl: process.env.FAIRWORK_API_URL!,
+  apiKey: process.env.FAIRWORK_API_KEY!,
+  environment: process.env.FAIRWORK_ENVIRONMENT!,
+});
+
+export interface RouteParams {
+  params: {
+    awardCode: string;
+    classificationCode: string;
+  };
+}
 
 export async function GET(
-  _req: NextRequest,  // renamed to _req since it is not used
-  context: { params: { awardCode: string; classificationCode: string } }
-): Promise<NextResponse> {
+  request: NextRequest,
+  { params }: RouteParams
+) {
   try {
-    const classification = await fairworkClient.getClassification(
-      context.params.awardCode,
-      context.params.classificationCode
-    );
-    return createApiResponse(classification);
-  } catch (_error) {
+    const { awardCode, classificationCode } = params;
+    if (!awardCode || !classificationCode) {
+      return createErrorResponse(
+        'MISSING_PARAMS',
+        'Missing required parameters: awardCode and classificationCode',
+        undefined,
+        400
+      );
+    }
+
+    const url = new URL(request.url);
+    const query: { date?: string; employmentType?: string } = {
+      date: url.searchParams.get('date') || undefined,
+      employmentType: url.searchParams.get('employmentType') || undefined,
+    };
+
+    const rates = await fairworkClient.getRates(awardCode, classificationCode, query);
+    return createApiResponse(rates);
+  } catch (error) {
     return createErrorResponse(
-      'CLASSIFICATION_FETCH_ERROR',
-      'Failed to fetch classification',
+      'RATES_FETCH_ERROR',
+      'Failed to fetch rates',
       undefined,
       500
     );

@@ -1,150 +1,79 @@
-import { type ReactNode } from 'react';
-import { type Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { cookies } from 'next/headers';
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
-import { Toaster } from '@/components/ui/toaster';
-import { AuthProvider } from '@/lib/auth/context';
-import SupabaseProvider from '@/lib/supabase/supabase-provider';
-import '@/styles/globals.css';
-
-import { PerformanceMonitor } from '@/components/monitoring/PerformanceMonitor';
-import { Providers } from '@/components/providers';
-import { PerformanceProvider } from '@/components/providers/PerformanceProvider';
-import { Navbar } from '@/components/ui/navbar';
-import { Sidebar } from '@/components/ui/sidebar';
-import { cn } from '@/lib/utils';
-
+import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
-import { TooltipProvider } from '@/components/ui/tooltip';
+import { Toaster } from '@/components/ui/toaster';
+import { AppLayout } from '@/components/layout/app-layout';
+import { cookies } from 'next/headers';
+import { AuthProvider } from '@/lib/auth/context';
+import { createClient } from '@/utils/supabase/server';
+import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary';
 
 const inter = Inter({ subsets: ['latin'] });
-
-// Suppress punycode deprecation warning until dependencies are updated
-const originalEmitWarning = process.emitWarning;
-if (originalEmitWarning) {
-  process.emitWarning = ((warning: string | Error, ...args: any[]) => {
-    const warningText = warning instanceof Error ? warning.message : warning;
-    if (warningText.includes('punycode')) {
-      return; // Ignore punycode deprecation warnings
-    }
-    return (originalEmitWarning as (warning: string | Error, ...args: any[]) => void).apply(process, [warning, ...args]);
-  }) as typeof process.emitWarning;
-}
-
-export const metadata: Metadata = {
-  title: 'CRM7R',
-  description: 'Next-generation CRM platform',
-  viewport: 'width=device-width, initial-scale=1',
-  icons: {
-    icon: [
-      {
-        url: '/favicon.ico',
-        sizes: '32x32',
-      },
-    ],
-    apple: [
-      {
-        url: '/apple-icon.png',
-        sizes: '180x180',
-        type: 'image/png',
-      },
-    ],
-  },
-  manifest: '/site.webmanifest',
-};
-
-async function getSession() {
-  const cookieStore = cookies();
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-        set(name: string, value: string, options: CookieOptions) {
-          try {
-            cookieStore.set({ name, value, ...options });
-          } catch (error) {
-            // Handle cookie setting error
-            console.error('Error setting cookie:', error);
-          }
-        },
-        remove(name: string, options: CookieOptions) {
-          try {
-            cookieStore.set({ name, value: '', ...options, maxAge: 0 });
-          } catch (error) {
-            // Handle cookie removal error
-            console.error('Error removing cookie:', error);
-          }
-        },
-      },
-    }
-  );
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  return session;
-}
 
 export default async function RootLayout({
   children,
 }: {
-  children: ReactNode;
+  children: React.ReactNode;
 }) {
-  const session = await getSession();
+  const cookieStore = cookies();
+  const supabase = await createClient();
 
-  return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        {(process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview") && (
-          <script
-            data-recording-token="dIhQ6zTg94bm6TlHhZVrK5pwWfrh7bdeAwRI6VrP"
-            data-is-production-environment="false"
-            src="https://snippet.meticulous.ai/v1/meticulous.js"
-          />
-        )}
-        <link rel="icon" href="/favicon.ico" />
-      </head>
-      <body className={cn('min-h-screen bg-background antialiased', inter.className)}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <SupabaseProvider>
-            <AuthProvider initialSession={session}>
-              <TooltipProvider>
-                <PerformanceProvider>
-                  <Providers>
-                    <div className='relative flex min-h-screen flex-col'>
-                      <Navbar />
-                      <div className='flex-1 items-start md:grid md:grid-cols-[220px_minmax(0: unknown,1fr)] md:gap-6 lg:grid-cols-[240px_minmax(0: unknown,1fr)] lg:gap-10'>
-                        <aside className='fixed top-14 z-30 -ml-2 hidden h-[calc(100vh-3.5rem)] w-full shrink-0 overflow-y-auto border-r md:sticky md:block'>
-                          <Sidebar />
-                        </aside>
-                        <main className='relative py-6 lg:gap-10 lg:py-8 xl:grid-cols-[1fr_300px]'>
-                          <PerformanceMonitor />
-                          {children}
-                        </main>
-                      </div>
-                    </div>
-                  </Providers>
-                </PerformanceProvider>
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    return (
+      <html lang="en" suppressHydrationWarning>
+        <head>
+          <title>Labour Hire CRM</title>
+          <meta name="description" content="A modern CRM for labour hire companies" />
+        </head>
+        <body className={inter.className}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <ErrorBoundary>
+              <AuthProvider initialSession={session}>
+                {session ? (
+                  <AppLayout>{children}</AppLayout>
+                ) : (
+                  children
+                )}
                 <Toaster />
-              </TooltipProvider>
-            </AuthProvider>
-          </SupabaseProvider>
-        </ThemeProvider>
-      </body>
-    </html>
-  );
+              </AuthProvider>
+            </ErrorBoundary>
+          </ThemeProvider>
+        </body>
+      </html>
+    );
+  } catch (error) {
+    console.error('Error getting session:', error);
+    return (
+      <html lang="en" suppressHydrationWarning>
+        <head>
+          <title>Labour Hire CRM</title>
+          <meta name="description" content="A modern CRM for labour hire companies" />
+        </head>
+        <body className={inter.className}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <ErrorBoundary>
+              <AuthProvider initialSession={null}>
+                {children}
+                <Toaster />
+              </AuthProvider>
+            </ErrorBoundary>
+          </ThemeProvider>
+        </body>
+      </html>
+    );
+  }
 }

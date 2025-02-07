@@ -3,6 +3,11 @@ import { type Database } from '@/types/supabase';
 import * as XLSX from 'xlsx';
 import { BaseService } from './base-service';
 
+// Maximum file size (5MB)
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+// Maximum timeout for XLSX processing (5 seconds)
+const XLSX_PROCESSING_TIMEOUT = 5000;
+
 interface Invoice {
   id: string;
   amount: number;
@@ -109,9 +114,19 @@ export class InvoiceService extends BaseService {
     });
   }
 
-  async importTimesheets(file: File): Promise<void> {
+  async importTimesheets(file: File): Promise<TimesheetImport[]> {
     return this.executeServiceMethod('importTimesheets', async () => {
-      return new Promise((resolve, reject): void => {
+      // Check file size
+      if (file.size > MAX_FILE_SIZE) {
+        throw new Error(`File size exceeds maximum limit of ${MAX_FILE_SIZE / 1024 / 1024}MB`);
+      }
+
+      // Check file type
+      if (!file.name.match(/\.(xlsx|xls)$/i)) {
+        throw new Error('Invalid file type. Only Excel files (.xlsx, .xls) are allowed');
+      }
+
+      return new Promise<TimesheetImport[]>((resolve, reject): void => {
         const reader = new FileReader();
 
         reader.onload = (e): void => {
@@ -121,37 +136,81 @@ export class InvoiceService extends BaseService {
               throw new Error('No data read from file');
             }
 
-            const workbook = XLSX.read(data, { type: 'binary' });
-            const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-            const rawData = XLSX.utils.sheet_to_json(worksheet);
+            // Add timeout protection
+            const timeoutId = setTimeout(() => {
+              reject(new Error('XLSX processing timeout exceeded'));
+            }, XLSX_PROCESSING_TIMEOUT);
 
-            if (!Array.isArray(rawData)) {
-              throw new Error('Invalid timesheet data format');
+            try {
+              const workbook = XLSX.read(data, { type: 'binary' });
+              const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+              
+              // Basic validation of worksheet structure
+              if (!worksheet || !workbook.SheetNames.length) {
+                throw new Error('Invalid Excel file structure');
+              }
+
+              const rawData = XLSX.utils.sheet_to_json(worksheet);
+
+              // Clear the timeout since processing succeeded
+              clearTimeout(timeoutId);
+
+              if (!Array.isArray(rawData)) {
+                throw new Error('Invalid timesheet data format');
+              }
+
+              // Limit the number of rows to prevent memory issues
+              if (rawData.length > 1000) {
+                throw new Error('Too many rows in the timesheet (maximum: 1000)');
+              }
+
+              const isValidTimesheetImport = (row: unknown): row is TimesheetImport => {
+                if (typeof row !== 'object' || row === null) return false;
+                
+                const typedRow = row as Record<string, unknown>;
+                
+                return (
+                  'employeeId' in typedRow && typeof typedRow.employeeId === 'string' &&
+                  'date' in typedRow && typeof typedRow.date === 'string' &&
+                  'hours' in typedRow && typeof typedRow.hours === 'number' && typedRow.hours > 0 &&
+                  'rate' in typedRow && typeof typedRow.rate === 'number' && typedRow.rate >= 0
+                );
+              };
+
+              const timesheets = rawData.filter(isValidTimesheetImport);
+              
+              // Ensure we have valid data
+              if (timesheets.length === 0) {
+                throw new Error('No valid timesheet entries found in the file');
+              }
+
+              resolve(timesheets);
+            } catch (error) {
+              clearTimeout(timeoutId);
+              reject(error);
             }
-
-            const isValidTimesheetImport = (row: unknown): row is TimesheetImport => {
-              return typeof row === 'object' && row !== null &&
-                'employeeId' in row && typeof row.employeeId === 'string' &&
-                'date' in row && typeof row.date === 'string' &&
-                'hours' in row && typeof row.hours === 'number' &&
-                'rate' in row && typeof row.rate === 'number';
-            };
-
-            const timesheets = rawData.filter(isValidTimesheetImport);
-            resolve(timesheets);
           } catch (error) {
             reject(error);
           }
         };
 
         reader.onerror = (error): void => reject(error);
+        
+        // Add timeout for file reading
+        const readTimeoutId = setTimeout(() => {
+          reader.abort();
+          reject(new Error('File reading timeout exceeded'));
+        }, 10000); // 10 second timeout for file reading
+
+        reader.onloadend = () => clearTimeout(readTimeoutId);
+        
         reader.readAsBinaryString(file);
       });
     });
   }
 
   async deleteInvoice(id: string): Promise<void> {
-    return this.executeServiceMethod('deleteInvoice', async (): Promise<void> => {
+    return this.executeServiceMethod('deleteInvoice', async (): Promise<any> => {
       const { error } = await this.supabase
         .from('invoices')
         .delete()
@@ -160,55 +219,20 @@ export class InvoiceService extends BaseService {
       if (typeof error !== "undefined" && error !== null) {
         throw error;
       }
+
+      return { success: true };
     });
   }
 
   async markAsPaid(id: string): Promise<void> {
-    return this.executeServiceMethod('markAsPaid', async (): Promise<any> => {
-      const { data, error } = await this.supabase
-        .from('invoices')
-        .update({ status: 'paid' })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (typeof error !== "undefined" && error !== null) {
-        throw error;
-      }
-
-      return data;
-    });
+    return this.updateInvoice(id, { status: 'paid' });
   }
 
   async markAsCancelled(id: string): Promise<void> {
-    return this.executeServiceMethod('markAsCancelled', async (): Promise<any> => {
-      const { data, error } = await this.supabase
-        .from('invoices')
-        .update({ status: 'cancelled' })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (typeof error !== "undefined" && error !== null) {
-        throw error;
-      }
-
-      return data;
-    });
+    return this.updateInvoice(id, { status: 'cancelled' });
   }
 
   async getInvoicesByStatus(status: Invoice['status']): Promise<void> {
-    return this.executeServiceMethod('getInvoicesByStatus', async (): Promise<any> => {
-      const { data, error } = await this.supabase
-        .from('invoices')
-        .select()
-        .eq('status', status);
-
-      if (typeof error !== "undefined" && error !== null) {
-        throw error;
-      }
-
-      return data;
-    });
+    return this.getInvoices({ status });
   }
 }

@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
-import { type CalculationResult } from '@/lib/types/rates';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useSupabase } from '@/lib/supabase/supabase-provider';
+import { useEffect, useState } from 'react';
 
 interface RateCalculatorProps {
   orgId: string;
@@ -37,26 +36,10 @@ export function RateCalculator({ orgId, onCalculate }: RateCalculatorProps): JSX
       ).toFixed(2)
     );
 
-    const result = {
-      baseAmount: Number(baseAmount.toFixed(2)),
-      superAmount: Number(superAmount.toFixed(2)),
-      leaveAmount: Number(leaveAmount.toFixed(2)),
-      workersCompAmount: Number(workersCompAmount.toFixed(2)),
-      payrollTaxAmount: Number(payrollTaxAmount.toFixed(2)),
-      trainingAmount: Number(trainingAmount.toFixed(2)),
-      otherAmount: Number(otherAmount.toFixed(2)),
-      totalAmount,
-    };
 
     onCalculate?.(totalAmount);
   };
 
-  const handleTemplateChange = (value: string): void => {
-    const template = templates?.find((t) => t.id === value);
-    if (typeof template !== "undefined" && template !== null) {
-      calculateRate(template);
-    }
-  };
 
   useEffect((): void => {
     const fetchTemplates = async (): Promise<void> => {
