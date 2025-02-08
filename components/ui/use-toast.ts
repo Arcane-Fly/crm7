@@ -207,3 +207,5 @@ export const toast = (props: ToastProps): { id: string; dismiss: () => void; upd
     update,
   };
 };
+
+export { toast };
