@@ -1,0 +1,22 @@
+# Default owners for everything in the repo
+* @your-username
+
+# Frontend components
+/components/ @frontend-team
+/app/ @frontend-team
+
+# API routes
+/app/api/ @backend-team
+
+# Database and infrastructure
+/prisma/ @backend-team
+/supabase/ @backend-team
+
+# Configuration files
+*.json @devops-team
+*.yml @devops-team
+*.yaml @devops-team
+
+# Security-sensitive areas
+/app/api/auth/ @security-team
+/middleware/ @security-team
