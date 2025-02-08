@@ -91,6 +91,8 @@
 - Use .npmrc for configuration
 - Use pnpm-lock.yaml for dependency locking
 - Use `engine-strict=true` for Node version enforcement
+- Initial package installation may take several minutes due to large dependency tree
+- Command timeouts during installation are normal - installation continues in background
 
 ## Git Hooks and Code Quality
 
