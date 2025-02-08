@@ -1,18 +1,24 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { getClassificationDetails } from '@/lib/services/fairwork/fairwork.client';
+import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
+import { createApiResponse, createErrorResponse } from '@/lib/api/response';
+import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { awardCode, classificationCode } = req.query;
+export async function GET(req: NextRequest, { params }: { params: { awardCode: string; classificationCode: string } }): Promise<NextResponse> {
+  const { awardCode, classificationCode } = params;
+  const client = new FairWorkClient({
+    apiUrl: process.env.FAIRWORK_API_URL,
+    apiKey: process.env.FAIRWORK_API_KEY,
+    environment: process.env.NODE_ENV === 'production' ? 'production' : 'sandbox',
+  });
 
-  if (req.method === 'GET') {
-    try {
-      const classificationDetails = await getClassificationDetails(awardCode as string, classificationCode as string);
-      res.status(200).json(classificationDetails);
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch classification details' });
-    }
-  } else {
-    res.setHeader('Allow', ['GET']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+  try {
+    const classification = await client.getClassification(awardCode, classificationCode);
+    return createApiResponse({
+      classification,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error('Failed to get classification', { error, awardCode, classificationCode });
+    return createErrorResponse('CLASSIFICATION_FETCH_ERROR', 'Failed to get classification', undefined, 500);
   }
 }
