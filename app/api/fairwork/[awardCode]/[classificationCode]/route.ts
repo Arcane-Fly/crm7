@@ -1,18 +1,19 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { getClassificationDetails } from '@/lib/services/fairwork/fairwork.client';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { z } from 'zod';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { awardCode, classificationCode } = req.query;
+import { getAwardClassificationDetails } from '@/lib/fairwork';
 
-  if (req.method === 'GET') {
-    try {
-      const classificationDetails = await getClassificationDetails(awardCode as string, classificationCode as string);
-      res.status(200).json(classificationDetails);
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch classification details' });
-    }
-  } else {
-    res.setHeader('Allow', ['GET']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { awardCode: string; classificationCode: string } }
+): Promise<NextResponse> {
+  const { awardCode, classificationCode } = params;
+
+  try {
+    const details = await getAwardClassificationDetails(awardCode, classificationCode);
+    return NextResponse.json(details);
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to fetch details' }, { status: 500 });
   }
 }
