@@ -1,24 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
+import { ServiceRegistry } from '@/lib/services/service-registry';
+import type { FairWorkService } from '@/lib/services/fairwork/fairwork-service';
 import { createApiResponse, createErrorResponse } from '@/lib/api/response';
-import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
 
-export async function GET(req: NextRequest, { params }: { params: { awardCode: string; classificationCode: string } }): Promise<NextResponse> {
-  const { awardCode, classificationCode } = params;
-  const client = new FairWorkClient({
-    apiUrl: process.env.FAIRWORK_API_URL,
-    apiKey: process.env.FAIRWORK_API_KEY,
-    environment: process.env.NODE_ENV === 'production' ? 'production' : 'sandbox',
-  });
-
+export async function GET(_req: NextRequest): Promise<NextResponse> {
+  const serviceRegistry = ServiceRegistry.getInstance();
   try {
-    const classification = await client.getClassification(awardCode, classificationCode);
+    const fairworkService = serviceRegistry.getService<FairWorkService>('fairworkService');
+    const awards = await fairworkService.getActiveAwards();
     return createApiResponse({
-      classification,
+      awards,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    logger.error('Failed to get classification', { error, awardCode, classificationCode });
-    return createErrorResponse('CLASSIFICATION_FETCH_ERROR', 'Failed to get classification', undefined, 500);
+    logger.error('Failed to get active awards', { error });
+    return createErrorResponse('AWARDS_FETCH_ERROR', 'Failed to get active awards', undefined, 500);
   }
 }
