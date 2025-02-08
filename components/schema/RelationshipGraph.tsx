@@ -122,16 +122,16 @@ const RelationshipGraph = ({
       .call(
         d3
           .drag<SVGGElement, Node>()
-          .on('start', (event: D3DragEvent<SVGGElement, Node>) => {
+          .on('start', (event: D3DragEvent<SVGGElement, Node, Node>) => {
             if (!event.active) simulation.alphaTarget(0.3).restart();
             event.subject.fx = event.subject.x;
             event.subject.fy = event.subject.y;
           })
-          .on('drag', (event: D3DragEvent<SVGGElement, Node>) => {
+          .on('drag', (event: D3DragEvent<SVGGElement, Node, Node>) => {
             event.subject.fx = event.x;
             event.subject.fy = event.y;
           })
-          .on('end', (event: D3DragEvent<SVGGElement, Node>) => {
+          .on('end', (event: D3DragEvent<SVGGElement, Node, Node>) => {
             if (!event.active) simulation.alphaTarget(0);
             event.subject.fx = null;
             event.subject.fy = null;

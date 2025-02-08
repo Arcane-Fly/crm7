@@ -33,7 +33,7 @@ export function ComplianceDashboard(): React.ReactElement {
         throw new Error(supabaseError.message);
       }
 
-      const calculatedStats = calculateStats(data);
+      const calculatedStats: ComplianceStats = calculateStats(data);
       setStats(calculatedStats);
 
       toast({
