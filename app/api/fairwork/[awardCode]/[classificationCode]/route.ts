@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { FairworkClient } from '@/lib/services/fairwork/fairwork.client';
+import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
 
-const fairworkClient = new FairworkClient(process.env.FAIRWORK_API_KEY!);
+const fairworkClient = new FairWorkClient(process.env.FAIRWORK_API_KEY!);
 
 export async function GET(
   request: NextRequest,

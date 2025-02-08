@@ -50,10 +50,10 @@ const FormItem = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEl
 );
 FormItem.displayName = 'FormItem';
 
-export function FormField<
+function FormField<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
->({ ...props }: FormFieldProps<TFieldValues, TName>): React.ReactElement {
+>({ ...props }: FormFieldProps<TFieldValues, TName>) {
   return <Controller {...props} />;
 }
 
