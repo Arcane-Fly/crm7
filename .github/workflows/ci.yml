@@ -2,11 +2,11 @@ name: CI
 
 on:
   push:
-    branches: [ "development" ]
+    branches: [ "development", "preview", "master" ]
   pull_request:
-    branches: [ "development" ]
+    branches: [ "development", "preview", "master" ]
   merge_group:
-    branches: [ "development" ]
+    branches: [ "development", "preview", "master" ]
 
 env:
   NODE_VERSION: '20.11.1'
