@@ -163,7 +163,7 @@ const RelationshipGraph = ({
       .attr('class', 'field')
       .text((d) => d.name)
       .attr('x', 10)
-      .attr('y', (d, i) => 40 + i * 20);
+      .attr('y', (_d, i) => 40 + i * 20);
 
     // Add click handler for table selection
     node.on('click', (_event, d) => {
