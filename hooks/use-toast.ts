@@ -1,3 +1,5 @@
+"use client";
+
 // Inspired by react-hot-toast library
 import { useState, useEffect, useCallback } from 'react';
 import { Toast } from '@/components/ui/toast';
