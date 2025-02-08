@@ -16,8 +16,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { toast } from '@/hooks/use-toast';
+import { createClient } from '@/lib/supabase/client';
 import { type TableSchema } from '@/lib/types/schema-component';
-import { createClient } from '@supabase/ssr';
 import { useCallback, useEffect, useState } from 'react';
 
 interface DataPreviewProps {
@@ -25,9 +25,13 @@ interface DataPreviewProps {
   limit?: number;
 }
 
+interface TableData {
+  [key: string]: unknown;
+}
+
 export function DataPreview({ schema, limit = 5 }: DataPreviewProps) {
   const [selectedTable, setSelectedTable] = useState<TableSchema | null>(schema[0] || null);
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<TableData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [orderBy, setOrderBy] = useState<string>('');
@@ -41,10 +45,7 @@ export function DataPreview({ schema, limit = 5 }: DataPreviewProps) {
       setLoading(true);
       const supabase = createClient();
 
-      let query = supabase
-        .from(selectedTable.name)
-        .select('*')
-        .limit(limit);
+      let query = supabase.from(selectedTable.name).select('*').limit(limit);
 
       // Apply filters
       Object.entries(filters).forEach(([field, filter]) => {
@@ -95,9 +96,7 @@ export function DataPreview({ schema, limit = 5 }: DataPreviewProps) {
 
   if (!selectedTable) {
     return (
-      <div className="text-center py-12 text-muted-foreground">
-        No tables available for preview
-      </div>
+      <div className="text-center py-12 text-muted-foreground">No tables available for preview</div>
     );
   }
 
@@ -107,7 +106,7 @@ export function DataPreview({ schema, limit = 5 }: DataPreviewProps) {
         <Select
           value={selectedTable.name}
           onValueChange={(value) => {
-            const table = schema.find(t => t.name === value);
+            const table = schema.find((t) => t.name === value);
             if (table) {
               setSelectedTable(table);
               setFilters({});
@@ -200,13 +199,9 @@ export function DataPreview({ schema, limit = 5 }: DataPreviewProps) {
       {loading ? (
         <div className="text-center py-12">Loading...</div>
       ) : error ? (
-        <div className="text-center py-12 text-destructive">
-          {error.message}
-        </div>
+        <div className="text-center py-12 text-destructive">{error.message}</div>
       ) : data.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground">
-          No data available
-        </div>
+        <div className="text-center py-12 text-muted-foreground">No data available</div>
       ) : (
         <div className="border rounded-lg">
           <Table>
@@ -235,18 +230,18 @@ export function DataPreview({ schema, limit = 5 }: DataPreviewProps) {
   );
 }
 
-function formatValue(value: any, type: string): string {
+function formatValue(value: unknown, type: string): string {
   if (value === null) return 'null';
   if (value === undefined) return '';
 
   switch (type) {
     case 'date':
-      return new Date(value).toLocaleString();
+      return new Date(value as string).toLocaleString();
     case 'json':
     case 'array':
       return JSON.stringify(value);
     case 'boolean':
-      return value ? 'true' : 'false';
+      return (value as boolean) ? 'true' : 'false';
     default:
       return String(value);
   }

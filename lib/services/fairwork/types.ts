@@ -1,8 +1,9 @@
+export type FairWorkEnvironment = 'production' | 'sandbox';
+
 export interface FairWorkConfig {
   apiKey: string;
   apiUrl: string;
-  baseUrl?: string;
-  environment?: 'sandbox' | 'production';
+  environment: FairWorkEnvironment;
   timeout?: number;
   retryAttempts?: number;
   cacheEnabled?: boolean;

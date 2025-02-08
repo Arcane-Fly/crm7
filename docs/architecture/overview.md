@@ -3,6 +3,7 @@
 ## Core Components
 
 ### 1. Apprentice Management
+
 - Profile management
 - Training contract tracking
 - Progress monitoring
@@ -10,6 +11,7 @@
 - Document management
 
 ### 2. Host Management
+
 - Company profiles
 - Placement management
 - Safety compliance
@@ -17,6 +19,7 @@
 - Capacity tracking
 
 ### 3. Compliance System
+
 - Document storage & versioning
   - Manage and store compliance-related documents with version control.
 - Automated monitoring
@@ -29,6 +32,7 @@
   - Generate reports to meet regulatory requirements.
 
 ### 4. Financial Operations
+
 - Timesheet processing
 - Award interpretation
 - Payroll integration
@@ -36,6 +40,7 @@
 - Government funding
 
 ### 5. Analytics & Reporting
+
 - Operational metrics
 - Compliance reporting
 - Financial analytics
@@ -43,6 +48,7 @@
 - Government reporting
 
 ### 6. Access Control
+
 - Role-based authentication
 - Multi-tenant security
 - Document permissions
@@ -52,6 +58,7 @@
 ## Technical Stack
 
 ### Frontend
+
 - Next.js 15.1.6
 - TypeScript
 - TailwindCSS
@@ -60,13 +67,15 @@
 - Chart.js
 
 ### Backend
+
 - Supabase
 - PostgreSQL
 - Edge Functions
 - Real-time subscriptions
 
 ### Integration Points
-- Auth0 for authentication
+
+- Supabase Auth for authentication
 - Fair Work API for awards
 - Document storage service
 - Email notification service
@@ -75,6 +84,7 @@
 ## Data Models
 
 ### Core Entities
+
 - Apprentices
 - Host Employers
 - Training Contracts
@@ -84,6 +94,7 @@
 - Financial Records
 
 ### Supporting Entities
+
 - Compliance Records
 - Progress Reports
 - Financial Transactions
@@ -93,12 +104,15 @@
 ## Security
 
 ### Authentication
-- Multi-factor authentication
+
+- Supabase Auth with PKCE flow
+- Row Level Security (RLS)
 - Role-based access control
 - Session management
 - API security
 
 ### Data Protection
+
 - End-to-end encryption
 - Data backup
 - Audit logging
@@ -107,12 +121,14 @@
 ## Monitoring
 
 ### Performance
+
 - API response times
 - Database performance
 - Cache efficiency
 - Error tracking
 
 ### Business Metrics
+
 - Apprentice progress
 - Financial health
 - Compliance status
@@ -121,18 +137,21 @@
 ## Future Enhancements
 
 ### Phase 1: Core Features
+
 - Complete apprentice management
 - Enhanced document system
 - Timesheet processing
 - Basic reporting
 
 ### Phase 2: Advanced Features
+
 - AI-powered matching
 - Predictive analytics
 - Mobile applications
 - Advanced automation
 
 ### Phase 3: Integration
+
 - RTO integration
 - Government systems
 - Payment providers

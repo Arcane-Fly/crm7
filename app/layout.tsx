@@ -3,7 +3,6 @@ import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { AppLayout } from '@/components/layout/app-layout';
-import { cookies } from 'next/headers';
 import { AuthProvider } from '@/lib/auth/context';
 import { createClient } from '@/utils/supabase/server';
 import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary';
@@ -14,8 +13,7 @@ export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
-}) {
-  const cookieStore = cookies();
+}): Promise<React.ReactElement> {
   const supabase = await createClient();
 
   try {
@@ -38,11 +36,7 @@ export default async function RootLayout({
           >
             <ErrorBoundary>
               <AuthProvider initialSession={session}>
-                {session ? (
-                  <AppLayout>{children}</AppLayout>
-                ) : (
-                  children
-                )}
+                {session ? <AppLayout>{children}</AppLayout> : children}
                 <Toaster />
               </AuthProvider>
             </ErrorBoundary>

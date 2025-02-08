@@ -1,12 +1,13 @@
 'use client';
 
+import React from 'react';
 import { useState } from 'react';
 import { Breadcrumb, BreadcrumbItem } from '@/components/ui/breadcrumb';
 import { DataEnrichment } from '@/components/admin/data-enrichment';
 import { DataTable } from '@/components/ui/data-table';
 import { columns } from './columns';
 
-export default function QualificationsPage(): JSX.Element {
+export default function QualificationsPage(): React.ReactElement {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   return (

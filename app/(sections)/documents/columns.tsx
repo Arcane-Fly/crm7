@@ -29,14 +29,14 @@ interface SortableColumnProps {
   title: string;
 }
 
-const SortableColumnHeader = ({ column, title }: SortableColumnProps): JSX.Element => {
+const SortableColumnHeader = ({ column, title }: SortableColumnProps): React.ReactElement => {
   return (
     <Button
-      variant='ghost'
+      variant="ghost"
       onClick={(): void => column.toggleSorting(column.getIsSorted() === 'asc')}
     >
       {title}
-      <ArrowUpDown className='ml-2 h-4 w-4' />
+      <ArrowUpDown className="ml-2 h-4 w-4" />
     </Button>
   );
 };
@@ -54,19 +54,16 @@ const formatFileSize = (bytes: number): string => {
   return `${size.toFixed(1)} ${units[unitIndex]}`;
 };
 
-const renderActions = (document: Document): JSX.Element => {
+const renderActions = (document: Document): React.ReactElement => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant='ghost'
-          className='h-8 w-8 p-0'
-        >
-          <span className='sr-only'>Open menu</span>
-          <MoreHorizontal className='h-4 w-4' />
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <span className="sr-only">Open menu</span>
+          <MoreHorizontal className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align='end'>
+      <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuItem onClick={(): Promise<void> => navigator.clipboard.writeText(document.id)}>
           Copy ID
@@ -84,10 +81,7 @@ export const columns: ColumnDef<Document>[] = [
   {
     accessorKey: 'name',
     header: ({ column }): React.JSX.Element => (
-      <SortableColumnHeader
-        column={column}
-        title='Name'
-      />
+      <SortableColumnHeader column={column} title="Name" />
     ),
   },
   {
@@ -110,6 +104,6 @@ export const columns: ColumnDef<Document>[] = [
   },
   {
     id: 'actions',
-    cell: ({ row }): JSX.Element => renderActions(row.original),
+    cell: ({ row }): React.ReactElement => renderActions(row.original),
   },
 ];
