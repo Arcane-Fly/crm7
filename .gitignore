@@ -1,89 +1,49 @@
 # Dependencies
 node_modules/
-**/node_modules
-/node_modules/*
-
 .pnp
 .pnp.js
 
-# Package managers
-.pnpm-debug.log*
-.pnpm-store
-.pnpm
-.pnpm-global
-.pnpm-workspace.yaml
-.npm
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
-.yarn-integrity
-package-lock.json
-yarn.lock
-.yarn/
-
 # Testing
-/coverage
-/coverage-e2e
-.nyc_output
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
-*.lcov
-.coverage
-coverage.json
+coverage/
 
-# Next.js and Build
+# Next.js
 .next/
-.next-env*
-next-env.d.ts
 out/
+
+# Production
 build/
 dist/
-.turbo
-.vercel
-storybook-static/
 
-# Environment Variables
+# Misc
+.DS_Store
+*.pem
 .env
 .env.*
 !.env.example
-.env*.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env.staging.local
-.env.development
-.env.test
-.env.production
-.env.staging
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local development
+.windsurfrules
+.vscode/
+.idea/
+
+# Vercel
+.vercel
+
+# Package managers
+package-lock.json
+yarn.lock
+.pnpm-debug.log*
 
 # TypeScript
 *.tsbuildinfo
-tsconfig.tsbuildinfo
-
-# IDE
-.vscode
-!.vscode/extensions.json
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/settings.example.json
-*.sublime-project
-*.sublime-workspace
-*.code-workspace
-.history/
-.vscode-test
-.tern-port
+next-env.d.ts
 
 # OS
-.DS_Store
 Thumbs.db
 ehthumbs.db
 Desktop.ini
@@ -123,22 +83,6 @@ logs/
 *.local
 local.*
 .local/
-
-# Misc
-*.pem
-.dccache
-.docusaurus
-.serverless/
-.fusebox/
-.dynamodb/
-
-# Super-linter
-super-linter-output/
-super-linter.log
-github_conf/
-
-# windsurf rules
-.windsurfrules
 
 # Documentation archives
 docs/archive/

@@ -1,10 +1,7 @@
-import { redirect } from 'next/navigation';
 import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary';
+import { redirect } from 'next/navigation';
+import React from 'react';
 
-export default function Home(): JSX.Element {
-  return (
-    <ErrorBoundary>
-      {redirect('/dashboard')}
-    </ErrorBoundary>
-  );
+export default function Home(): React.ReactElement {
+  return <ErrorBoundary>{redirect('/dashboard')}</ErrorBoundary>;
 }

@@ -107,3 +107,32 @@
 - Node.js version must be specified exactly (e.g., "20.11.1" not ">=20.11.1")
 - PNPM version must be specified exactly
 - Reference: <http://vercel.link/node-version>
+
+## Authentication
+
+- Uses Supabase for authentication and database
+- Direct integration with Next.js App Router
+- PKCE flow for secure authentication
+- Session management via cookies
+- Row Level Security (RLS) for data access control
+- Real-time subscription support
+- Type-safe database queries
+
+### Authentication Flow
+
+1. User signs in/up via email + password
+2. Supabase handles authentication
+3. Session stored in cookies
+4. RLS policies control data access
+5. Real-time updates via subscriptions
+
+### Security Features
+
+- PKCE authentication flow
+- Secure session management
+- HTTP-only cookies
+- Automatic token refresh
+- Rate limiting
+- Row Level Security
+- Input validation
+- XSS protection

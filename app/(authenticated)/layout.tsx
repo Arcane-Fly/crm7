@@ -1,8 +1,5 @@
-import { redirect } from 'next/navigation';
+import React from 'react';
 import type { ReactNode } from 'react';
-import { Toaster } from 'react-hot-toast';
-import { Providers } from '@/components/providers';
-import { getServerSession } from '@/lib/supabase/utils';
 
 interface AuthenticatedLayoutProps {
   children: ReactNode;
@@ -10,17 +7,6 @@ interface AuthenticatedLayoutProps {
 
 export default async function AuthenticatedLayout({
   children,
-}: AuthenticatedLayoutProps): Promise<JSX.Element> {
-  const session = await getServerSession();
-  if (!session) {
-    redirect('/login');
-  }
-  return (
-    <>
-      <Providers>
-        {children}
-        <Toaster />
-      </Providers>
-    </>
-  );
+}: AuthenticatedLayoutProps): Promise<React.ReactElement> {
+  return <div className="min-h-screen bg-background">{children}</div>;
 }

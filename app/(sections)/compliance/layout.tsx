@@ -1,11 +1,13 @@
+import React from 'react';
+
 export default function ComplianceLayout({
   children,
 }: {
   children: React.ReactNode;
-}): JSX.Element {
+}): React.ReactElement {
   return (
-    <div className='flex min-h-screen'>
-      <main className='flex-1 px-4 py-8'>{children}</main>
+    <div className="flex min-h-screen">
+      <main className="flex-1 px-4 py-8">{children}</main>
     </div>
   );
 }

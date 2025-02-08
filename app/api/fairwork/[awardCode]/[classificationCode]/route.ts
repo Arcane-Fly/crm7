@@ -1,49 +1,28 @@
-import { NextRequest } from 'next/server';
-import { createApiResponse, createErrorResponse } from '@/lib/api/response';
-import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
+import { NextRequest, NextResponse } from 'next/server';
+import { FairworkClient } from '@/lib/services/fairwork/fairwork.client';
 
-const fairworkClient = new FairWorkClient({
-  apiUrl: process.env.FAIRWORK_API_URL!,
-  apiKey: process.env.FAIRWORK_API_KEY!,
-  environment: process.env.FAIRWORK_ENVIRONMENT!,
-});
-
-export interface RouteParams {
-  params: {
-    awardCode: string;
-    classificationCode: string;
-  };
-}
+const fairworkClient = new FairworkClient(process.env.FAIRWORK_API_KEY!);
 
 export async function GET(
   request: NextRequest,
-  { params }: RouteParams
+  context: { params: { awardCode: string; classificationCode: string } }
 ) {
   try {
-    const { awardCode, classificationCode } = params;
+    const { awardCode, classificationCode } = context.params;
     if (!awardCode || !classificationCode) {
-      return createErrorResponse(
-        'MISSING_PARAMS',
-        'Missing required parameters: awardCode and classificationCode',
-        undefined,
-        400
-      );
+      return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
     }
 
     const url = new URL(request.url);
-    const query: { date?: string; employmentType?: string } = {
+    const query = {
       date: url.searchParams.get('date') || undefined,
       employmentType: url.searchParams.get('employmentType') || undefined,
     };
 
     const rates = await fairworkClient.getRates(awardCode, classificationCode, query);
-    return createApiResponse(rates);
+    return NextResponse.json(rates);
   } catch (error) {
-    return createErrorResponse(
-      'RATES_FETCH_ERROR',
-      'Failed to fetch rates',
-      undefined,
-      500
-    );
+    console.error('Error fetching rates:', error);
+    return NextResponse.json({ error: 'Failed to fetch rates' }, { status: 500 });
   }
 }

@@ -8,13 +8,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
 
 const mockMonthlyData = [
-  { month: 'Jan', placements: 65 },
-  { month: 'Feb', placements: 59 },
-  { month: 'Mar', placements: 80 },
-  { month: 'Apr', placements: 81 },
-  { month: 'May', placements: 56 },
-  { month: 'Jun', placements: 55 },
-];
+  { date: '2023-01', count: 12 },
+  { date: '2023-02', count: 15 },
+  { date: '2023-03', count: 18 },
+  // ... more data
+].map((item) => ({
+  date: item.date,
+  count: item.count,
+}));
 
 const mockAlerts: DashboardAlert[] = [
   {
@@ -33,7 +34,7 @@ const mockAlerts: DashboardAlert[] = [
   },
 ];
 
-export default async function DashboardPage(): Promise<JSX.Element> {
+export default async function DashboardPage(): Promise<React.ReactElement> {
   return (
     <div className="flex-1 space-y-8 p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
