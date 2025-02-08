@@ -43,6 +43,7 @@ const nextConfig = {
   },
   webpack: (config, { }) => {
     config.resolve.alias['@/hooks'] = path.join(__dirname, 'hooks');
+    config.resolve.alias['@/lib/fairwork'] = path.join(__dirname, 'lib/services/fairwork.ts'); // P923e
     // Suppress punycode warning
     config.ignoreWarnings = [
       { module: /node_modules\/punycode/ }
