@@ -180,3 +180,30 @@ export function useToast(): {
     dismiss,
   };
 }
+
+export const toast = (props: ToastProps): { id: string; dismiss: () => void; update: (props: ToastProps) => void; } => {
+  const id = genId();
+
+  const update = (props: ToastProps): void =>
+    dispatch({
+      type: 'UPDATE_TOAST',
+      toast: props,
+      toastId: id,
+    });
+
+  const dismiss = (): void => dispatch({ type: 'DISMISS_TOAST', toastId: id });
+
+  dispatch({
+    type: 'ADD_TOAST',
+    toast: {
+      ...props,
+      id,
+    },
+  });
+
+  return {
+    id,
+    dismiss,
+    update,
+  };
+};
