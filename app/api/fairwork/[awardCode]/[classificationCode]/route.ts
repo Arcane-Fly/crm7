@@ -1,19 +1,20 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { z } from 'zod';
+import { NextApiRequest, NextApiResponse } from 'next';
+import { FairWorkService } from '@/lib/fairwork';
 
-import { getAwardClassificationDetails } from '@/lib/fairwork';
+const fairWorkService = new FairWorkService();
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { awardCode: string; classificationCode: string } }
-): Promise<NextResponse> {
-  const { awardCode, classificationCode } = params;
+export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
+  const { awardCode, classificationCode } = req.query;
+
+  if (typeof awardCode !== 'string' || typeof classificationCode !== 'string') {
+    res.status(400).json({ error: 'Invalid award or classification code' });
+    return;
+  }
 
   try {
-    const details = await getAwardClassificationDetails(awardCode, classificationCode);
-    return NextResponse.json(details);
+    const classification = await fairWorkService.getClassification(awardCode, classificationCode);
+    res.status(200).json(classification);
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch details' }, { status: 500 });
+    res.status(500).json({ error: 'Failed to fetch classification' });
   }
 }
