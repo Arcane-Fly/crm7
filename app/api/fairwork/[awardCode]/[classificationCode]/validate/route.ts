@@ -29,6 +29,8 @@ export async function POST(
 
     const validation = await fairworkClient.validatePayRate(awardCode, classificationCode, {
       rate,
+      awardCode,
+      classificationCode,
       date,
       penalties,
       allowances,
