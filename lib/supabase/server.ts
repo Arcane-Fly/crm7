@@ -2,26 +2,27 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
 export async function createClient() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
+        async get(name: string) {
+          const cookie = await cookieStore.get(name);
+          return cookie?.value;
         },
-        set(name: string, value: string, options: CookieOptions) {
+        async set(name: string, value: string, options: CookieOptions) {
           try {
-            cookieStore.set({ name, value, ...options, path: '/' });
+            await cookieStore.set({ name, value, ...options, path: '/' });
           } catch (error) {
             console.error('Error setting cookie:', error);
           }
         },
-        remove(name: string, options: CookieOptions) {
+        async remove(name: string, options: CookieOptions) {
           try {
-            cookieStore.set({ name, value: '', ...options, path: '/', maxAge: 0 });
+            await cookieStore.set({ name, value: '', ...options, path: '/', maxAge: 0 });
           } catch (error) {
             console.error('Error removing cookie:', error);
           }
@@ -32,26 +33,27 @@ export async function createClient() {
 }
 
 export async function createAdminClient() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
+        async get(name: string) {
+          const cookie = await cookieStore.get(name);
+          return cookie?.value;
         },
-        set(name: string, value: string, options: CookieOptions) {
+        async set(name: string, value: string, options: CookieOptions) {
           try {
-            cookieStore.set({ name, value, ...options, path: '/' });
+            await cookieStore.set({ name, value, ...options, path: '/' });
           } catch (error) {
             console.error('Error setting cookie:', error);
           }
         },
-        remove(name: string, options: CookieOptions) {
+        async remove(name: string, options: CookieOptions) {
           try {
-            cookieStore.set({ name, value: '', ...options, path: '/', maxAge: 0 });
+            await cookieStore.set({ name, value: '', ...options, path: '/', maxAge: 0 });
           } catch (error) {
             console.error('Error removing cookie:', error);
           }
