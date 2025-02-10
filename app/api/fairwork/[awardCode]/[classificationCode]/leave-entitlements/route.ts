@@ -2,11 +2,12 @@ import { createApiResponse, createErrorResponse } from '@/lib/api/response';
 import { logger } from '@/lib/logger';
 import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
 import { NextRequest } from 'next/server';
+import type { FairWorkEnvironment } from '@/lib/services/fairwork/types';
 
 const fairworkClient = new FairWorkClient({
   apiUrl: process.env.FAIRWORK_API_URL!,
   apiKey: process.env.FAIRWORK_API_KEY!,
-  environment: process.env.FAIRWORK_ENVIRONMENT!,
+  environment: process.env.FAIRWORK_ENVIRONMENT as FairWorkEnvironment,
 });
 
 export async function GET(

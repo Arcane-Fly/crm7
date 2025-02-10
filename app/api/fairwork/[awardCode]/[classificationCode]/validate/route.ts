@@ -1,44 +1,39 @@
 import { NextRequest } from 'next/server';
-import { createApiResponse, createErrorResponse } from '@/lib/api/response';
 import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
+import { createErrorResponse } from '@/lib/api/response';
+import { logger } from '@/lib/logger';
+import type { FairWorkEnvironment } from '@/lib/services/fairwork/types';
 
 const fairworkClient = new FairWorkClient({
   apiUrl: process.env.FAIRWORK_API_URL!,
   apiKey: process.env.FAIRWORK_API_KEY!,
-  environment: process.env.FAIRWORK_ENVIRONMENT!,
+  environment: process.env.FAIRWORK_ENVIRONMENT as FairWorkEnvironment,
 });
 
-export interface RouteParams {
-  params: {
-    awardCode: string;
-    classificationCode: string;
-  };
-}
-
-export async function POST(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+export async function POST(req: NextRequest) {
   try {
-    const { awardCode, classificationCode } = params;
+    const [, , , awardCode, classificationCode] = req.nextUrl.pathname.split('/');
     if (!awardCode || !classificationCode) {
-      return createErrorResponse(
-        'MISSING_PARAMS',
-        'Missing required parameters',
-        undefined,
-        400
-      );
+      return createErrorResponse('MISSING_PARAMS', 'Missing required parameters', undefined, 400);
     }
 
-    const data = await request.json();
-    const validation = await fairworkClient.validatePayRate(awardCode, classificationCode, data);
-    return createApiResponse(validation);
-  } catch (error) {
-    return createErrorResponse(
-      'VALIDATION_ERROR',
-      'Failed to validate pay rate',
-      undefined,
-      500
-    );
+    const { rate, date, penalties, allowances } = await req.json();
+    if (rate === undefined) {
+      return createErrorResponse('MISSING_RATE', 'Rate is required', undefined, 400);
+    }
+
+    const validation = await fairworkClient.validateRate({
+      rate,
+      awardCode,
+      classificationCode,
+      date,
+      penalties,
+      allowances,
+    });
+
+    return NextResponse.json(validation);
+  } catch (err) {
+    logger.error('Failed to validate rate', { err });
+    return createErrorResponse('RATE_VALIDATION_ERROR', 'Failed to validate rate', undefined, 500);
   }
 }
