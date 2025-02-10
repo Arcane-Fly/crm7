@@ -1,8 +1,8 @@
-import { NextRequest } from 'next/server';
-import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
 import { createErrorResponse } from '@/lib/api/response';
 import { logger } from '@/lib/logger';
+import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
 import type { FairWorkEnvironment } from '@/lib/services/fairwork/types';
+import { NextRequest, NextResponse } from 'next/server';
 
 const fairworkClient = new FairWorkClient({
   apiUrl: process.env.FAIRWORK_API_URL!,
@@ -22,10 +22,8 @@ export async function POST(req: NextRequest) {
       return createErrorResponse('MISSING_RATE', 'Rate is required', undefined, 400);
     }
 
-    const validation = await fairworkClient.validateRate({
+    const validation = await fairworkClient.validatePayRate(awardCode, classificationCode, {
       rate,
-      awardCode,
-      classificationCode,
       date,
       penalties,
       allowances,
