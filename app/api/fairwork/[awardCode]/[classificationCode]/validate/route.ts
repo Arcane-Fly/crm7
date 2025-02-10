@@ -62,20 +62,21 @@ export async function POST(
       });
 
       if (error instanceof FairWorkApiError) {
-        // Pass through the status code from the FairWork API
-        return createErrorResponse(
-          'API_ERROR',
-          error.message,
-          error.responseData,
-          error.statusCode
+        return NextResponse.json(
+          {
+            error: error.message,
+            details: error.context,
+          },
+          { status: error.statusCode }
         );
       }
 
-      return createErrorResponse(
-        'API_ERROR',
-        'Error validating pay rate with FairWork API',
-        undefined,
-        500
+      return NextResponse.json(
+        {
+          error: 'Internal server error',
+          details: error instanceof Error ? error.message : 'Unknown error occurred',
+        },
+        { status: 500 }
       );
     }
   } catch (error) {

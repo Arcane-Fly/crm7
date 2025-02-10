@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { isAxiosError } from 'axios';
 import { z } from 'zod';
 import { logger } from '@/lib/logger';
 
@@ -72,17 +72,94 @@ export class FairWorkClient {
       headers: {
         'X-API-Key': this.apiKey,
         'X-Environment': this.environment,
+        Accept: 'application/json',
       },
     });
+
+    // Add response interceptor to handle non-JSON responses
+    this.client.interceptors.response.use(
+      (response) => {
+        const contentType = response.headers['content-type'];
+        if (!contentType?.includes('application/json')) {
+          logger.error('Received non-JSON response', {
+            contentType,
+            status: response.status,
+            url: response.config.url,
+          });
+          throw new FairWorkApiError(
+            'Received invalid response format from FairWork API',
+            response.status,
+            { contentType }
+          );
+        }
+        return response;
+      },
+      (error: unknown) => {
+        if (isAxiosError(error)) {
+          const response = error.response;
+          const contentType = response?.headers?.['content-type'];
+
+          // Handle HTML responses
+          if (contentType?.includes('text/html')) {
+            logger.error('Received HTML response instead of JSON', {
+              status: response?.status,
+              url: error.config?.url,
+              method: error.config?.method,
+            });
+            throw new FairWorkApiError(
+              'FairWork API is currently unavailable',
+              response?.status ?? 503,
+              { error: 'Service temporarily unavailable' }
+            );
+          }
+
+          // Handle other non-JSON responses
+          if (contentType && !contentType.includes('application/json')) {
+            logger.error('Received non-JSON error response', {
+              contentType,
+              status: response?.status,
+              url: error.config?.url,
+            });
+            throw new FairWorkApiError(
+              'Unexpected response from FairWork API',
+              response?.status ?? 500,
+              { error: `Invalid response format: ${contentType}` }
+            );
+          }
+
+          // Handle JSON error responses
+          const statusCode = response?.status ?? 500;
+          const message = response?.data?.message ?? error.message ?? 'Unknown API error';
+          throw new FairWorkApiError(message, statusCode, { error: response?.data });
+        }
+
+        // Handle non-Axios errors
+        if (error instanceof Error) {
+          throw new FairWorkApiError(error.message, 500, {
+            error: {
+              name: error.name,
+              message: error.message,
+              stack: error.stack,
+            },
+          });
+        }
+
+        throw new FairWorkApiError('Unknown error occurred', 500, { error });
+      }
+    );
   }
 
   private handleError(error: unknown, context: string): never {
     logger.error(`FairWork API ${context} error`, { error });
 
+    if (error instanceof FairWorkApiError) {
+      throw error;
+    }
+
     if (error instanceof Error) {
       throw new FairWorkApiError(error.message, 500, {
         context,
-        originalError: {
+        error: {
           name: error.name,
           message: error.message,
           stack: error.stack,
@@ -90,7 +167,7 @@ export class FairWorkClient {
       });
     }
 
-    throw new FairWorkApiError('Unknown error occurred', 500, { context });
+    throw new FairWorkApiError('Unknown error occurred', 500, { context, error });
   }
 
   async getAward(awardCode: string): Promise<AwardType> {
