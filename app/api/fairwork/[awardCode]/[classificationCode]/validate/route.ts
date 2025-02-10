@@ -18,14 +18,11 @@ const validateRateSchema = z.object({
   allowances: z.array(z.string()).optional(),
 });
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { awardCode: string; classificationCode: string } }
-) {
+export async function POST(request: NextRequest, context: { params: Record<string, string> }) {
   try {
     const body = await request.json();
     const { rate, date, penalties, allowances } = validateRateSchema.parse(body);
-    const { awardCode, classificationCode } = params;
+    const { awardCode, classificationCode } = context.params;
 
     const validation = await fairworkClient.validatePayRate(awardCode, classificationCode, {
       rate,
