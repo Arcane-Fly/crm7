@@ -9,6 +9,7 @@ import { type TableSchema } from '@/lib/types/schema-component';
 import * as d3 from 'd3';
 import { D3DragEvent, SimulationNodeDatum } from 'd3';
 import { useEffect, useRef, useState } from 'react';
+import styles from './RelationshipGraph.module.css';
 
 interface Node extends SimulationNodeDatum {
   id: string;
@@ -233,8 +234,8 @@ const RelationshipGraph = ({
           </Select>
         </div>
       </div>
-      <div className="relative" style={{ width, height }}>
-        <svg ref={svgRef} width={width} height={height} className="bg-background" />
+      <div className={styles.graphContainer}>
+        <svg ref={svgRef} width={width} height={height} className={styles.graphSvg} />
       </div>
     </div>
   );
