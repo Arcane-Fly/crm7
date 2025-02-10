@@ -1,49 +1,36 @@
 'use client';
 
-import { CORE_SECTIONS, CoreSection, NavItem, UserRole } from '@/config/navigation-config';
+import { CORE_SECTIONS, type CoreSection } from '@/config/navigation-config';
 import { useKeyboardNavigation } from '@/hooks/use-keyboard-navigation';
 import { useNavigationAccess } from '@/hooks/use-navigation-access';
 import { errorTracker } from '@/lib/error-tracking';
-import { cn } from '@/lib/utils';
-import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, Search, X } from 'lucide-react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ReactNode, Suspense, useEffect, useRef, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
-
-// Helper function to ensure roles are always present
-const ensureRoles = (item: NavItem): NavigationItem => ({
-  title: item.title,
-  href: item.href ?? '/',
-  roles: item.roles ?? ['staff' as UserRole], // Explicitly type the default role
-});
-
-interface NavigationItem {
-  title: string;
-  href: string;
-  roles: UserRole[];
-}
-
-interface NavigationSection extends Omit<CoreSection, 'items'> {
-  items: NavigationItem[];
-}
-
-interface ErrorFallbackProps {
-  error: Error;
-  resetErrorBoundary: () => void;
-}
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Input } from '@/components/ui/input';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface NavigationSectionProps {
-  section: NavigationSection;
+  section: CoreSection;
   isActive: boolean;
+  isCollapsed: boolean;
 }
 
 interface UnifiedNavigationProps {
   children: ReactNode;
 }
 
-// Error Fallback Component with better error details
-const ErrorFallback = ({ error, resetErrorBoundary }: ErrorFallbackProps) => {
+const ErrorFallback = ({
+  error,
+  resetErrorBoundary,
+}: {
+  error: Error;
+  resetErrorBoundary: () => void;
+}) => {
   useEffect(() => {
     errorTracker.trackError(error, {
       componentName: 'UnifiedNavigation',
@@ -52,205 +39,158 @@ const ErrorFallback = ({ error, resetErrorBoundary }: ErrorFallbackProps) => {
   }, [error]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 10 }}
-      role="alert"
-      className="p-4 bg-destructive/10 text-destructive rounded-md"
-    >
-      <h2 className="font-semibold">Navigation Error</h2>
-      <p className="text-sm">{error.message}</p>
-      <button onClick={resetErrorBoundary} className="mt-2 text-sm underline hover:no-underline">
-        Try again
-      </button>
-    </motion.div>
+    <div className="p-4 text-sm">
+      <h3 className="font-semibold text-red-500">Navigation Error</h3>
+      <p className="mt-1 text-muted-foreground">Please try refreshing the page</p>
+      <Button onClick={resetErrorBoundary} variant="outline" size="sm" className="mt-2">
+        Retry
+      </Button>
+    </div>
   );
 };
 
-// Loading Component with animation
-const NavigationSkeleton = () => (
-  <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-    className="animate-pulse"
-  >
-    <div className="h-12 bg-muted rounded-md mb-4" />
-    <div className="space-y-2">
-      {[1, 2, 3].map((i) => (
-        <div key={i} className="h-8 bg-muted rounded-md" />
-      ))}
+function NavigationSkeleton() {
+  return (
+    <div className="flex h-screen animate-pulse flex-col space-y-4 p-4">
+      <div className="h-8 w-3/4 rounded bg-muted" />
+      <div className="space-y-2">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="h-10 w-full rounded bg-muted" />
+        ))}
+      </div>
     </div>
-  </motion.div>
-);
+  );
+}
 
-// Navigation Section Component with animations
-const NavigationSection = ({ section, isActive }: NavigationSectionProps) => {
-  const { hasAccess } = useNavigationAccess();
+function NavigationSection({ section, isActive, isCollapsed }: NavigationSectionProps) {
+  const { canAccess } = useNavigationAccess();
+  const pathname = usePathname();
 
-  if (!hasAccess(section.roles)) return null;
+  const filteredItems = section.items.filter((item) => canAccess(item.roles));
+
+  if (filteredItems.length === 0) return null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className={cn('p-4 rounded-lg transition-colors', isActive && 'bg-primary/10')}
-    >
-      <div className="flex items-center gap-2 mb-2">
-        {section.icon && <section.icon className="w-5 h-5" />}
-        <h2 className="font-semibold">{section.title}</h2>
+    <div className={`py-2 ${isActive && 'bg-accent/50'}`}>
+      <div className="flex items-center px-3 py-1.5">
+        {section.icon && <section.icon className={`h-4 w-4 ${isCollapsed ? 'mx-auto' : 'mr-2'}`} />}
+        {!isCollapsed && <span className="text-sm font-medium">{section.title}</span>}
       </div>
-      <p className="text-sm text-muted-foreground mb-4">{section.description}</p>
-      <nav>
-        <ul className="space-y-1">
-          {section.items.map(
-            (item) =>
-              hasAccess(item.roles) && (
-                <li key={item.href}>
-                  <motion.div
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -10 }}
-                  >
-                    <a
-                      href={item.href}
-                      className={cn(
-                        'block px-2 py-1 rounded-md text-sm',
-                        'hover:bg-accent hover:text-accent-foreground',
-                        'focus:outline-none focus:ring-2 focus:ring-ring',
-                        'transition-colors duration-200'
-                      )}
-                    >
-                      {item.title}
-                    </a>
-                  </motion.div>
-                </li>
-              )
-          )}
-        </ul>
-      </nav>
-    </motion.div>
-  );
-};
+      <div className="mt-1">
+        {filteredItems.map((item) => {
+          const isItemActive = pathname === item.href;
+          const Icon = item.icon;
 
-// Main Navigation Component
-export const UnifiedNavigation = ({ children }: UnifiedNavigationProps) => {
-  const pathname = usePathname() ?? '/';
-  const { isLoading, filterCoreSections } = useNavigationAccess();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+          return (
+            <Tooltip key={item.href} delayDuration={0}>
+              <TooltipTrigger asChild>
+                <Link
+                  href={item.href || '#'}
+                  className={`flex items-center px-3 py-1.5 text-sm transition-colors hover:bg-accent/50 ${
+                    isItemActive && 'bg-accent font-medium text-accent-foreground'
+                  }`}
+                >
+                  {Icon && <Icon className={`h-4 w-4 ${isCollapsed ? 'mx-auto' : 'mr-2'}`} />}
+                  {!isCollapsed && <span>{item.title}</span>}
+                </Link>
+              </TooltipTrigger>
+              {isCollapsed && (
+                <TooltipContent side="right" className="flex items-center">
+                  {item.title}
+                </TooltipContent>
+              )}
+            </Tooltip>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+export function UnifiedNavigation({ children }: UnifiedNavigationProps) {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const searchRef = useRef<HTMLInputElement>(null);
+  const { canAccess } = useNavigationAccess();
+  const pathname = usePathname();
 
-  const accessibleSections: NavigationSection[] = filterCoreSections(CORE_SECTIONS).map(
-    (section) => ({
-      ...section,
-      items: section.items.map(ensureRoles),
-    })
+  const filteredSections = CORE_SECTIONS.filter(
+    (section) =>
+      canAccess(section.roles) &&
+      (searchQuery
+        ? section.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          section.items.some(
+            (item) =>
+              canAccess(item.roles) && item.title.toLowerCase().includes(searchQuery.toLowerCase())
+          )
+        : true)
   );
 
-  const activeSection = accessibleSections.find((section) => pathname.startsWith(`/${section.id}`));
-
-  // Initialize keyboard navigation
   useKeyboardNavigation({
-    onToggleMenu: () => setIsMobileMenuOpen((prev) => !prev),
-    onFocusSearch: () => searchRef.current?.focus(),
+    onSearchFocus: () => searchRef.current?.focus(),
+    onCollapse: () => setIsCollapsed((prev) => !prev),
   });
 
-  // Initialize error tracking
-  useEffect(() => {
-    errorTracker.initialize();
-  }, []);
-
   return (
-    <ErrorBoundary FallbackComponent={ErrorFallback}>
-      <div className="flex min-h-screen">
-        {/* Desktop Sidebar */}
-        <motion.aside
-          initial={{ x: -320 }}
-          animate={{ x: 0 }}
-          className="hidden lg:flex w-64 flex-col fixed inset-y-0 z-50"
-        >
-          <Suspense fallback={<NavigationSkeleton />}>
-            {isLoading ? (
-              <NavigationSkeleton />
-            ) : (
-              <div className="space-y-4 p-4 overflow-y-auto">
-                {/* Search Bar */}
-                <div className="relative">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <input
-                    ref={searchRef}
-                    type="search"
-                    placeholder="Quick search... (/)"
-                    className="w-full pl-8 pr-4 py-2 text-sm bg-background border rounded-md"
-                  />
-                </div>
+    <div className="flex">
+      {/* Navigation Sidebar */}
+      <aside
+        className={`relative flex flex-col border-r bg-background ${
+          isCollapsed ? 'w-[70px]' : 'w-[240px]'
+        }`}
+      >
+        {/* Header */}
+        <div className="flex h-[60px] items-center justify-between border-b px-3 py-2">
+          {!isCollapsed && <span className="text-lg font-semibold">CRM7</span>}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsCollapsed((prev) => !prev)}
+            className={`h-8 w-8 ${isCollapsed && 'mx-auto'}`}
+          >
+            <Menu className="h-4 w-4" />
+          </Button>
+        </div>
 
-                <AnimatePresence mode="wait">
-                  {accessibleSections.map((section) => (
-                    <NavigationSection
-                      key={section.id}
-                      section={section}
-                      isActive={activeSection?.id === section.id}
-                    />
-                  ))}
-                </AnimatePresence>
-              </div>
+        {/* Search */}
+        {!isCollapsed && (
+          <div className="relative px-3 py-2">
+            <Search className="absolute left-5 top-[13px] h-4 w-4 text-muted-foreground" />
+            <Input
+              ref={searchRef}
+              placeholder="Search..."
+              className="w-full pl-8"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <X
+                className="absolute right-5 top-[13px] h-4 w-4 cursor-pointer text-muted-foreground"
+                onClick={() => setSearchQuery('')}
+              />
             )}
+          </div>
+        )}
+
+        {/* Navigation Sections */}
+        <ScrollArea className="flex-1">
+          <Suspense fallback={<NavigationSkeleton />}>
+            <ErrorBoundary FallbackComponent={ErrorFallback}>
+              {filteredSections.map((section) => (
+                <NavigationSection
+                  key={section.id}
+                  section={section}
+                  isActive={pathname.startsWith(`/${section.id}`)}
+                  isCollapsed={isCollapsed}
+                />
+              ))}
+            </ErrorBoundary>
           </Suspense>
-        </motion.aside>
+        </ScrollArea>
+      </aside>
 
-        {/* Mobile Menu Button */}
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setIsMobileMenuOpen(true)}
-          className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-background"
-          aria-label="Open menu"
-        >
-          <Menu className="w-5 h-5" />
-        </motion.button>
-
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, x: -320 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -320 }}
-              transition={{ type: 'spring', damping: 25 }}
-              className="lg:hidden fixed inset-0 z-50 bg-background"
-            >
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="absolute top-4 right-4 p-2"
-                aria-label="Close menu"
-              >
-                <X className="w-5 h-5" />
-              </motion.button>
-              <Suspense fallback={<NavigationSkeleton />}>
-                <div className="p-4 overflow-y-auto">
-                  {accessibleSections.map((section) => (
-                    <NavigationSection
-                      key={section.id}
-                      section={section}
-                      isActive={activeSection?.id === section.id}
-                    />
-                  ))}
-                </div>
-              </Suspense>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Main Content */}
-        <main className="flex-1 lg:pl-64">{children}</main>
-      </div>
-    </ErrorBoundary>
+      {/* Main Content */}
+      <main className="flex-1">{children}</main>
+    </div>
   );
-};
-
-export default UnifiedNavigation;
+}

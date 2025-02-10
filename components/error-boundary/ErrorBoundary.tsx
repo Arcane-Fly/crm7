@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { errorTracker } from '@/lib/error-tracking';
 import { ErrorFallback } from '@/components/error/ErrorFallback';
@@ -18,14 +20,14 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     super(props);
     this.state = {
       hasError: false,
-      error: null
+      error: null,
     };
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return {
       hasError: true,
-      error
+      error,
     };
   }
 
@@ -38,7 +40,14 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
   render(): React.ReactNode {
     if (this.state.hasError) {
-      return this.props.fallback || <ErrorFallback error={this.state.error} resetErrorBoundary={(): void => this.setState({ hasError: false, error: null })} />;
+      return (
+        this.props.fallback || (
+          <ErrorFallback
+            error={this.state.error}
+            resetErrorBoundary={(): void => this.setState({ hasError: false, error: null })}
+          />
+        )
+      );
     }
 
     return this.props.children;

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createErrorResponse } from '@/lib/api/response';
 import { logger } from '@/lib/logger';
-import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
+import { FairWorkClient, FairWorkApiError } from '@/lib/services/fairwork/fairwork-client';
 import type { FairWorkEnvironment } from '@/lib/services/fairwork/types';
 
 const fairworkClient = new FairWorkClient({
@@ -23,30 +23,63 @@ export async function POST(
   { params }: { params: { awardCode: string; classificationCode: string } }
 ) {
   try {
-    const body = await request.json();
-    const { rate, date, penalties, allowances } = validateRateSchema.parse(body);
+    let body;
+    try {
+      body = await request.json();
+    } catch (error) {
+      logger.error('Error parsing request body', { error });
+      return createErrorResponse('INVALID_INPUT', 'Invalid JSON in request body', undefined, 400);
+    }
+
+    const validationResult = validateRateSchema.safeParse(body);
+    if (!validationResult.success) {
+      return createErrorResponse(
+        'INVALID_INPUT',
+        'Invalid input data',
+        validationResult.error.errors,
+        400
+      );
+    }
+
+    const { rate, date, penalties, allowances } = validationResult.data;
     const { awardCode, classificationCode } = params;
 
-    const validation = await fairworkClient.validatePayRate(awardCode, classificationCode, {
-      rate,
-      awardCode,
-      classificationCode,
-      date,
-      penalties,
-      allowances,
-    });
+    try {
+      const validation = await fairworkClient.validatePayRate(awardCode, classificationCode, {
+        rate,
+        awardCode,
+        classificationCode,
+        date,
+        penalties,
+        allowances,
+      });
 
-    return NextResponse.json(validation);
-  } catch (error) {
-    logger.error('Error validating pay rate', { error });
-    if (error instanceof z.ZodError) {
-      return createErrorResponse('INVALID_INPUT', 'Invalid input data', error.errors, 400);
+      return NextResponse.json(validation);
+    } catch (error) {
+      logger.error('Error from FairWork API', {
+        error,
+        params: { awardCode, classificationCode, rate },
+      });
+
+      if (error instanceof FairWorkApiError) {
+        // Pass through the status code from the FairWork API
+        return createErrorResponse(
+          'API_ERROR',
+          error.message,
+          error.responseData,
+          error.statusCode
+        );
+      }
+
+      return createErrorResponse(
+        'API_ERROR',
+        'Error validating pay rate with FairWork API',
+        undefined,
+        500
+      );
     }
-    return createErrorResponse(
-      'INTERNAL_ERROR',
-      'An error occurred while validating the pay rate',
-      undefined,
-      500
-    );
+  } catch (error) {
+    logger.error('Unexpected error in validate route', { error });
+    return createErrorResponse('INTERNAL_ERROR', 'An unexpected error occurred', undefined, 500);
   }
 }
