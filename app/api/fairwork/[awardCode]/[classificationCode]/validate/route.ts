@@ -13,23 +13,22 @@ const fairworkClient = new FairWorkClient({
 
 const validateRateSchema = z.object({
   rate: z.number().positive(),
-  awardCode: z.string(),
-  classificationCode: z.string(),
   date: z.string().optional(),
   penalties: z.array(z.string()).optional(),
   allowances: z.array(z.string()).optional(),
 });
 
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { awardCode: string; classificationCode: string } }
+) {
   try {
     const body = await request.json();
-    const { rate, awardCode, classificationCode, date, penalties, allowances } =
-      validateRateSchema.parse(body);
+    const { rate, date, penalties, allowances } = validateRateSchema.parse(body);
+    const { awardCode, classificationCode } = params;
 
-    const validation = await fairworkClient.validatePayRate({
+    const validation = await fairworkClient.validatePayRate(awardCode, classificationCode, {
       rate,
-      awardCode,
-      classificationCode,
       date,
       penalties,
       allowances,
