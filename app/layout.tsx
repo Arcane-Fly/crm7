@@ -5,6 +5,7 @@ import { AuthProvider } from '@/lib/auth/context';
 import { createClient } from '@/utils/supabase/server';
 import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary';
 import { Providers } from '@/components/providers';
+import { logger } from '@/lib/logger';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -16,9 +17,28 @@ export default async function RootLayout({
   const supabase = await createClient();
 
   try {
+    // Always use getUser() to verify authentication
     const {
-      data: { session },
-    } = await supabase.auth.getSession();
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+
+    if (error) {
+      logger.error('Failed to get user in root layout', { error });
+      return (
+        <html lang="en" suppressHydrationWarning>
+          <head>
+            <title>Labour Hire CRM</title>
+            <meta name="description" content="A modern CRM for labour hire companies" />
+          </head>
+          <body className={inter.className}>
+            <Providers>
+              <ErrorBoundary>{children}</ErrorBoundary>
+            </Providers>
+          </body>
+        </html>
+      );
+    }
 
     return (
       <html lang="en" suppressHydrationWarning>
@@ -29,31 +49,25 @@ export default async function RootLayout({
         <body className={inter.className}>
           <Providers>
             <ErrorBoundary>
-              <AuthProvider initialSession={session}>
-                {session ? <AppLayout>{children}</AppLayout> : children}
+              <AuthProvider initialUser={user}>
+                {user ? <AppLayout>{children}</AppLayout> : children}
               </AuthProvider>
             </ErrorBoundary>
           </Providers>
         </body>
       </html>
     );
-  } catch (error) {
-    console.error('Error getting session:', error);
+  } catch (err) {
+    logger.error('Unexpected error in root layout', { error: err });
     return (
       <html lang="en" suppressHydrationWarning>
         <head>
-          <title>Labour Hire CRM - Error</title>
+          <title>Labour Hire CRM</title>
+          <meta name="description" content="A modern CRM for labour hire companies" />
         </head>
         <body className={inter.className}>
           <Providers>
-            <ErrorBoundary>
-              <div className="flex min-h-screen flex-col items-center justify-center p-4">
-                <h1 className="text-2xl font-bold text-red-500">Error</h1>
-                <p className="mt-2 text-gray-600">
-                  An error occurred while loading the application. Please try again later.
-                </p>
-              </div>
-            </ErrorBoundary>
+            <ErrorBoundary>{children}</ErrorBoundary>
           </Providers>
         </body>
       </html>

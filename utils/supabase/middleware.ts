@@ -1,16 +1,16 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { logger } from '@/lib/logger';
 
-export async function updateSession(request: NextRequest) {
-  try {
-    // Create an unmodified response
-    const response = NextResponse.next({
-      request: {
-        headers: request.headers,
-      },
-    });
+export function createClient(request: NextRequest) {
+  const response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  });
 
-    const supabase = createServerClient(
+  return {
+    supabase: createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
@@ -34,39 +34,60 @@ export async function updateSession(request: NextRequest) {
           },
         },
       }
-    );
+    ),
+    response,
+  };
+}
 
-    // Refresh the session if it exists
+export async function updateSession(request: NextRequest) {
+  try {
+    const { supabase, response } = createClient(request);
+
+    // Always use getUser() to verify authentication
     const {
-      data: { session },
-    } = await supabase.auth.getSession();
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
 
-    if (session) {
-      const { access_token, refresh_token } = session;
+    if (error) {
+      logger.error('Auth error in middleware', { error, path: request.nextUrl.pathname });
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
 
-      // Set cookies with secure options
-      response.cookies.set('sb-access-token', access_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 60 * 60, // 1 hour
-      });
+    if (!user) {
+      // If no authenticated user, redirect to login except for public paths
+      const isPublicPath =
+        request.nextUrl.pathname.startsWith('/login') ||
+        request.nextUrl.pathname.startsWith('/auth') ||
+        request.nextUrl.pathname === '/';
 
-      response.cookies.set('sb-refresh-token', refresh_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7, // 1 week
-      });
+      if (!isPublicPath) {
+        return NextResponse.redirect(new URL('/login', request.url));
+      }
+    }
+
+    // Set secure cookie options
+    const cookieOptions: CookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    };
+
+    // Update session cookies if user is authenticated
+    if (user) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) {
+        response.cookies.set('sb-access-token', session.access_token, cookieOptions);
+        response.cookies.set('sb-refresh-token', session.refresh_token, cookieOptions);
+      }
     }
 
     return response;
-  } catch (error) {
-    console.error('Error in updateSession middleware:', error);
-    return NextResponse.next({
-      request: {
-        headers: request.headers,
-      },
-    });
+  } catch (err) {
+    logger.error('Unexpected error in middleware', { error: err });
+    return NextResponse.redirect(new URL('/error', request.url));
   }
 }

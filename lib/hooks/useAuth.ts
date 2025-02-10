@@ -19,13 +19,16 @@ export function useAuth(): UseAuthReturn {
   useEffect((): void => {
     const checkAuth = async (): Promise<void> => {
       try {
-        const { data: { user: auth0User }, error: auth0Error } = await supabase.auth.getUser();
+        const {
+          data: { user: auth0User },
+          error: auth0Error,
+        } = await supabase.auth.getUser();
 
-        if (typeof auth0Error !== "undefined" && auth0Error !== null) {
+        if (auth0Error) {
           throw auth0Error;
         }
 
-        if (typeof auth0User !== "undefined" && auth0User !== null) {
+        if (auth0User) {
           setUser({
             id: auth0User.id,
             email: auth0User.email ?? '',
@@ -55,7 +58,7 @@ export function useAuth(): UseAuthReturn {
         },
       });
 
-      if (typeof error !== "undefined" && error !== null) {
+      if (error) {
         throw error;
       }
     } catch (error) {
@@ -68,7 +71,7 @@ export function useAuth(): UseAuthReturn {
   const logout = async (): Promise<void> => {
     try {
       const { error } = await supabase.auth.signOut();
-      if (typeof error !== "undefined" && error !== null) throw error;
+      if (error) throw error;
       setUser(null);
     } catch (error) {
       const errorObj = error instanceof Error ? error : new Error('Logout failed');
