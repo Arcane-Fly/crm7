@@ -18,7 +18,14 @@ const validateRateSchema = z.object({
   allowances: z.array(z.string()).optional(),
 });
 
-export async function POST(request: NextRequest, context: { params: Record<string, string> }) {
+type RouteContext = {
+  params: {
+    awardCode: string;
+    classificationCode: string;
+  };
+};
+
+export async function POST(request: NextRequest, context: RouteContext) {
   try {
     const body = await request.json();
     const { rate, date, penalties, allowances } = validateRateSchema.parse(body);
