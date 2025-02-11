@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { toast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { createClient } from '@supabase/supabase-js';
 import { useCallback, useEffect, useState } from 'react';
@@ -29,6 +29,7 @@ export function AdminManager() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
+  const { toast } = useToast();
 
   const loadAdmins = useCallback(async () => {
     const { data: admins } = await supabase

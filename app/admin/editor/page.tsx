@@ -1,49 +1,31 @@
-import { redirect } from 'next/navigation';
-import { getUser } from '@/lib/auth/context';
-import { Editor } from '@/components/admin/Editor';
-import { AdminManager } from '@/components/admin/AdminManager';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { createClient } from '@supabase/supabase-js';
+"use client";
 
-export default async function AdminEditorPage() {
-  const user = await getUser();
-  const isSuperAdmin = user?.email === 'braden.lang77@gmail.com';
+import React from "react";
+import { useAuth } from "@/lib/auth/context";
+import Editor from "@/components/admin/Editor";
+import AdminManager from "@/components/admin/AdminManager";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+export default function AdminEditorPage() {
+  const { user } = useAuth();
 
   if (!user) {
-    redirect('/');
-  }
-
-  // Check if user is an admin
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-
-  const { data: adminData } = await supabase
-    .from('admins')
-    .select('role')
-    .eq('email', user.email)
-    .single();
-
-  if (!adminData) {
-    redirect('/');
+    return null;
   }
 
   return (
-    <div className="container mx-auto py-6">
-      <Tabs defaultValue="editor">
+    <div className="container mx-auto p-6">
+      <Tabs defaultValue="editor" className="w-full">
         <TabsList>
-          <TabsTrigger value="editor">Page Editor</TabsTrigger>
-          {isSuperAdmin && <TabsTrigger value="admins">Manage Admins</TabsTrigger>}
+          <TabsTrigger value="editor">Editor</TabsTrigger>
+          <TabsTrigger value="admin">Admin</TabsTrigger>
         </TabsList>
-        <TabsContent value="editor" className="mt-6">
+        <TabsContent value="editor">
           <Editor />
         </TabsContent>
-        {isSuperAdmin && (
-          <TabsContent value="admins" className="mt-6">
-            <AdminManager />
-          </TabsContent>
-        )}
+        <TabsContent value="admin">
+          <AdminManager />
+        </TabsContent>
       </Tabs>
     </div>
   );
