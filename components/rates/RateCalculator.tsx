@@ -1,42 +1,65 @@
+'use client';
+
 import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/supabase/client';
 import { useEffect, useState } from 'react';
 import type { RateTemplate } from '@/lib/types/rates';
+import { useRateValidation } from '@/hooks/use-rate-validation';
+import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary';
 
 interface RateCalculatorProps {
   orgId: string;
   onCalculate?: (totalAmount: number) => void;
 }
 
-export function RateCalculator({ orgId, onCalculate }: RateCalculatorProps): React.ReactElement {
+function RateCalculatorContent({ orgId, onCalculate }: RateCalculatorProps): React.ReactElement {
   const [templates, setTemplates] = useState<RateTemplate[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const supabaseClient = createClient();
   const { toast } = useToast();
+  const { validateRate, isValidating, error: validationError } = useRateValidation();
 
-  const calculateRate = (template: RateTemplate): void => {
-    const baseAmount = template.baseRate;
-    const superAmount = baseAmount * (template.superRate / 100);
-    const leaveAmount = baseAmount * (template.leaveLoading / 100);
-    const workersCompAmount = baseAmount * (template.workersCompRate / 100);
-    const payrollTaxAmount = baseAmount * (template.payrollTaxRate / 100);
-    const trainingAmount = baseAmount * (template.trainingCostRate / 100);
-    const otherAmount = baseAmount * (template.otherCostsRate / 100);
+  const calculateRate = async (template: RateTemplate): Promise<void> => {
+    try {
+      // First validate the rate with FairWork
+      await validateRate(template.awardCode, template.classificationCode, {
+        rate: template.baseRate,
+        awardCode: template.awardCode,
+        classificationCode: template.classificationCode,
+        date: new Date().toISOString(),
+      });
 
-    const totalAmount = Number(
-      (
-        baseAmount +
-        superAmount +
-        leaveAmount +
-        workersCompAmount +
-        payrollTaxAmount +
-        trainingAmount +
-        otherAmount
-      ).toFixed(2)
-    );
+      // If validation passes, calculate the total
+      const baseAmount = template.baseRate;
+      const superAmount = baseAmount * (template.superRate / 100);
+      const leaveAmount = baseAmount * (template.leaveLoading / 100);
+      const workersCompAmount = baseAmount * (template.workersCompRate / 100);
+      const payrollTaxAmount = baseAmount * (template.payrollTaxRate / 100);
+      const trainingAmount = baseAmount * (template.trainingCostRate / 100);
+      const otherAmount = baseAmount * (template.otherCostsRate / 100);
 
-    onCalculate?.(totalAmount);
+      const totalAmount = Number(
+        (
+          baseAmount +
+          superAmount +
+          leaveAmount +
+          workersCompAmount +
+          payrollTaxAmount +
+          trainingAmount +
+          otherAmount
+        ).toFixed(2)
+      );
+
+      onCalculate?.(totalAmount);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to calculate rate';
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    }
   };
 
   useEffect((): void => {
@@ -88,13 +111,23 @@ export function RateCalculator({ orgId, onCalculate }: RateCalculatorProps): Rea
             {/* Add more rate details as needed */}
           </div>
           <button
-            onClick={() => calculateRate(template)}
-            className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+            onClick={() => void calculateRate(template)}
+            disabled={isValidating}
+            className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Calculate Rate
+            {isValidating ? 'Validating...' : 'Calculate Rate'}
           </button>
+          {validationError && <p className="mt-2 text-sm text-red-500">{validationError}</p>}
         </div>
       ))}
     </div>
+  );
+}
+
+export function RateCalculator(props: RateCalculatorProps): React.ReactElement {
+  return (
+    <ErrorBoundary>
+      <RateCalculatorContent {...props} />
+    </ErrorBoundary>
   );
 }

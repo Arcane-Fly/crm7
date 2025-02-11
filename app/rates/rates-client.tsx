@@ -4,8 +4,9 @@ import { RateTemplateBuilder } from '@/components/rates/RateTemplateBuilder';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useUser } from '@/lib/hooks/use-user';
 import { createClient } from '@/lib/supabase/client';
+import * as React from 'react';
 
-export function RatesClient(): JSX.Element {
+export function RatesClient(): React.ReactElement {
   const { user } = useUser();
   const supabase = createClient();
 

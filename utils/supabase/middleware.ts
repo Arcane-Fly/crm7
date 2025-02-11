@@ -1,31 +1,31 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { logger } from '@/lib/logger';
 
-export async function updateSession(request: NextRequest) {
-  try {
-    // Create an unmodified response
-    const response = NextResponse.next({
-      request: {
-        headers: request.headers,
-      },
-    });
+export function createClient(request: NextRequest) {
+  const response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  });
 
-    const supabase = createServerClient(
+  return {
+    supabase: createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
-          get(name: string) {
+          async get(name: string) {
             return request.cookies.get(name)?.value;
           },
-          set(name: string, value: string, options: CookieOptions) {
+          async set(name: string, value: string, options: CookieOptions) {
             response.cookies.set({
               name,
               value,
               ...options,
             });
           },
-          remove(name: string, options: CookieOptions) {
+          async remove(name: string, options: CookieOptions) {
             response.cookies.set({
               name,
               value: '',
@@ -34,39 +34,71 @@ export async function updateSession(request: NextRequest) {
           },
         },
       }
-    );
+    ),
+    response,
+  };
+}
 
-    // Refresh the session if it exists
+const PUBLIC_PATHS = [
+  '/auth/login',
+  '/auth/signup',
+  '/auth/forgot-password',
+  '/auth/reset-password',
+  '/auth/callback',
+  '/',
+];
+
+export async function updateSession(request: NextRequest) {
+  try {
+    const { supabase, response } = createClient(request);
+    const requestPath = request.nextUrl.pathname;
+
+    // Check if the current path is public
+    const isPublicPath = PUBLIC_PATHS.some((path) => requestPath.startsWith(path));
+
+    // Always use getUser() to verify authentication
     const {
-      data: { session },
-    } = await supabase.auth.getSession();
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
 
-    if (session) {
-      const { access_token, refresh_token } = session;
+    if (error) {
+      logger.error('Auth error in middleware', { error, path: requestPath });
+      // Only redirect to login if not already on a public path
+      return isPublicPath ? response : NextResponse.redirect(new URL('/auth/login', request.url));
+    }
 
-      // Set cookies with secure options
-      response.cookies.set('sb-access-token', access_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 60 * 60, // 1 hour
-      });
+    if (!user && !isPublicPath) {
+      return NextResponse.redirect(new URL('/auth/login', request.url));
+    }
 
-      response.cookies.set('sb-refresh-token', refresh_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7, // 1 week
-      });
+    // Prevent authenticated users from accessing login/signup pages
+    if (user && (requestPath.startsWith('/auth/login') || requestPath.startsWith('/auth/signup'))) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+
+    // Set secure cookie options
+    const cookieOptions: CookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    };
+
+    // Update session cookies if user is authenticated
+    if (user) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) {
+        response.cookies.set('sb-access-token', session.access_token, cookieOptions);
+        response.cookies.set('sb-refresh-token', session.refresh_token, cookieOptions);
+      }
     }
 
     return response;
-  } catch (error) {
-    console.error('Error in updateSession middleware:', error);
-    return NextResponse.next({
-      request: {
-        headers: request.headers,
-      },
-    });
+  } catch (err) {
+    logger.error('Unexpected error in middleware', { error: err });
+    return NextResponse.redirect(new URL('/error', request.url));
   }
 }

@@ -23,6 +23,18 @@ export const supabase: ReturnType<typeof createClient<Database>> = createClient<
       autoRefreshToken: true,
       detectSessionInUrl: true,
     },
+    cookies: {
+      async set(name: string, value: string, options: CookieOptions): Promise<void> {
+        if (typeof document === 'undefined') return;
+        let cookie = `${name}=${value}`;
+        if (options.path) cookie += `; path=${options.path}`;
+        if (options.maxAge) cookie += `; max-age=${options.maxAge}`;
+        if (options.domain) cookie += `; domain=${options.domain}`;
+        if (options.secure) cookie += '; secure';
+        if (options.sameSite) cookie += `; samesite=${options.sameSite}`;
+        document.cookie = cookie;
+      },
+    },
   },
 );
 

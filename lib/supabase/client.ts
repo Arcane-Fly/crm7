@@ -28,7 +28,7 @@ export const createClient = (): SupabaseClient<Database> => {
               ?.split('=')[1] ?? ''
           );
         },
-        set(name: string, value: string, options: CookieOptions): void {
+        async set(name: string, value: string, options: CookieOptions): Promise<void> {
           if (typeof document === 'undefined') return;
           let cookie = `${name}=${value}`;
           if (options.path) cookie += `; path=${options.path}`;

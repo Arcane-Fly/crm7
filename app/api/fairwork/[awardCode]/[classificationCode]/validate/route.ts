@@ -1,44 +1,63 @@
-import { NextRequest } from 'next/server';
-import { createApiResponse, createErrorResponse } from '@/lib/api/response';
-import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
+import { NextResponse } from 'next/server';
+import { FairWorkClient, FairWorkApiError } from '@/lib/fairwork/client';
+import { ApiResponse, RouteParams } from '@/lib/types/route';
 
-const fairworkClient = new FairWorkClient({
-  apiUrl: process.env.FAIRWORK_API_URL!,
-  apiKey: process.env.FAIRWORK_API_KEY!,
-  environment: process.env.FAIRWORK_ENVIRONMENT!,
-});
+const fairworkClient = new FairWorkClient();
 
-export interface RouteParams {
-  params: {
-    awardCode: string;
-    classificationCode: string;
-  };
-}
-
-export async function POST(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+export async function POST(request: Request, { params }: RouteParams): Promise<NextResponse> {
   try {
-    const { awardCode, classificationCode } = params;
-    if (!awardCode || !classificationCode) {
-      return createErrorResponse(
-        'MISSING_PARAMS',
-        'Missing required parameters',
-        undefined,
-        400
+    const { rate } = await request.json();
+
+    if (!rate || typeof rate !== 'number') {
+      return NextResponse.json(
+        {
+          error: {
+            message: 'Invalid rate provided',
+            code: 'INVALID_RATE',
+          },
+          status: 400,
+        } as ApiResponse<never>,
+        { status: 400 }
       );
     }
 
-    const data = await request.json();
-    const validation = await fairworkClient.validatePayRate(awardCode, classificationCode, data);
-    return createApiResponse(validation);
+    const isValid = await fairworkClient.validatePayRate(
+      params.awardCode,
+      params.classificationCode,
+      rate
+    );
+
+    return NextResponse.json(
+      {
+        data: { valid: isValid },
+        status: 200,
+      } as ApiResponse<{ valid: boolean }>,
+      { status: 200 }
+    );
   } catch (error) {
-    return createErrorResponse(
-      'VALIDATION_ERROR',
-      'Failed to validate pay rate',
-      undefined,
-      500
+    if (error instanceof FairWorkApiError) {
+      return NextResponse.json(
+        {
+          error: {
+            message: error.message,
+            code: 'FAIRWORK_API_ERROR',
+            details: error.context,
+          },
+          status: error.statusCode,
+        } as ApiResponse<never>,
+        { status: error.statusCode }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        error: {
+          message: 'Internal server error',
+          code: 'INTERNAL_SERVER_ERROR',
+        },
+        status: 500,
+      } as ApiResponse<never>,
+      { status: 500 }
     );
   }
 }

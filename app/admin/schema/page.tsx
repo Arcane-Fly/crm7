@@ -3,6 +3,7 @@
 import React from 'react';
 import { SchemaEditor } from '@/components/schema/SchemaEditor';
 import { SchemaHistory } from '@/lib/schema/schema-history';
+import { migrationGenerator } from '@/lib/schema/migration-generator';
 import type { TableSchema } from '@/lib/types/schema-component';
 
 const schemaHistory = new SchemaHistory();

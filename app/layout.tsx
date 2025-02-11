@@ -1,11 +1,11 @@
 import { Inter } from 'next/font/google';
 import './globals.css';
-import { ThemeProvider } from '@/components/theme-provider';
-import { Toaster } from '@/components/ui/toaster';
 import { AppLayout } from '@/components/layout/app-layout';
 import { AuthProvider } from '@/lib/auth/context';
 import { createClient } from '@/utils/supabase/server';
 import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary';
+import { Providers } from '@/components/providers';
+import { logger } from '@/lib/logger';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -17,9 +17,28 @@ export default async function RootLayout({
   const supabase = await createClient();
 
   try {
+    // Always use getUser() to verify authentication
     const {
-      data: { session },
-    } = await supabase.auth.getSession();
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+
+    if (error) {
+      logger.error('Failed to get user in root layout', { error });
+      return (
+        <html lang="en" suppressHydrationWarning>
+          <head>
+            <title>Labour Hire CRM</title>
+            <meta name="description" content="A modern CRM for labour hire companies" />
+          </head>
+          <body className={inter.className}>
+            <Providers>
+              <ErrorBoundary>{children}</ErrorBoundary>
+            </Providers>
+          </body>
+        </html>
+      );
+    }
 
     return (
       <html lang="en" suppressHydrationWarning>
@@ -28,24 +47,18 @@ export default async function RootLayout({
           <meta name="description" content="A modern CRM for labour hire companies" />
         </head>
         <body className={inter.className}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
+          <Providers>
             <ErrorBoundary>
-              <AuthProvider initialSession={session}>
-                {session ? <AppLayout>{children}</AppLayout> : children}
-                <Toaster />
+              <AuthProvider initialUser={user}>
+                {user ? <AppLayout>{children}</AppLayout> : children}
               </AuthProvider>
             </ErrorBoundary>
-          </ThemeProvider>
+          </Providers>
         </body>
       </html>
     );
-  } catch (error) {
-    console.error('Error getting session:', error);
+  } catch (err) {
+    logger.error('Unexpected error in root layout', { error: err });
     return (
       <html lang="en" suppressHydrationWarning>
         <head>
@@ -53,19 +66,9 @@ export default async function RootLayout({
           <meta name="description" content="A modern CRM for labour hire companies" />
         </head>
         <body className={inter.className}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <ErrorBoundary>
-              <AuthProvider initialSession={null}>
-                {children}
-                <Toaster />
-              </AuthProvider>
-            </ErrorBoundary>
-          </ThemeProvider>
+          <Providers>
+            <ErrorBoundary>{children}</ErrorBoundary>
+          </Providers>
         </body>
       </html>
     );

@@ -1,118 +1,234 @@
+import axios, { isAxiosError } from 'axios';
+import { z } from 'zod';
 import { logger } from '@/lib/logger';
-import axios, { type AxiosInstance } from 'axios';
-import type {
-  Allowance,
-  Award,
-  Classification,
-  FairWorkConfig,
-  LeaveEntitlement,
-  PayCalculationRequest,
-  PayRate,
-  RateValidationRequest,
-  RateValidationResponse,
-  SearchAwardsRequest,
-} from './types';
+
+export const RateValidationResponse = z.object({
+  isValid: z.boolean(),
+  message: z.string(),
+  details: z.record(z.unknown()).optional(),
+});
+
+export type RateValidationResponseType = z.infer<typeof RateValidationResponse>;
+
+export const Award = z.object({
+  code: z.string(),
+  name: z.string(),
+  description: z.string(),
+});
+
+export type AwardType = z.infer<typeof Award>;
+
+export const Classification = z.object({
+  code: z.string(),
+  name: z.string(),
+  level: z.string(),
+  baseRate: z.number(),
+});
+
+export type ClassificationType = z.infer<typeof Classification>;
+
+export const PayCalculationRequest = z.object({
+  date: z.string(),
+  hours: z.number(),
+  penalty: z.string().optional(),
+  allowances: z.array(z.string()).optional(),
+});
+
+export type PayCalculationRequestType = z.infer<typeof PayCalculationRequest>;
+
+export const PayRate = z.object({
+  baseRate: z.number(),
+  totalRate: z.number(),
+  penalties: z.array(z.string()),
+  allowances: z.array(z.string()),
+});
+
+export type PayRateType = z.infer<typeof PayRate>;
+
+export class FairWorkApiError extends Error {
+  constructor(
+    message: string,
+    public statusCode: number,
+    public context?: Record<string, unknown>
+  ) {
+    super(message);
+    this.name = 'FairWorkApiError';
+  }
+}
 
 export class FairWorkClient {
-  private client: AxiosInstance;
-  getRates: any;
+  private readonly apiUrl: string;
+  private readonly apiKey: string;
+  private readonly environment: string;
+  private client: axios.AxiosInstance;
 
-  constructor(config?: FairWorkConfig) {
-    if (!config?.apiUrl) {
-      throw new Error('API URL is required');
-    }
+  constructor() {
+    this.apiUrl = process.env.FAIRWORK_API_URL ?? '';
+    this.apiKey = process.env.FAIRWORK_API_KEY ?? '';
+    this.environment = process.env.FAIRWORK_ENVIRONMENT ?? 'development';
 
     this.client = axios.create({
-      baseURL: config.apiUrl,
-      timeout: config.timeout || 10000,
+      baseURL: this.apiUrl,
       headers: {
-        Authorization: `Bearer ${config.apiKey}`,
-        'Content-Type': 'application/json',
-        'X-Environment': config.environment,
+        'X-API-Key': this.apiKey,
+        'X-Environment': this.environment,
+        Accept: 'application/json',
       },
     });
+
+    // Add response interceptor to handle non-JSON responses
+    this.client.interceptors.response.use(
+      (response) => {
+        const contentType = response.headers['content-type'];
+        if (!contentType?.includes('application/json')) {
+          logger.error('Received non-JSON response', {
+            contentType,
+            status: response.status,
+            url: response.config.url,
+          });
+          throw new FairWorkApiError(
+            'Received invalid response format from FairWork API',
+            response.status,
+            { contentType }
+          );
+        }
+        return response;
+      },
+      (error: unknown) => {
+        if (isAxiosError(error)) {
+          const response = error.response;
+          const contentType = response?.headers?.['content-type'];
+
+          // Handle HTML responses
+          if (contentType?.includes('text/html')) {
+            logger.error('Received HTML response instead of JSON', {
+              status: response?.status,
+              url: error.config?.url,
+              method: error.config?.method,
+            });
+            throw new FairWorkApiError(
+              'FairWork API is currently unavailable',
+              response?.status ?? 503,
+              { error: 'Service temporarily unavailable' }
+            );
+          }
+
+          // Handle other non-JSON responses
+          if (contentType && !contentType.includes('application/json')) {
+            logger.error('Received non-JSON error response', {
+              contentType,
+              status: response?.status,
+              url: error.config?.url,
+            });
+            throw new FairWorkApiError(
+              'Unexpected response from FairWork API',
+              response?.status ?? 500,
+              { error: `Invalid response format: ${contentType}` }
+            );
+          }
+
+          // Handle JSON error responses
+          const statusCode = response?.status ?? 500;
+          const message = response?.data?.message ?? error.message ?? 'Unknown API error';
+          throw new FairWorkApiError(message, statusCode, { error: response?.data });
+        }
+
+        // Handle non-Axios errors
+        if (error instanceof Error) {
+          throw new FairWorkApiError(error.message, 500, {
+            error: {
+              name: error.name,
+              message: error.message,
+              stack: error.stack,
+            },
+          });
+        }
+
+        throw new FairWorkApiError('Unknown error occurred', 500, { error });
+      }
+    );
   }
 
-  private async fetch<T>(path: string, params?: Record<string, unknown>): Promise<T> {
-    try {
-      const response = await this.client.get<T>(path, { params });
-      return response.data;
-    } catch (error) {
-      logger.error('Failed to fetch data', { error, path, params });
+  private handleError(error: unknown, context: string): never {
+    logger.error(`FairWork API ${context} error`, { error });
+
+    if (error instanceof FairWorkApiError) {
       throw error;
+    }
+
+    if (error instanceof Error) {
+      throw new FairWorkApiError(error.message, 500, {
+        context,
+        error: {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+        },
+      });
+    }
+
+    throw new FairWorkApiError('Unknown error occurred', 500, { context, error });
+  }
+
+  async getAward(awardCode: string): Promise<AwardType> {
+    try {
+      const response = await this.client.get(`/awards/${awardCode}`);
+      return Award.parse(response.data);
+    } catch (error) {
+      this.handleError(error, 'getAward');
     }
   }
 
-  async getAward(awardCode: string): Promise<Award> {
-    return this.fetch(`/awards/${awardCode}`);
+  async searchAwards(params: { query?: string }): Promise<AwardType[]> {
+    try {
+      const response = await this.client.get('/awards', { params });
+      return z.array(Award).parse(response.data);
+    } catch (error) {
+      this.handleError(error, 'searchAwards');
+    }
   }
 
-  async searchAwards(params: SearchAwardsRequest): Promise<Award[]> {
-    return this.fetch('/awards', params);
-  }
-
-  async getClassification(awardCode: string, classificationCode: string): Promise<Classification> {
-    return this.fetch(`/awards/${awardCode}/classifications/${classificationCode}`);
+  async getClassification(
+    awardCode: string,
+    classificationCode: string
+  ): Promise<ClassificationType> {
+    try {
+      const response = await this.client.get(
+        `/awards/${awardCode}/classifications/${classificationCode}`
+      );
+      return Classification.parse(response.data);
+    } catch (error) {
+      this.handleError(error, 'getClassification');
+    }
   }
 
   async calculatePay(
     awardCode: string,
     classificationCode: string,
-    request: PayCalculationRequest
-  ): Promise<PayRate> {
+    request: PayCalculationRequestType
+  ): Promise<PayRateType> {
     try {
-      const response = await this.client.post<PayRate>(
+      const response = await this.client.post(
         `/awards/${awardCode}/classifications/${classificationCode}/calculate`,
         request
       );
-      return response.data;
+      return PayRate.parse(response.data);
     } catch (error) {
-      logger.error('Failed to calculate pay', { error, awardCode, classificationCode, request });
-      throw error;
+      this.handleError(error, 'calculatePay');
     }
   }
 
-  async validatePayRate(
+  async validateRate(
     awardCode: string,
-    classificationCode: string,
-    request: RateValidationRequest
-  ): Promise<RateValidationResponse> {
+    classificationCode: string
+  ): Promise<RateValidationResponseType> {
     try {
-      const response = await this.client.post<RateValidationResponse>(
-        `/awards/${awardCode}/classifications/${classificationCode}/validate`,
-        request
+      const response = await this.client.get(
+        `/awards/${awardCode}/classifications/${classificationCode}/validate`
       );
-      return response.data;
+      return RateValidationResponse.parse(response.data);
     } catch (error) {
-      logger.error('Failed to validate pay rate', {
-        error,
-        awardCode,
-        classificationCode,
-        request,
-      });
-      throw error;
+      this.handleError(error, 'validateRate');
     }
-  }
-
-  async getPenalties(awardCode: string, params?: { date?: string }): Promise<PayRate[]> {
-    return this.fetch(`/awards/${awardCode}/penalties`, { params });
-  }
-
-  async getAllowances(
-    awardCode: string,
-    params?: { date?: string; type?: string }
-  ): Promise<Allowance[]> {
-    return this.fetch(`/awards/${awardCode}/allowances`, { params });
-  }
-
-  async getLeaveEntitlements(
-    awardCode: string,
-    params?: { date?: string; employmentType?: string }
-  ): Promise<LeaveEntitlement[]> {
-    return this.fetch(`/awards/${awardCode}/leave-entitlements`, { params });
-  }
-
-  async getPublicHolidays(params?: { state?: string; year?: number }): Promise<string[]> {
-    return this.fetch('/public-holidays', params);
   }
 }

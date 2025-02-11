@@ -5,10 +5,11 @@ import { ThemeProvider } from 'next-themes';
 import * as React from 'react';
 
 import { Toaster } from '@/components/ui/toaster';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 export function Providers({ children }: { children: React.ReactNode }): JSX.Element {
   const [queryClient] = React.useState(
-    (): import("/home/braden/Desktop/Dev/crm7r/node_modules/.pnpm/@tanstack+query-core@5.66.0/node_modules/@tanstack/query-core/build/modern/hydration-De1u5VYH").b =>
+    (): import('/home/braden/Desktop/Dev/crm7r/node_modules/.pnpm/@tanstack+query-core@5.66.0/node_modules/@tanstack/query-core/build/modern/hydration-De1u5VYH').b =>
       new QueryClient({
         defaultOptions: {
           queries: {
@@ -23,9 +24,11 @@ export function Providers({ children }: { children: React.ReactNode }): JSX.Elem
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute='class' defaultTheme='system' enableSystem disableTransitionOnChange>
-        {children}
-        <Toaster />
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <TooltipProvider>
+          {children}
+          <Toaster />
+        </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

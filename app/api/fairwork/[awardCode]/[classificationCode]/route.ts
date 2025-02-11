@@ -1,28 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { FairworkClient } from '@/lib/services/fairwork/fairwork.client';
+import { logger } from '@/lib/logger';
+import { ServiceRegistry } from '@/lib/services/service-registry';
+import type { FairWorkService } from '@/lib/services/fairwork/fairwork-service';
+import { createApiResponse, createErrorResponse } from '@/lib/api/response';
 
-const fairworkClient = new FairworkClient(process.env.FAIRWORK_API_KEY!);
-
-export async function GET(
-  request: NextRequest,
-  context: { params: { awardCode: string; classificationCode: string } }
-) {
+export async function GET(_req: NextRequest): Promise<NextResponse> {
+  const serviceRegistry = ServiceRegistry.getInstance();
   try {
-    const { awardCode, classificationCode } = context.params;
-    if (!awardCode || !classificationCode) {
-      return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
-    }
-
-    const url = new URL(request.url);
-    const query = {
-      date: url.searchParams.get('date') || undefined,
-      employmentType: url.searchParams.get('employmentType') || undefined,
-    };
-
-    const rates = await fairworkClient.getRates(awardCode, classificationCode, query);
-    return NextResponse.json(rates);
+    const fairworkService = serviceRegistry.getService<FairWorkService>('fairworkService');
+    const awards = await fairworkService.getActiveAwards();
+    return createApiResponse({
+      awards,
+      timestamp: new Date().toISOString(),
+    });
   } catch (error) {
-    console.error('Error fetching rates:', error);
-    return NextResponse.json({ error: 'Failed to fetch rates' }, { status: 500 });
+    logger.error('Failed to get active awards', { error });
+    return createErrorResponse('AWARDS_FETCH_ERROR', 'Failed to get active awards', undefined, 500);
   }
 }

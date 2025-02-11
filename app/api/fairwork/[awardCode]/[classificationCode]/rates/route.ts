@@ -2,11 +2,12 @@ import { createApiResponse, createErrorResponse } from '@/lib/api/response';
 import { logger } from '@/lib/logger';
 import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
 import { NextRequest } from 'next/server';
+import type { FairWorkEnvironment } from '@/lib/services/fairwork/types';
 
 const fairworkClient = new FairWorkClient({
   apiUrl: process.env.FAIRWORK_API_URL!,
   apiKey: process.env.FAIRWORK_API_KEY!,
-  environment: process.env.FAIRWORK_ENVIRONMENT!,
+  environment: process.env.FAIRWORK_ENVIRONMENT as FairWorkEnvironment,
 });
 
 export async function GET(
@@ -34,11 +35,6 @@ export async function GET(
     return createApiResponse(rates);
   } catch (error) {
     logger.error('Failed to fetch rates', { error });
-    return createErrorResponse(
-      'RATES_FETCH_ERROR',
-      'Failed to fetch rates',
-      undefined,
-      500
-    );
+    return createErrorResponse('RATES_FETCH_ERROR', 'Failed to fetch rates', undefined, 500);
   }
 }
