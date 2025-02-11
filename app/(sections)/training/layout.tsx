@@ -2,6 +2,7 @@
 
 import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary';
 import { Skeleton } from '@/components/ui/skeleton';
+import { AdminFooter } from '@/components/layout/AdminFooter';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -104,7 +105,10 @@ export default function TrainingLayout({ children }: { children: ReactNode }) {
         </Suspense>
       </ErrorBoundary>
       <main className="flex-1 overflow-y-auto">
-        <ErrorBoundary>{children}</ErrorBoundary>
+        <ErrorBoundary>
+          {children}
+          <AdminFooter />
+        </ErrorBoundary>
       </main>
     </div>
   );

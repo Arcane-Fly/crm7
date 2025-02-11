@@ -3,7 +3,7 @@
 import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@/utils/supabase/client';
 import { type Session, type User } from '@supabase/supabase-js';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { type ReactNode, createContext, useContext, useEffect, useState } from 'react';
 import { logger } from '@/lib/logger';
 
@@ -26,6 +26,7 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps): Reac
   const [user, setUser] = useState<User | null>(initialUser ?? null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
   const supabase = createClient();
   const { toast } = useToast();
 
@@ -82,7 +83,8 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps): Reac
           setSession(_session);
         }
 
-        if (event === 'SIGNED_OUT') {
+        // Only redirect on sign out if not already on a public path
+        if (event === 'SIGNED_OUT' && !pathname.startsWith('/auth/')) {
           router.push('/auth/login');
         }
       } catch (err) {
@@ -95,7 +97,7 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps): Reac
     return () => {
       subscription.unsubscribe();
     };
-  }, [router, supabase]);
+  }, [router, supabase, pathname]);
 
   const value = {
     session,

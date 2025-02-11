@@ -50,6 +50,47 @@ pnpm install --frozen-lockfile
 
 ## Environment Variables
 
+### Environment Synchronization
+
+We use GitHub Actions to automatically sync environment variables across different environments. The process is managed through two main components:
+
+1. **Secret Sync Script** (`scripts/sync-github-secrets.sh`):
+
+   - Automatically syncs environment variables from local `.env` files to GitHub Secrets
+   - Handles sensitive information securely
+   - Usage: `./scripts/sync-github-secrets.sh`
+
+2. **Environment Sync Workflow** (`.github/workflows/sync-env.yml`):
+   - Triggers on environment file changes
+   - Syncs variables between preview and production environments
+   - Maintains separate secrets for different deployment stages
+
+### Supabase Type Generation
+
+The project uses automated Supabase type generation through GitHub Actions:
+
+1. **Type Generation Workflow** (`.github/workflows/supabase-types.yml`):
+
+   - Automatically runs when migrations change
+   - Generates TypeScript types from the database schema
+   - Creates pull requests for type updates
+   - Ensures type safety across the application
+
+2. **Local Type Generation**:
+
+   ```bash
+   # Generate types manually
+   pnpm types
+
+   # Watch for schema changes
+   pnpm types:watch
+
+   # Sync with local database
+   pnpm types:sync
+   ```
+
+### Required Environment Variables
+
 Create a `.env` file for each environment:
 
 ```env

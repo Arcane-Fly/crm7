@@ -43,6 +43,29 @@
 - CORS policy enforcement
 - HTTP security headers
 
+### Environment Variable Security
+
+#### GitHub Actions Secrets
+
+- All sensitive environment variables are stored as GitHub Secrets
+- Automatic synchronization through secure workflows
+- Environment-specific secrets (production/preview)
+- Restricted access to secret management
+
+#### Local Development
+
+- Use of `.env.local` for local development
+- Never commit `.env` files to version control
+- Secure script for syncing secrets to GitHub
+- Regular secret rotation and auditing
+
+#### CI/CD Security
+
+- Secrets passed securely to GitHub Actions
+- Environment isolation between workflows
+- Principle of least privilege for secret access
+- Automated secret validation and verification
+
 ### Audit Trail
 
 - User actions logging

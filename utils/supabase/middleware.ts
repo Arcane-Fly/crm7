@@ -39,9 +39,22 @@ export function createClient(request: NextRequest) {
   };
 }
 
+const PUBLIC_PATHS = [
+  '/auth/login',
+  '/auth/signup',
+  '/auth/forgot-password',
+  '/auth/reset-password',
+  '/auth/callback',
+  '/',
+];
+
 export async function updateSession(request: NextRequest) {
   try {
     const { supabase, response } = createClient(request);
+    const requestPath = request.nextUrl.pathname;
+
+    // Check if the current path is public
+    const isPublicPath = PUBLIC_PATHS.some((path) => requestPath.startsWith(path));
 
     // Always use getUser() to verify authentication
     const {
@@ -50,20 +63,18 @@ export async function updateSession(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (error) {
-      logger.error('Auth error in middleware', { error, path: request.nextUrl.pathname });
-      return NextResponse.redirect(new URL('/login', request.url));
+      logger.error('Auth error in middleware', { error, path: requestPath });
+      // Only redirect to login if not already on a public path
+      return isPublicPath ? response : NextResponse.redirect(new URL('/auth/login', request.url));
     }
 
-    if (!user) {
-      // If no authenticated user, redirect to login except for public paths
-      const isPublicPath =
-        request.nextUrl.pathname.startsWith('/login') ||
-        request.nextUrl.pathname.startsWith('/auth') ||
-        request.nextUrl.pathname === '/';
+    if (!user && !isPublicPath) {
+      return NextResponse.redirect(new URL('/auth/login', request.url));
+    }
 
-      if (!isPublicPath) {
-        return NextResponse.redirect(new URL('/login', request.url));
-      }
+    // Prevent authenticated users from accessing login/signup pages
+    if (user && (requestPath.startsWith('/auth/login') || requestPath.startsWith('/auth/signup'))) {
+      return NextResponse.redirect(new URL('/', request.url));
     }
 
     // Set secure cookie options
