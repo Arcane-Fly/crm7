@@ -1,5 +1,4 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
 
 // Hooks
@@ -9,7 +8,7 @@ import { useRates } from '@/lib/hooks/use-rates';
 import type { RateTemplate } from '@/lib/types/rates';
 
 // Components
-import { RateCalculator } from '../RateCalculator';
+import { RateCalculator } from '@/components/rates/RateCalculator';
 
 const queryClient = new QueryClient({
   defaultOptions: {

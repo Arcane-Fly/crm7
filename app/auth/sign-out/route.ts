@@ -1,16 +1,8 @@
-import { createClient } from '@/utils/supabase/server'
-import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
-export async function POST() {
-  const cookieStore = await cookies()
-  const supabase = await createClient()
-
-  const { error } = await supabase.auth.signOut()
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
-
-  return NextResponse.json({ message: 'Signed out successfully' })
+export async function GET() {
+  const cookieStore = cookies();
+  cookieStore.delete('session');
+  redirect('/auth/sign-in');
 }

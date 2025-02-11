@@ -5,7 +5,7 @@ import { useLMS } from '@/lib/hooks/use-lms';
 import type { Course, Enrollment } from '@/lib/types/lms';
 import { PostgrestErrorType, createMockQueryResult } from '@/types/test-utils';
 
-import { TrainingDashboard } from '../training-dashboard';
+import TrainingDashboard from '@/components/analytics/training-dashboard';
 
 // Mock the hooks
 vi.mock('@/lib/hooks/use-lms');

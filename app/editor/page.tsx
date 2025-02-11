@@ -1,11 +1,22 @@
 'use client';
 
 import { PuckEditor } from '@/components/editor/puck-editor';
-import { useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useCallback, useState } from 'react';
 
-const initialData = {
-  content: [
+interface EditorData {
+  id: string;
+  content: string;
+  metadata: Record<string, unknown>;
+  version: number;
+}
+
+const initialData: EditorData = {
+  id: '',
+  content: '',
+  metadata: {},
+  version: 1,
+  content: JSON.stringify([
     {
       type: 'Hero',
       props: {
@@ -39,16 +50,22 @@ const initialData = {
         ],
       },
     },
-  ],
+  ]),
+};
+
+const saveContent = async () => {
+  // Here you would typically save the data to your backend
+  // For now, just return a resolved promise
+  return Promise.resolve();
 };
 
 export default function EditorPage() {
+  const [data] = useState<EditorData | null>(initialData);
   const { toast } = useToast();
 
-  const handlePublish = useCallback(async (data: any) => {
+  const handlePublish = useCallback(async (newData: EditorData) => {
     try {
-      // Here you would typically save the data to your backend
-      console.log('Publishing:', data);
+      await saveContent(newData);
       toast({
         title: 'Changes published',
         description: 'Your changes have been saved successfully.',
@@ -56,7 +73,7 @@ export default function EditorPage() {
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to publish changes. Please try again.',
+        description: error instanceof Error ? error.message : 'An unknown error occurred',
         variant: 'destructive',
       });
     }
@@ -65,7 +82,7 @@ export default function EditorPage() {
   return (
     <div className="h-screen">
       <PuckEditor
-        initialData={initialData}
+        initialData={data}
         onPublish={handlePublish}
       />
     </div>

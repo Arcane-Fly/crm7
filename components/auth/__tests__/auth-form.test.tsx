@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { AuthForm } from '../auth-form';
+import AuthForm from '@/components/auth/auth-form';
 import { createClient } from '@supabase/supabase-js';
 
 jest.mock('@supabase/supabase-js', () => ({

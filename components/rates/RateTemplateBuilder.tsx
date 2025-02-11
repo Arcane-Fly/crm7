@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
+import { type RateTemplate } from '@/lib/types';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { type RateTemplate } from '@/lib/types';
 
 const rateTemplateSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -77,6 +77,12 @@ export function RateTemplateBuilder({
       form.reset(formData);
     }
   }, [template, form.reset]);
+
+  useEffect(() => {
+    if (form.defaultValues) {
+      form.reset(form.defaultValues);
+    }
+  }, [form.defaultValues, form]);
 
   const handleSubmit = async (data: RateTemplateFormData): Promise<void> => {
     try {

@@ -1,9 +1,9 @@
 'use client';
 
-import { Bell, Search, Star, Plus } from 'lucide-react';
+import { Bell, Plus, Search, Star } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import React from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -58,16 +58,11 @@ const quickActions: QuickAction[] = [
 export function QuickAccess() {
   const [open, setOpen] = React.useState(false);
   const [search, setSearch] = React.useState('');
-  const [notifications, setNotifications] = React.useState<number>(3);
+  const [notifications] = React.useState<Notification[]>([]);
   const [favorites, setFavorites] = React.useState<string[]>([]);
   const router = useRouter();
   const { toast } = useToast();
 
-  // Global search shortcut
-  useHotkeys('ctrl+k', (event) => {
-    event.preventDefault();
-    setOpen(true);
-  });
 
   // Quick action shortcuts
   quickActions.forEach((action) => {
@@ -82,12 +77,6 @@ export function QuickAccess() {
       });
     }
   });
-
-  const toggleFavorite = (id: string) => {
-    setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
-    );
-  };
 
   return (
     <div className="flex items-center gap-2">
@@ -162,7 +151,7 @@ export function QuickAccess() {
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="icon" className="h-9 w-9">
             <Bell className="h-4 w-4" />
-            {notifications > 0 && (
+            {notifications.length > 0 && (
               <span className="absolute right-1 top-1 flex h-3 w-3">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400 opacity-75"></span>
                 <span className="relative inline-flex h-3 w-3 rounded-full bg-sky-500"></span>
@@ -173,7 +162,7 @@ export function QuickAccess() {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem>
-            View all notifications ({notifications})
+            View all notifications ({notifications.length})
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -1,6 +1,10 @@
 import { cn } from '@/lib/utils';
 
-interface SpinnerProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface SpinnerProps {
+  size?: 'sm' | 'md' | 'lg';
+  color?: 'primary' | 'secondary' | 'white';
+  className?: string;
+}
 
 export function Spinner({ className, ...props }: SpinnerProps): void {
   return (

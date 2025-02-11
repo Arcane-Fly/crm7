@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import MonitoringPage from '@/app/monitoring/page';
 import { cacheMonitoring } from '@/lib/services/cache/monitoring';
-import MonitoringPage from '../page';
+import { render, screen } from '@testing-library/react';
 
 jest.mock('@/lib/services/cache/monitoring');
 

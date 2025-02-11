@@ -120,10 +120,10 @@ export function CandidateForm({
         description: 'The candidate information has been successfully saved.',
       });
       form.reset();
-    } catch (error) {
+    } catch (err) {
       toast({
         title: 'Error',
-        description: 'Failed to save candidate information.',
+        description: err instanceof Error ? err.message : 'Failed to save candidate information',
         variant: 'destructive',
       });
     } finally {

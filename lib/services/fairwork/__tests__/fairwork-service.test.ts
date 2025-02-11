@@ -1,6 +1,6 @@
 import { type PrismaClient } from '@prisma/client';
 import { type RedisClientType } from 'redis';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { jest } from '@jest/globals';
 import { type MetricsService } from '../../../utils/metrics';
 import { FairWorkApiClient } from '../api-client';
 import { FairWorkServiceImpl } from '../fairwork-service';
@@ -8,45 +8,45 @@ import { type Award, type Rate } from '../types';
 
 // Create mock types
 type MockRedisClient = {
-  get: ReturnType<typeof vi.fn>;
-  set: ReturnType<typeof vi.fn>;
-  del: ReturnType<typeof vi.fn>;
+  get: jest.Mock;
+  set: jest.Mock;
+  del: jest.Mock;
 };
 
 type MockApiClient = {
-  getActiveAwards: ReturnType<typeof vi.fn>;
-  getAward: ReturnType<typeof vi.fn>;
-  getCurrentRates: ReturnType<typeof vi.fn>;
-  getRatesForDate: ReturnType<typeof vi.fn>;
-  getClassifications: ReturnType<typeof vi.fn>;
-  getClassificationHierarchy: ReturnType<typeof vi.fn>;
-  getRateTemplates: ReturnType<typeof vi.fn>;
-  validateRate: ReturnType<typeof vi.fn>;
-  calculateBaseRate: ReturnType<typeof vi.fn>;
+  getActiveAwards: jest.Mock;
+  getAward: jest.Mock;
+  getCurrentRates: jest.Mock;
+  getRatesForDate: jest.Mock;
+  getClassifications: jest.Mock;
+  getClassificationHierarchy: jest.Mock;
+  getRateTemplates: jest.Mock;
+  validateRate: jest.Mock;
+  calculateBaseRate: jest.Mock;
 };
 
 // Mock dependencies with proper types
 const mockApiClient: MockApiClient = {
-  getActiveAwards: vi.fn(),
-  getAward: vi.fn(),
-  getCurrentRates: vi.fn(),
-  getRatesForDate: vi.fn(),
-  getClassifications: vi.fn(),
-  getClassificationHierarchy: vi.fn(),
-  getRateTemplates: vi.fn(),
-  validateRate: vi.fn(),
-  calculateBaseRate: vi.fn(),
+  getActiveAwards: jest.fn(),
+  getAward: jest.fn(),
+  getCurrentRates: jest.fn(),
+  getRatesForDate: jest.fn(),
+  getClassifications: jest.fn(),
+  getClassificationHierarchy: jest.fn(),
+  getRateTemplates: jest.fn(),
+  validateRate: jest.fn(),
+  calculateBaseRate: jest.fn(),
 };
 
 const mockRedisClient: MockRedisClient = {
-  get: vi.fn(),
-  set: vi.fn(),
-  del: vi.fn(),
+  get: jest.fn(),
+  set: jest.fn(),
+  del: jest.fn(),
 };
 
 const mockPrisma: PrismaClient = {} as PrismaClient;
 const mockMetrics: MetricsService = {
-  recordServiceMethodDuration: vi.fn(),
+  recordServiceMethodDuration: jest.fn(),
 };
 
 describe('FairWorkService', () => {
@@ -60,7 +60,7 @@ describe('FairWorkService', () => {
   );
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   describe('getActiveAwards', () => {

@@ -3,14 +3,13 @@ import { PrismaClient } from '@prisma/client';
 import { logger } from '@/lib/utils/logger';
 
 declare global {
-   
-  var prisma: PrismaClient | undefined;
+  const prisma: PrismaClient | undefined;
 }
 
 class PrismaClientSingleton {
   private static instance: PrismaClient | undefined;
 
-  public static getInstance(): void {
+  public static getInstance(): PrismaClient {
     if (!PrismaClientSingleton.instance) {
       PrismaClientSingleton.instance = new PrismaClient({
         log: [
@@ -53,16 +52,14 @@ class PrismaClientSingleton {
   }
 }
 
-// For development hot reloading
-declare global {
-   
-  var prisma: PrismaClient | undefined;
-}
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
 
-const prisma = global.prisma || PrismaClientSingleton.getInstance();
+const prisma = globalForPrisma.prisma ?? PrismaClientSingleton.getInstance();
 
 if (process.env.NODE_ENV !== 'production') {
-  global.prisma = prisma;
+  globalForPrisma.prisma = prisma;
 }
 
-export { prisma };
+export default prisma;

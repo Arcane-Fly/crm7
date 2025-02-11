@@ -1,15 +1,13 @@
 'use client';
 
+import * as React from 'react';
+import { DialogProps } from '@radix-ui/react-dialog';
 import { Command as CommandPrimitive } from 'cmdk';
 import { Search } from 'lucide-react';
-import * as React from 'react';
-import type { ReactElement, ReactNode } from 'react';
-
-import { Dialog as DialogPrimitive, DialogContent } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
 interface CommandProps {
-  children?: ReactNode;
+  children?: React.ReactNode;
   className?: string;
 }
 
@@ -29,10 +27,8 @@ function Command({ children, className }: CommandProps): JSX.Element {
   );
 }
 
-interface CommandDialogProps {
-  children?: ReactNode;
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
+interface CommandDialogProps extends DialogProps {
+  children?: React.ReactNode;
 }
 
 function CommandDialog({ children, ...props }: CommandDialogProps): JSX.Element {
@@ -48,7 +44,7 @@ function CommandDialog({ children, ...props }: CommandDialogProps): JSX.Element 
 }
 
 interface CommandInputProps {
-  children?: ReactNode;
+  children?: React.ReactNode;
   className?: string;
 }
 
@@ -75,7 +71,7 @@ const CommandInput = React.forwardRef<
 CommandInput.displayName = CommandPrimitive.Input.displayName;
 
 interface CommandListProps {
-  children?: ReactNode;
+  children?: React.ReactNode;
 }
 
 function CommandList({ children }: CommandListProps): JSX.Element {
@@ -87,7 +83,7 @@ function CommandList({ children }: CommandListProps): JSX.Element {
 }
 
 interface CommandEmptyProps {
-  children?: ReactNode;
+  children?: React.ReactNode;
 }
 
 const CommandEmpty = React.forwardRef<
@@ -106,7 +102,7 @@ const CommandEmpty = React.forwardRef<
 CommandEmpty.displayName = CommandPrimitive.Empty.displayName;
 
 interface CommandGroupProps {
-  children?: ReactNode;
+  children?: React.ReactNode;
   className?: string;
 }
 
@@ -143,7 +139,7 @@ const CommandSeparator = React.forwardRef<
 CommandSeparator.displayName = CommandPrimitive.Separator.displayName;
 
 interface CommandItemProps {
-  children?: ReactNode;
+  children?: React.ReactNode;
   className?: string;
 }
 
@@ -164,7 +160,7 @@ const CommandItem = React.forwardRef<
 CommandItem.displayName = CommandPrimitive.Item.displayName;
 
 interface CommandShortcutProps {
-  children?: ReactNode;
+  children?: React.ReactNode;
   className?: string;
 }
 

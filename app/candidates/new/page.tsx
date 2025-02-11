@@ -1,13 +1,13 @@
 'use client';
 
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
 
 const candidateSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
@@ -31,23 +31,7 @@ export default function NewCandidatePage() {
     },
   });
 
-  async function onSubmit(data: CandidateForm) {
-    try {
-      // Here you would typically save the data to your backend
-      console.log('Form submitted:', data);
-      toast({
-        title: 'Success',
-        description: 'Candidate has been created successfully.',
-      });
-      form.reset();
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to create candidate. Please try again.',
-        variant: 'destructive',
-      });
-    }
-  }
+  const handleSubmit =;
 
   return (
     <div className="container mx-auto py-10">
@@ -58,7 +42,7 @@ export default function NewCandidatePage() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
