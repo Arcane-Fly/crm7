@@ -1,10 +1,10 @@
-import { type Plugin } from '@measured/puck';
-import { createClient } from '@/lib/supabase/client';
 import { toast } from '@/components/ui/use-toast';
+import { createClient } from '@/lib/supabase/client';
 import { type Database } from '@/lib/types/database';
 import { type ExtendedPuckData } from '@/lib/types/puck';
-import * as React from 'react';
+import { type Plugin } from '@measured/puck';
 import dynamic from 'next/dynamic';
+import * as React from 'react';
 
 const AnalyticsToast = dynamic(() => import('./AnalyticsToast').then((mod) => mod.AnalyticsToast));
 
