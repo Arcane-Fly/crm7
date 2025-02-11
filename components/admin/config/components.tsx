@@ -12,8 +12,8 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import Image from 'next/image';
 import { type Config } from '@measured/puck';
+import Image from 'next/image';
 
 interface ComponentProps {
   data: Record<string, unknown>;
