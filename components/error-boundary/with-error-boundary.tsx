@@ -4,6 +4,7 @@ import { ErrorBoundary } from './ErrorBoundary';
 interface WithErrorBoundaryOptions {
   onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
   fallback?: React.ReactNode;
+  onReset?: () => void;
 }
 
 export function withErrorBoundary<P extends object>(
@@ -17,6 +18,7 @@ export function withErrorBoundary<P extends object>(
           options.onError?.(error, errorInfo);
         }}
         fallback={options.fallback}
+        onReset={options.onReset}
       >
         <Component {...props} />
       </ErrorBoundary>

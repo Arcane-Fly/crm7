@@ -1,6 +1,6 @@
 'use client';
 
-import { MapPinIcon, PhoneIcon, EnvelopeIcon, LinkIcon } from 'lucide-react';
+import { MapPin, Phone, Mail, Link } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -100,17 +100,17 @@ export function CandidateProfile({ candidate }: CandidateProfileProps): JSX.Elem
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <MapPinIcon className="h-4 w-4" />
-                {candidate.location}
+              <div className="flex items-center space-x-2">
+                <MapPin className="h-4 w-4 text-gray-500" />
+                <span>{candidate.location}</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <EnvelopeIcon className="h-4 w-4" />
-                {candidate.email}
+              <div className="flex items-center space-x-2">
+                <Phone className="h-4 w-4 text-gray-500" />
+                <span>{candidate.phone}</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <PhoneIcon className="h-4 w-4" />
-                {candidate.phone}
+              <div className="flex items-center space-x-2">
+                <Mail className="h-4 w-4 text-gray-500" />
+                <span>{candidate.email}</span>
               </div>
             </div>
             <div className="space-y-4">
@@ -119,9 +119,9 @@ export function CandidateProfile({ candidate }: CandidateProfileProps): JSX.Elem
                   url && (
                     <div
                       key={platform}
-                      className="flex items-center gap-2 text-sm text-muted-foreground"
+                      className="flex items-center space-x-2"
                     >
-                      <LinkIcon className="h-4 w-4" />
+                      <Link className="h-4 w-4 text-gray-500" />
                       <a
                         href={url}
                         target="_blank"

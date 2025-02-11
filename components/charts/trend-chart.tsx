@@ -43,7 +43,7 @@ export const TrendChart: React.FC<TrendChartProps> = ({ data }): ReactElement =>
             fontSize={12}
             tickLine={false}
             axisLine={false}
-            tickFormatter={(value): React.ReactElement => `${value}`}
+            tickFormatter={(value): string => String(value)}
           />
           <Tooltip />
           <Line

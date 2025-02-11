@@ -1,118 +1,124 @@
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Progress } from '@/components/ui/progress';
+import { handleApiError } from '@/lib/api-error';
 import { useState } from 'react';
-import * as XLSX from 'xlsx';
-import { supabase } from '@/lib/supabase/client';
 
-interface BulkOperationsProps {
-  table: string;
-  selectedIds: string[];
-  onComplete: () => void;
+interface BulkOperationsProps<T> {
+  items: T[];
+  selectedItems: Set<string>;
+  onSelectAll: () => void;
+  onDeselectAll: () => void;
+  onItemSelect: (id: string) => void;
+  operations: {
+    label: string;
+    action: (ids: string[]) => Promise<void>;
+    variant?: 'default' | 'destructive' | 'outline';
+  }[];
+  getItemId: (item: T) => string;
+  renderItem: (item: T) => React.ReactNode;
 }
 
-export function BulkOperations({ table, selectedIds, onComplete }: BulkOperationsProps): JSX.Element {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+export function BulkOperations<T>({
+  items,
+  selectedItems,
+  onSelectAll,
+  onDeselectAll,
+  onItemSelect,
+  operations,
+  getItemId,
+  renderItem,
+}: BulkOperationsProps<T>) {
+  const [processing, setProcessing] = useState(false);
+  const [progress, setProgress] = useState(0);
 
-  const handleExport = async (): Promise<void> => {
+  const handleOperation = async (action: (ids: string[]) => Promise<void>) => {
+    if (selectedItems.size === 0) return;
+
     try {
-      setIsLoading(true);
+      setProcessing(true);
+      setProgress(0);
 
-      const { data, error } = await supabase
-        .from(table)
-        .select('*');
+      const selectedIds = Array.from(selectedItems);
+      const batchSize = 10;
 
-      if (typeof error !== "undefined" && error !== null) throw error;
+      for (let i = 0; i < selectedIds.length; i += batchSize) {
+        const batch = selectedIds.slice(i, i + batchSize);
+        await action(batch);
+        setProgress(((i + batchSize) / selectedIds.length) * 100);
+      }
 
-      const ws = XLSX.utils.json_to_sheet(data);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, table);
-      XLSX.writeFile(wb, `${table}_export.xlsx`);
-
-      onComplete();
+      onDeselectAll();
     } catch (error) {
-      console.error('Export failed:', error);
+      const { message } = handleApiError(error);
+      // You might want to show this error in a toast notification
+      console.error(message);
     } finally {
-      setIsLoading(false);
+      setProcessing(false);
+      setProgress(0);
     }
   };
 
-  const handleImport = async (file: File): Promise<void> => {
-    try {
-      setIsLoading(true);
-
-      const reader = new FileReader();
-      reader.onload = async (e): Promise<void> => {
-        if (!e.target?.result) return;
-
-        const data = e.target.result;
-        const workbook = XLSX.read(data, { type: 'array' });
-        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
-
-        // Insert data into Supabase
-        const { error } = await supabase.from(table).insert(jsonData);
-        if (typeof error !== "undefined" && error !== null) throw error;
-
-        onComplete();
-      };
-
-      reader.readAsArrayBuffer(file);
-    } catch (error) {
-      console.error('Import failed:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDelete = async (): Promise<void> => {
-    try {
-      setIsLoading(true);
-
-      const { error } = await supabase.from(table).delete().in('id', selectedIds);
-
-      if (typeof error !== "undefined" && error !== null) throw error;
-
-      onComplete();
-    } catch (error) {
-      console.error('Delete failed:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const allSelected = items.length > 0 && selectedItems.size === items.length;
+  const someSelected = selectedItems.size > 0 && selectedItems.size < items.length;
 
   return (
-    <div className="space-x-2">
-      <button
-        onClick={handleExport}
-        disabled={isLoading}
-        className="btn btn-primary"
-      >
-        Export
-      </button>
-      <input
-        type="file"
-        onChange={(e): void => {
-          const file = e.target.files?.[0];
-          if (typeof file !== "undefined" && file !== null) void handleImport(file);
-        }}
-        disabled={isLoading}
-        accept=".xlsx,.xls"
-        className="hidden"
-        id="import-file"
-      />
-      <label
-        htmlFor="import-file"
-        className="btn btn-secondary"
-      >
-        Import
-      </label>
-      {selectedIds.length > 0 && (
-        <button
-          onClick={handleDelete}
-          disabled={isLoading}
-          className="btn btn-danger"
-        >
-          Delete Selected
-        </button>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="select-all"
+            checked={allSelected}
+            indeterminate={someSelected}
+            onCheckedChange={() => {
+              if (allSelected) {
+                onDeselectAll();
+              } else {
+                onSelectAll();
+              }
+            }}
+            disabled={processing}
+            aria-label="Select all items"
+          />
+          <label htmlFor="select-all" className="text-sm">
+            {selectedItems.size} selected
+          </label>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          {operations.map((op, index) => (
+            <Button
+              key={index}
+              variant={op.variant || 'default'}
+              onClick={() => handleOperation(op.action)}
+              disabled={selectedItems.size === 0 || processing}
+            >
+              {op.label}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      {processing && (
+        <Progress value={progress} className="w-full" />
       )}
+
+      <div className="space-y-2">
+        {items.map((item) => (
+          <div
+            key={getItemId(item)}
+            className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-50"
+          >
+            <Checkbox
+              checked={selectedItems.has(getItemId(item))}
+              onCheckedChange={() => onItemSelect(getItemId(item))}
+              disabled={processing}
+              aria-label={`Select item ${getItemId(item)}`}
+            />
+            {renderItem(item)}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

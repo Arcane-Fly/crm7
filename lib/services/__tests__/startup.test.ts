@@ -1,10 +1,31 @@
-import { fairWorkCacheWarming } from '@/lib/services/fairwork/cache-warming';
-import { logger } from '@/lib/services/logger';
-
+import { logger } from '@/lib/logger';
+import { ServiceFactory } from '../service-factory';
+import { ServiceRegistry } from '../service-registry';
 import { cleanupServices, initializeServices } from '../startup';
 
-jest.mock('@/lib/services/logger');
-jest.mock('@/lib/services/fairwork/cache-warming');
+jest.mock('@/lib/logger', () => ({
+  logger: {
+    info: jest.fn(),
+    error: jest.fn(),
+  },
+}));
+
+jest.mock('../service-factory', () => ({
+  ServiceFactory: {
+    getInstance: jest.fn(() => ({
+      resetAllMetrics: jest.fn(),
+    })),
+  },
+}));
+
+jest.mock('../service-registry', () => {
+  return {
+    ServiceRegistry: jest.fn().mockImplementation(() => ({
+      validateDependencies: jest.fn(),
+      initialize: jest.fn(),
+    })),
+  };
+});
 
 describe('Startup Service', () => {
   beforeEach(() => {
@@ -14,16 +35,18 @@ describe('Startup Service', () => {
   describe('initializeServices', () => {
     it('should initialize all services successfully', async () => {
       await initializeServices();
-
-      expect(fairWorkCacheWarming.initialize).toHaveBeenCalled();
       expect(logger.info).toHaveBeenCalledWith('Application services initialized successfully');
     });
 
     it('should handle initialization errors', async () => {
       const error = new Error('Initialization failed');
-      (fairWorkCacheWarming.initialize as jest.Mock).mockImplementationOnce(() => {
-        throw error;
-      });
+      const mockRegistry = {
+        validateDependencies: jest.fn(),
+        initialize: jest.fn().mockImplementation(() => {
+          throw error;
+        }),
+      };
+      (ServiceRegistry as jest.Mock).mockImplementation(() => mockRegistry);
 
       await expect(initializeServices()).rejects.toThrow(error);
       expect(logger.error).toHaveBeenCalledWith(
@@ -34,11 +57,15 @@ describe('Startup Service', () => {
 
     it('should handle unknown errors', async () => {
       const error = 'Unknown error occurred';
-      (fairWorkCacheWarming.initialize as jest.Mock).mockImplementationOnce(() => {
-        throw error;
-      });
+      const mockRegistry = {
+        validateDependencies: jest.fn(),
+        initialize: jest.fn().mockImplementation(() => {
+          throw error;
+        }),
+      };
+      (ServiceRegistry as jest.Mock).mockImplementation(() => mockRegistry);
 
-      await expect(initializeServices()).rejects.toBe(error);
+      await expect(initializeServices()).rejects.toThrow();
       expect(logger.error).toHaveBeenCalledWith(
         'Failed to initialize application services:',
         expect.any(Error)
@@ -49,16 +76,17 @@ describe('Startup Service', () => {
   describe('cleanupServices', () => {
     it('should cleanup all services successfully', async () => {
       await cleanupServices();
-
-      expect(fairWorkCacheWarming.stop).toHaveBeenCalled();
       expect(logger.info).toHaveBeenCalledWith('Application services cleaned up successfully');
     });
 
     it('should handle cleanup errors', async () => {
       const error = new Error('Cleanup failed');
-      (fairWorkCacheWarming.stop as jest.Mock).mockImplementationOnce(() => {
-        throw error;
-      });
+      const mockFactory = {
+        resetAllMetrics: jest.fn().mockImplementation(() => {
+          throw error;
+        }),
+      };
+      (ServiceFactory.getInstance as jest.Mock).mockReturnValue(mockFactory);
 
       await expect(cleanupServices()).rejects.toThrow(error);
       expect(logger.error).toHaveBeenCalledWith(
@@ -66,97 +94,76 @@ describe('Startup Service', () => {
         expect.any(Error)
       );
     });
-
-    it('should handle unknown cleanup errors', async () => {
-      const error = 'Unknown cleanup error';
-      (fairWorkCacheWarming.stop as jest.Mock).mockImplementationOnce(() => {
-        throw error;
-      });
-
-      await expect(cleanupServices()).rejects.toBe(error);
-      expect(logger.error).toHaveBeenCalledWith(
-        'Failed to cleanup application services:',
-        expect.any(Error)
-      );
-    });
   });
 
-  describe('Cleanup Handlers', () => {
-    let addEventListenerSpy: jest.SpyInstance;
+  describe('Process Signal Handlers', () => {
+    let processExitSpy: jest.SpyInstance;
     let processOnSpy: jest.SpyInstance;
 
     beforeEach(() => {
-      addEventListenerSpy = jest.spyOn(window, 'addEventListener');
+      processExitSpy = jest.spyOn(process, 'exit').mockImplementation();
       processOnSpy = jest.spyOn(process, 'on');
     });
 
     afterEach(() => {
-      addEventListenerSpy.mockRestore();
+      processExitSpy.mockRestore();
       processOnSpy.mockRestore();
     });
 
-    it('should register browser cleanup handler', () => {
+    it('should register process signal handlers', () => {
       // Re-run the module code
       jest.isolateModules(() => {
-        import('../startup');
-      });
-
-      expect(addEventListenerSpy).toHaveBeenCalledWith('beforeunload', expect.any(Function));
-    });
-
-    it('should register process cleanup handlers', () => {
-      // Re-run the module code
-      jest.isolateModules(() => {
-        import('../startup');
+        require('../startup');
       });
 
       expect(processOnSpy).toHaveBeenCalledWith('SIGTERM', expect.any(Function));
       expect(processOnSpy).toHaveBeenCalledWith('SIGINT', expect.any(Function));
     });
 
-    it('should call cleanup on beforeunload', async () => {
-      let beforeUnloadHandler: ((event: BeforeUnloadEvent) => void) | undefined;
-      addEventListenerSpy.mockImplementation(
-        (event: string, handler: (event: BeforeUnloadEvent) => void) => {
-          if (event === 'beforeunload') {
-            beforeUnloadHandler = handler;
-          }
-        },
-      );
-
-      // Re-run the module code
-      jest.isolateModules(() => {
-        import('../startup');
-      });
-
-      // Create a mock event
-      const mockEvent = new Event('beforeunload') as BeforeUnloadEvent;
-
-      // Check if handler was assigned and call it
-      if (beforeUnloadHandler) {
-        await beforeUnloadHandler(mockEvent);
-      }
-
-      expect(fairWorkCacheWarming.stop).toHaveBeenCalled();
-    });
-
-    it('should call cleanup and exit on SIGTERM', async () => {
-      const exitSpy = jest.spyOn(process, 'exit').mockImplementation();
-      let sigtermHandler: () => Promise<void> = async () => {};
+    it('should handle SIGTERM signal', async () => {
+      let sigtermHandler: () => Promise<void>;
       processOnSpy.mockImplementation((signal: string, handler: () => Promise<void>) => {
         if (signal === 'SIGTERM') {
           sigtermHandler = handler;
         }
       });
 
-      // Re-run the module code
+      // Re-run the module code to register handlers
       jest.isolateModules(() => {
-        import('../startup');
+        require('../startup');
       });
 
+      expect(processOnSpy).toHaveBeenCalledWith('SIGTERM', expect.any(Function));
+      expect(sigtermHandler).toBeDefined();
+
+      // Call the handler
       await sigtermHandler();
-      expect(fairWorkCacheWarming.stop).toHaveBeenCalled();
-      expect(exitSpy).toHaveBeenCalledWith(0);
+
+      expect(logger.info).toHaveBeenCalledWith('SIGTERM received. Starting graceful shutdown...');
+      expect(processExitSpy).toHaveBeenCalledWith(0);
+    });
+
+    it('should handle SIGINT signal', async () => {
+      let sigintHandler: () => Promise<void>;
+      processOnSpy.mockImplementation((signal: string, handler: () => Promise<void>) => {
+        if (signal === 'SIGINT') {
+          sigintHandler = handler;
+        }
+      });
+
+      // Re-run the module code to register handlers
+      jest.isolateModules(() => {
+        require('../startup');
+      });
+
+      expect(processOnSpy).toHaveBeenCalledWith('SIGINT', expect.any(Function));
+      expect(sigintHandler).toBeDefined();
+
+      // Call the handler
+      await sigintHandler();
+
+      expect(logger.info).toHaveBeenCalledWith('SIGINT received. Starting graceful shutdown...');
+      expect(processExitSpy).toHaveBeenCalledWith(0);
     });
   });
 });

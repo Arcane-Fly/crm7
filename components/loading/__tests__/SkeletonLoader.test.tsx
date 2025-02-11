@@ -4,13 +4,15 @@ import SkeletonLoader from '../SkeletonLoader';
 describe('SkeletonLoader', () => {
   it('renders with default props', () => {
     render(<SkeletonLoader />);
-    const lines = screen.getAllByRole('presentation');
+    const skeleton = screen.getByRole('status');
+    const lines = skeleton.querySelectorAll('.bg-muted');
     expect(lines).toHaveLength(3);
   });
 
   it('renders with custom number of lines', () => {
     render(<SkeletonLoader lines={5} />);
-    const lines = screen.getAllByRole('presentation');
+    const skeleton = screen.getByRole('status');
+    const lines = skeleton.querySelectorAll('.bg-muted');
     expect(lines).toHaveLength(5);
   });
 
@@ -21,9 +23,10 @@ describe('SkeletonLoader', () => {
 
   it('applies custom lineClassName', () => {
     render(<SkeletonLoader lineClassName="custom-line" />);
-    const lines = screen.getAllByRole('presentation');
+    const skeleton = screen.getByRole('status');
+    const lines = skeleton.querySelectorAll('.bg-muted');
     lines.forEach(line => {
-      expect(line).toHaveClass('custom-line');
+      expect(line.className).toContain('custom-line');
     });
   });
 

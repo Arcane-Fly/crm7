@@ -1,8 +1,13 @@
 import { logger } from '@/lib/services/logger';
-
 import { CacheMonitoring } from '../monitoring';
 
-jest.mock('@/lib/services/logger');
+jest.mock('@/lib/services/logger', () => ({
+  logger: {
+    info: jest.fn(),
+    error: jest.fn(),
+  },
+}));
+
 jest.useFakeTimers();
 
 describe('CacheMonitoring', () => {
@@ -19,14 +24,15 @@ describe('CacheMonitoring', () => {
       const metrics = monitoring.getMetrics();
 
       expect(metrics.hits).toBe(1);
-      expect(metrics.latencyMs).toContain(1.5);
+      expect(metrics.avgLatencyMs).toBe(1.5);
     });
 
     it('should record cache misses', () => {
-      monitoring.recordMiss();
+      monitoring.recordMiss(2.0);
       const metrics = monitoring.getMetrics();
 
       expect(metrics.misses).toBe(1);
+      expect(metrics.avgLatencyMs).toBe(2.0);
     });
 
     it('should record errors', () => {
@@ -43,14 +49,13 @@ describe('CacheMonitoring', () => {
       expect(metrics.evictions).toBe(1);
     });
 
-    it('should limit latency samples', () => {
-      // Add more samples than the limit
-      for (let i = 0; i < 1100; i++) {
-        monitoring.recordHit(i);
-      }
+    it('should calculate average latency correctly', () => {
+      monitoring.recordHit(1.0);
+      monitoring.recordHit(2.0);
+      monitoring.recordHit(3.0);
 
       const metrics = monitoring.getMetrics();
-      expect(metrics.latencyMs.length).toBeLessThanOrEqual(1000); // maxLatencySamples
+      expect(metrics.avgLatencyMs).toBe(2.0);
     });
   });
 
@@ -59,7 +64,7 @@ describe('CacheMonitoring', () => {
       // Record some metrics
       monitoring.recordHit(1.0);
       monitoring.recordHit(2.0);
-      monitoring.recordMiss();
+      monitoring.recordMiss(1.5);
       monitoring.recordError();
 
       // Advance time to trigger reporting
@@ -68,22 +73,18 @@ describe('CacheMonitoring', () => {
       expect(logger.info).toHaveBeenCalledWith(
         'Cache metrics report:',
         expect.objectContaining({
-          hitRate: '66.67%', // 2 hits out of 3 attempts
           hits: 2,
           misses: 1,
           errors: 1,
-          latency: expect.objectContaining({
-            avg: expect.any(String),
-            p95: expect.any(String),
-            p99: expect.any(String),
-          }),
-        }),
+          hitRate: 0.6667,
+          avgLatencyMs: 1.5,
+        })
       );
     });
 
     it('should reset metrics after reporting', () => {
       monitoring.recordHit(1.0);
-      monitoring.recordMiss();
+      monitoring.recordMiss(1.5);
 
       // Trigger report
       jest.advanceTimersByTime(60_000);
@@ -95,56 +96,44 @@ describe('CacheMonitoring', () => {
       // Should only contain metrics after reset
       expect(metrics.hits).toBe(1);
       expect(metrics.misses).toBe(0);
-      expect(metrics.latencyMs).toEqual([2.0]);
+      expect(metrics.avgLatencyMs).toBe(2.0);
     });
   });
 
   describe('Memory Usage Tracking', () => {
     it('should track memory usage', () => {
+      monitoring.updateMemoryUsage(1024 * 1024); // 1MB
       const metrics = monitoring.getMetrics();
-      expect(metrics.memoryUsageMB).toBeGreaterThan(0);
+      expect(metrics.memoryUsageBytes).toBe(1024 * 1024);
     });
 
     it('should update memory usage on each report', () => {
-      monitoring.recordHit(1.0);
+      monitoring.updateMemoryUsage(1024 * 1024); // 1MB
       jest.advanceTimersByTime(60_000);
 
       expect(logger.info).toHaveBeenCalledWith(
         'Cache metrics report:',
         expect.objectContaining({
-          memoryUsageMB: expect.any(Number),
-        }),
+          memoryUsageBytes: 1024 * 1024,
+        })
       );
     });
   });
 
   describe('Hit Rate Calculation', () => {
     it('should calculate correct hit rate', () => {
-      // Record 3 hits and 1 miss (75% hit rate)
       monitoring.recordHit(1.0);
-      monitoring.recordHit(1.5);
-      monitoring.recordHit(2.0);
-      monitoring.recordMiss();
+      monitoring.recordHit(1.0);
+      monitoring.recordHit(1.0);
+      monitoring.recordMiss(1.0);
 
-      jest.advanceTimersByTime(60_000);
-
-      expect(logger.info).toHaveBeenCalledWith(
-        'Cache metrics report:',
-        expect.objectContaining({
-          hitRate: '75.00%',
-        }),
-      );
+      const metrics = monitoring.getMetrics();
+      expect(metrics.hitRate).toBe(0.75); // 3 hits out of 4 requests
     });
 
     it('should handle zero requests gracefully', () => {
-      jest.advanceTimersByTime(60_000);
-
-      expect(logger.info).toHaveBeenCalledWith(
-        'Cache metrics report:',
-        expect.objectContaining({
-          hitRate: '0.00%',
-        }),
-      );
+      const metrics = monitoring.getMetrics();
+      expect(metrics.hitRate).toBe(0);
     });
   });
 });

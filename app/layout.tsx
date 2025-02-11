@@ -1,77 +1,73 @@
-import '@/styles/globals.css';
-
-import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-
-import { PerformanceMonitor } from '@/components/monitoring/PerformanceMonitor';
-import { Providers } from '@/components/providers';
-import { PerformanceProvider } from '@/components/providers/PerformanceProvider';
-import { Navbar } from '@/components/ui/navbar';
-import { Sidebar } from '@/components/ui/sidebar';
-import { cn } from '@/lib/utils';
+import './globals.css';
+import { ThemeProvider } from '@/components/theme-provider';
+import { Toaster } from '@/components/ui/toaster';
+import { AppLayout } from '@/components/layout/app-layout';
+import { AuthProvider } from '@/lib/auth/context';
+import { createClient } from '@/utils/supabase/server';
+import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary';
 
 const inter = Inter({ subsets: ['latin'] });
 
-export const metadata: Metadata = {
-  title: 'CRM System',
-  description: 'A modern CRM system built with Next.js',
-  icons: {
-    icon: [
-      {
-        url: '/favicon.ico',
-        sizes: 'any',
-      },
-      {
-        url: '/icon.png',
-        type: 'image/png',
-        sizes: '32x32',
-      },
-      {
-        url: '/icon.png',
-        type: 'image/png',
-        sizes: '192x192',
-      },
-      {
-        url: '/icon.png',
-        type: 'image/png',
-        sizes: '512x512',
-      },
-    ],
-    apple: [
-      {
-        url: '/apple-icon.png',
-        sizes: '180x180',
-        type: 'image/png',
-      },
-    ],
-  },
-};
-
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
-}): JSX.Element {
-  return (
-    <html lang='en'>
-      <body className={cn('min-h-screen bg-background antialiased', inter.className)}>
-        <PerformanceProvider>
-          <Providers>
-            <div className='relative flex min-h-screen flex-col'>
-              <Navbar />
-              <div className='flex-1 items-start md:grid md:grid-cols-[220px_minmax(0: unknown,1fr)] md:gap-6 lg:grid-cols-[240px_minmax(0: unknown,1fr)] lg:gap-10'>
-                <aside className='fixed top-14 z-30 -ml-2 hidden h-[calc(100vh-3.5rem)] w-full shrink-0 overflow-y-auto border-r md:sticky md:block'>
-                  <Sidebar />
-                </aside>
-                <main className='relative py-6 lg:gap-10 lg:py-8 xl:grid-cols-[1fr_300px]'>
-                  <PerformanceMonitor />
-                  {children}
-                </main>
-              </div>
-            </div>
-          </Providers>
-        </PerformanceProvider>
-      </body>
-    </html>
-  );
+}): Promise<React.ReactElement> {
+  const supabase = await createClient();
+
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    return (
+      <html lang="en" suppressHydrationWarning>
+        <head>
+          <title>Labour Hire CRM</title>
+          <meta name="description" content="A modern CRM for labour hire companies" />
+        </head>
+        <body className={inter.className}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <ErrorBoundary>
+              <AuthProvider initialSession={session}>
+                {session ? <AppLayout>{children}</AppLayout> : children}
+                <Toaster />
+              </AuthProvider>
+            </ErrorBoundary>
+          </ThemeProvider>
+        </body>
+      </html>
+    );
+  } catch (error) {
+    console.error('Error getting session:', error);
+    return (
+      <html lang="en" suppressHydrationWarning>
+        <head>
+          <title>Labour Hire CRM</title>
+          <meta name="description" content="A modern CRM for labour hire companies" />
+        </head>
+        <body className={inter.className}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <ErrorBoundary>
+              <AuthProvider initialSession={null}>
+                {children}
+                <Toaster />
+              </AuthProvider>
+            </ErrorBoundary>
+          </ThemeProvider>
+        </body>
+      </html>
+    );
+  }
 }

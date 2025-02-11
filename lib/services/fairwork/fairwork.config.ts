@@ -4,7 +4,7 @@ export const FairWorkConfigSchema = z.object({
   // API Configuration
   apiKey: z.string().min(1),
   apiUrl: z.string().url(),
-  environment: z.enum(['sandbox', 'production']),
+  environment: z.enum(['sandbox', 'production']).default('sandbox'),
 
   // Request Configuration
   timeout: z.number().min(1000).max(60000).default(30000),
@@ -24,9 +24,9 @@ export const FairWorkConfigSchema = z.object({
 export type FairWorkConfig = z.infer<typeof FairWorkConfigSchema>;
 
 export const defaultConfig: FairWorkConfig = {
-  apiKey: process.env['FAIRWORK_API_KEY'] ?? '',
-  apiUrl: process.env['FAIRWORK_API_URL'] ?? 'https://api.fairwork.gov.au/v1',
-  environment: process.env['NODE_ENV'] === 'production' ? 'production' : 'sandbox',
+  apiKey: process.env.FAIRWORK_API_KEY ?? '',
+  apiUrl: process.env.FAIRWORK_API_URL ?? 'https://api.fairwork.gov.au/v1',
+  environment: process.env.NODE_ENV === 'production' ? 'production' : 'sandbox',
   timeout: 30000,
   retryAttempts: 3,
   cacheEnabled: true,

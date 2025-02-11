@@ -1,51 +1,46 @@
 'use client';
 
-import {
-  AlertTriangleIcon,
-  ArrowDownIcon,
-  ArrowUpIcon,
-  BriefcaseIcon,
-  LayersIcon,
-  UsersIcon,
-} from 'lucide-react';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 import { ReactElement } from 'react';
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
 
 interface StatsCardProps {
   title: string;
-  value: string | number;
-  change: number;
-  icon: ReactElement;
+  value: number;
+  change?: {
+    value: number;
+    type: 'increase' | 'decrease';
+  };
+  description?: string;
 }
 
-const StatsCard = ({ title, value, change, icon }: StatsCardProps): ReactElement => {
-  const isPositive = change > 0;
-
+function StatsCard({ title, value, change, description }: StatsCardProps) {
   return (
-    <Card>
+    <Card className="hover:border-primary/50 transition-colors">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        {icon}
+        {change && (
+          <div className={`flex items-center text-sm ${
+            change.type === 'increase' ? 'text-emerald-500 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'
+          }`}>
+            {change.type === 'increase' ? (
+              <TrendingUp className="mr-1 h-4 w-4" />
+            ) : (
+              <TrendingDown className="mr-1 h-4 w-4" />
+            )}
+            {change.value}%
+          </div>
+        )}
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        <p className="flex items-center text-xs text-muted-foreground">
-          <span className={cn('mr-1', isPositive ? 'text-emerald-500' : 'text-destructive')}>
-            {isPositive ? (
-              <ArrowUpIcon className="h-4 w-4" />
-            ) : (
-              <ArrowDownIcon className="h-4 w-4" />
-            )}
-            {Math.abs(change)}%
-          </span>
-          vs last month
-        </p>
+        <div className="text-2xl font-bold">{value.toLocaleString()}</div>
+        {description && (
+          <p className="text-xs text-muted-foreground mt-1">{description}</p>
+        )}
       </CardContent>
     </Card>
   );
-};
+}
 
 interface DashboardStatsProps {
   totalCandidates: number;
@@ -64,27 +59,27 @@ export function DashboardStats({
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <StatsCard
         title="Total Candidates"
-        value={totalCandidates.toLocaleString()}
-        change={12}
-        icon={<UsersIcon className="h-4 w-4 text-muted-foreground" />}
+        value={totalCandidates}
+        change={{ value: 12, type: 'increase' }}
+        description="vs last month"
       />
       <StatsCard
         title="Active Recruitments"
         value={activeRecruitments}
-        change={8}
-        icon={<BriefcaseIcon className="h-4 w-4 text-muted-foreground" />}
+        change={{ value: 8.5, type: 'increase' }}
+        description="vs last month"
       />
       <StatsCard
         title="Active Placements"
         value={activePlacements}
-        change={24}
-        icon={<LayersIcon className="h-4 w-4 text-muted-foreground" />}
+        change={{ value: 2.4, type: 'increase' }}
+        description="vs last month"
       />
       <StatsCard
         title="Compliance Alerts"
         value={complianceAlerts}
-        change={-15}
-        icon={<AlertTriangleIcon className="h-4 w-4 text-muted-foreground" />}
+        change={{ value: 15, type: 'decrease' }}
+        description="vs last month"
       />
     </div>
   );

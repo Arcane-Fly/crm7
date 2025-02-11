@@ -1,25 +1,28 @@
-import { createApiResponse, createErrorResponse } from '@/lib/api/response';
-import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
 import { NextRequest, NextResponse } from 'next/server';
+import { FairworkClient } from '@/lib/services/fairwork/fairwork.client';
 
-const fairworkClient = new FairWorkClient();
+const fairworkClient = new FairworkClient(process.env.FAIRWORK_API_KEY!);
 
 export async function GET(
-  _req: NextRequest,  // renamed to _req since it is not used
+  request: NextRequest,
   context: { params: { awardCode: string; classificationCode: string } }
-): Promise<NextResponse> {
+) {
   try {
-    const classification = await fairworkClient.getClassification(
-      context.params.awardCode,
-      context.params.classificationCode
-    );
-    return createApiResponse(classification);
-  } catch (_error) {
-    return createErrorResponse(
-      'CLASSIFICATION_FETCH_ERROR',
-      'Failed to fetch classification',
-      undefined,
-      500
-    );
+    const { awardCode, classificationCode } = context.params;
+    if (!awardCode || !classificationCode) {
+      return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
+    }
+
+    const url = new URL(request.url);
+    const query = {
+      date: url.searchParams.get('date') || undefined,
+      employmentType: url.searchParams.get('employmentType') || undefined,
+    };
+
+    const rates = await fairworkClient.getRates(awardCode, classificationCode, query);
+    return NextResponse.json(rates);
+  } catch (error) {
+    console.error('Error fetching rates:', error);
+    return NextResponse.json({ error: 'Failed to fetch rates' }, { status: 500 });
   }
 }

@@ -1,28 +1,32 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
 import { createApiResponse, createErrorResponse } from '@/lib/api/response';
 import { logger } from '@/lib/logger';
-import { defaultConfig } from '@/lib/services/fairwork/fairwork.config';
-
-const fairworkClient = new FairWorkClient(defaultConfig);
+import { getAllowances } from '@/lib/services/fairwork/allowances';
+import { NextRequest } from 'next/server';
 
 export async function GET(
-  req: NextRequest,
-  { params }: { params: { awardCode: string; classificationCode: string } }
-): Promise<NextResponse> {
+  request: NextRequest,
+  context: { params: Promise<{ awardCode: string; classificationCode: string }> }
+) {
   try {
-    // Extract the "date" query parameter
-    const date = req.nextUrl.searchParams.get('date') || undefined;
-    // Build a query object only if a date exists.
-    const query = date ? { date } : undefined;
-    const allowances = await fairworkClient.getAllowances(
-      params.awardCode,
-      params.classificationCode,
-      query
-    );
+    const { awardCode, classificationCode } = await context.params;
+    if (!awardCode || !classificationCode) {
+      return createErrorResponse(
+        'MISSING_PARAMS',
+        'Missing required parameters: awardCode and classificationCode',
+        undefined,
+        400
+      );
+    }
+
+    const allowances = await getAllowances(awardCode, classificationCode);
     return createApiResponse(allowances);
   } catch (error) {
     logger.error('Failed to fetch allowances', { error });
-    return createErrorResponse('ALLOWANCES_FETCH_ERROR', 'Failed to fetch allowances', undefined, 500);
+    return createErrorResponse(
+      'ALLOWANCES_FETCH_ERROR',
+      'Failed to fetch allowances',
+      undefined,
+      500
+    );
   }
 }

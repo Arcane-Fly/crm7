@@ -1,330 +1,255 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { Menu, X } from 'lucide-react';
-import { MAIN_NAV_ITEMS, SECTIONS, type NavItem } from '@/config/navigation';
-import { KEYBOARD_SHORTCUTS } from '@/config/constants';
+import { CORE_SECTIONS, CoreSection, NavItem, UserRole } from '@/config/navigation-config';
+import { useKeyboardNavigation } from '@/hooks/use-keyboard-navigation';
+import { useNavigationAccess } from '@/hooks/use-navigation-access';
+import { errorTracker } from '@/lib/error-tracking';
 import { cn } from '@/lib/utils';
-import { useLockBody } from '@/lib/hooks/use-lock-body';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Menu, Search, X } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { ReactNode, Suspense, useEffect, useRef, useState } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 
-//
-// Accessibility: "Skip to content" link so that keyboard/screen reader users can bypass nav
-//
-const SkipToContent: React.FC = (): React.ReactElement => {
+// Helper function to ensure roles are always present
+const ensureRoles = (item: NavItem): NavigationItem => ({
+  title: item.title,
+  href: item.href ?? '/',
+  roles: item.roles ?? ['staff' as UserRole], // Explicitly type the default role
+});
+
+interface NavigationItem {
+  title: string;
+  href: string;
+  roles: UserRole[];
+}
+
+interface NavigationSection extends Omit<CoreSection, 'items'> {
+  items: NavigationItem[];
+}
+
+interface ErrorFallbackProps {
+  error: Error;
+  resetErrorBoundary: () => void;
+}
+
+interface NavigationSectionProps {
+  section: NavigationSection;
+  isActive: boolean;
+}
+
+interface UnifiedNavigationProps {
+  children: ReactNode;
+}
+
+// Error Fallback Component with better error details
+const ErrorFallback = ({ error, resetErrorBoundary }: ErrorFallbackProps) => {
+  useEffect(() => {
+    errorTracker.trackError(error, {
+      componentName: 'UnifiedNavigation',
+      action: 'render_error',
+    });
+  }, [error]);
+
   return (
-    <a 
-      href="#main-content" 
-      className="absolute left-4 top-2 z-50 rounded bg-primary p-2 text-primary-foreground transition transform -translate-y-full focus:translate-y-0 focus:outline-none"
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 10 }}
+      role="alert"
+      className="p-4 bg-destructive/10 text-destructive rounded-md"
     >
-      Skip to content
-    </a>
+      <h2 className="font-semibold">Navigation Error</h2>
+      <p className="text-sm">{error.message}</p>
+      <button onClick={resetErrorBoundary} className="mt-2 text-sm underline hover:no-underline">
+        Try again
+      </button>
+    </motion.div>
   );
 };
 
-//
-// TopNavigation: displays the main (horizontal) navigation and supports both Alt+number and arrow key navigation
-//
-interface TopNavigationProps {
-  pathname: string;
-}
+// Loading Component with animation
+const NavigationSkeleton = () => (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    className="animate-pulse"
+  >
+    <div className="h-12 bg-muted rounded-md mb-4" />
+    <div className="space-y-2">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="h-8 bg-muted rounded-md" />
+      ))}
+    </div>
+  </motion.div>
+);
 
-const TopNavigation: React.FC<TopNavigationProps> = React.memo(({ pathname }) => {
-  const router = useRouter();
-  const navRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+// Navigation Section Component with animations
+const NavigationSection = ({ section, isActive }: NavigationSectionProps) => {
+  const { hasAccess } = useNavigationAccess();
 
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent): void => {
-      // Search focus shortcut (/ key)
-      if (e.key === KEYBOARD_SHORTCUTS.FOCUS_SEARCH && !e.ctrlKey && !e.metaKey) {
-        e.preventDefault();
-        document.querySelector<HTMLElement>('[role="search"]')?.focus();
-      }
-      // Section navigation using Alt+number
-      if (e.altKey && !e.ctrlKey && !e.metaKey) {
-        const num = parseInt(e.key);
-        if (!isNaN(num) && num > 0 && num <= MAIN_NAV_ITEMS.length) {
-          e.preventDefault();
-          const item = MAIN_NAV_ITEMS[num - 1];
-          if (item.href) {
-            router.push(item.href);
-          }
-        }
-      }
-      // Arrow key navigation between nav links
-      if (document.activeElement?.tagName === 'A' && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
-        e.preventDefault();
-        const currentIndex = navRefs.current.findIndex(ref => ref === document.activeElement);
-        if (currentIndex !== -1) {
-          const nextIndex = e.key === 'ArrowLeft' 
-            ? (currentIndex - 1 + navRefs.current.length) % navRefs.current.length
-            : (currentIndex + 1) % navRefs.current.length;
-          navRefs.current[nextIndex]?.focus();
-        }
-      }
-    };
-    window.addEventListener('keydown', handleKeyPress);
-    return (): React.ReactElement => window.removeEventListener('keydown', handleKeyPress);
-  }, [router]);
+  if (!hasAccess(section.roles)) return null;
 
   return (
-    <header className="bg-background border-b">
-      <nav
-        className="container mx-auto flex items-center space-x-4 px-4 py-2"
-        role="navigation"
-        aria-label="Main Navigation"
-      >
-        {MAIN_NAV_ITEMS.map((item, index) => {
-          const isActive = item.href ? pathname.startsWith(item.href) : false;
-          const shortcutNumber = index + 1;
-          return (
-            <Link
-              key={item.href}
-              ref={el => navRefs.current[index] = el}
-              href={item.href ?? '#'}
-              className={cn(
-                'px-3 py-2 text-sm font-medium rounded transition-colors focus:ring focus:ring-offset-2 relative group',
-                isActive
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-              )}
-              aria-current={isActive ? 'page' : undefined}
-              title={`${item.label || item.title} (Alt+${shortcutNumber})`}
-            >
-              <span className="flex items-center gap-2">
-                {item.icon && React.createElement(item.icon, { className: "h-4 w-4" })}
-                {item.label || item.title}
-                <span className="hidden group-hover:inline-block absolute -top-1 -right-1 text-xs bg-muted px-1 rounded">
-                  Alt+{shortcutNumber}
-                </span>
-              </span>
-            </Link>
-          );
-        })}
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      className={cn('p-4 rounded-lg transition-colors', isActive && 'bg-primary/10')}
+    >
+      <div className="flex items-center gap-2 mb-2">
+        {section.icon && <section.icon className="w-5 h-5" />}
+        <h2 className="font-semibold">{section.title}</h2>
+      </div>
+      <p className="text-sm text-muted-foreground mb-4">{section.description}</p>
+      <nav>
+        <ul className="space-y-1">
+          {section.items.map(
+            (item) =>
+              hasAccess(item.roles) && (
+                <li key={item.href}>
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                  >
+                    <a
+                      href={item.href}
+                      className={cn(
+                        'block px-2 py-1 rounded-md text-sm',
+                        'hover:bg-accent hover:text-accent-foreground',
+                        'focus:outline-none focus:ring-2 focus:ring-ring',
+                        'transition-colors duration-200'
+                      )}
+                    >
+                      {item.title}
+                    </a>
+                  </motion.div>
+                </li>
+              )
+          )}
+        </ul>
       </nav>
-    </header>
+    </motion.div>
   );
-});
+};
 
-TopNavigation.displayName = 'TopNavigation';
+// Main Navigation Component
+export const UnifiedNavigation = ({ children }: UnifiedNavigationProps) => {
+  const pathname = usePathname() ?? '/';
+  const { isLoading, filterCoreSections } = useNavigationAccess();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
 
-//
-// SidebarNavigation: displays the sub-navigation based on the active section
-//
-interface SidebarNavigationProps {
-  activeNavLabel: string;
-  sectionItems: NavItem[];
-  pathname: string;
-}
+  const accessibleSections: NavigationSection[] = filterCoreSections(CORE_SECTIONS).map(
+    (section) => ({
+      ...section,
+      items: section.items.map(ensureRoles),
+    })
+  );
 
-const SidebarNavigation: React.FC<SidebarNavigationProps> = React.memo(({ activeNavLabel, sectionItems, pathname }) => {
-  const sideNavRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+  const activeSection = accessibleSections.find((section) => pathname.startsWith(`/${section.id}`));
 
+  // Initialize keyboard navigation
+  useKeyboardNavigation({
+    onToggleMenu: () => setIsMobileMenuOpen((prev) => !prev),
+    onFocusSearch: () => searchRef.current?.focus(),
+  });
+
+  // Initialize error tracking
   useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent): void => {
-      // Up/Down arrow key navigation between sidebar links
-      if (document.activeElement?.tagName === 'A' && 
-          (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
-        e.preventDefault();
-        const currentIndex = sideNavRefs.current.findIndex(ref => ref === document.activeElement);
-        if (currentIndex !== -1) {
-          const nextIndex = e.key === 'ArrowUp'
-            ? (currentIndex - 1 + sideNavRefs.current.length) % sideNavRefs.current.length
-            : (currentIndex + 1) % sideNavRefs.current.length;
-          sideNavRefs.current[nextIndex]?.focus();
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return (): React.ReactElement => window.removeEventListener('keydown', handleKeyPress);
+    errorTracker.initialize();
   }, []);
 
   return (
-    <aside className="hidden md:block w-64 border-r bg-background">
-      <nav
-        className="px-4 py-4"
-        role="navigation"
-        aria-label={`${activeNavLabel} Sub Navigation`}
-      >
-        <ul className="space-y-2">
-          {sectionItems.map((navItem, index) => {
-            const isActive = navItem.href ? pathname.startsWith(navItem.href) : false;
-            return (
-              <li key={navItem.href}>
-                <Link
-                  ref={el => sideNavRefs.current[index] = el}
-                  href={navItem.href ?? '#'}
-                  className={cn(
-                    'block px-3 py-2 text-sm rounded transition-colors focus:ring focus:ring-offset-2',
-                    isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                  )}
-                  aria-current={isActive ? 'page' : undefined}
-                >
-                  {navItem.label || navItem.title}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-    </aside>
-  );
-});
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <div className="flex min-h-screen">
+        {/* Desktop Sidebar */}
+        <motion.aside
+          initial={{ x: -320 }}
+          animate={{ x: 0 }}
+          className="hidden lg:flex w-64 flex-col fixed inset-y-0 z-50"
+        >
+          <Suspense fallback={<NavigationSkeleton />}>
+            {isLoading ? (
+              <NavigationSkeleton />
+            ) : (
+              <div className="space-y-4 p-4 overflow-y-auto">
+                {/* Search Bar */}
+                <div className="relative">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <input
+                    ref={searchRef}
+                    type="search"
+                    placeholder="Quick search... (/)"
+                    className="w-full pl-8 pr-4 py-2 text-sm bg-background border rounded-md"
+                  />
+                </div>
 
-SidebarNavigation.displayName = 'SidebarNavigation';
+                <AnimatePresence mode="wait">
+                  {accessibleSections.map((section) => (
+                    <NavigationSection
+                      key={section.id}
+                      section={section}
+                      isActive={activeSection?.id === section.id}
+                    />
+                  ))}
+                </AnimatePresence>
+              </div>
+            )}
+          </Suspense>
+        </motion.aside>
 
-//
-// MobileNavigation: displays the mobile menu with auto-focus and Escape key support
-//
-interface MobileNavigationProps {
-  isOpen: boolean;
-  onClose: () => void;
-  sectionItems: NavItem[];
-  activeNavLabel: string;
-  pathname: string;
-}
+        {/* Mobile Menu Button */}
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setIsMobileMenuOpen(true)}
+          className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-background"
+          aria-label="Open menu"
+        >
+          <Menu className="w-5 h-5" />
+        </motion.button>
 
-const MobileNavigation: React.FC<MobileNavigationProps> = ({ 
-  isOpen, 
-  onClose, 
-  sectionItems, 
-  activeNavLabel,
-  pathname 
-}) => {
-  const firstLinkRef = useRef<HTMLAnchorElement | null>(null);
-  useLockBody(isOpen);
-
-  // Auto focus the first link when the mobile menu opens
-  useEffect((): React.ReactElement => {
-    if (isOpen && firstLinkRef.current) {
-      firstLinkRef.current.focus();
-    }
-  }, [isOpen]);
-
-  // Close mobile menu on Escape key press
-  const handleKeyDown = useCallback((e: KeyboardEvent): void => {
-    if (e.key === 'Escape') {
-      onClose();
-    }
-  }, [onClose]);
-
-  useEffect((): React.ReactElement => {
-    if (isOpen) {
-      window.addEventListener('keydown', handleKeyDown);
-    } else {
-      window.removeEventListener('keydown', handleKeyDown);
-    }
-    return (): React.ReactElement => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, handleKeyDown]);
-
-  if (!isOpen) return null;
-  
-  return (
-    <div
-      className="fixed inset-0 z-50 bg-background md:hidden"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Mobile Navigation"
-    >
-      <div className="flex h-full flex-col">
-        <div className="flex items-center justify-between px-4 py-2 border-b">
-          <span className="text-lg font-semibold">{activeNavLabel}</span>
-          <button
-            onClick={onClose}
-            className="p-2 rounded hover:bg-accent"
-            aria-label="Close navigation menu"
-          >
-            <X className="h-6 w-6" />
-          </button>
-        </div>
-        <nav className="flex-1 overflow-y-auto p-4" role="navigation">
-          <ul className="space-y-2">
-            {sectionItems.map((navItem, index) => {
-              const isActive = navItem.href ? pathname.startsWith(navItem.href) : false;
-              return (
-                <li key={navItem.href}>
-                  <Link
-                    href={navItem.href ?? '#'}
-                    className={cn(
-                      'block px-3 py-2 text-sm rounded transition-colors focus:ring focus:ring-offset-2',
-                      isActive
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                    )}
-                    onClick={onClose}
-                    aria-current={isActive ? 'page' : undefined}
-                    ref={index === 0 ? firstLinkRef : undefined}
-                  >
-                    {navItem.label || navItem.title}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
-      </div>
-    </div>
-  );
-};
-
-//
-// UnifiedNavigation: combines top navigation, sub-navigation, and mobile menu
-//
-interface UnifiedNavigationProps {
-  children?: React.ReactNode;
-}
-
-export const UnifiedNavigation: React.FC<UnifiedNavigationProps> = ({ children }) => {
-  const pathname = usePathname() || '/';
-  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
-
-  // Memoize the active main navigation item
-  const activeNav = useMemo(() => {
-    return MAIN_NAV_ITEMS.find((item) => item.href && pathname.startsWith(item.href)) || MAIN_NAV_ITEMS[0];
-  }, [pathname]);
-
-  const activeSectionKey = activeNav.slug || 'dashboard';
-
-  // Memoize section items for the active main nav
-  const sectionItems = useMemo(() => {
-    return SECTIONS[activeSectionKey] || [];
-  }, [activeSectionKey]);
-
-  return (
-    <div className="min-h-screen flex flex-col">
-      <SkipToContent />
-      <TopNavigation pathname={pathname} />
-      <div className="flex flex-1">
-        <SidebarNavigation
-          activeNavLabel={activeNav.label || activeNav.title || ''}
-          sectionItems={sectionItems}
-          pathname={pathname}
-        />
-        <main id="main-content" className="flex-1 p-6">
-          <div className="md:hidden mb-4">
-            <button
-              onClick={(): React.ReactElement => setIsMobileNavOpen(true)}
-              className="p-2 rounded hover:bg-accent"
-              aria-label="Open navigation menu"
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, x: -320 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -320 }}
+              transition={{ type: 'spring', damping: 25 }}
+              className="lg:hidden fixed inset-0 z-50 bg-background"
             >
-              <Menu className="h-6 w-6" />
-            </button>
-          </div>
-          {children}
-        </main>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="absolute top-4 right-4 p-2"
+                aria-label="Close menu"
+              >
+                <X className="w-5 h-5" />
+              </motion.button>
+              <Suspense fallback={<NavigationSkeleton />}>
+                <div className="p-4 overflow-y-auto">
+                  {accessibleSections.map((section) => (
+                    <NavigationSection
+                      key={section.id}
+                      section={section}
+                      isActive={activeSection?.id === section.id}
+                    />
+                  ))}
+                </div>
+              </Suspense>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Main Content */}
+        <main className="flex-1 lg:pl-64">{children}</main>
       </div>
-      <MobileNavigation
-        isOpen={isMobileNavOpen}
-        onClose={(): React.ReactElement => setIsMobileNavOpen(false)}
-        sectionItems={sectionItems}
-        activeNavLabel={activeNav.label || activeNav.title || ''}
-        pathname={pathname}
-      />
-    </div>
+    </ErrorBoundary>
   );
 };
 

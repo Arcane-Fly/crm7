@@ -1,149 +1,120 @@
 'use client';
 
-import type {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-} from '@tanstack/react-table';
-import {
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from '@tanstack/react-table';
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from 'lucide-react';
-import * as React from 'react';
-
-import { Button } from './ui/button';
+import { type ColumnDef } from '@tanstack/react-table';
+import { Apprentice } from '@/lib/types';
+import { DataTable } from '@/components/ui/data-table';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from './ui/dropdown-menu';
-import { Input } from './ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { MoreHorizontal, UserCircle } from 'lucide-react';
 
-const data: Apprentice[] = [
+const columns: ColumnDef<Apprentice>[] = [
   {
-    id: '1',
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    qualification: 'Certificate III in Electrical Fitting',
-    progress: 'Year 2',
-    status: 'Active',
+    id: 'select',
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && 'indeterminate')
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+        className="translate-y-[2px]"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+        className="translate-y-[2px]"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
   },
-  {
-    id: '2',
-    name: 'Jane Smith',
-    email: 'jane.smith@example.com',
-    qualification: 'Certificate IV in Plumbing',
-    progress: 'Year 3',
-    status: 'Active',
-  },
-  {
-    id: '3',
-    name: 'Michael Johnson',
-    email: 'michael.johnson@example.com',
-    qualification: 'Diploma of Building and Construction',
-    progress: 'Year 1',
-    status: 'Probation',
-  },
-  {
-    id: '4',
-    name: 'Emily Brown',
-    email: 'emily.brown@example.com',
-    qualification: 'Certificate III in Carpentry',
-    progress: 'Year 4',
-    status: 'Completed',
-  },
-  {
-    id: '5',
-    name: 'David Wilson',
-    email: 'david.wilson@example.com',
-    qualification: 'Certificate III in Engineering - Mechanical Trade',
-    progress: 'Year 2',
-    status: 'Active',
-  },
-];
-
-export type Apprentice = {
-  id: string;
-  name: string;
-  email: string;
-  qualification: string;
-  progress: string;
-  status: 'Active' | 'Completed' | 'Probation' | 'Withdrawn';
-};
-
-export const columns: ColumnDef<Apprentice>[] = [
   {
     accessorKey: 'name',
     header: 'Name',
-    cell: ({ row }): React.JSX.Element => <div>{row.getValue('name')}</div>,
+    cell: ({ row }) => (
+      <div className="flex items-center gap-2">
+        <UserCircle className="h-4 w-4" />
+        <span>{row.getValue('name')}</span>
+      </div>
+    ),
   },
   {
     accessorKey: 'email',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant='ghost'
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Email
-          <ArrowUpDown className='ml-2 h-4 w-4' />
-        </Button>
-      );
-    },
-    cell: ({ row }): React.JSX.Element => <div>{row.getValue('email')}</div>,
+    header: 'Email',
   },
   {
-    accessorKey: 'qualification',
-    header: 'Qualification',
-    cell: ({ row }): React.JSX.Element => <div>{row.getValue('qualification')}</div>,
+    accessorKey: 'trade',
+    header: 'Trade',
   },
   {
-    accessorKey: 'progress',
-    header: 'Progress',
-    cell: ({ row }): React.JSX.Element => <div>{row.getValue('progress')}</div>,
+    accessorKey: 'employer',
+    header: 'Employer',
+  },
+  {
+    accessorKey: 'startDate',
+    header: 'Start Date',
+    cell: ({ row }) => (
+      <div>
+        {new Date(row.getValue('startDate')).toLocaleDateString('en-AU')}
+      </div>
+    ),
   },
   {
     accessorKey: 'status',
     header: 'Status',
-    cell: ({ row }): React.JSX.Element => <div className='capitalize'>{row.getValue('status')}</div>,
+    cell: ({ row }) => {
+      const status = row.getValue('status') as Apprentice['status'];
+      return (
+        <Badge
+          variant={
+            status === 'active'
+              ? 'default'
+              : status === 'completed'
+              ? 'secondary'
+              : 'destructive'
+          }
+        >
+          {status}
+        </Badge>
+      );
+    },
   },
   {
     id: 'actions',
-    enableHiding: false,
     cell: ({ row }) => {
       const apprentice = row.original;
 
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant='ghost'
-              className='h-8 w-8 p-0'
-            >
-              <span className='sr-only'>Open menu</span>
-              <MoreHorizontal className='h-4 w-4' />
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align='end'>
+          <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={(): Promise<void> => navigator.clipboard.writeText(apprentice.id)}>
+            <DropdownMenuItem
+              onClick={() => navigator.clipboard.writeText(apprentice.id)}
+            >
               Copy apprentice ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>View details</DropdownMenuItem>
-            <DropdownMenuItem>Update progress</DropdownMenuItem>
-            <DropdownMenuItem>Manage compliance</DropdownMenuItem>
+            <DropdownMenuItem>Update status</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -151,138 +122,49 @@ export const columns: ColumnDef<Apprentice>[] = [
   },
 ];
 
-export function ApprenticesDataTable(): void {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
+const statuses = [
+  {
+    value: 'active',
+    label: 'Active',
+  },
+  {
+    value: 'completed',
+    label: 'Completed',
+  },
+  {
+    value: 'withdrawn',
+    label: 'Withdrawn',
+  },
+];
 
-  const table = useReactTable({
-    data,
-    columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
-    },
-  });
+interface ApprenticesDataTableProps {
+  data: Apprentice[];
+}
 
+export function ApprenticesDataTable({
+  data,
+}: ApprenticesDataTableProps): React.ReactElement {
   return (
-    <div className='w-full'>
-      <div className='flex items-center py-4'>
-        <Input
-          placeholder='Filter apprentices...'
-          value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-            table.getColumn('name')?.setFilterValue(event.target.value)
-          }
-          className='max-w-sm'
-        />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant='outline'
-              className='ml-auto'
-            >
-              Columns <ChevronDown className='ml-2 h-4 w-4' />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align='end'>
-            {table
-              .getAllColumns()
-              .filter((column: unknown) => column.getCanHide())
-              .map((column: unknown) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className='capitalize'
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value: boolean) => column.toggleVisibility(!!value)}
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      <div className='rounded-md border'>
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup: unknown) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header: unknown) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.length ? (
-              table.getRowModel().rows.map((row: unknown) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                >
-                  {row.getVisibleCells().map((cell: unknown) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className='h-24 text-center'
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      <div className='flex items-center justify-end space-x-2 py-4'>
-        <div className='flex-1 text-sm text-muted-foreground'>
-          {table.getFilteredSelectedRowModel().rows.length} of{' '}
-          {table.getFilteredRowModel().rows.length} row(s: unknown) selected.
-        </div>
-        <div className='space-x-2'>
-          <Button
-            variant='outline'
-            size='sm'
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Previous
-          </Button>
-          <Button
-            variant='outline'
-            size='sm'
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Next
-          </Button>
-        </div>
-      </div>
-    </div>
+    <DataTable
+      columns={columns}
+      data={data}
+      filterableColumns={[
+        {
+          id: 'status',
+          title: 'Status',
+          options: statuses,
+        },
+      ]}
+      searchableColumns={[
+        {
+          id: 'name',
+          title: 'Name',
+        },
+        {
+          id: 'email',
+          title: 'Email',
+        },
+      ]}
+    />
   );
 }

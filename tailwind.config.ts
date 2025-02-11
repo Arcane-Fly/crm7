@@ -1,7 +1,7 @@
 import type { Config } from 'tailwindcss';
 import animate from 'tailwindcss-animate';
 
-const config = {
+const config: Config = {
   darkMode: ['class'],
   content: [
     './pages/**/*.{ts,tsx}',
@@ -20,8 +20,8 @@ const config = {
       },
     },
     extend: {
-      spacing: { // Add spacing section
-        'sidebar-width': '240px', // Define sidebar-width
+      spacing: {
+        'sidebar-width': '240px',
       },
       colors: {
         border: 'hsl(var(--border))',
@@ -80,6 +80,6 @@ const config = {
     },
   },
   plugins: [animate],
-} satisfies Config;
+} as const;
 
 export default config;

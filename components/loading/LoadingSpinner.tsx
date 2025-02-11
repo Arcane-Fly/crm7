@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import React from 'react';
 
 type LoadingSpinnerProps = {
   size?: 'sm' | 'md' | 'lg';
@@ -11,7 +12,7 @@ const sizeClasses = {
   lg: 'h-8 w-8',
 };
 
-export function LoadingSpinner({ size = 'md', className }: LoadingSpinnerProps): void {
+export function LoadingSpinner({ size = 'md', className }: LoadingSpinnerProps): React.ReactElement {
   return (
     <div
       role='status'

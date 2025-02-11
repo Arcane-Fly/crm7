@@ -25,6 +25,7 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
+import Image from 'next/image';
 
 interface Candidate {
   id: string;
@@ -239,11 +240,15 @@ export function JobDetails({
                     className="flex items-center justify-between rounded-lg border p-4"
                   >
                     <div className="flex items-center gap-4">
-                      <img
-                        src={candidate.avatar}
-                        alt={candidate.name}
-                        className="h-10 w-10 rounded-full"
-                      />
+                      <div className="w-10 h-10 relative">
+                        <Image
+                          src={candidate.avatar}
+                          alt={candidate.name}
+                          width={40}
+                          height={40}
+                          className="rounded-full"
+                        />
+                      </div>
                       <div>
                         <div className="font-medium">{candidate.name}</div>
                         <div className="text-sm text-muted-foreground">

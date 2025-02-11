@@ -1,6 +1,8 @@
+'use client';
+
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { BarChart, FileText, Home, Settings, Shield, Users } from 'lucide-react';
+import { BarChart, FileText, Home, Settings, Shield, Users, Calendar, Bell, HelpCircle } from 'lucide-react';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
@@ -9,10 +11,13 @@ const navItems = [
   { href: '/documents', label: 'Documents', icon: FileText },
   { href: '/compliance', label: 'Compliance', icon: Shield },
   { href: '/settings', label: 'Settings', icon: Settings },
+  { href: '/calendar', label: 'Calendar', icon: Calendar },
+  { href: '/notifications', label: 'Notifications', icon: Bell },
+  { href: '/help', label: 'Help', icon: HelpCircle },
 ];
 
 export function SideNav() {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? '/';
 
   return (
     <nav className="flex h-screen w-64 flex-col border-r bg-card px-3 py-4">

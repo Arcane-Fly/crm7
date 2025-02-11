@@ -1,4 +1,6 @@
 import type { PostgrestError } from '@supabase/supabase-js';
+import { Database } from './database.types';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 export class PostgrestErrorType implements PostgrestError {
   message: string;
@@ -30,4 +32,32 @@ export function createMockQueryResult<T>(params: {
     error: params.error ?? null,
     isLoading: params.isLoading ?? false
   };
+}
+
+export type MockSupabaseClient = jest.Mocked<SupabaseClient<Database>>;
+
+export interface TestContext {
+  supabase: MockSupabaseClient;
+}
+
+export interface TestUser {
+  id: string;
+  email: string;
+  role: string;
+  org_id: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface TestOrganization {
+  id: string;
+  name: string;
+  settings: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TestData {
+  user?: TestUser;
+  organization?: TestOrganization;
+  [key: string]: unknown;
 }

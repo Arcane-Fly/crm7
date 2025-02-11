@@ -1,79 +1,108 @@
-import { useState, useEffect } from 'react';
-import { type Transaction, type FinancialStats } from '@/lib/types';
+'use client';
+
+import { createClient } from '@/lib/supabase/client';
+import type { FinancialStats, Transaction } from '@/lib/types';
+import { useEffect, useState } from 'react';
 
 export function FinancialDashboard(): React.ReactElement {
-  const [_transactions, _setTransactions] = useState<Transaction[]>([]);
-  const [stats, _setStats] = useState<FinancialStats>({
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [stats, setStats] = useState<FinancialStats>({
     revenue: 0,
     expenses: 0,
     profit: 0
   });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const supabase = createClient();
 
-  useEffect((): void => {
+  useEffect(() => {
     const fetchData = async (): Promise<void> => {
       try {
         const { data, error } = await supabase.from('transactions').select('*');
-        
-        if (typeof error !== "undefined" && error !== null) throw error;
-        
-        if (typeof data !== "undefined" && data !== null) {
-          const typedTransactions = data as Transaction[];
-          _setTransactions(typedTransactions);
-          calculateStats(typedTransactions);
-        }
-      } catch (error) {
-        console.error('Failed to fetch financial data:', error);
+
+        if (error) throw error;
+
+        setTransactions(data as Transaction[]);
+        calculateStats(data as Transaction[]);
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Failed to fetch transactions'));
+      } finally {
+        setIsLoading(false);
       }
     };
 
     void fetchData();
-  }, []); // Empty dependency array since supabase is stable
+  }, [supabase]);
 
-  const _formatCurrency = (amount: number): string => {
+  if (isLoading) {
+    return <div>Loading financial data...</div>;
+  }
+
+  if (error) {
+    return <div>Error loading financial data: {error.message}</div>;
+  }
+
+  const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('en-AU', {
       style: 'currency',
       currency: 'AUD',
-      minimumFractionDigits: 2
     }).format(amount);
   };
 
-  const _getStatusColor = (status: string): string => {
-    switch (status) {
-      case 'positive':
-        return 'text-green-500';
-      case 'negative':
-        return 'text-red-500';
-      default:
-        return 'text-gray-500';
-    }
+  const formatDate = (date: string): string => {
+    return new Intl.DateTimeFormat('en-AU', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }).format(new Date(date));
   };
 
-  const _formatDate = (date: Date): string => {
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    }).format(date);
+  const calculateStats = (transactions: Transaction[]): void => {
+    const revenue = transactions
+      .filter(t => t.type === 'credit')
+      .reduce((acc, t) => acc + t.amount, 0);
+
+    const expenses = transactions
+      .filter(t => t.type === 'debit')
+      .reduce((acc, t) => acc + t.amount, 0);
+
+    const profit = revenue - expenses;
+    setStats({ revenue, expenses, profit });
   };
 
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-lg bg-white p-6 shadow">
-          <h3 className="text-lg font-medium">Total Volume</h3>
-          <p className="mt-1 text-sm text-gray-500">{_formatCurrency(stats.revenue)}</p>
+        <div className="p-4 bg-card rounded-lg shadow">
+          <h3 className="text-lg font-medium">Revenue</h3>
+          <p className="text-2xl font-bold">{formatCurrency(stats.revenue)}</p>
         </div>
-        <div className="rounded-lg bg-white p-6 shadow">
-          <h3 className="text-lg font-medium">Average Transaction</h3>
-          <p className="mt-1 text-sm text-gray-500">{_formatCurrency(stats.expenses)}</p>
+        <div className="p-4 bg-card rounded-lg shadow">
+          <h3 className="text-lg font-medium">Expenses</h3>
+          <p className="text-2xl font-bold">{formatCurrency(stats.expenses)}</p>
         </div>
-        <div className="rounded-lg bg-white p-6 shadow">
-          <h3 className="text-lg font-medium">Success Rate</h3>
-          <p className="mt-1 text-sm text-gray-500">{stats.profit.toFixed(1)}%</p>
+        <div className="p-4 bg-card rounded-lg shadow">
+          <h3 className="text-lg font-medium">Profit</h3>
+          <p className="text-2xl font-bold">{formatCurrency(stats.profit)}</p>
         </div>
       </div>
 
-      {/* Rest of the component */}
+      <div className="bg-card rounded-lg shadow">
+        <h3 className="p-4 text-lg font-medium border-b">Recent Transactions</h3>
+        <div className="divide-y">
+          {transactions.map((transaction) => (
+            <div key={transaction.id} className="p-4 flex justify-between items-center">
+              <div>
+                <p className="font-medium">{transaction.description}</p>
+                <p className="text-sm text-muted-foreground">{formatDate(transaction.createdAt)}</p>
+              </div>
+              <div className={`font-medium ${transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'}`}>
+                {formatCurrency(transaction.amount)}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,9 @@
+'use client';
+
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
-import { useRouter } from 'next/router';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import React from 'react';
 
 import {
@@ -8,7 +11,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion/index';
+} from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
@@ -38,27 +41,15 @@ const subNavSections: Record<string, SubNavSection[]> = {
       label: 'Overview',
       items: [
         {
-          id: 'quick-view',
-          label: 'Quick View',
-          href: '/dashboard/quick-view',
-          ariaLabel: 'View dashboard overview',
+          id: 'quick-actions',
+          label: 'Quick Actions',
+          href: '/dashboard/quick-actions',
+          ariaLabel: 'Access quick actions',
         },
         {
-          id: 'metrics',
-          label: 'Key Metrics',
-          href: '/dashboard/metrics',
-          ariaLabel: 'View key metrics',
-        },
-      ],
-    },
-    {
-      id: 'activities',
-      label: 'Activities',
-      items: [
-        {
-          id: 'recent',
+          id: 'recent-activities',
           label: 'Recent Activities',
-          href: '/dashboard/recent',
+          href: '/dashboard/activities',
           ariaLabel: 'View recent activities',
         },
         {
@@ -67,13 +58,37 @@ const subNavSections: Record<string, SubNavSection[]> = {
           href: '/dashboard/notifications',
           ariaLabel: 'View notifications',
         },
+        {
+          id: 'alerts',
+          label: 'Alerts & Reminders',
+          href: '/dashboard/alerts',
+          ariaLabel: 'View alerts and reminders',
+        },
+        {
+          id: 'metrics',
+          label: 'Key Metrics',
+          href: '/dashboard/metrics',
+          ariaLabel: 'View key metrics',
+        },
+        {
+          id: 'tasks',
+          label: 'Task List',
+          href: '/dashboard/tasks',
+          ariaLabel: 'View task list',
+        },
+        {
+          id: 'calendar',
+          label: 'Calendar View',
+          href: '/dashboard/calendar',
+          ariaLabel: 'View calendar',
+        },
       ],
     },
   ],
   training: [
     {
       id: 'programs',
-      label: 'Programs',
+      label: 'Training Programs',
       items: [
         {
           id: 'apprentices',
@@ -91,19 +106,25 @@ const subNavSections: Record<string, SubNavSection[]> = {
           id: 'courses',
           label: 'Course Catalog',
           href: '/training/courses',
-          ariaLabel: 'View course catalog',
+          ariaLabel: 'Browse course catalog',
+        },
+        {
+          id: 'calendar',
+          label: 'Training Calendar',
+          href: '/training/calendar',
+          ariaLabel: 'View training calendar',
         },
       ],
     },
     {
-      id: 'tracking',
-      label: 'Tracking',
+      id: 'assessments',
+      label: 'Assessments & Certifications',
       items: [
         {
           id: 'assessments',
           label: 'Assessments',
           href: '/training/assessments',
-          ariaLabel: 'View assessments',
+          ariaLabel: 'Manage assessments',
         },
         {
           id: 'certifications',
@@ -112,10 +133,10 @@ const subNavSections: Record<string, SubNavSection[]> = {
           ariaLabel: 'Manage certifications',
         },
         {
-          id: 'competencies',
-          label: 'Competency Tracking',
-          href: '/training/competencies',
-          ariaLabel: 'Track competencies',
+          id: 'skills',
+          label: 'Skills Matrix',
+          href: '/training/skills',
+          ariaLabel: 'View skills matrix',
         },
       ],
     },
@@ -123,68 +144,56 @@ const subNavSections: Record<string, SubNavSection[]> = {
   // Add other sections as needed
 };
 
-export const SubNavigation: React.FC<SubNavigationProps> = ({ section }) => {
-  const router = useRouter();
-  const [openSections, setOpenSections] = React.useState<string[]>([]);
+export function SubNavigation({ section }: SubNavigationProps) {
+  const pathname = usePathname();
 
-  const isActive = (href: string): boolean => router.pathname === href;
+  const isActive = (href: string): boolean => {
+    return pathname === href;
+  };
 
   const sections = subNavSections[section] || [];
 
   return (
-    <nav
-      className='h-full w-64 border-r bg-background'
-      aria-label={`${section} Navigation`}
-    >
-      <ScrollArea className='h-full'>
-        <div className='p-4'>
-          <Accordion
-            type='multiple'
-            value={openSections}
-            onValueChange={setOpenSections}
-            className='space-y-4'
-          >
-            {sections.map((section: unknown) => (
-              <AccordionItem
-                key={section.id}
-                value={section.id}
-                className='border-none'
-              >
-                <AccordionTrigger className='rounded-md px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground'>
-                  {section.label}
-                </AccordionTrigger>
-                <AccordionContent>
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className='space-y-1 pl-4'
-                  >
-                    {section.items.map((item: unknown) => (
-                      <Button
-                        key={item.id}
-                        variant='ghost'
+    <ScrollArea className="h-[calc(100vh-4rem)]">
+      <div className="space-y-4 py-4" role="navigation" aria-label="Sub Navigation">
+        <Accordion type="single" collapsible className="w-full">
+          {sections.map((section) => (
+            <AccordionItem key={section.id} value={section.id}>
+              <AccordionTrigger className="text-sm">
+                {section.label}
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="flex flex-col space-y-1">
+                  {section.items.map((item) => (
+                    <Link
+                      key={item.id}
+                      href={item.href}
+                      aria-label={item.ariaLabel}
+                    >
+                      <motion.div
+                        whileHover={{ x: 4 }}
                         className={cn(
-                          'w-full justify-start gap-2 text-sm',
-                          isActive(item.href) && 'bg-accent text-accent-foreground',
+                          'flex items-center rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground',
+                          isActive(item.href) && 'bg-accent text-accent-foreground'
                         )}
-                        onClick={(): React.ReactElement => router.push(item.href)}
-                        aria-label={item.ariaLabel}
-                        aria-current={isActive(item.href) ? 'page' : undefined}
                       >
-                        <ChevronRight className='h-4 w-4' />
-                        {item.label}
-                      </Button>
-                    ))}
-                  </motion.div>
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
-      </ScrollArea>
-    </nav>
+                        {item.icon}
+                        <span>{item.label}</span>
+                        <ChevronRight
+                          className={cn(
+                            'ml-auto h-4 w-4 transition-transform',
+                            isActive(item.href) && 'rotate-90'
+                          )}
+                        />
+                      </motion.div>
+                    </Link>
+                  ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </div>
+    </ScrollArea>
   );
-};
-
-export default SubNavigation;
+}

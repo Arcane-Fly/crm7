@@ -17,7 +17,7 @@ export async function getSession(): Promise<void> {
 }
 
 export async function withAuth(handler: Function): Promise<void> {
-  return async (req: NextRequest, context: unknown) => {
+  return async (req: Request, context: unknown) => {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
       return new Response('Unauthorized', { status: 401 });
@@ -47,7 +47,7 @@ export async function withAuth(handler: Function): Promise<void> {
   };
 }
 
-export async function getUser(req: NextRequest): Promise<void> {
+export async function getUser(req: Request): Promise<void> {
   const authHeader = req.headers.get('Authorization');
   if (!authHeader?.startsWith('Bearer ')) {
     return null;

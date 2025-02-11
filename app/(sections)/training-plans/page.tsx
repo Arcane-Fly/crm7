@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Breadcrumb, BreadcrumbItem } from '@/components/ui/breadcrumb';
@@ -7,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { columns } from './columns';
 
-export default function TrainingPlansPage(): JSX.Element {
+export default function TrainingPlansPage(): React.ReactElement {
   const router = useRouter();
   const data: unknown[] = []; // adapt your data as needed
 
@@ -22,12 +23,7 @@ export default function TrainingPlansPage(): JSX.Element {
           <Plus className="mr-2 h-4 w-4" /> Create Training Plan
         </Button>
       </div>
-      <DataTable
-        columns={columns}
-        data={data}
-        filterColumn="name"
-        enableColumnVisibility={true}
-      />
+      <DataTable columns={columns} data={data} filterColumn="name" enableColumnVisibility={true} />
     </div>
   );
 }

@@ -1,79 +1,116 @@
+'use client';
+
 import { useState, useEffect } from 'react';
-import { type Performance, type PerformanceStats } from '@/lib/types';
+import { createClient } from '@/lib/supabase/client';
+import type { Performance, PerformanceStats } from '@/lib/types';
 
 export function FinancialPerformanceDashboard(): React.ReactElement {
-  const [stats, _setStats] = useState<PerformanceStats>({
+  const [performances, setPerformances] = useState<Performance[]>([]);
+  const [stats, setStats] = useState<PerformanceStats>({
     revenue: 0,
     growth: 0,
     margin: 0
   });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const supabase = createClient();
 
-  useEffect((): void => {
+  useEffect(() => {
     const fetchData = async (): Promise<void> => {
       try {
         const { data, error } = await supabase.from('financial_performances').select('*');
         
-        if (typeof error !== "undefined" && error !== null) throw error;
+        if (error) throw error;
         
-        if (typeof data !== "undefined" && data !== null) {
-          // Removed setPerformances(data);
-          // Removed calculateStats(data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch performance data:', error);
+        setPerformances(data as Performance[]);
+        calculateStats(data as Performance[]);
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Failed to fetch performance data'));
+      } finally {
+        setIsLoading(false);
       }
     };
 
     void fetchData();
-  }, []); // Empty dependency array since supabase is stable
+  }, [supabase]);
 
-  const getStatusColor = (status: string): string => {
-    switch (status) {
-      case 'approved':
-        return 'text-green-500';
-      case 'submitted':
-        return 'text-blue-500';
-      case 'draft':
-        return 'text-yellow-500';
-      default:
-        return 'text-gray-500';
+  if (isLoading) {
+    return <div>Loading performance data...</div>;
+  }
+
+  if (error) {
+    return <div>Error loading performance data: {error.message}</div>;
+  }
+
+  const formatPercent = (value: number): string => {
+    return new Intl.NumberFormat('en-AU', {
+      style: 'percent',
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    }).format(value / 100);
+  };
+
+  const formatCurrency = (amount: number): string => {
+    return new Intl.NumberFormat('en-AU', {
+      style: 'currency',
+      currency: 'AUD',
+    }).format(amount);
+  };
+
+  const calculateStats = (performances: Performance[]): void => {
+    if (performances.length === 0) {
+      setStats({ revenue: 0, growth: 0, margin: 0 });
+      return;
     }
+
+    const latestPerformance = performances[performances.length - 1];
+    setStats({
+      revenue: latestPerformance.revenue,
+      growth: latestPerformance.growth,
+      margin: latestPerformance.margin
+    });
   };
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-lg bg-white p-6 shadow">
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="p-4 bg-card rounded-lg shadow">
           <h3 className="text-lg font-medium">Revenue</h3>
-          <p className="text-2xl font-bold">{stats.revenue.toFixed(1)}</p>
+          <p className="text-2xl font-bold">{formatCurrency(stats.revenue)}</p>
         </div>
-        <div className="rounded-lg bg-white p-6 shadow">
+        <div className="p-4 bg-card rounded-lg shadow">
           <h3 className="text-lg font-medium">Growth</h3>
-          <p className="mt-1 text-sm text-gray-500">{stats.growth.toFixed(1)}%</p>
+          <p className="text-2xl font-bold">{formatPercent(stats.growth)}</p>
         </div>
-        <div className="rounded-lg bg-white p-6 shadow">
+        <div className="p-4 bg-card rounded-lg shadow">
           <h3 className="text-lg font-medium">Margin</h3>
-          <p className="mt-1 text-sm text-gray-500">{stats.margin.toFixed(1)}%</p>
+          <p className="text-2xl font-bold">{formatPercent(stats.margin)}</p>
         </div>
       </div>
 
-      <div className="rounded-lg bg-white p-6 shadow">
-        <h3 className="text-lg font-medium mb-4">Recent Performances</h3>
-        <div className="space-y-4">
-          {/* Removed performances.slice(0, 5).map((performance) => ( */}
-            {/* Removed <div
-              key={performance.id}
-              className="flex items-center justify-between"
-            >
+      <div className="bg-card rounded-lg shadow">
+        <h3 className="p-4 text-lg font-medium border-b">Performance History</h3>
+        <div className="divide-y">
+          {performances.map((performance) => (
+            <div key={performance.id} className="p-4 flex justify-between items-center">
               <div>
-                <p className="font-medium">{performance.title}</p>
-                <p className="text-sm text-gray-500">{performance.description}</p>
+                <p className="font-medium">{performance.period}</p>
+                <p className={`text-sm ${
+                  performance.status === 'approved' ? 'text-green-600' :
+                  performance.status === 'submitted' ? 'text-blue-600' :
+                  'text-yellow-600'
+                }`}>
+                  {performance.status.charAt(0).toUpperCase() + performance.status.slice(1)}
+                </p>
               </div>
-              <span className={getStatusColor(performance.status)}>
-                {performance.status}
-              </span>
-            </div> */}
-          {/* Removed )) */}
+              <div className="text-right">
+                <p className="font-medium">{formatCurrency(performance.revenue)}</p>
+                <p className={`text-sm ${performance.growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {formatPercent(performance.growth)} growth
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

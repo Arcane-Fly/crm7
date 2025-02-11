@@ -1,92 +1,102 @@
-import React from 'react';
-import { type MFASetupProps } from '@/lib/types';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import Image from 'next/image';
+import { handleApiError } from '@/lib/api-error';
 
-export function MFASetup(): React.ReactElement {
-  const [_secret, setSecret] = React.useState<string>('');
-  const [qrCode, setQrCode] = React.useState<string>('');
-  const [isVerifying, setIsVerifying] = React.useState<boolean>(false);
-  const [token, setToken] = React.useState<string>('');
+interface MFASetupProps {
+  qrCode: string;
+  onVerify: (code: string) => Promise<boolean>;
+  onCancel: () => void;
+}
 
-  React.useEffect((): void => {
-    const setupMFA = async (): Promise<void> => {
-      try {
-        const { qrCode, secret } = await generateMFASecret();
-        setQrCode(qrCode);
-        setSecret(secret);
-      } catch (error) {
-        console.error('Failed to setup MFA:', error);
-      }
-    };
+export function MFASetup({ qrCode, onVerify, onCancel }: MFASetupProps) {
+  const [verificationCode, setVerificationCode] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    void setupMFA();
-  }, []);
-
-  const handleVerify = async (e: React.FormEvent): Promise<void> => {
-    e.preventDefault();
+  const handleVerify = async () => {
+    if (!verificationCode) {
+      setError('Please enter a verification code');
+      return;
+    }
 
     try {
       setIsVerifying(true);
-      const success = await verifyMFA(token);
-
-      if (typeof success !== "undefined" && success !== null) {
-        // onComplete();
+      setError(null);
+      const success = await onVerify(verificationCode);
+      
+      if (!success) {
+        setError('Invalid verification code. Please try again.');
       }
-    } catch (error) {
-      console.error('MFA verification failed:', error);
+    } catch (err) {
+      const { message } = handleApiError(err);
+      setError(message);
     } finally {
       setIsVerifying(false);
     }
   };
 
-  if (typeof isEnabled !== "undefined" && isEnabled !== null) {
-    return (
-      <div className="text-center">
-        <p className="text-green-600">MFA is already enabled</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-6">
-      {qrCode && (
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader>
+        <CardTitle>Set Up Two-Factor Authentication</CardTitle>
+        <CardDescription>
+          Scan the QR code with your authenticator app and enter the verification code below.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
         <div className="flex justify-center">
-          <img
-            src={qrCode}
-            alt="MFA QR Code"
-            className="w-48 h-48"
-          />
+          <div className="relative w-64 h-64">
+            <Image
+              src={qrCode}
+              alt="QR Code for 2FA setup"
+              width={256}
+              height={256}
+              className="rounded-lg"
+            />
+          </div>
         </div>
-      )}
 
-      <form
-        onSubmit={handleVerify}
-        className="space-y-4"
-      >
-        <div>
-          <label
-            htmlFor="token"
-            className="block text-sm font-medium"
-          >
-            Enter verification code
-          </label>
-          <input
-            id="token"
+        <div className="space-y-2">
+          <Label htmlFor="verification-code">Verification Code</Label>
+          <Input
+            id="verification-code"
             type="text"
-            value={token}
-            onChange={(e): void => setToken(e.target.value)}
-            className="mt-1 block w-full rounded-md border px-3 py-2"
-            required
+            placeholder="Enter 6-digit code"
+            value={verificationCode}
+            onChange={(e) => setVerificationCode(e.target.value)}
+            maxLength={6}
+            pattern="[0-9]*"
+            inputMode="numeric"
+            aria-invalid={error ? 'true' : 'false'}
+            aria-describedby={error ? 'verification-error' : undefined}
           />
+          {error && (
+            <p id="verification-error" className="text-sm text-destructive">
+              {error}
+            </p>
+          )}
         </div>
 
-        <button
-          type="submit"
-          disabled={isVerifying}
-          className="w-full rounded-md bg-primary px-4 py-2 text-white disabled:opacity-50"
-        >
-          {isVerifying ? 'Verifying...' : 'Verify'}
-        </button>
-      </form>
-    </div>
+        <div className="flex justify-end space-x-2">
+          <Button
+            variant="outline"
+            onClick={onCancel}
+            disabled={isVerifying}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleVerify}
+            disabled={!verificationCode || isVerifying}
+          >
+            {isVerifying ? 'Verifying...' : 'Verify'}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

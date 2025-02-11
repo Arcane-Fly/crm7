@@ -15,6 +15,30 @@ interface BulkRateCalculatorProps {
   orgId?: string;
 }
 
+interface CalculationResult {
+  success: boolean;
+  error?: string;
+  result?: number;
+}
+
+interface BulkCalculationResult {
+  [key: string]: CalculationResult;
+}
+
+interface Template {
+  id: string;
+}
+
+interface Calculation {
+  id: string;
+  createdAt: string;
+  status: string;
+  results: {
+    templateId: string;
+    rate: number;
+  }[];
+}
+
 export function BulkRateCalculator({ orgId = 'default-org' }: BulkRateCalculatorProps): React.ReactElement {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -29,22 +53,51 @@ export function BulkRateCalculator({ orgId = 'default-org' }: BulkRateCalculator
     queryFn: () => ratesService.getBulkCalculations(orgId),
   });
 
+  const calculateRate = (baseRate: number, multiplier: number): CalculationResult => {
+    try {
+      if (baseRate <= 0 || multiplier <= 0) {
+        return {
+          success: false,
+          error: 'Base rate and multiplier must be positive numbers',
+        };
+      }
+
+      const result = baseRate * multiplier;
+      return {
+        success: true,
+        result,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: 'Invalid calculation',
+      };
+    }
+  };
+
   const createCalculation = useMutation({
-    mutationFn: async (): Promise<any> => {
+    mutationFn: async (): Promise<Calculation> => {
       if (!templatesData?.data) {
         throw new Error('No templates available');
       }
-      const templateIds = templatesData.data.slice(0, 2).map(t => t.id);
+      const templateIds = templatesData.data.slice(0, 2).map((t: Template) => t.id);
+      const calculations: BulkCalculationResult = {};
+      templateIds.forEach((templateId) => {
+        const baseRate = 100; // default base rate
+        const multiplier = 1.5; // default multiplier
+        calculations[templateId] = calculateRate(baseRate, multiplier);
+      });
       return ratesService.createBulkCalculation({
         orgId,
         templateIds,
+        calculations,
       });
     },
-    onSuccess: (response): void => {
-      queryClient.setQueryData(['bulk-calculations', orgId], (old: unknown): { data: any[]; } => {
-        if (!old) return { data: [response.data] };
+    onSuccess: (response: Calculation): void => {
+      queryClient.setQueryData(['bulk-calculations', orgId], (old: unknown): { data: Calculation[] } => {
+        if (!old) return { data: [response] };
         return {
-          data: [...old.data, response.data],
+          data: [...old.data, response],
         };
       });
       toast({
@@ -75,7 +128,7 @@ export function BulkRateCalculator({ orgId = 'default-org' }: BulkRateCalculator
         </div>
 
         <div className="space-y-4">
-          {calculationsData?.data.map((calc) => (
+          {calculationsData?.data.map((calc: Calculation) => (
             <Card key={calc.id} className="p-4">
               <div className="flex items-center justify-between">
                 <div>
