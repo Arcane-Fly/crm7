@@ -16,16 +16,38 @@ export interface LeaveEntitlement {
   description?: string;
 }
 
+export interface FairWorkClientConfig {
+  apiUrl?: string;
+  apiKey?: string;
+  environment?: 'sandbox' | 'production';
+}
+
 export class FairWorkClient {
-  constructor(private baseUrl: string = process.env.FAIRWORK_API_URL || '') {}
+  private apiUrl: string;
+  private apiKey?: string;
+  private environment?: string;
+
+  constructor(config?: FairWorkClientConfig) {
+    this.apiUrl = config?.apiUrl || process.env.FAIRWORK_API_URL || '';
+    this.apiKey = config?.apiKey || process.env.FAIRWORK_API_KEY;
+    this.environment = config?.environment || process.env.FAIRWORK_ENVIRONMENT;
+  }
 
   async getLeaveEntitlements(
     awardCode: string,
-    classificationCode: string
-  ): Promise<LeaveEntitlement[]> {
+    classificationCode: string,
+    query?: { date?: string; employmentType?: string }
+  ): Promise<any> {
     try {
       const response = await fetch(
-        `${this.baseUrl}/awards/${awardCode}/classifications/${classificationCode}/leave-entitlements`
+        `${this.apiUrl}/awards/${awardCode}/classifications/${classificationCode}/leave-entitlements`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': this.apiKey ? `Bearer ${this.apiKey}` : undefined,
+          },
+          ...query ? { params: query } : {},
+        }
       );
 
       if (!response.ok) {
@@ -41,6 +63,65 @@ export class FairWorkClient {
     }
   }
 
+  async getRates(
+    awardCode: string,
+    classificationCode: string,
+    query?: { date?: string; employmentType?: string }
+  ): Promise<any> {
+    try {
+      const response = await fetch(
+        `${this.apiUrl}/awards/${awardCode}/classifications/${classificationCode}/rates`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': this.apiKey ? `Bearer ${this.apiKey}` : undefined,
+          },
+          ...query ? { params: query } : {},
+        }
+      );
+
+      if (!response.ok) {
+        throw new FairWorkApiError('Failed to fetch rates', response.status);
+      }
+
+      return await response.json();
+    } catch (error) {
+      if (error instanceof FairWorkApiError) {
+        throw error;
+      }
+      throw new FairWorkApiError('Failed to fetch rates', 500, { error });
+    }
+  }
+
+  async getAllowances(
+    awardCode: string,
+    query?: { date?: string }
+  ): Promise<any> {
+    try {
+      const response = await fetch(
+        `${this.apiUrl}/awards/${awardCode}/allowances`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': this.apiKey ? `Bearer ${this.apiKey}` : undefined,
+          },
+          ...query ? { params: query } : {},
+        }
+      );
+
+      if (!response.ok) {
+        throw new FairWorkApiError('Failed to fetch allowances', response.status);
+      }
+
+      return await response.json();
+    } catch (error) {
+      if (error instanceof FairWorkApiError) {
+        throw error;
+      }
+      throw new FairWorkApiError('Failed to fetch allowances', 500, { error });
+    }
+  }
+
   async validatePayRate(
     awardCode: string,
     classificationCode: string,
@@ -48,11 +129,12 @@ export class FairWorkClient {
   ): Promise<boolean> {
     try {
       const response = await fetch(
-        `${this.baseUrl}/awards/${awardCode}/classifications/${classificationCode}/validate`,
+        `${this.apiUrl}/awards/${awardCode}/classifications/${classificationCode}/validate`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': this.apiKey ? `Bearer ${this.apiKey}` : undefined,
           },
           body: JSON.stringify({ rate }),
         }

@@ -1,14 +1,13 @@
-import { useQuery } from '@tanstack/react-query';
-
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { ratesService } from '@/lib/services/rates';
+import { type RateTemplate } from '@/lib/types/rates';
 
-
-export function useRates(orgId: string): void {
-  return useQuery<RateData[], Error>({
+export function useRates(orgId: string): UseQueryResult<RateTemplate[], Error> {
+  return useQuery<RateTemplate[], Error>({
     queryKey: ['rates', orgId],
-    queryFn: async (): Promise<RateData[]> => {
-      const { data } = await ratesService.getTemplates({ orgId });
-      return data;
+    queryFn: async (): Promise<RateTemplate[]> => {
+      const response = await ratesService.getTemplates({ orgId });
+      return response.data;
     },
   });
 }

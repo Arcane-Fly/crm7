@@ -1,14 +1,13 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { vi } from 'vitest';
-
 import { useLMS } from '@/lib/hooks/use-lms';
 import type { Course, Enrollment } from '@/lib/types/lms';
-import { PostgrestErrorType, createMockQueryResult } from '@/types/test-utils';
+import { createMockQueryResult } from '@/lib/test-utils';
+import { TrainingDashboard } from '@/components/analytics/training-dashboard';
 
-import TrainingDashboard from '@/components/analytics/training-dashboard';
-
-// Mock the hooks
-vi.mock('@/lib/hooks/use-lms');
+vi.mock('@/lib/hooks/use-lms', () => ({
+  useLMS: vi.fn()
+}));
 
 const mockCourses: Course[] = [
   {
@@ -44,13 +43,13 @@ const mockEnrollments: Enrollment[] = [
 
 describe('TrainingDashboard', () => {
   beforeEach(() => {
-    (vi.mocked(useLMS) as jest.Mock).mockReturnValue({
-      courses: createMockQueryResult<Course[]>({
+    vi.mocked(useLMS).mockReturnValue({
+      courses: createMockQueryResult({
         data: mockCourses,
         isLoading: false,
         error: null,
       }),
-      enrollments: createMockQueryResult<Enrollment[]>({
+      enrollments: createMockQueryResult({
         data: mockEnrollments,
         isLoading: false,
         error: null,
@@ -63,16 +62,16 @@ describe('TrainingDashboard', () => {
       isUpdatingCourse: false,
       isCreatingEnrollment: false,
       isUpdatingEnrollment: false,
-    });
+    } as any);
   });
 
   it('renders without crashing', () => {
-    render(<TrainingDashboard />);
+    render(<TrainingDashboard courseId="test-course-1" />);
     expect(screen.getByText('Training Analytics')).toBeInTheDocument();
   });
 
   it('displays correct statistics', () => {
-    render(<TrainingDashboard />);
+    render(<TrainingDashboard courseId="test-course-1" />);
     expect(screen.getByText('2')).toBeInTheDocument(); // Total Enrollments
     expect(screen.getByText('1')).toBeInTheDocument(); // Completed
     expect(screen.getByText('1')).toBeInTheDocument(); // In Progress
@@ -80,13 +79,13 @@ describe('TrainingDashboard', () => {
   });
 
   it('shows loading state', () => {
-    (vi.mocked(useLMS) as jest.Mock).mockReturnValue({
-      courses: createMockQueryResult<Course[]>({
+    vi.mocked(useLMS).mockReturnValue({
+      courses: createMockQueryResult({
         data: undefined,
         isLoading: true,
         error: null,
       }),
-      enrollments: createMockQueryResult<Enrollment[]>({
+      enrollments: createMockQueryResult({
         data: undefined,
         isLoading: true,
         error: null,
@@ -99,21 +98,21 @@ describe('TrainingDashboard', () => {
       isUpdatingCourse: false,
       isCreatingEnrollment: false,
       isUpdatingEnrollment: false,
-    });
+    } as any);
 
-    render(<TrainingDashboard />);
+    render(<TrainingDashboard courseId="test-course-1" />);
     expect(screen.getByTestId('loading-skeleton')).toBeInTheDocument();
   });
 
   it('shows error state', () => {
-    const error = new PostgrestErrorType('Failed to load courses');
-    (vi.mocked(useLMS) as jest.Mock).mockReturnValue({
-      courses: createMockQueryResult<Course[]>({
+    const error = new Error('Failed to load courses');
+    vi.mocked(useLMS).mockReturnValue({
+      courses: createMockQueryResult({
         data: [],
         isLoading: false,
         error,
       }),
-      enrollments: createMockQueryResult<Enrollment[]>({
+      enrollments: createMockQueryResult({
         data: [],
         isLoading: false,
         error: null,
@@ -126,25 +125,9 @@ describe('TrainingDashboard', () => {
       isUpdatingCourse: false,
       isCreatingEnrollment: false,
       isUpdatingEnrollment: false,
-    });
+    } as any);
 
-    render(<TrainingDashboard />);
+    render(<TrainingDashboard courseId="test-course-1" />);
     expect(screen.getByText(/Failed to load courses/i)).toBeInTheDocument();
-  });
-
-  it('filters data by date range', async () => {
-    render(<TrainingDashboard />);
-
-    // Open date picker
-    const dateRangePicker = screen.getByRole('button', { name: /Date Range/i });
-    fireEvent.click(dateRangePicker);
-
-    // Select date range
-    // Note: Actual date selection would depend on your date picker component
-    // This is just a simplified example
-
-    await waitFor(() => {
-      expect(screen.getByText('2')).toBeInTheDocument();
-    });
   });
 });

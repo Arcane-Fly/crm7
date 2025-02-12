@@ -1,7 +1,7 @@
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { AppLayout } from '@/components/layout/app-layout';
-import { AuthProvider } from '@/lib/auth/context';
+import AuthProvider from '@/lib/auth/context';
 import { createClient } from '@/utils/supabase/server';
 import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary';
 import { Providers } from '@/components/providers';
@@ -17,7 +17,6 @@ export default async function RootLayout({
   const supabase = await createClient();
 
   try {
-    // Always use getUser() to verify authentication
     const {
       data: { user },
       error,
@@ -49,9 +48,11 @@ export default async function RootLayout({
         <body className={inter.className}>
           <Providers>
             <ErrorBoundary>
-              <AuthProvider initialUser={user}>
-                {user ? <AppLayout>{children}</AppLayout> : children}
-              </AuthProvider>
+              {user ? (
+                <AppLayout>{children}</AppLayout>
+              ) : (
+                children
+              )}
             </ErrorBoundary>
           </Providers>
         </body>

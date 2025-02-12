@@ -67,12 +67,16 @@ export interface IRateManagementService {
   calculateRate(template: RateTemplate): Promise<RateCalculationResult>;
   getBulkCalculations(orgId: string): Promise<{ data: BulkCalculation[] }>;
   createBulkCalculation(calculation: Omit<BulkCalculation, 'id'>): Promise<BulkCalculation>;
-  getAnalytics(orgId: string): Promise<{ data: RateAnalytics }>;
+  getAnalytics(orgId: string): Promise<RateAnalyticsResponse>;
   getCurrentRates(): Promise<PayRate[]>;
   getRatesForDate(date: Date): Promise<PayRate[]>;
   getClassifications(): Promise<Classification[]>;
   getClassificationHierarchy(): Promise<Classification[]>;
   clearCache(): void;
+}
+
+export interface RateAnalyticsResponse {
+  data: RateAnalytics;
 }
 
 export class RateManagementServiceImpl implements IRateManagementService {
@@ -434,7 +438,7 @@ export class RateManagementServiceImpl implements IRateManagementService {
     }
   }
 
-  async getAnalytics(orgId: string): Promise<{ data: RateAnalytics }> {
+  async getAnalytics(orgId: string): Promise<RateAnalyticsResponse> {
     try {
       const { data: templates, error: templatesError } = await this.client
         .from('rate_templates')

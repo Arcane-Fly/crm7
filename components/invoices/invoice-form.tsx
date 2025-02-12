@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
-import { type LineItem } from '@/lib/types';
+import { type LineItem } from '@/lib/types/invoice';
 
 interface InvoiceFormData {
   dueDate: Date;
@@ -17,28 +17,28 @@ interface InvoiceFormProps {
 }
 
 export function InvoiceForm({ onSubmit }: InvoiceFormProps): React.ReactElement {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [lineItems, setLineItems] = useState<LineItem[]>([]);
-  const [issueDate, setIssueDate] = useState<Date>(new Date());
-  const [_dueDate, _setDueDate] = useState<Date>(new Date());
-
-  const updateLineItem = (index: number, field: keyof LineItem, value: string | number): void => {
-    const newItems = [...lineItems];
-    newItems[index] = { ...newItems[index], [field]: value };
-    setLineItems(newItems);
-  };
+  const [formData, setFormData] = useState<InvoiceFormData>({
+    dueDate: new Date(),
+    items: [],
+  });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     try {
-      setIsLoading(true);
-      // Form submission logic
-      await onSubmit({ dueDate: _dueDate, items: lineItems } as InvoiceFormData);
+      await onSubmit(formData);
     } catch (error) {
       console.error('Failed to submit invoice:', error);
-    } finally {
-      setIsLoading(false);
     }
+  };
+
+  const updateLineItem = (index: number, field: keyof LineItem, value: string | number): void => {
+    const newItems = [...formData.items];
+    newItems[index] = { ...newItems[index], [field]: value };
+    setFormData({ ...formData, items: newItems });
+  };
+
+  const addLineItem = (): void => {
+    setFormData({ ...formData, items: [...formData.items, { description: '', amount: 0 }] });
   };
 
   return (
@@ -47,11 +47,11 @@ export function InvoiceForm({ onSubmit }: InvoiceFormProps): React.ReactElement 
         <div className="space-y-4">
           <div>
             <label>Due Date</label>
-            <div>{_dueDate ? format(_dueDate, 'PPP') : 'Select date'}</div>
+            <div>{formData.dueDate ? format(formData.dueDate, 'PPP') : 'Select date'}</div>
           </div>
 
           <div className="space-y-4">
-            {lineItems.map((item, index) => (
+            {formData.items.map((item, index) => (
               <div key={index} className="grid gap-4 grid-cols-3">
                 <input
                   type="text"
@@ -63,27 +63,21 @@ export function InvoiceForm({ onSubmit }: InvoiceFormProps): React.ReactElement 
                 />
                 <input
                   type="number"
-                  value={item.quantity}
+                  value={item.amount}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-                    updateLineItem(index, 'quantity', parseFloat(e.target.value))
+                    updateLineItem(index, 'amount', parseFloat(e.target.value))
                   }
-                  placeholder="Quantity"
-                />
-                <input
-                  type="number"
-                  value={item.unit_price}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-                    updateLineItem(index, 'unit_price', parseFloat(e.target.value))
-                  }
-                  placeholder="Unit Price"
+                  placeholder="Amount"
                 />
               </div>
             ))}
           </div>
 
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? 'Creating...' : 'Create Invoice'}
+          <Button type="button" onClick={addLineItem}>
+            Add Line Item
           </Button>
+
+          <Button type="submit">Create Invoice</Button>
         </div>
       </form>
     </div>

@@ -1,4 +1,12 @@
-interface ChartContainerProps {
+'use client';
+
+import { Bar, Line, Pie } from 'react-chartjs-2';
+
+export const BarChart = Bar;
+export const LineChart = Line;
+export const PieChart = Pie;
+
+export interface ChartContainerProps {
   children: React.ReactNode;
   width?: number;
   height?: number;

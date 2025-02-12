@@ -1,9 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 interface OverviewCardProps {
   title: string;
   value: string;
-  icon: React.ReactNode;
+  change?: number;
   description?: string;
   trend?: {
     value: number;
@@ -12,26 +13,19 @@ interface OverviewCardProps {
   };
 }
 
-export function OverviewCard({ title, value, icon, description, trend }: OverviewCardProps): void {
+export function OverviewCard({ title, value, change }: OverviewCardProps): React.ReactElement {
   return (
-    <Card>
-      <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-        <CardTitle className='text-sm font-medium'>{title}</CardTitle>
-        {icon}
-      </CardHeader>
-      <CardContent>
-        <div className='text-2xl font-bold'>{value}</div>
-        {trend && (
-          <div className='flex items-center space-x-2'>
-            <p className={`text-sm ${trend.positive ? 'text-green-500' : 'text-red-500'}`}>
-              {trend.positive ? '+' : '-'}
-              {trend.value}%
-            </p>
-            <p className='text-sm text-muted-foreground'>{trend.label}</p>
-          </div>
-        )}
-        {description && <p className='mt-1 text-xs text-muted-foreground'>{description}</p>}
-      </CardContent>
-    </Card>
+    <div className="rounded-lg border p-4">
+      <h3 className="text-sm font-medium text-gray-500">{title}</h3>
+      <p className="mt-2 text-3xl font-semibold">{value}</p>
+      {typeof change !== 'undefined' && (
+        <p className={cn(
+          "mt-2 text-sm",
+          change >= 0 ? "text-green-600" : "text-red-600"
+        )}>
+          {change >= 0 ? '+' : ''}{change}%
+        </p>
+      )}
+    </div>
   );
 }

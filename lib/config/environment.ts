@@ -5,6 +5,10 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   APP_URL: z.string().url(),
 
+  // Server
+  HOST: z.string().default('localhost'),
+  PORT: z.coerce.number().int().positive().default(3001),
+
   // Database
   DATABASE_URL: z.string(),
   REDIS_URL: z.string(),
@@ -32,10 +36,6 @@ const envSchema = z.object({
   // External Services
   FAIRWORK_API_URL: z.string().url(),
   FAIRWORK_API_KEY: z.string(),
-
-  // Server
-  HOST: z.string().default('localhost'),
-  PORT: z.coerce.number().int().positive().default(3001),
 });
 
 export const env = envSchema.parse(process.env);

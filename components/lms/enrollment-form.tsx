@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { Card } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
+import { useLMS } from '@/lib/hooks/use-lms';
 
 const enrollmentSchema = z.object({
   student_id: z.string().min(1, 'Student ID is required'),
@@ -22,6 +23,7 @@ interface EnrollmentFormProps {
 
 export function EnrollmentForm({ enrollmentId, initialData, onSubmit }: EnrollmentFormProps): JSX.Element {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const { updateEnrollment, createEnrollment } = useLMS();
 
   const form = useForm<EnrollmentFormData>({
     resolver: zodResolver(enrollmentSchema),
@@ -36,10 +38,15 @@ export function EnrollmentForm({ enrollmentId, initialData, onSubmit }: Enrollme
   const handleSubmit = async (values: EnrollmentFormData): Promise<void> => {
     try {
       setIsSubmitting(true);
-      if (typeof enrollmentId !== "undefined" && enrollmentId !== null) {
-        await updateEnrollment(enrollmentId, values);
+      if (enrollmentId) {
+        await updateEnrollment({ 
+          data: values,
+          match: { id: enrollmentId }
+        });
       } else {
-        await createEnrollment(values);
+        await createEnrollment({ 
+          data: values
+        });
       }
       onSubmit(values);
     } catch (error) {

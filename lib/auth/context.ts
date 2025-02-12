@@ -5,12 +5,14 @@ import { User } from '@supabase/supabase-js';
 
 interface AuthContextType {
   user: User | null;
+  signOut: () => Promise<void>;
   getUser: () => Promise<User | null>;
   getSession: () => Promise<{ user: User | null }>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
+  signOut: async () => {},
   getUser: async () => null,
   getSession: async () => ({ user: null }),
 });

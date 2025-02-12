@@ -1,17 +1,19 @@
-import { useEffect, useRef } from 'react';
+'use client';
+
+import * as React from 'react';
 import { Card } from '@/components/ui/card';
-import { Chart, ChartConfiguration } from 'chart.js/auto';
-import { FundingData } from '@/types/funding';
+import { type FundingData } from '@/types/funding';
+import { Chart, type ChartConfiguration } from 'chart.js/auto';
 
 interface FundingChartProps {
   data: FundingData[];
 }
 
 export function FundingChart({ data }: FundingChartProps) {
-  const chartRef = useRef<HTMLCanvasElement>(null);
-  const chartInstance = useRef<Chart | null>(null);
+  const chartRef = React.useRef<HTMLCanvasElement>(null);
+  const chartInstance = React.useRef<Chart | null>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!chartRef.current) return;
 
     const ctx = chartRef.current.getContext('2d');

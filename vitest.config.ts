@@ -29,4 +29,9 @@ export default defineConfig({
       ],
     },
   },
+  resolve: {
+    alias: {
+      punycode: 'punycode2'
+    }
+  }
 });

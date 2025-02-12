@@ -1,6 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-const activities = [
+interface Activity {
+  type: string;
+  description: string;
+  time: string;
+}
+
+const activities: Activity[] = [
   {
     type: 'Placement',
     description: 'John Smith placed at ABC Construction',
@@ -28,7 +34,7 @@ const activities = [
   },
 ];
 
-export function RecentActivity(): void {
+export function RecentActivity(): JSX.Element {
   return (
     <Card>
       <CardHeader>
@@ -36,7 +42,7 @@ export function RecentActivity(): void {
       </CardHeader>
       <CardContent>
         <div className='space-y-4'>
-          {activities.map((activity: unknown, index) => (
+          {activities.map((activity, index) => (
             <div
               key={index}
               className='flex items-start gap-4'

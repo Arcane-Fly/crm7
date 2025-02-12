@@ -1,14 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import * as React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
 import { Button } from '@/components/ui/button';
 import {
+  Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -78,14 +78,14 @@ interface CandidateFormValues {
 
 interface CandidateFormProps {
   initialData?: Partial<CandidateFormValues>;
-  onSubmit: (data: CandidateFormValues) => Promise<void>;
+  onSubmitAction: (data: CandidateFormValues) => Promise<void>;
 }
 
 export function CandidateForm({
   initialData,
-  onSubmit,
+  onSubmitAction
 }: CandidateFormProps): JSX.Element {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const form = useForm<CandidateFormValues>({
     resolver: zodResolver(candidateFormSchema),
@@ -114,7 +114,7 @@ export function CandidateForm({
   const handleSubmit = async (data: CandidateFormValues): Promise<void> => {
     try {
       setIsSubmitting(true);
-      await onSubmit(data);
+      await onSubmitAction(data);
       toast({
         title: 'Candidate saved',
         description: 'The candidate information has been successfully saved.',
@@ -231,9 +231,9 @@ export function CandidateForm({
                 {...field}
               />
             </FormControl>
-            <FormDescription>
+            <div className="text-sm text-muted-foreground">
               Brief description of the candidate's background and expertise.
-            </FormDescription>
+            </div>
             <FormMessage />
           </FormItem>
         )}
@@ -251,9 +251,9 @@ export function CandidateForm({
                 {...field}
               />
             </FormControl>
-            <FormDescription>
+            <div className="text-sm text-muted-foreground">
               Comma-separated list of skills
-            </FormDescription>
+            </div>
             <FormMessage />
           </FormItem>
         )}

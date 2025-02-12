@@ -1,23 +1,27 @@
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ErrorFallback } from '../ErrorFallback';
 
 describe('ErrorFallback', () => {
-  const mockResetErrorBoundary = jest.fn();
+  const mockResetErrorBoundary = vi.fn();
 
   beforeEach(() => {
     mockResetErrorBoundary.mockClear();
   });
 
   it('renders error message and try again button', () => {
+    const error = new Error('Test error');
+
     render(
       <ErrorFallback
-        error={new Error('Test error')}
+        error={error}
         resetErrorBoundary={mockResetErrorBoundary}
       />
     );
 
-    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+    expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
+    expect(screen.getByText(/test error/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
   });
 

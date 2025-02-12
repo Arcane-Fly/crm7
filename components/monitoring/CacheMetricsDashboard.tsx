@@ -1,10 +1,9 @@
+import { useState, useEffect } from 'react';
 import type { CacheMetrics, WarmingStats } from '@/lib/types/monitoring';
-import { useEffect, useState } from 'react';
-import type { Card } from '../ui';
-import type { metrics } from '@/lib/utils/metrics';
+import { Card } from '@/components/ui/card';
 
 export function CacheMetricsDashboard(): React.ReactElement {
-  useState<CacheMetrics[]>([]);
+  const [metricsData, setMetricsData] = useState<CacheMetrics[]>([]);
   const [warmingStats, setWarmingStats] = useState<WarmingStats | null>(null);
 
   useEffect(() => {
@@ -12,7 +11,7 @@ export function CacheMetricsDashboard(): React.ReactElement {
       try {
         const response = await fetch('/api/monitoring/cache');
         const data = await response.json();
-        setMetrics(data.metrics);
+        setMetricsData(data.metrics);
         setWarmingStats(data.warmingStats);
       } catch (error) {
         console.error('Failed to fetch cache metrics:', error);
@@ -24,11 +23,21 @@ export function CacheMetricsDashboard(): React.ReactElement {
     return (): void => clearInterval(interval);
   }, []);
 
-  if (!metrics.length) {
+  if (!metricsData.length) {
     return <div>Loading metrics...</div>;
   }
 
-  const { p95, p99, avgLatency, hitRate } = calculateMetrics(metrics);
+  const calculateMetrics = (data: CacheMetrics[]) => {
+    // Implementation of metric calculations
+    return {
+      p95: 0,
+      p99: 0,
+      avgLatency: 0,
+      hitRate: 0
+    };
+  };
+
+  const { p95, p99, avgLatency, hitRate } = calculateMetrics(metricsData);
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

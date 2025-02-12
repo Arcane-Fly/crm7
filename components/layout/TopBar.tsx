@@ -1,7 +1,7 @@
 import { Bell, Search, Settings, User } from 'lucide-react';
 import React from 'react';
 
-import { ThemeToggle } from '@/components/theme-toggle';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,12 +21,15 @@ interface User {
   image?: string | null;
 }
 
-export const TopBar: React.FC = () => {
+export function TopBar(): React.ReactElement {
   const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+  };
 
   return (
     <div className='flex h-16 items-center justify-between border-b bg-background px-4'>
-      {/* Search */}
       <div className='max-w-2xl flex-1'>
         <div className='relative'>
           <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
@@ -37,12 +40,9 @@ export const TopBar: React.FC = () => {
         </div>
       </div>
 
-      {/* Right side items */}
       <div className='flex items-center space-x-4'>
-        {/* Theme Toggle */}
         <ThemeToggle />
 
-        {/* Notifications */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -60,11 +60,9 @@ export const TopBar: React.FC = () => {
           >
             <DropdownMenuLabel>Notifications</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {/* Add notification items here */}
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Settings */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -82,7 +80,6 @@ export const TopBar: React.FC = () => {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* User Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -114,12 +111,12 @@ export const TopBar: React.FC = () => {
             <DropdownMenuItem>Profile</DropdownMenuItem>
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={(): React.ReactElement => logout()}>Log out</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
     </div>
   );
-};
+}
 
 export default TopBar;

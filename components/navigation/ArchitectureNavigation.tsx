@@ -22,11 +22,11 @@ export function ArchitectureNavigation(): React.ReactElement {
   }, [userRole]);
 
   // Determine the active section by matching the current path with section hrefs
-  const activeSection: ArchNavSection | undefined = useMemo(() => {
-    return (
+  const activeSection = useMemo(() => {
+    return pathname ? (
       filteredSections.find(section => pathname.startsWith(section.href)) ||
       filteredSections[0]
-    );
+    ) : filteredSections[0];
   }, [pathname, filteredSections]);
 
   // Mobile nav open/close state
@@ -48,7 +48,7 @@ export function ArchitectureNavigation(): React.ReactElement {
                 href={section.href}
                 className={cn(
                   'px-3 py-2 rounded transition',
-                  pathname.startsWith(section.href)
+                  pathname?.startsWith(section.href)
                     ? 'bg-primary text-primary-foreground'
                     : 'text-muted-foreground hover:bg-accent'
                 )}
@@ -84,7 +84,7 @@ export function ArchitectureNavigation(): React.ReactElement {
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
                     'px-4 py-2 border-b',
-                    pathname.startsWith(section.href)
+                    pathname?.startsWith(section.href)
                       ? 'bg-primary text-primary-foreground'
                       : 'text-muted-foreground hover:bg-accent'
                   )}
@@ -111,7 +111,7 @@ export function ArchitectureNavigation(): React.ReactElement {
                       href={item.href}
                       className={cn(
                         'block px-3 py-2 rounded transition',
-                        pathname.startsWith(item.href)
+                        pathname?.startsWith(item.href)
                           ? 'bg-primary text-primary-foreground'
                           : 'text-muted-foreground hover:bg-accent'
                       )}

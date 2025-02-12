@@ -1,8 +1,9 @@
 'use client';
 
+import * as React from 'react';
 import { ChevronRight, MoreHorizontal } from 'lucide-react';
 import Link from 'next/link';
-import { type ReactNode } from 'react';
+import { type ReactNode, ReactElement } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -67,7 +68,6 @@ export function BreadcrumbItem({
   className,
 }: BreadcrumbItemProps): JSX.Element {
   const Component = href && !isLast ? Link : 'span';
-
   return (
     <Component
       href={href as string}
@@ -90,16 +90,14 @@ export function Breadcrumb({
   isCollapsed = true,
   maxItems = 3,
 }: BreadcrumbProps): JSX.Element {
-  const childrenArray = React.Children.toArray(children);
+  const childrenArray = React.Children.toArray(children).map(
+    (child) => child as ReactElement
+  );
   const totalItems = childrenArray.length;
 
-  // If we don't need to collapse or have fewer items than maxItems
   if (!isCollapsed || totalItems <= maxItems) {
     return (
-      <nav
-        aria-label="Breadcrumb"
-        className={cn('flex items-center', className)}
-      >
+      <nav aria-label="Breadcrumb" className={cn('flex items-center', className)}>
         <ol className="flex items-center gap-2">
           {childrenArray.map((child, index) => (
             <li key={index} className="flex items-center gap-2">
@@ -112,19 +110,15 @@ export function Breadcrumb({
     );
   }
 
-  // Calculate items to show when collapsed
   const firstItem = childrenArray[0];
   const lastItems = childrenArray.slice(-2);
-  const middleItems = childrenArray.slice(1, -2).map((child: unknown) => ({
-    href: child.props.href,
-    label: child.props.children,
+  const middleItems = childrenArray.slice(1, -2).map((child) => ({
+    href: (child.props as any).href,
+    label: (child.props as any).children,
   }));
 
   return (
-    <nav
-      aria-label="Breadcrumb"
-      className={cn('flex items-center', className)}
-    >
+    <nav aria-label="Breadcrumb" className={cn('flex items-center', className)}>
       <ol className="flex items-center gap-2">
         <li className="flex items-center gap-2">
           {firstItem}

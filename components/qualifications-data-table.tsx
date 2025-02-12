@@ -5,6 +5,10 @@ import type {
   ColumnFiltersState,
   SortingState,
   VisibilityState,
+  HeaderGroup,
+  Row,
+  Header,
+  Cell
 } from '@tanstack/react-table';
 import {
   flexRender,
@@ -158,7 +162,7 @@ export const columns: ColumnDef<Qualification>[] = [
   },
 ];
 
-export function QualificationsDataTable(): void {
+export function QualificationsDataTable(): React.ReactElement {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
@@ -184,34 +188,33 @@ export function QualificationsDataTable(): void {
   });
 
   return (
-    <div className='w-full'>
-      <div className='flex items-center py-4'>
+    <div className="w-full">
+      <div className="flex items-center py-4">
         <Input
-          placeholder='Filter qualifications...'
+          placeholder="Filter qualifications..."
           value={(table.getColumn('title')?.getFilterValue() as string) ?? ''}
-          onChange={(event: unknown) => table.getColumn('title')?.setFilterValue(event.target.value)}
-          className='max-w-sm'
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) => 
+            table.getColumn('title')?.setFilterValue(event.target.value)
+          }
+          className="max-w-sm"
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant='outline'
-              className='ml-auto'
-            >
-              Columns <ChevronDown className='ml-2 h-4 w-4' />
+            <Button variant="outline" className="ml-auto">
+              Columns <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align='end'>
+          <DropdownMenuContent align="end">
             {table
               .getAllColumns()
-              .filter((column: unknown) => column.getCanHide())
-              .map((column: unknown) => {
+              .filter((column) => column.getCanHide())
+              .map((column) => {
                 return (
                   <DropdownMenuCheckboxItem
                     key={column.id}
-                    className='capitalize'
+                    className="capitalize"
                     checked={column.getIsVisible()}
-                    onCheckedChange={(value: unknown) => column.toggleVisibility(!!value)}
+                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
                   >
                     {column.id}
                   </DropdownMenuCheckboxItem>
@@ -220,12 +223,12 @@ export function QualificationsDataTable(): void {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <div className='rounded-md border'>
+      <div className="rounded-md border">
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup: unknown) => (
+            {table.getHeaderGroups().map((headerGroup: HeaderGroup<Qualification>) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header: unknown) => {
+                {headerGroup.headers.map((header: Header<Qualification, unknown>) => {
                   return (
                     <TableHead key={header.id}>
                       {header.isPlaceholder
@@ -239,12 +242,12 @@ export function QualificationsDataTable(): void {
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows.length ? (
-              table.getRowModel().rows.map((row: unknown) => (
+              table.getRowModel().rows.map((row: Row<Qualification>) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
                 >
-                  {row.getVisibleCells().map((cell: unknown) => (
+                  {row.getVisibleCells().map((cell: Cell<Qualification, unknown>) => (
                     <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
@@ -255,7 +258,7 @@ export function QualificationsDataTable(): void {
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className='h-24 text-center'
+                  className="h-24 text-center"
                 >
                   No results.
                 </TableCell>
@@ -264,23 +267,23 @@ export function QualificationsDataTable(): void {
           </TableBody>
         </Table>
       </div>
-      <div className='flex items-center justify-end space-x-2 py-4'>
-        <div className='flex-1 text-sm text-muted-foreground'>
+      <div className="flex items-center justify-end space-x-2 py-4">
+        <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of{' '}
           {table.getFilteredRowModel().rows.length} row(s: unknown) selected.
         </div>
-        <div className='space-x-2'>
+        <div className="space-x-2">
           <Button
-            variant='outline'
-            size='sm'
+            variant="outline"
+            size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
             Previous
           </Button>
           <Button
-            variant='outline'
-            size='sm'
+            variant="outline"
+            size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >

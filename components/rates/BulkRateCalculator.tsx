@@ -39,18 +39,28 @@ interface Calculation {
   }[];
 }
 
+interface QueryResult<T> {
+  data: T[];
+}
+
 export function BulkRateCalculator({ orgId = 'default-org' }: BulkRateCalculatorProps): React.ReactElement {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: templatesData } = useQuery({
+  const { data: templatesData } = useQuery<QueryResult<Template>>({
     queryKey: ['templates', orgId],
-    queryFn: () => ratesService.getTemplates({ orgId }),
+    queryFn: async () => {
+      const result = await ratesService.getTemplates({ org_id: orgId });
+      return { data: Array.isArray(result) ? result : [] };
+    }
   });
 
-  const { data: calculationsData, isLoading } = useQuery({
+  const { data: calculationsData, isLoading } = useQuery<QueryResult<Calculation>>({
     queryKey: ['bulk-calculations', orgId],
-    queryFn: () => ratesService.getBulkCalculations(orgId),
+    queryFn: async () => {
+      const result = await ratesService.getBulkCalculations({ org_id: orgId });
+      return { data: Array.isArray(result) ? result : [] };
+    }
   });
 
   const calculateRate = (baseRate: number, multiplier: number): CalculationResult => {
@@ -76,36 +86,33 @@ export function BulkRateCalculator({ orgId = 'default-org' }: BulkRateCalculator
   };
 
   const createCalculation = useMutation({
-    mutationFn: async (): Promise<Calculation> => {
-      if (!templatesData?.data) {
+    mutationFn: async () => {
+      if (!templatesData) {
         throw new Error('No templates available');
       }
       const templateIds = templatesData.data.slice(0, 2).map((t: Template) => t.id);
       const calculations: BulkCalculationResult = {};
-      templateIds.forEach((templateId) => {
-        const baseRate = 100; // default base rate
-        const multiplier = 1.5; // default multiplier
+      templateIds.forEach((templateId: string) => {
+        const baseRate = 100;
+        const multiplier = 1.5;
         calculations[templateId] = calculateRate(baseRate, multiplier);
       });
       return ratesService.createBulkCalculation({
-        orgId,
+        org_id: orgId,
         templateIds,
         calculations,
       });
     },
-    onSuccess: (response: Calculation): void => {
-      queryClient.setQueryData(['bulk-calculations', orgId], (old: unknown): { data: Calculation[] } => {
-        if (!old) return { data: [response] };
-        return {
-          data: [...old.data, response],
-        };
-      });
+    onSuccess: (response) => {
+      queryClient.setQueryData(['bulk-calculations', orgId], (old: any) => ({
+        data: old ? [...old, response] : [response],
+      }));
       toast({
         title: 'Success',
         description: 'Calculation created successfully',
       });
     },
-    onError: (): void => {
+    onError: () => {
       toast({
         title: 'Error',
         description: 'Failed to create calculation',

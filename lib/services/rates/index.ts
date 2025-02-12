@@ -1,8 +1,8 @@
 import {
   type RateTemplate,
-  type BulkCalculationParams,
-  type RateTemplateStatus,
+  type RateAnalytics,
   type RatesService,
+  type RateAnalyticsResponse,
   RateError,
 } from '@/lib/types/rates';
 import { createLogger } from '@/lib/utils/logger';
@@ -144,7 +144,7 @@ export class RateService implements RatesService {
     }
   }
 
-  async getAnalytics({ orgId }: { orgId: string }): Promise<void> {
+  async getAnalytics({ orgId }: { orgId: string }): Promise<RateAnalyticsResponse> {
     try {
       const analytics = await this.rateManagementService.getAnalytics(orgId);
       return { data: analytics };
@@ -155,7 +155,7 @@ export class RateService implements RatesService {
   }
 }
 
-const ratesService = new RateService();
+export const ratesService = new RateService();
 
 export { ratesService };
-export type { RateTemplate, RatesService };
+export type { RateTemplate, RateAnalyticsResponse };

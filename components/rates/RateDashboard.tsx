@@ -1,9 +1,18 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
-import type { DashboardError } from '@/lib/types';
+import type { DashboardError } from '@/lib/types/dashboard';
 
 interface RateDashboardProps {
   orgId: string;
+}
+
+interface DateRange {
+  start: Date;
+  end: Date;
+}
+
+function isValidDateRange(range: DateRange): boolean {
+  return range.start <= range.end;
 }
 
 export function RateDashboard({ orgId }: RateDashboardProps): JSX.Element {

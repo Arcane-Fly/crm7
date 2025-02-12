@@ -4,6 +4,14 @@ import { Card } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/client';
 import { useEffect, useState } from 'react';
 
+interface TrainingStats {
+  totalEnrollments: number;
+  completedEnrollments: number;
+  averageProgress: number;
+  averageCompletionTime: number;
+  completionRate: number;
+}
+
 interface TrainingDashboardProps {
   courseId: string;
   onDataChange?: (stats: TrainingStats) => void;

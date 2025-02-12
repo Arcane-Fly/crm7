@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { type RateTemplate } from '@/lib/types/rates';
 import { useToast } from '@/components/ui/use-toast';
-import { useSupabase } from '@/lib/supabase/supabase-provider';
+import { createClient } from '@/lib/supabase/client';
 
 interface RateComparisonProps {
   orgId: string;
 }
 
 export function RateComparison({ orgId }: RateComparisonProps): JSX.Element {
-  const { supabase } = useSupabase();
+  const supabase = createClient();
   const { toast } = useToast();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);

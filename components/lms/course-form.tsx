@@ -4,6 +4,8 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { Card } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
+import { useLMS } from '@/lib/hooks/use-lms';
+import type { CourseCreate } from '@/lib/types/lms';
 
 const courseSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -23,6 +25,7 @@ interface CourseFormProps {
 
 export function CourseForm({ courseId, initialData, onSubmit }: CourseFormProps): JSX.Element {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const { createCourse, updateCourse } = useLMS();
 
   const form = useForm<CourseFormData>({
     resolver: zodResolver(courseSchema),
@@ -38,10 +41,15 @@ export function CourseForm({ courseId, initialData, onSubmit }: CourseFormProps)
   const handleSubmit = async (values: CourseFormData): Promise<void> => {
     try {
       setIsSubmitting(true);
-      if (typeof courseId !== "undefined" && courseId !== null) {
-        await updateCourse(courseId, values);
+      if (courseId) {
+        await updateCourse({ 
+          data: values,
+          match: { id: courseId }
+        });
       } else {
-        await createCourse(values);
+        await createCourse({ 
+          data: values as Record<string, unknown>
+        });
       }
       onSubmit(values);
     } catch (error) {

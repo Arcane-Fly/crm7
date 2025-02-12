@@ -1,9 +1,7 @@
-# Project Configuration
-
 ## Version Requirements
 
 - Next.js version: 15.1.6 (required)
-- Node.js: ^18.17.0
+- Node.js: ^20.11.1 (LTS version)
 - TypeScript: ^5.0.0
 - Package manager: pnpm (version 10.2.1)
 
@@ -17,7 +15,7 @@
 
 - Uses Next.js for development and production builds
 - Package manager: pnpm (version 10.2.1)
-- Node version: ^18.17.0
+- Node version: ^20.11.1
 
 ## Version Management
 
@@ -66,6 +64,21 @@
 - Validate security headers in production
 - Test canary releases when needed
 
+### Mocking Axios Errors
+When testing Axios error handling, create mock errors with isAxiosError property:
+```typescript
+const mockError = Object.assign(
+  new Error('Error message'),
+  {
+    isAxiosError: true,
+    response: {
+      status: 404,
+      data: { message: 'Error message' }
+    }
+  }
+);
+```
+
 ### Supabase Integration
 
 - Use @supabase/ssr for server-side rendering
@@ -80,8 +93,12 @@
 - Route handlers must use typed params interface
 - Context params are no longer Promise types in App Router
 - Route handler functions must be async
-- Route handlers should use NextRequest type
+- Route handler functions should use NextRequest type
 - Each route file should export a single HTTP method handler
+- Route params must be Promise<T> in Next.js 15.1.6+
+- Tests must wrap route params in Promise.resolve()
+- Each route handler should have its own params schema
+- Route handlers should await context.params before validation
 
 ## Package Management
 
@@ -138,3 +155,176 @@
 - Row Level Security
 - Input validation
 - XSS protection
+
+## Project Configuration
+
+### Port Usage
+- Development server runs on port 3001 to avoid congestion
+- Test environment uses same port configuration
+- Port can be configured via PORT environment variable
+- Default port is 3001 if not specified
+
+### ECMAScript Target
+- Use ES2024 as target in .swcrc and tsconfig.json
+- Matches our Node.js 22.x runtime capabilities
+- Enables modern JavaScript features
+- Required for optimal performance and code clarity
+
+### Testing Framework
+- Use Vitest as the sole testing framework
+- Remove all Jest dependencies and configurations
+- Use vi.fn() instead of jest.fn()
+- Use vi.mock() instead of jest.mock()
+- Use vi.spyOn() instead of jest.spyOn()
+- Tests should be in __tests__ directories or *.test.ts files
+- Run tests with `pnpm vitest run --coverage`
+
+### Next.js App Router Types
+- Route handlers must use explicit RouteContext type
+- Params should be validated with Zod schemas
+- Response type must be Promise<Response>
+- Environment checks should map to correct client config
+- Toast descriptions can accept ReactNode for rich content
+- Route handler params must be destructured in function parameters
+- Route context types must match Next.js internal types
+- Route params must be Promise<T> in Next.js 15.1.6+
+- Tests must wrap route params in Promise.resolve()
+- Each route handler should have its own params schema
+- Route handlers should await context.params before validation
+
+## Common Type Safety Patterns
+
+### Service Methods
+- Return explicit response types, never void
+- Define interfaces for all request/response pairs
+- Use discriminated unions for error handling
+- Avoid type assertions (as) in service calls
+- Always define error types with proper inheritance
+
+### Class Inheritance
+- Extend base classes rather than implementing interfaces when mocking
+- Preserve access modifiers (private/protected) in derived classes
+- Call super() with required configuration
+- Override only necessary methods
+- Use proper generic constraints
+
+### Environment Variables
+- Use strict null checks for process.env
+- Provide fallback values or throw early
+- Type environment variables explicitly
+- Validate at startup
+- Use constants for defaults
+
+### API Routes
+- Use Promise<RouteParams> for Next.js 15.1.6+ context params
+- Define explicit response types
+- Use NextResponse instead of Response
+- Handle undefined values in request data
+- Validate params before use
+
+### Testing Patterns
+- Mock services by extending base classes
+- Use Partial<T> for complex type overrides
+- Include all required status flags in mocks
+- Avoid type assertions in tests
+- Use proper generic constraints
+
+### Common Mistakes to Avoid
+1. Void Return Types
+   - Always define explicit return types
+   - Never use void for async functions that return data
+   - Use Promise<T> with specific type
+
+2. Type Assertions
+   - Avoid 'as' keyword
+   - Use type guards instead
+   - Define proper interfaces
+   - Use discriminated unions
+
+3. Environment Variables
+   - Never use process.env without checks
+   - Define fallbacks
+   - Validate at startup
+   - Use type guards
+
+4. Class Inheritance
+   - Extend don't implement for mocks
+   - Preserve access modifiers
+   - Call super() properly
+   - Override only what's needed
+
+5. Response Types
+   - Use NextResponse not Response
+   - Define explicit types
+   - Handle all error cases
+   - Validate inputs
+
+### AI Assistant Usage Guidelines
+1. Always provide explicit return types
+2. Never use type assertions without explanation
+3. Handle undefined/null cases explicitly
+4. Use proper error inheritance
+5. Preserve access modifiers in mocks
+6. Define request/response pairs as interfaces
+7. Validate environment variables
+8. Use type guards over assertions
+9. Follow Next.js 15.1.6+ patterns
+10. Extend base classes for mocks
+
+## Common AI Assistant Issues and Solutions
+
+### Type Safety
+1. Return Type Mismatches
+   - Issue: AI suggests void returns for async functions
+   - Solution: Require explicit Promise<T> returns
+   - Example: `async getAnalytics(): Promise<AnalyticsResponse>`
+
+2. Access Modifier Conflicts
+   - Issue: AI implements interfaces instead of extending classes
+   - Solution: Always extend base classes for mocks
+   - Example: `class MockService extends BaseService`
+
+3. Type Assertion Overuse
+   - Issue: AI uses type assertions to fix errors
+   - Solution: Use type guards and proper interfaces
+   - Example: `if ('data' in response)` vs `as ResponseType`
+
+4. Environment Variable Handling
+   - Issue: Undefined cases not handled properly
+   - Solution: Add explicit validation and fallbacks
+   - Example: Use constants for defaults, validate at startup
+
+5. Response Type Mixing
+   - Issue: Inconsistent use of Response/NextResponse
+   - Solution: Standardize on NextResponse
+   - Example: Use createApiResponse helper
+
+### Best Practices for AI Development
+1. Type Definition Review
+   - Review all type definitions before implementation
+   - Ensure interfaces are complete and accurate
+   - Use strict type checking options
+
+2. Mock Implementation
+   - Extend base classes instead of implementing interfaces
+   - Preserve access modifiers (private/protected)
+   - Call super() with proper configuration
+   - Mock only necessary methods
+
+3. Error Handling
+   - Use proper error inheritance chain
+   - Define custom error classes
+   - Include error context and metadata
+   - Proper async/await error handling
+
+4. Environment Configuration
+   - Validate all env vars at startup
+   - Provide type-safe defaults
+   - Use constants for configuration
+   - Document required env vars
+
+5. Response Standardization
+   - Use consistent response patterns
+   - Define reusable response types
+   - Validate response data
+   - Handle all error cases

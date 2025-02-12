@@ -1,12 +1,19 @@
 import { FairWorkClient } from '@/lib/fairwork/client';
-import { type RouteParams } from '@/lib/types/route';
 import { NextResponse } from 'next/server';
+
+interface LeaveEntitlementsParams {
+  awardCode: string;
+  classificationCode: string;
+}
 
 const fairworkClient = new FairWorkClient();
 
-export async function GET(_req: Request, { params }: { params: RouteParams }) {
+export async function GET(
+  _req: Request,
+  { params }: { params: Promise<LeaveEntitlementsParams> }
+) {
   try {
-    const { awardCode, classificationCode } = params;
+    const { awardCode, classificationCode } = await params;
     if (!awardCode || !classificationCode) {
       return NextResponse.json(
         { error: 'Missing required parameters: awardCode and classificationCode' },
@@ -15,12 +22,12 @@ export async function GET(_req: Request, { params }: { params: RouteParams }) {
     }
 
     const url = new URL(_req.url);
-    const query: { date?: string; employmentType?: string } = {
+    const query = {
       date: url.searchParams.get('date') || undefined,
       employmentType: url.searchParams.get('employmentType') || undefined,
     };
 
-    const leaveEntitlements = await fairworkClient.getLeaveEntitlements(awardCode, query);
+    const leaveEntitlements = await fairworkClient.getLeaveEntitlements(awardCode, classificationCode, query);
     return NextResponse.json(leaveEntitlements);
   } catch (error) {
     console.error('Failed to fetch leave entitlements:', error);

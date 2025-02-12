@@ -22,13 +22,19 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/components/ui/use-toast';
+import { type LucideIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface IconProps extends React.ComponentPropsWithoutRef<'svg'> {
+  className?: string;
+}
 
 interface QuickAction {
   id: string;
   label: string;
   shortcut?: string;
   href: string;
-  icon?: React.ComponentType;
+  icon?: LucideIcon;
 }
 
 const quickActions: QuickAction[] = [
@@ -63,11 +69,10 @@ export function QuickAccess() {
   const router = useRouter();
   const { toast } = useToast();
 
-
   // Quick action shortcuts
   quickActions.forEach((action) => {
     if (action.shortcut) {
-      useHotkeys(action.shortcut, (event) => {
+      useHotkeys(action.shortcut, (event: KeyboardEvent) => {
         event.preventDefault();
         router.push(action.href);
         toast({
@@ -107,7 +112,9 @@ export function QuickAccess() {
               key={action.id}
               onClick={() => router.push(action.href)}
             >
-              {action.icon && <action.icon className="mr-2 h-4 w-4" />}
+              {action.icon && React.createElement(action.icon, {
+                className: cn("mr-2 h-4 w-4")
+              })}
               <span>{action.label}</span>
               {action.shortcut && (
                 <kbd className="ml-auto text-xs">{action.shortcut}</kbd>
@@ -137,7 +144,9 @@ export function QuickAccess() {
                   key={action.id}
                   onClick={() => router.push(action.href)}
                 >
-                  {action.icon && <action.icon className="mr-2 h-4 w-4" />}
+                  {action.icon && React.createElement(action.icon, {
+                    className: cn("mr-2 h-4 w-4")
+                  })}
                   <span>{action.label}</span>
                 </DropdownMenuItem>
               );
@@ -185,7 +194,9 @@ export function QuickAccess() {
                   setOpen(false);
                 }}
               >
-                {action.icon && <action.icon className="mr-2 h-4 w-4" />}
+                {action.icon && React.createElement(action.icon, {
+                  className: cn("mr-2 h-4 w-4")
+                })}
                 <span>{action.label}</span>
                 {action.shortcut && (
                   <kbd className="ml-auto text-xs">{action.shortcut}</kbd>

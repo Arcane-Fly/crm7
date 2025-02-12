@@ -51,8 +51,10 @@ function UserProfileComponent({
   showEmail = false,
   layout = 'card',
   data,
-}: UserProfileProps & { data: any }) {
-  if (!data) return null;
+}: UserProfileProps & { data: any }): JSX.Element {
+  if (!data) {
+    return <div>No profile data available</div>;
+  }
 
   const profile = Array.isArray(data) ? data[0] : data;
 
@@ -102,5 +104,5 @@ function UserProfileComponent({
 export const UserProfile = createSchemaComponent({
   name: 'UserProfile',
   schema,
-  render: UserProfileComponent,
+  render: UserProfileComponent as (props: any) => JSX.Element,
 });

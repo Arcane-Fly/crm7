@@ -1,14 +1,17 @@
 import { Badge } from '@/components/ui/badge';
-const getStatusVariant = (status: string): string => {
-  switch (status) {
-    case 'Active':
+
+function getStatusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning' {
+  switch (status.toLowerCase()) {
+    case 'active':
       return 'success';
-    case 'Inactive':
-      return 'secondary';
+    case 'pending':
+      return 'warning';
+    case 'inactive':
+      return 'destructive';
     default:
       return 'default';
   }
-};
+}
 
 export function FundingProgramsDataTable(): JSX.Element {
   return (

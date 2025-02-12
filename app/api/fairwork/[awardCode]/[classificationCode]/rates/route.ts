@@ -1,40 +1,43 @@
-import { createApiResponse, createErrorResponse } from '@/lib/api/response';
+import { NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
+import { DateParamsSchema } from '@/lib/schemas/fairwork';
+import { type NextRequest } from 'next/server';
+import { z } from 'zod';
+import { createApiResponse } from '@/lib/api/response';
 import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
-import { NextRequest } from 'next/server';
-import type { FairWorkEnvironment } from '@/lib/services/fairwork/types';
 
-const fairworkClient = new FairWorkClient({
-  apiUrl: process.env.FAIRWORK_API_URL!,
-  apiKey: process.env.FAIRWORK_API_KEY!,
-  environment: process.env.FAIRWORK_ENVIRONMENT as FairWorkEnvironment,
+const rateParamsSchema = z.object({
+  awardCode: z.string(),
+  classificationCode: z.string(),
 });
+
+type RouteParams = z.infer<typeof rateParamsSchema>;
+
+type RouteContext = {
+  params: Promise<RouteParams>;
+};
 
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ awardCode: string; classificationCode: string }> }
-) {
+  context: RouteContext
+): Promise<Response> {
   try {
-    const { awardCode, classificationCode } = await context.params;
-    if (!awardCode || !classificationCode) {
-      return createErrorResponse(
-        'MISSING_PARAMS',
-        'Missing required parameters: awardCode and classificationCode',
-        undefined,
-        400
-      );
-    }
+    const params = await context.params;
+    const validatedParams = rateParamsSchema.parse(params);
+    
+    const client = new FairWorkClient({
+      apiKey: process.env.FAIRWORK_API_KEY!,
+      apiUrl: process.env.FAIRWORK_API_URL!,
+      environment: process.env.NODE_ENV === 'production' ? 'production' : 'sandbox',
+      timeout: 5000,
+    });
 
-    const url = new URL(request.url);
-    const query: { date?: string; employmentType?: string } = {
-      date: url.searchParams.get('date') || undefined,
-      employmentType: url.searchParams.get('employmentType') || undefined,
-    };
-
-    const rates = await fairworkClient.getRates(awardCode, classificationCode, query);
-    return createApiResponse(rates);
+    const award = await client.getAward(validatedParams.awardCode);
+    return createApiResponse(award);
   } catch (error) {
-    logger.error('Failed to fetch rates', { error });
-    return createErrorResponse('RATES_FETCH_ERROR', 'Failed to fetch rates', undefined, 500);
+    return createApiResponse(undefined, {
+      code: 'INVALID_REQUEST',
+      message: error instanceof Error ? error.message : 'Invalid request',
+    });
   }
 }

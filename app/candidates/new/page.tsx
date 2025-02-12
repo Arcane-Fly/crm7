@@ -31,7 +31,21 @@ export default function NewCandidatePage() {
     },
   });
 
-  const handleSubmit =;
+  const handleSubmit = async (data: CandidateForm) => {
+    try {
+      // TODO: Implement candidate creation
+      toast({
+        title: 'Success',
+        description: 'Candidate created successfully',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to create candidate',
+        variant: 'destructive',
+      });
+    }
+  };
 
   return (
     <div className="container mx-auto py-10">

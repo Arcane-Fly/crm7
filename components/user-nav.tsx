@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-export function UserNav(): void {
+export function UserNav(): JSX.Element {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

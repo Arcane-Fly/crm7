@@ -1,5 +1,5 @@
 import { PieChart, Pie, ResponsiveContainer } from 'recharts';
-import { type FundingData } from '@/lib/types';
+import { type FundingData } from '@/types/funding';
 
 interface FundingOverviewProps {
   data: FundingData[];
