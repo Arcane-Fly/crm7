@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import type { CacheMetrics } from '@/lib/types/monitoring';
 import { Card } from '@/components/ui/card';
 
-export default function CacheMetricsDashboard() {
+export function CacheMetricsDashboard() {
   const [metrics, setMetrics] = useState<CacheMetrics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
