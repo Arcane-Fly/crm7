@@ -1,4 +1,6 @@
-export { FairWorkServiceImpl } from './fairwork-service';
-export type { FairWorkService } from './fairwork-service';
-export type { PayRate } from './types';
+import { type IBaseService } from '@/lib/utils/service';
+import { FairWorkServiceImpl } from './fairwork-service';
+import type { FairWorkService } from './fairwork-service';
 
+export { FairWorkServiceImpl };
+export type { FairWorkService };

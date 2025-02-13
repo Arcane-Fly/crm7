@@ -1,7 +1,7 @@
 import { type SupabaseClient } from '@supabase/supabase-js';
 import { type Database } from '@/types/supabase';
 import * as XLSX from 'xlsx';
-import { BaseService } from './base-service';
+import { BaseService, type ServiceOptions } from '@/lib/utils/service';
 
 // Maximum file size (5MB)
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -25,11 +25,11 @@ interface TimesheetImport {
 }
 
 export class InvoiceService extends BaseService {
-  constructor(private readonly supabase: SupabaseClient<Database>) {
-    super({
-      name: 'InvoiceService',
-      version: '1.0.0',
-    });
+  constructor(
+    private readonly supabase: SupabaseClient<Database>,
+    options: ServiceOptions = {}
+  ) {
+    super('InvoiceService', '1.0.0', options);
   }
 
   async getInvoices(params: {

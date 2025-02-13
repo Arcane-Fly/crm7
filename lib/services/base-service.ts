@@ -1,32 +1,33 @@
-import { logger } from '@/lib/logger';
+import { type PrismaClient } from '@prisma/client';
+import { logger, type Logger } from '@/lib/utils/logger';
+import { type MetricsService } from '@/lib/utils/metrics';
 
-interface ServiceMetrics {
-  lastError: Error | null;
-  lastErrorTime: Date | null;
-  errorCount: number;
-}
-
-interface ServiceOptions {
-  name: string;
-  version: string;
+export interface ServiceOptions {
+  prisma?: PrismaClient;
+  metrics?: MetricsService;
   enableMetrics?: boolean;
 }
 
-export class BaseService {
+export interface IBaseService {
+  getMetrics(): Record<string, unknown> | null;
+  resetMetrics(): void;
+}
+
+export abstract class BaseService implements IBaseService {
   protected readonly name: string;
   protected readonly version: string;
-  private readonly enableMetrics: boolean;
-  private readonly metrics: ServiceMetrics;
+  protected readonly enableMetrics: boolean;
+  protected readonly prisma?: PrismaClient;
+  protected readonly metrics?: MetricsService;
+  protected readonly logger: Logger;
 
-  constructor(options: ServiceOptions) {
-    this.name = options.name;
-    this.version = options.version;
+  constructor(name: string, version: string, options: ServiceOptions = {}) {
+    this.name = name;
+    this.version = version;
     this.enableMetrics = options.enableMetrics ?? true;
-    this.metrics = {
-      lastError: null,
-      lastErrorTime: null,
-      errorCount: 0,
-    };
+    this.prisma = options.prisma;
+    this.metrics = options.metrics;
+    this.logger = logger.createLogger(name);
   }
 
   protected async executeServiceMethod<T>(
@@ -36,30 +37,24 @@ export class BaseService {
     try {
       return await method();
     } catch (error) {
-      this.handleError(methodName, error);
+      this.logger.error(`${this.name}.${methodName} error:`, {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
       throw error;
     }
   }
 
-  private handleError(methodName: string, error: unknown): void {
-    if (this.enableMetrics) {
-      this.metrics.lastError = error instanceof Error ? error : new Error(String(error));
-      this.metrics.lastErrorTime = new Date();
-      this.metrics.errorCount++;
-    }
-
-    logger.error(`${this.name}.${methodName} error:`, error);
-  }
-
-  public getMetrics(): ServiceMetrics | null {
-    return this.enableMetrics ? this.metrics : null;
+  public getMetrics(): Record<string, unknown> | null {
+    if (!this.enableMetrics) return null;
+    return {
+      serviceName: this.name,
+      version: this.version,
+      timestamp: new Date().toISOString()
+    };
   }
 
   public resetMetrics(): void {
-    if (this.enableMetrics) {
-      this.metrics.lastError = null;
-      this.metrics.lastErrorTime = null;
-      this.metrics.errorCount = 0;
-    }
+    // Default implementation is no-op
   }
 }

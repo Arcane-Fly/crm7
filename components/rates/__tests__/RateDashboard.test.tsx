@@ -94,7 +94,6 @@ const createMockQueryResult = (
     isRefetchError: false,
     status: 'success' as const,
     refetch: vi.fn(),
-    remove: vi.fn(),
     data: [mockRateTemplate],
     error: null,
   };
@@ -105,14 +104,14 @@ const createMockQueryResult = (
   } as UseQueryResult<RateTemplate[], Error>;
 };
 
-const loadingOverrides: Partial<UseQueryResult<RateTemplate[], Error>> = {
+const loadingOverrides = {
   data: undefined,
   error: null,
   isError: false,
   isPending: true,
   isLoading: true,
   isSuccess: false,
-  status: 'pending',
+  status: 'pending' as const,
   isLoadingError: false,
   isRefetchError: false,
   isPlaceholderData: false,
@@ -121,7 +120,7 @@ const loadingOverrides: Partial<UseQueryResult<RateTemplate[], Error>> = {
   failureCount: 0,
   failureReason: null,
   errorUpdateCount: 0,
-  fetchStatus: 'fetching',
+  fetchStatus: 'fetching' as const,
   isFetched: false,
   isFetchedAfterMount: false,
   isFetching: true,
@@ -129,9 +128,8 @@ const loadingOverrides: Partial<UseQueryResult<RateTemplate[], Error>> = {
   isPaused: false,
   isRefetching: false,
   isStale: false,
-  refetch: vi.fn(),
-  remove: vi.fn()
-};
+  refetch: vi.fn()
+} satisfies Partial<UseQueryResult<RateTemplate[], Error>>;
 
 describe('RateDashboard', () => {
   it('renders without crashing', async () => {

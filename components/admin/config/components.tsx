@@ -23,19 +23,26 @@ export const components: Config['components'] = {
       backgroundColor: '#ffffff',
       textColor: '#000000',
     },
-    render: ({ title, description, backgroundColor, textColor }: ComponentProps) => (
-      <div 
-        className={styles.heroContainer}
-        style={
-          {
-            '--background-color': backgroundColor,
-            '--text-color': textColor,
-          } as React.CSSProperties
-        }
-      >
-        <h1>{title}</h1>
-        <p>{description}</p>
-      </div>
-    ),
+    render: ({ title, description, backgroundColor, textColor }: ComponentProps) => {
+      const HeroComponent: React.FC<ComponentProps> = () => {
+        React.useEffect(() => {
+          if (backgroundColor) {
+            document.documentElement.style.setProperty('--hero-background-color', backgroundColor);
+          }
+          if (textColor) {
+            document.documentElement.style.setProperty('--hero-text-color', textColor);
+          }
+        }, []);
+
+        return (
+          <div className={styles.heroContainer}>
+            <h1>{title}</h1>
+            <p>{description}</p>
+          </div>
+        );
+      };
+
+      return <HeroComponent />;
+    },
   },
 };

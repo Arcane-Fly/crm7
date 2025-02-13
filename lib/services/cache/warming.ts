@@ -93,7 +93,7 @@ export class CacheWarming {
               await this.warmEntry(entry);
             } catch (error) {
               const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-              logger.error(`Failed to warm cache entry ${entry.key}:`, new Error(errorMessage));
+              logger.error(`Failed to warm cache entry ${entry.key}:`, { error: errorMessage });
             }
           })
         );
@@ -110,7 +110,7 @@ export class CacheWarming {
 
     try {
       const value = await entry.getter();
-      await this.cache.set(entry.key, value, entry.ttl);
+      await this.cache.set(entry.key, value);
 
       const latencyMs = Date.now() - startTime;
       cacheMonitoring.recordHit(latencyMs);
@@ -122,7 +122,7 @@ export class CacheWarming {
         try {
           await new Promise((resolve): NodeJS.Timeout => setTimeout(resolve, this.config.retryDelay));
           const value = await entry.getter();
-          await this.cache.set(entry.key, value, entry.ttl);
+          await this.cache.set(entry.key, value);
           entry.lastWarmed = Date.now();
           return;
         } catch {

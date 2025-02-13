@@ -113,14 +113,10 @@ describe('FairWorkClient', () => {
 
   describe('validatePayRate', () => {
     it('should validate pay rate', async () => {
-      const awardCode = 'MA000001';
-      const classificationCode = 'L1';
-      const params: RateValidationRequest = {
+      const params = {
         rate: 30,
-        date: '2025-01-01',
-        employmentType: 'permanent',
-        awardCode,
-        classificationCode,
+        awardCode: 'MA000001',
+        classificationCode: 'L1'
       };
 
       const mockResponse = {
@@ -133,11 +129,11 @@ describe('FairWorkClient', () => {
 
       mockAxios.post.mockResolvedValue(mockResponse);
 
-      const result = await client.validatePayRate(awardCode, classificationCode, params);
+      const result = await client.validatePayRate(params);
       expect(result).toEqual(mockResponse.data);
       expect(mockAxios.post).toHaveBeenCalledWith(
-        `/awards/${awardCode}/classifications/${classificationCode}/validate`,
-        params,
+        `/awards/${params.awardCode}/classifications/${params.classificationCode}/validate`,
+        { rate: params.rate }
       );
     });
   });
@@ -192,14 +188,14 @@ describe('FairWorkClient', () => {
 
   describe('calculatePay', () => {
     it('should calculate pay with all components', async () => {
-      const awardCode = 'MA000001';
-      const classificationCode = 'L1';
       const params = {
+        awardCode: 'MA000001',
+        classificationCode: 'L1',
         date: '2025-01-01',
-        employmentType: 'casual' as const,
+        employmentType: 'casual',
         hours: 38,
         penalties: ['SAT'],
-        allowances: ['TOOL'],
+        allowances: ['TOOL']
       };
 
       const mockResponse = {
@@ -212,11 +208,17 @@ describe('FairWorkClient', () => {
 
       mockAxios.post.mockResolvedValue(mockResponse);
 
-      const result = await client.calculatePay(awardCode, classificationCode, params);
+      const result = await client.calculatePay(params);
       expect(result).toEqual(mockResponse.data);
       expect(mockAxios.post).toHaveBeenCalledWith(
-        `/awards/${awardCode}/classifications/${classificationCode}/calculate`,
-        params,
+        `/awards/${params.awardCode}/classifications/${params.classificationCode}/calculate`,
+        {
+          date: params.date,
+          employmentType: params.employmentType,
+          hours: params.hours,
+          penalties: params.penalties,
+          allowances: params.allowances
+        }
       );
     });
   });

@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { type RateAnalytics, type RateAnalyticsResponse } from '@/lib/types/rates';
+import type { AnalyticsData } from '@/lib/types/rates';
 import { ratesService } from '@/lib/services/rates';
 import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary';
 import { Alert } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface RateAnalyticsProps {
   orgId: string;
@@ -13,28 +14,49 @@ interface RateAnalyticsProps {
 export function RateAnalytics({ orgId }: RateAnalyticsProps): JSX.Element {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [analytics, setAnalytics] = useState<RateAnalytics | null>(null);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
 
-  useEffect((): void => {
+  useEffect(() => {
+    let mounted = true;
+
     const loadAnalytics = async (): Promise<void> => {
       try {
         setLoading(true);
         setError(null);
-        const response = await ratesService.getAnalytics({ orgId }) as RateAnalyticsResponse;
-        setAnalytics(response.data);
+        const result = await ratesService.getAnalytics({ orgId });
+        if (mounted) {
+          setAnalytics(result.data);
+        }
       } catch (err) {
-        const errMsg = err instanceof Error ? err.message : 'An error occurred';
-        setError(errMsg);
+        if (mounted) {
+          const errMsg = err instanceof Error ? err.message : 'An error occurred';
+          setError(errMsg);
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
     void loadAnalytics();
+
+    return () => {
+      mounted = false;
+    };
   }, [orgId]);
 
   if (loading) {
-    return <div>Loading analytics...</div>;
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+      </div>
+    );
   }
 
   if (error) {
@@ -42,7 +64,7 @@ export function RateAnalytics({ orgId }: RateAnalyticsProps): JSX.Element {
   }
 
   if (!analytics) {
-    return <div>No analytics data available</div>;
+    return <Alert>No analytics data available</Alert>;
   }
 
   return (
@@ -63,7 +85,7 @@ export function RateAnalytics({ orgId }: RateAnalyticsProps): JSX.Element {
           <div className="rounded-lg bg-white p-6 shadow">
             <h3 className="mb-2 text-lg font-semibold">Recent Changes</h3>
             <div className="space-y-2">
-              {analytics.recentChanges.slice(0, 3).map((change, index) => (
+              {analytics.recentChanges.slice(0, 3).map((change: { action: string; timestamp: string }, index: number) => (
                 <p key={index} className="text-sm">
                   {change.action} on {new Date(change.timestamp).toLocaleDateString()}
                 </p>

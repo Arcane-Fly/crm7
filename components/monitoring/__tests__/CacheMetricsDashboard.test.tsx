@@ -1,4 +1,4 @@
-import { type Redis } from '@upstash/redis';
+import { Redis } from '@upstash/redis';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -7,7 +7,7 @@ import { cacheMonitoring } from '@/lib/services/cache/monitoring';
 import { CacheWarming } from '@/lib/services/cache/warming';
 import { type CacheMetrics } from '@/lib/types/monitoring';
 import { CacheMetricsDashboard } from '../CacheMetricsDashboard';
-import { type CacheService } from '@/lib/services/cache/cache-service';
+import { CacheService } from '@/lib/services/cache/cache-service';
 
 vi.mock('@/lib/services/cache/monitoring');
 vi.mock('@/lib/services/cache/warming');
@@ -89,15 +89,15 @@ class MockCacheService extends CacheService {
     });
   }
 
-  getKey = vi.fn();
-  get = vi.fn();
-  set = vi.fn();
-  delete = vi.fn();
-  deletePattern = vi.fn();
-  getOrSet = vi.fn();
-  waitForLock = vi.fn();
-  clear = vi.fn();
-  close = vi.fn();
+  public override getKey = vi.fn();
+  public override get = vi.fn();
+  public override set = vi.fn();
+  public override delete = vi.fn();
+  public override deletePattern = vi.fn();
+  public override getOrSet = vi.fn();
+  public override waitForLock = vi.fn();
+  public override clear = vi.fn();
+  public override close = vi.fn();
 }
 
 const mockCacheService = new MockCacheService();

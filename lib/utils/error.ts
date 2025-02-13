@@ -1,3 +1,5 @@
+import { captureError } from '@/lib/monitoring';
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -13,9 +15,4 @@ export class ApiError extends Error {
       details,
     });
   }
-}
-
-function captureError(error: Error, context: Record<string, unknown>): void {
-  // TODO: Implement error tracking (e.g., Sentry)
-  console.error('Error captured:', error, context);
 }

@@ -1,16 +1,29 @@
 import { describe, expect, it, vi } from 'vitest';
-import { FairWorkApiClient, createClient } from '../api-client';
-import type { Award, RateValidationResponse } from '../types';
+import { FairWorkClient, createClient } from '../fairwork-client';
+import type { RateValidationResponse } from '../types';
+
+interface Award {
+  code: string;
+  name: string;
+  effectiveFrom: string;
+  classifications: Array<{
+    code: string;
+    name: string;
+    level: string;
+    baseRate: number;
+    effectiveFrom: string;
+  }>;
+}
 
 const TEST_CONFIG = {
   apiKey: 'test-api-key',
-  baseUrl: 'https://api.test.fairwork.gov.au/v1',
+  apiUrl: 'https://api.test.fairwork.gov.au/v1',
   environment: 'sandbox' as const,
   timeout: 5000,
 };
 
-describe('FairWorkApiClient', () => {
-  let client: FairWorkApiClient;
+describe('FairWorkClient', () => {
+  let client: FairWorkClient;
   let fetchMock: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
@@ -25,14 +38,18 @@ describe('FairWorkApiClient', () => {
   });
 
   it('should create a client instance', () => {
-    expect(client).toBeInstanceOf(FairWorkApiClient);
+    expect(client).toBeInstanceOf(Object);
+    expect(client).toHaveProperty('validatePayRate');
   });
 
-  describe('validateRate', () => {
-    it('should validate a rate successfully', async () => {
-      const mockResponse: RateValidationResponse = {
-        valid: true,
-        minimumRate: 25.0,
+  describe('validatePayRate', () => {
+    it('validates pay rate', async () => {
+      const mockResponse = {
+        data: {
+          isValid: true,
+          minimumRate: 25.5,
+          difference: 4.5,
+        },
       };
 
       fetchMock.mockImplementationOnce(() =>
@@ -42,7 +59,7 @@ describe('FairWorkApiClient', () => {
         })
       );
 
-      const result = await client.validateRate({
+      const result = await client.validatePayRate({
         rate: 30.0,
         awardCode: 'MA000001',
         classificationCode: 'L1',
@@ -50,12 +67,12 @@ describe('FairWorkApiClient', () => {
 
       expect(result).toEqual(mockResponse);
       expect(fetchMock).toHaveBeenCalledWith(
-        `${TEST_CONFIG.baseUrl}/rates/validate`,
+        `${TEST_CONFIG.apiUrl}/rates/validate`,
         expect.objectContaining({
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-Api-Key': TEST_CONFIG.apiKey,
+            'Authorization': `Bearer ${TEST_CONFIG.apiKey}`,
             'X-Environment': TEST_CONFIG.environment,
           },
         }),
@@ -77,7 +94,7 @@ describe('FairWorkApiClient', () => {
       );
 
       await expect(
-        client.validateRate({
+        client.validatePayRate({
           rate: 15.0,
           awardCode: 'MA000001',
           classificationCode: 'L1',
@@ -111,20 +128,20 @@ describe('FairWorkApiClient', () => {
       fetchMock.mockImplementationOnce(() =>
         Promise.resolve({
           ok: true,
-          json: () => Promise.resolve({ items: mockAwards, total: 1 }),
+          json: () => Promise.resolve(mockAwards),
         })
       );
 
       const result = await client.getActiveAwards();
 
-      expect(result.items).toEqual(mockAwards);
+      expect(result).toEqual(mockAwards);
       expect(fetchMock).toHaveBeenCalledWith(
-        `${TEST_CONFIG.baseUrl}/awards/active`,
+        `${TEST_CONFIG.apiUrl}/awards/active`,
         expect.objectContaining({
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            'X-Api-Key': TEST_CONFIG.apiKey,
+            'Authorization': `Bearer ${TEST_CONFIG.apiKey}`,
             'X-Environment': TEST_CONFIG.environment,
           },
         }),

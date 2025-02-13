@@ -19,6 +19,7 @@ interface User {
   name?: string | null;
   email?: string | null;
   image?: string | null;
+  picture?: string | null;
 }
 
 export function TopBar(): React.ReactElement {
@@ -88,7 +89,7 @@ export function TopBar(): React.ReactElement {
             >
               <Avatar className='h-8 w-8'>
                 <AvatarImage
-                  src={user?.image}
+                  src={user?.image ?? user?.picture}
                   alt={user?.name ?? ''}
                 />
                 <AvatarFallback>

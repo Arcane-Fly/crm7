@@ -1,6 +1,6 @@
 import { type SupabaseClient } from '@supabase/supabase-js';
 import { type Database } from '@/types/supabase';
-import { BaseService } from './base-service';
+import { BaseService, type ServiceOptions } from '@/lib/utils/service';
 
 interface Timesheet {
   id: string;
@@ -19,12 +19,10 @@ interface BillingEntry {
 
 export class BillingService extends BaseService {
   constructor(
-    private readonly supabase: SupabaseClient<Database>
+    private readonly supabase: SupabaseClient<Database>,
+    options: ServiceOptions = {}
   ) {
-    super({
-      name: 'BillingService',
-      version: '1.0.0',
-    });
+    super('BillingService', '1.0.0', options);
   }
 
   async createTimesheet(timesheet: Omit<Timesheet, 'id'>): Promise<void> {

@@ -1,5 +1,4 @@
 import { ManagementClient } from 'auth0';
-
 import { logger } from '@/lib/logger';
 
 /**
@@ -9,7 +8,7 @@ import { logger } from '@/lib/logger';
  * - Managing roles and permissions
  * - Managing organizations
  */
-export const createManagementClient = (): void => {
+export const createManagementClient = (): ManagementClient => {
   if (!process.env.AUTH0_ADMIN_API_KEY || !process.env.AUTH0_API_TOKEN) {
     throw new Error('Missing required Auth0 environment variables');
   }

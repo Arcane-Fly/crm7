@@ -1,3 +1,26 @@
+import type { 
+  Award,
+  Classification,
+  PayRate,
+  RateTemplate,
+  RateValidationRequest,
+  RateValidationResponse,
+  ClassificationHierarchy,
+  PayCalculation
+} from './fairwork.types';
+
+// Re-export all types
+export type {
+  Award,
+  Classification,
+  PayRate,
+  RateTemplate,
+  RateValidationRequest,
+  RateValidationResponse,
+  ClassificationHierarchy,
+  PayCalculation
+};
+
 export type FairWorkEnvironment = 'production' | 'sandbox';
 
 export interface FairWorkConfig {
@@ -15,104 +38,36 @@ export interface FairWorkConfig {
   logLevel?: 'debug' | 'info' | 'warn' | 'error';
 }
 
-export interface Award {
-  code: string;
-  name: string;
-  effectiveFrom: string;
-  effectiveTo?: string;
-  classifications: Classification[];
-  penalties?: Penalty[];
-  allowances?: Allowance[];
+export interface FairWorkApiClient {
+  getAward(awardCode: string): Promise<Award>;
+  validatePayRate(params: RateValidationRequest): Promise<{ isValid: boolean; minimumRate: number; difference: number }>;
+  searchAwards(params: { query: string; [key: string]: any }): Promise<{ items: Award[]; total: number }>;
+  getClassification(awardCode: string, classificationCode: string): Promise<Classification>;
+  calculatePay(params: { 
+    awardCode: string;
+    classificationCode: string;
+    date: string;
+    employmentType: string;
+    hours: number;
+    penalties?: string[];
+    allowances?: string[];
+  }): Promise<PayCalculation>;
+  getActiveAwards(): Promise<Award[]>;
+  getCurrentRates(): Promise<PayRate[]>;
+  getRatesForDate(date: string): Promise<PayRate[]>;
+  getClassifications(awardCode: string): Promise<Classification[]>;
+  getClassificationHierarchy(awardCode: string): Promise<ClassificationHierarchy | null>;
+  getRateTemplates(awardCode: string): Promise<RateTemplate[]>;
+  validateRateTemplate(request: RateValidationRequest): Promise<RateValidationResponse>;
+  calculateBaseRate(code: string): Promise<number | null>;
 }
 
-export interface Classification {
-  code: string;
-  name: string;
-  level: string;
-  baseRate: number;
-  effectiveFrom: string;
-  effectiveTo?: string;
-  parentCode?: string;
-}
-
-export interface ClassificationHierarchy {
-  code: string;
-  name: string;
-  children: ClassificationHierarchy[];
-}
-
-export interface Penalty {
-  code: string;
-  name: string;
-  description: string;
-  rate: number;
-  type: 'percentage' | 'fixed';
-  conditions?: string[];
-}
-
-export interface Allowance {
-  code: string;
-  name: string;
-  description: string;
-  amount: number;
-  type: 'daily' | 'weekly' | 'monthly' | 'yearly';
-  conditions?: string[];
-}
-
-export interface RateTemplate {
-  code: string;
-  name: string;
-  baseRate: number;
-  penalties: string[];
-  allowances: string[];
-}
-
-export interface RateValidationRequest {
-  rate: number;
+export interface RateCalculationRequest {
   awardCode: string;
   classificationCode: string;
-  date?: string;
+  date: string;
+  employmentType: 'casual' | 'permanent' | 'fixed-term';
+  hours: number;
   penalties?: string[];
   allowances?: string[];
-}
-
-export interface RateValidationResponse {
-  valid: boolean;
-  minimumRate: number;
-  error?: string;
-  details?: {
-    baseRate: number;
-    penalties: Array<{ code: string; amount: number }>;
-    allowances: Array<{ code: string; amount: number }>;
-    total: number;
-  };
-}
-
-export interface GetClassificationsParams {
-  awardCode: string;
-  effectiveDate?: string;
-  includeInactive?: boolean;
-}
-
-export interface PayRate {
-  classificationCode?: string;
-  baseRate: number;
-  effectiveFrom: string;
-  effectiveTo?: string;
-  penalties?: Array<{ code: string; rate: number }>;
-  allowances?: Array<{ code: string; amount: number }>;
-}
-
-export interface Page<T> {
-  items: T[];
-  total: number;
-  page: number;
-  pageSize: number;
-  hasMore: boolean;
-}
-
-export interface ApiError extends Error {
-  code: string;
-  status: number;
-  details?: Record<string, unknown>;
 }

@@ -1,88 +1,91 @@
+import type { Breadcrumb } from '@sentry/nextjs';
 import * as Sentry from '@sentry/nextjs';
-import { type SpanContext, type Transaction } from '@sentry/types';
 import { env } from '@/lib/config/environment';
+import { type MonitoringOptions, type MonitoringSpan, type ErrorMetadata, SpanStatus, type SpanStatusType } from './types';
 
-interface EventHint {
-  originalException: Error;
-  syntheticException: Error;
+function toErrorMetadata(error: unknown): ErrorMetadata {
+  if (error instanceof Error) {
+    return {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      context: 'context' in error ? (error as { context?: Record<string, unknown> }).context : undefined
+    };
+  }
+  return {
+    message: String(error),
+    name: 'Unknown Error'
+  };
 }
 
-interface MonitoringConfig {
-  dsn: string;
-  environment: string;
-  release?: string;
-  debug?: boolean;
-  tracesSampleRate?: number;
-}
-
-export function initializeMonitoring(config: MonitoringConfig): void {
+export function initializeMonitoring(options: MonitoringOptions): void {
   Sentry.init({
-    dsn: config.dsn,
-    environment: config.environment,
-    release: config.release,
-    debug: config.debug ?? env.NODE_ENV === 'development',
-    tracesSampleRate: config.tracesSampleRate ?? 1.0,
+    dsn: options.dsn,
+    environment: options.environment,
+    release: options.release,
+    debug: options.debug ?? env.NODE_ENV === 'development',
+    tracesSampleRate: options.sampleRate ?? 1.0,
+    integrations: options.integrations ?? [],
   });
 }
 
 export function captureError(error: unknown, context?: Record<string, unknown>): void {
-  const eventHint: EventHint = {
-    originalException: error instanceof Error ? error : new Error(String(error)),
-    syntheticException: new Error(),
-  };
-
-  Sentry.captureException(error, {
-    ...eventHint,
+  const metadata = toErrorMetadata(error);
+  
+  Sentry.captureException(error instanceof Error ? error : new Error(metadata.message), {
     ...context,
-  });
-}
-
-export function startTransaction(
-  name: string,
-  op: string,
-  data?: Record<string, unknown>
-): Transaction {
-  const transaction = Sentry.startTransaction({
-    name,
-    op,
-    data,
-  });
-
-  Sentry.configureScope((scope): void => {
-    scope.setSpan(transaction);
-    scope.setTransactionName(name);
-  });
-
-  return transaction;
-}
-
-export function captureTransactionError(
-  transaction: Transaction,
-  error: unknown,
-  context?: Record<string, unknown>
-): void {
-  const err = error instanceof Error ? error : new Error(String(error));
-
-  transaction.setStatus('error');
-  transaction.setData('error', {
-    message: err.message,
-    stack: err.stack,
-    ...context,
-  });
-
-  captureError(err, {
-    transactionId: transaction.traceId,
-    ...context,
+    ...metadata.context,
   });
 }
 
 export function startSpan(
-  transaction: Transaction,
-  spanContext: SpanContext
-): void {
-  if (!transaction) {
-    return null;
+  name: string, 
+  type: string, 
+  data?: Record<string, unknown>
+): MonitoringSpan {
+  const span: MonitoringSpan = {
+    name,
+    type,
+    startTime: Date.now(),
+    tags: new Map(),
+    status: SpanStatus.Ok
+  };
+
+  if (data) {
+    Object.entries(data).forEach(([key, value]) => {
+      span.tags.set(key, String(value));
+    });
   }
 
-  return transaction.startChild(spanContext);
+  return span;
+}
+
+export function finishSpan(
+  span: MonitoringSpan,
+  status: SpanStatusType = SpanStatus.Ok,
+  data?: Record<string, unknown>
+): void {
+  const duration = Date.now() - span.startTime;
+  span.status = status;
+  span.tags.set('duration', String(duration));
+
+  if (data) {
+    Object.entries(data).forEach(([key, value]) => {
+      span.tags.set(key, String(value));
+    });
+  }
+
+  const breadcrumb: Breadcrumb = {
+    category: 'monitoring',
+    message: `Span ${span.name} finished`,
+    data: {
+      type: span.type,
+      duration,
+      status,
+      ...Object.fromEntries(span.tags)
+    },
+    level: status === SpanStatus.Ok ? 'info' : 'error'
+  };
+
+  Sentry.addBreadcrumb(breadcrumb);
 }

@@ -1,5 +1,5 @@
-import type { RateTemplate } from '@/lib/types';
-import { BaseService } from '../base-service';
+import type { RateTemplate } from '@/lib/services/fairwork/types';
+import { BaseService, type ServiceOptions } from '@/lib/utils/service';
 import { logger } from '@/lib/utils/logger';
 
 export interface ChargeCalculationService {
@@ -11,11 +11,8 @@ export interface ChargeCalculationService {
 export class ChargeCalculationServiceImpl extends BaseService implements ChargeCalculationService {
   private readonly serviceLogger = logger.createLogger('ChargeCalculationService');
 
-  constructor() {
-    super({
-      name: 'ChargeCalculationService',
-      version: '1.0.0',
-    });
+  constructor(options: ServiceOptions = {}) {
+    super('ChargeCalculationService', '1.0.0', options);
   }
 
   async calculateChargeRate(template: RateTemplate, hours: number): Promise<number> {

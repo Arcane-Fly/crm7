@@ -13,3 +13,5 @@ declare module "next-auth/jwt" {
     sub?: string;
   }
 }
+
+// Deprecated: NextAuth is no longer used. All authentication is handled via Supabase.

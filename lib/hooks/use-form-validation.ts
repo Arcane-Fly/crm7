@@ -1,21 +1,21 @@
 import { useState } from 'react';
-import { useForm, type UseFormReturn } from 'react-hook-form';
+import { useForm, type UseFormReturn, type FieldValues, type DefaultValues } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type z } from 'zod';
 
-interface UseFormValidationOptions<T> {
+interface UseFormValidationOptions<T extends FieldValues> {
   schema: z.Schema<T>;
-  defaultValues?: Partial<T>;
+  defaultValues?: DefaultValues<T>;
   onSuccess?: (data: T) => Promise<void>;
 }
 
-interface UseFormValidationReturn<T> extends UseFormReturn<T> {
+interface UseFormValidationReturn<T extends FieldValues> extends Omit<UseFormReturn<T>, 'handleSubmit'> {
   isSubmitting: boolean;
   error: string | null;
-  handleSubmit: (data: T) => Promise<void>;
+  handleSubmit: UseFormReturn<T>['handleSubmit'];
 }
 
-export function useFormValidation<T>(
+export function useFormValidation<T extends FieldValues>(
   options: UseFormValidationOptions<T>
 ): UseFormValidationReturn<T> {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,6 +54,6 @@ export function useFormValidation<T>(
     ...form,
     isSubmitting,
     error,
-    handleSubmit: form.handleSubmit(handleSubmit),
+    handleSubmit: form.handleSubmit,
   };
 }

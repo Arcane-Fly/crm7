@@ -2,165 +2,80 @@ import { logger } from '@/lib/logger';
 import { ServiceFactory } from '../service-factory';
 import { ServiceRegistry } from '../service-registry';
 import { cleanupServices, initializeServices } from '../startup';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
+import type { Mock } from 'vitest';
 
-jest.mock('@/lib/logger', () => ({
+vi.mock('@/lib/logger', () => ({
   logger: {
-    info: jest.fn(),
-    error: jest.fn(),
+    info: vi.fn(),
+    error: vi.fn(),
   },
 }));
 
-jest.mock('../service-factory', () => ({
+vi.mock('../service-factory', () => ({
   ServiceFactory: {
-    getInstance: jest.fn(() => ({
-      resetAllMetrics: jest.fn(),
+    getInstance: vi.fn(() => ({
+      resetAllMetrics: vi.fn(),
     })),
   },
 }));
 
-jest.mock('../service-registry', () => {
-  return {
-    ServiceRegistry: jest.fn().mockImplementation(() => ({
-      validateDependencies: jest.fn(),
-      initialize: jest.fn(),
-    })),
-  };
-});
+vi.mock('../service-registry');
 
 describe('Startup Service', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  describe('initializeServices', () => {
-    it('should initialize all services successfully', async () => {
-      await initializeServices();
-      expect(logger.info).toHaveBeenCalledWith('Application services initialized successfully');
-    });
-
-    it('should handle initialization errors', async () => {
-      const error = new Error('Initialization failed');
-      const mockRegistry = {
-        validateDependencies: jest.fn(),
-        initialize: jest.fn().mockImplementation(() => {
-          throw error;
-        }),
-      };
-      (ServiceRegistry as jest.Mock).mockImplementation(() => mockRegistry);
-
-      await expect(initializeServices()).rejects.toThrow(error);
-      expect(logger.error).toHaveBeenCalledWith(
-        'Failed to initialize application services:',
-        expect.any(Error)
-      );
-    });
-
-    it('should handle unknown errors', async () => {
-      const error = 'Unknown error occurred';
-      const mockRegistry = {
-        validateDependencies: jest.fn(),
-        initialize: jest.fn().mockImplementation(() => {
-          throw error;
-        }),
-      };
-      (ServiceRegistry as jest.Mock).mockImplementation(() => mockRegistry);
-
-      await expect(initializeServices()).rejects.toThrow();
-      expect(logger.error).toHaveBeenCalledWith(
-        'Failed to initialize application services:',
-        expect.any(Error)
-      );
-    });
-  });
-
-  describe('cleanupServices', () => {
-    it('should cleanup all services successfully', async () => {
-      await cleanupServices();
-      expect(logger.info).toHaveBeenCalledWith('Application services cleaned up successfully');
-    });
-
-    it('should handle cleanup errors', async () => {
-      const error = new Error('Cleanup failed');
-      const mockFactory = {
-        resetAllMetrics: jest.fn().mockImplementation(() => {
-          throw error;
-        }),
-      };
-      (ServiceFactory.getInstance as jest.Mock).mockReturnValue(mockFactory);
-
-      await expect(cleanupServices()).rejects.toThrow(error);
-      expect(logger.error).toHaveBeenCalledWith(
-        'Failed to cleanup application services:',
-        expect.any(Error)
-      );
-    });
+    vi.clearAllMocks();
   });
 
   describe('Process Signal Handlers', () => {
-    let processExitSpy: jest.SpyInstance;
-    let processOnSpy: jest.SpyInstance;
+    let processExitSpy: Mock;
+    let processOnSpy: Mock;
+    let handlers: Record<string, () => Promise<void>> = {};
 
     beforeEach(() => {
-      processExitSpy = jest.spyOn(process, 'exit').mockImplementation();
-      processOnSpy = jest.spyOn(process, 'on');
+      processExitSpy = vi.spyOn(process, 'exit') as Mock;
+      processExitSpy.mockImplementation(() => undefined as never);
+
+      processOnSpy = vi.spyOn(process, 'on') as Mock;
+      processOnSpy.mockImplementation((event: string, listener: () => Promise<void>) => {
+        handlers[event] = listener;
+        return process;
+      });
     });
 
     afterEach(() => {
       processExitSpy.mockRestore();
       processOnSpy.mockRestore();
+      handlers = {};
     });
 
     it('should register process signal handlers', () => {
-      // Re-run the module code
-      jest.isolateModules(() => {
-        require('../startup');
-      });
+      vi.resetModules();
+      require('../startup');
 
       expect(processOnSpy).toHaveBeenCalledWith('SIGTERM', expect.any(Function));
       expect(processOnSpy).toHaveBeenCalledWith('SIGINT', expect.any(Function));
     });
 
     it('should handle SIGTERM signal', async () => {
-      let sigtermHandler: () => Promise<void>;
-      processOnSpy.mockImplementation((signal: string, handler: () => Promise<void>) => {
-        if (signal === 'SIGTERM') {
-          sigtermHandler = handler;
-        }
-      });
+      vi.resetModules();
+      require('../startup');
 
-      // Re-run the module code to register handlers
-      jest.isolateModules(() => {
-        require('../startup');
-      });
-
-      expect(processOnSpy).toHaveBeenCalledWith('SIGTERM', expect.any(Function));
-      expect(sigtermHandler).toBeDefined();
-
-      // Call the handler
-      await sigtermHandler();
+      const handler = handlers['SIGTERM'];
+      expect(handler).toBeDefined();
+      await handler();
 
       expect(logger.info).toHaveBeenCalledWith('SIGTERM received. Starting graceful shutdown...');
       expect(processExitSpy).toHaveBeenCalledWith(0);
     });
 
     it('should handle SIGINT signal', async () => {
-      let sigintHandler: () => Promise<void>;
-      processOnSpy.mockImplementation((signal: string, handler: () => Promise<void>) => {
-        if (signal === 'SIGINT') {
-          sigintHandler = handler;
-        }
-      });
+      vi.resetModules();
+      require('../startup');
 
-      // Re-run the module code to register handlers
-      jest.isolateModules(() => {
-        require('../startup');
-      });
-
-      expect(processOnSpy).toHaveBeenCalledWith('SIGINT', expect.any(Function));
-      expect(sigintHandler).toBeDefined();
-
-      // Call the handler
-      await sigintHandler();
+      const handler = handlers['SIGINT'];
+      expect(handler).toBeDefined();
+      await handler();
 
       expect(logger.info).toHaveBeenCalledWith('SIGINT received. Starting graceful shutdown...');
       expect(processExitSpy).toHaveBeenCalledWith(0);

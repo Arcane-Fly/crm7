@@ -7,7 +7,13 @@ interface ChargeRatesConfig {
   adjustments: Record<string, number>;
 }
 
-export function useChargeRates(ratesCalculator: RatesCalculator): Promise<void> {
+interface ChargeRatesHook {
+  isLoading: boolean;
+  error: Error | null;
+  calculateRate: (config: ChargeRatesConfig) => Promise<any>;
+}
+
+export function useChargeRates(ratesCalculator: RatesCalculator): ChargeRatesHook {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 

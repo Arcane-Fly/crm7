@@ -1,9 +1,20 @@
 ## Version Requirements
 
 - Next.js version: 15.1.6 (required)
-- Node.js: ^20.11.1 (LTS version)
+- Node.js: 20.11.1 (LTS version)
+  - Use LTS version for production stability
+  - Avoid latest versions (e.g., 23.x) until LTS
+  - Update within 3 months of new LTS release
+  - Test against both current and previous LTS
 - TypeScript: ^5.0.0
 - Package manager: pnpm (version 10.2.1)
+
+### Node.js Version Management
+- Use fnm for version switching
+- Keep .nvmrc in sync with package.json engines
+- CI must match local development version
+- All environments (dev, CI, prod) must use same version
+- Version must be specified exactly (e.g., "20.11.1" not "^20.11.1")
 
 ## Project Path
 
@@ -15,7 +26,7 @@
 
 - Uses Next.js for development and production builds
 - Package manager: pnpm (version 10.2.1)
-- Node version: ^20.11.1
+- Node version: 20.11.1
 
 ## Version Management
 
@@ -178,6 +189,21 @@ const mockError = Object.assign(
 - Use vi.spyOn() instead of jest.spyOn()
 - Tests should be in __tests__ directories or *.test.ts files
 - Run tests with `pnpm vitest run --coverage`
+- Use Vitest's built-in coverage reporting
+- Take advantage of Vitest's better TypeScript support
+- Use Vitest's superior snapshot testing
+
+### Testing Best Practices
+- Use Vitest's globals (vi) for all mocking/spying
+- Take advantage of Vitest's async handling
+- Use Vitest's built-in DOM testing utilities
+- Leverage Vitest's better error messages
+- Use Vitest's test filtering capabilities
+- Utilize Vitest's watch mode for development
+- Take advantage of Vitest's parallel test execution
+- Use Vitest's built-in assertion library
+- Leverage Vitest's TypeScript integration
+- Use Vitest's snapshot testing for UI components
 
 ### Next.js App Router Types
 - Route handlers must use explicit RouteContext type
@@ -328,3 +354,34 @@ const mockError = Object.assign(
    - Define reusable response types
    - Validate response data
    - Handle all error cases
+
+## Common Type Safety Issues with Node.js 20
+
+1. Return Type Consistency
+   - Functions returning Promise must specify exact type
+   - Avoid void returns for async functions
+   - Use explicit Promise<T> return types
+
+2. Environment Variables
+   - Node.js 20 requires explicit undefined checks
+   - Use ?? operator with fallback values
+   - Validate at startup
+   - Type as string | undefined
+
+3. Module Imports
+   - Use type imports for interfaces/types
+   - Avoid mixing default and named imports
+   - Keep import styles consistent
+
+4. Class Inheritance
+   - Private fields require careful mocking
+   - Extend base classes in tests
+   - Preserve access modifiers
+   - Call super() with proper config
+
+### Service Layer Type Safety
+- Always explicitly type service method returns to avoid void inference
+- Use explicit type annotations when destructuring service responses
+- When setting React state from async data, use arrow function form to avoid stale closures
+- Ensure service implementations match their interfaces exactly
+- Add type guards for error handling in service methods

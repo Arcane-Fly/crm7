@@ -1,20 +1,6 @@
 import { z } from 'zod';
 
 /**
- * Award schema
- */
-export const AwardSchema = z.object({
-  code: z.string(),
-  name: z.string(),
-  industry: z.string(),
-  occupation: z.string().optional(),
-  effectiveFrom: z.string(),
-  effectiveTo: z.string().optional(),
-  description: z.string().optional(),
-  coverage: z.string().optional(),
-});
-
-/**
  * Classification schema
  */
 export const ClassificationSchema = z.object({
@@ -27,6 +13,52 @@ export const ClassificationSchema = z.object({
   parentCode: z.string().optional(),
   validFrom: z.string(),
   validTo: z.string().optional(),
+  baseRate: z.number(),
+});
+
+/**
+ * Award schema
+ */
+export const AwardSchema = z.object({
+  code: z.string(),
+  name: z.string(),
+  industry: z.string(),
+  occupation: z.string().optional(),
+  effectiveFrom: z.string(),
+  effectiveTo: z.string().optional(),
+  description: z.string().optional(),
+  coverage: z.string().optional(),
+  classifications: z.array(ClassificationSchema),
+});
+
+/**
+ * Rate template schema
+ */
+export const RateTemplateSchema = z.object({
+  id: z.string(),
+  code: z.string(),
+  name: z.string(),
+  baseRate: z.number(),
+  baseMargin: z.number(),
+  superRate: z.number(),
+  leaveLoading: z.number(),
+  workersCompRate: z.number(),
+  payrollTaxRate: z.number(),
+  trainingCostRate: z.number(),
+  otherCostsRate: z.number(),
+  casualLoading: z.number(),
+  fundingOffset: z.number(),
+  effectiveFrom: z.string(),
+  effectiveTo: z.string().optional(),
+});
+
+/**
+ * Rate validation response schema
+ */
+export const RateValidationResponseSchema = z.object({
+  isValid: z.boolean(),
+  minimumRate: z.number(),
+  difference: z.number(),
 });
 
 /**
@@ -98,12 +130,8 @@ export const PayCalculationSchema = z.object({
 export const PenaltySchema = z.object({
   code: z.string(),
   name: z.string(),
-  description: z.string().optional(),
   rate: z.number(),
-  type: z.string(),
-  conditions: z.string().optional(),
-  effectiveFrom: z.string(),
-  effectiveTo: z.string().optional(),
+  description: z.string().optional(),
 });
 
 /**
@@ -112,12 +140,8 @@ export const PenaltySchema = z.object({
 export const AllowanceSchema = z.object({
   code: z.string(),
   name: z.string(),
-  description: z.string().optional(),
   amount: z.number(),
-  type: z.string(),
-  conditions: z.string().optional(),
-  effectiveFrom: z.string(),
-  effectiveTo: z.string().optional(),
+  description: z.string().optional(),
 });
 
 /**
@@ -143,12 +167,53 @@ export const PublicHolidaySchema = z.object({
   description: z.string().optional(),
 });
 
-// Export types
+// Define types from schemas
 export type Award = z.infer<typeof AwardSchema>;
 export type Classification = z.infer<typeof ClassificationSchema>;
-export type PayRate = z.infer<typeof PayRateSchema>;
-export type PayCalculation = z.infer<typeof PayCalculationSchema>;
-export type Penalty = z.infer<typeof PenaltySchema>;
-export type Allowance = z.infer<typeof AllowanceSchema>;
+export type RateTemplate = z.infer<typeof RateTemplateSchema>;
+export type RateValidationResponse = z.infer<typeof RateValidationResponseSchema>;
 export type LeaveEntitlement = z.infer<typeof LeaveEntitlementSchema>;
 export type PublicHoliday = z.infer<typeof PublicHolidaySchema>;
+export type Penalty = z.infer<typeof PenaltySchema>;
+export type Allowance = z.infer<typeof AllowanceSchema>;
+
+// Define interfaces that don't have schemas
+export interface ClassificationHierarchy {
+  code: string;
+  name: string;
+  children?: ClassificationHierarchy[];
+}
+
+export interface PayCalculation {
+  baseRate: number;
+  casualLoading?: number;
+  total: number;
+  components: Array<{
+    type: string;
+    amount: number;
+  }>;
+}
+
+export interface PayRate {
+  baseRate: number;
+  casualLoading?: number;
+  penalties?: Array<{
+    code: string;
+    rate: number;
+    description: string;
+  }>;
+  allowances?: Array<{
+    code: string;
+    amount: number;
+    description: string;
+  }>;
+  effectiveFrom: string;
+  effectiveTo?: string;
+}
+
+export interface RateValidationRequest {
+  rate: number;
+  awardCode: string;
+  classificationCode: string;
+  date?: string;
+}

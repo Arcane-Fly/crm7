@@ -9,15 +9,27 @@ const envSchema = z.object({
   HOST: z.string().default('localhost'),
   PORT: z.coerce.number().int().positive().default(3001),
 
-  // Database
-  DATABASE_URL: z.string(),
-  REDIS_URL: z.string(),
+  // Redis/KV Store
+  UPSTASH_REDIS_REST_URL: z.string().url(),
+  UPSTASH_REDIS_REST_TOKEN: z.string(),
+  UPSTASH_REDIS_REST_READ_ONLY_TOKEN: z.string().optional(),
 
-  // Auth
-  AUTH_SECRET: z.string().min(32),
-  AUTH_URL: z.string().url(),
-  AUTH_CLIENT_ID: z.string(),
-  AUTH_CLIENT_SECRET: z.string(),
+  // Supabase
+  NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
+  SUPABASE_SERVICE_KEY: z.string(),
+  SUPABASE_JWT_SECRET: z.string(),
+
+  // FairWork API
+  FAIRWORK_API_URL: z.string().url(),
+  FAIRWORK_API_KEY: z.string(),
+
+  // Email Configuration
+  SMTP_HOST: z.string(),
+  SMTP_PORT: z.coerce.number().int().positive(),
+  SMTP_USER: z.string(),
+  SMTP_PASS: z.string(),
+  SMTP_FROM: z.string().email(),
 
   // Features
   ENABLE_BETA_FEATURES: z.coerce.boolean().default(false),
@@ -26,16 +38,12 @@ const envSchema = z.object({
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60000),
 
-  // Email
-  SMTP_HOST: z.string(),
-  SMTP_PORT: z.coerce.number().int().positive(),
-
   // Cache
   CACHE_TTL: z.coerce.number().int().positive().default(3600),
 
-  // External Services
-  FAIRWORK_API_URL: z.string().url(),
-  FAIRWORK_API_KEY: z.string(),
+  // Monitoring
+  SENTRY_DSN: z.string().url().optional(),
+  ANALYTICS_TOKEN: z.string().optional(),
 });
 
 export const env = envSchema.parse(process.env);

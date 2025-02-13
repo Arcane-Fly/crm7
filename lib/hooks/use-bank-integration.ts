@@ -1,7 +1,13 @@
 import { useState } from 'react';
 import { type BankIntegrationService } from '@/lib/services/bank-integration';
 
-export function useBankIntegration(bankIntegrationService: BankIntegrationService): Promise<void> {
+interface BankIntegrationHook {
+  isLoading: boolean;
+  error: Error | null;
+  handleIntegration: (data: unknown) => Promise<unknown>;
+}
+
+export function useBankIntegration(bankIntegrationService: BankIntegrationService): BankIntegrationHook {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 

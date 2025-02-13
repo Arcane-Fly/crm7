@@ -1,15 +1,15 @@
 'use client';
 
-import { type ComponentConfig } from '@measured/puck';
+import { type ComponentConfig, type DefaultComponentProps } from '@measured/puck';
 
-interface HeroProps {
-  title: string;
+interface HeroProps extends DefaultComponentProps {
+  title?: string;
   description?: string;
   ctaText?: string;
   ctaLink?: string;
 }
 
-export function Hero({ title, description, ctaText, ctaLink }: HeroProps) {
+export function Hero({ title = '', description, ctaText, ctaLink }: HeroProps): JSX.Element {
   return (
     <div className="px-4 py-20 text-center">
       <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
@@ -34,9 +34,10 @@ export function Hero({ title, description, ctaText, ctaLink }: HeroProps) {
   );
 }
 
-export const heroConfig: ComponentConfig = {
+export const heroConfig: ComponentConfig<HeroProps> = {
+  render: Hero,
   fields: {
-    title: { type: 'text', label: 'Title', required: true },
+    title: { type: 'text', label: 'Title' },
     description: { type: 'textarea', label: 'Description' },
     ctaText: { type: 'text', label: 'CTA Text' },
     ctaLink: { type: 'text', label: 'CTA Link' },
