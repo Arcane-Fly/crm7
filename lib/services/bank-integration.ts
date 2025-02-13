@@ -22,7 +22,7 @@ interface BankTransaction {
 export class BankIntegrationService {
   constructor(private readonly supabase: SupabaseClient<Database>) {}
 
-  async createBankAccount(account: Omit<BankAccount, 'id'>): Promise<void> {
+  async createBankAccount(account: Omit<BankAccount, 'id'>): Promise<BankAccount> {
     try {
       const { data, error } = await this.supabase
         .from('bank_accounts')
@@ -34,14 +34,14 @@ export class BankIntegrationService {
         throw error;
       }
 
-      return data;
+      return data as BankAccount;
     } catch (error) {
-      logger.error('Failed to create bank account:', error);
+      logger.error('Failed to create bank account:', { error: error instanceof Error ? error : String(error) });
       throw error;
     }
   }
 
-  async getBankAccount(id: string): Promise<void> {
+  async getBankAccount(id: string): Promise<BankAccount> {
     try {
       const { data, error } = await this.supabase
         .from('bank_accounts')
@@ -53,14 +53,14 @@ export class BankIntegrationService {
         throw error;
       }
 
-      return data;
+      return data as BankAccount;
     } catch (error) {
-      logger.error('Failed to get bank account:', error);
+      logger.error('Failed to get bank account:', { error: error instanceof Error ? error : String(error) });
       throw error;
     }
   }
 
-  async updateBankAccount(id: string, updates: Partial<BankAccount>): Promise<void> {
+  async updateBankAccount(id: string, updates: Partial<BankAccount>): Promise<BankAccount> {
     try {
       const { data, error } = await this.supabase
         .from('bank_accounts')
@@ -73,9 +73,9 @@ export class BankIntegrationService {
         throw error;
       }
 
-      return data;
+      return data as BankAccount;
     } catch (error) {
-      logger.error('Failed to update bank account:', error);
+      logger.error('Failed to update bank account:', { error: error instanceof Error ? error : String(error) });
       throw error;
     }
   }
@@ -91,12 +91,12 @@ export class BankIntegrationService {
         throw error;
       }
     } catch (error) {
-      logger.error('Failed to delete bank account:', error);
+      logger.error('Failed to delete bank account:', { error: error instanceof Error ? error : String(error) });
       throw error;
     }
   }
 
-  async createTransaction(transaction: Omit<BankTransaction, 'id'>): Promise<void> {
+  async createTransaction(transaction: Omit<BankTransaction, 'id'>): Promise<BankTransaction> {
     try {
       const { data, error } = await this.supabase
         .from('bank_transactions')
@@ -108,14 +108,14 @@ export class BankIntegrationService {
         throw error;
       }
 
-      return data;
+      return data as BankTransaction;
     } catch (error) {
-      logger.error('Failed to create transaction:', error);
+      logger.error('Failed to create transaction:', { error: error instanceof Error ? error : String(error) });
       throw error;
     }
   }
 
-  async getTransaction(id: string): Promise<void> {
+  async getTransaction(id: string): Promise<BankTransaction> {
     try {
       const { data, error } = await this.supabase
         .from('bank_transactions')
@@ -127,14 +127,14 @@ export class BankIntegrationService {
         throw error;
       }
 
-      return data;
+      return data as BankTransaction;
     } catch (error) {
-      logger.error('Failed to get transaction:', error);
+      logger.error('Failed to get transaction:', { error: error instanceof Error ? error : String(error) });
       throw error;
     }
   }
 
-  async getTransactions(accountId: string): Promise<void> {
+  async getTransactions(accountId: string): Promise<BankTransaction[]> {
     try {
       const { data, error } = await this.supabase
         .from('bank_transactions')
@@ -146,9 +146,9 @@ export class BankIntegrationService {
         throw error;
       }
 
-      return data;
+      return data as BankTransaction[];
     } catch (error) {
-      logger.error('Failed to get transactions:', error);
+      logger.error('Failed to get transactions:', { error: error instanceof Error ? error : String(error) });
       throw error;
     }
   }

@@ -36,7 +36,7 @@ const nextConfig = {
     instrumentationHook: true,
     serverComponentsExternalPackages: ['sharp'],
   },
-  webpack: (config, { isServer }) => {
+  webpack: (config, { }) => {
     // Optimize bundle size
     config.optimization = {
       ...config.optimization,

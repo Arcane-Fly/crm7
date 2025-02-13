@@ -19,13 +19,25 @@ export function useUser(): UseUserReturn {
   useEffect((): void => {
     const fetchUser = async (): Promise<void> => {
       try {
-        const { data: { user }, error: supabaseError } = await supabase.auth.getUser();
+        const { data: { user: supabaseUser }, error: supabaseError } = await supabase.auth.getUser();
 
         if (typeof supabaseError !== "undefined" && supabaseError !== null) {
           throw supabaseError;
         }
 
-        setUser(user);
+        if (supabaseUser) {
+          const userData: User = {
+            id: supabaseUser.id,
+            email: supabaseUser.email ?? '',
+            name: supabaseUser.user_metadata?.name,
+            role: supabaseUser.user_metadata?.role,
+            createdAt: supabaseUser.created_at,
+            updatedAt: supabaseUser.updated_at ?? '',
+          };
+          setUser(userData);
+        } else {
+          setUser(null);
+        }
         setError(null);
       } catch (error) {
         const errorObj = error instanceof Error ? error : new Error('Failed to fetch user');

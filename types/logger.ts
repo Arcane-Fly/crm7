@@ -1,8 +1,10 @@
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+
 export interface LogEntry {
-  level: 'debug' | 'info' | 'warn' | 'error';
+  level: LogLevel;
   message: string;
+  timestamp: string;
   context?: Record<string, unknown>;
-  timestamp: Date;
 }
 
 export interface Logger {

@@ -69,7 +69,7 @@ export class LMSService {
     category?: string;
     level?: Course['difficulty'];
     status?: Course['status'];
-  }): Promise<void> {
+  }): Promise<Course[]> {
     try {
       let query = this.supabase.from('courses').select('*');
 
@@ -85,20 +85,20 @@ export class LMSService {
 
       const { data, error } = await query;
 
-      if (typeof error !== "undefined" && error !== null) throw error;
-      return { data: data as Course[] };
+      if (error) throw error;
+      return data as Course[];
     } catch (error) {
       logger.error('Failed to fetch courses', error as Error);
       throw error;
     }
   }
 
-  async getCourseById(id: string): Promise<void> {
+  async getCourseById(id: string): Promise<Course> {
     try {
       const { data, error } = await this.supabase.from('courses').select('*').eq('id', id).single();
 
-      if (typeof error !== "undefined" && error !== null) throw error;
-      return { data: data as Course };
+      if (error) throw error;
+      return data as Course;
     } catch (error) {
       logger.error('Failed to fetch course', error as Error, { id });
       throw error;
@@ -106,7 +106,7 @@ export class LMSService {
   }
 
   // Enrollment Management
-  async enrollUser(userId: string, courseId: string): Promise<void> {
+  async enrollUser(userId: string, courseId: string): Promise<Enrollment> {
     try {
       const { data, error } = await this.supabase
         .from('enrollments')
@@ -120,15 +120,15 @@ export class LMSService {
         .select()
         .single();
 
-      if (typeof error !== "undefined" && error !== null) throw error;
-      return { data: data as Enrollment };
+      if (error) throw error;
+      return data as Enrollment;
     } catch (error) {
       logger.error('Failed to enroll user', error as Error, { userId, courseId });
       throw error;
     }
   }
 
-  async updateProgress(enrollmentId: string, progress: number): Promise<void> {
+  async updateProgress(enrollmentId: string, progress: number): Promise<{ data: Enrollment }> {
     try {
       const { data, error } = await this.supabase
         .from('enrollments')
@@ -141,7 +141,7 @@ export class LMSService {
         .select()
         .single();
 
-      if (typeof error !== "undefined" && error !== null) throw error;
+      if (error) throw error;
       return { data: data as Enrollment };
     } catch (error) {
       logger.error('Failed to update progress', error as Error, { enrollmentId, progress });
@@ -150,15 +150,15 @@ export class LMSService {
   }
 
   // Assessment Management
-  async getAssessments(courseId: string): Promise<void> {
+  async getAssessments(courseId: string): Promise<Assessment[]> {
     try {
       const { data, error } = await this.supabase
         .from('assessments')
         .select('*')
         .eq('course_id', courseId);
 
-      if (typeof error !== "undefined" && error !== null) throw error;
-      return { data: data as Assessment[] };
+      if (error) throw error;
+      return data as Assessment[];
     } catch (error) {
       logger.error('Failed to fetch assessments', error as Error, { courseId });
       throw error;
@@ -170,7 +170,7 @@ export class LMSService {
     assessment_id: string;
     answers: Record<string, unknown>;
     grade: number;
-  }): Promise<void> {
+  }): Promise<Assessment> {
     try {
       const { data, error } = await this.supabase
         .from('assessment_submissions')
@@ -181,55 +181,54 @@ export class LMSService {
         .select()
         .single();
 
-      if (typeof error !== "undefined" && error !== null) throw error;
+      if (error) throw error;
 
-      // Update enrollment if grade is passing
       const assessment = await this.getAssessmentById(params.assessment_id);
-      if (params.grade >= (assessment.data.metadata?.passing_grade || 70)) {
+      if (params.grade >= (assessment.metadata?.passing_grade || 70)) {
         await this.updateProgress(params.enrollment_id, 100);
       }
 
-      return { data };
+      return data;
     } catch (error) {
       logger.error('Failed to submit assessment', error as Error, { params });
       throw error;
     }
   }
 
-  private async getAssessmentById(id: string): Promise<void> {
+  async getAssessmentById(id: string): Promise<Assessment> {
     const { data, error } = await this.supabase
       .from('assessments')
       .select('*')
       .eq('id', id)
       .single();
 
-    if (typeof error !== "undefined" && error !== null) throw error;
-    return { data: data as Assessment };
+    if (error) throw error;
+    return data as Assessment;
   }
 
   // Analytics
-  async getEnrollmentStats(courseId: string): Promise<void> {
+  async getEnrollmentStats(courseId: string): Promise<Record<string, unknown>> {
     try {
       const { data, error } = await this.supabase.rpc('get_enrollment_stats', {
         course_id: courseId,
       });
 
-      if (typeof error !== "undefined" && error !== null) throw error;
-      return { data };
+      if (error) throw error;
+      return data;
     } catch (error) {
       logger.error('Failed to fetch enrollment stats', error as Error, { courseId });
       throw error;
     }
   }
 
-  async getUserProgress(userId: string): Promise<void> {
+  async getUserProgress(userId: string): Promise<Record<string, unknown>> {
     try {
       const { data, error } = await this.supabase.rpc('get_user_progress', {
         user_id: userId,
       });
 
-      if (typeof error !== "undefined" && error !== null) throw error;
-      return { data };
+      if (error) throw error;
+      return data;
     } catch (error) {
       logger.error('Failed to fetch user progress', error as Error, { userId });
       throw error;

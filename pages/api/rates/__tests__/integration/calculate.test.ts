@@ -193,3 +193,34 @@ describe('Rate Calculation API Integration', () => {
     });
   });
 });
+
+describe('calculate handler integration', () => {
+  beforeEach(() => {
+    vi.spyOn(FairWorkService.prototype, 'getActiveAwards').mockResolvedValue([]);
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should handle rate calculation', async () => {
+    const response = await calculateHandler(new NextRequest(
+      'http://localhost:3000/api/rates/calculate',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          name: 'Test Rate',
+          baseRate: 25.0,
+          baseMargin: 1.5,
+          superRate: 0.1,
+          effectiveFrom: '2024-01-01',
+          orgId: 'test-org',
+          hours: 38,
+          date: '2024-01-01',
+        }),
+      }
+    ));
+
+    expect(response.status).toBe(200);
+  });
+});

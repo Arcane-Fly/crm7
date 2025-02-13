@@ -1,16 +1,12 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-
-import { getSession } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { PrismaClient } from '@prisma/client';
 import type { ApiResponse } from '@/lib/types/api';
 import { logger } from '@/lib/utils/logger';
+import { getSession } from '@/lib/auth';
 
-const log = logger.createLogger('auth-middleware');
-
-/**
- * Authentication middleware for API routes
- */
+const log = logger.info;
+const prisma = new PrismaClient();
 
 export interface AuthUser {
   id: string;
@@ -40,9 +36,9 @@ export async function withAuth<T>(
     req: AuthenticatedRequest,
     context: { params: Record<string, string> },
   ) => Promise<NextResponse<ApiResponse<T>>>,
-): Promise<void> {
+): Promise<NextResponse<ApiResponse<T>>> {
   try {
-    const session = await getSession();
+    const session = await getSession(req);
 
     if (!session?.user?.email) {
       throw new AuthError('Unauthorized access attempt', 401, {
@@ -68,7 +64,7 @@ export async function withAuth<T>(
     return handler(authenticatedReq, context);
   } catch (error) {
     if (error instanceof AuthError) {
-      log.warn(error.message, error.context);
+      log('Auth error', error.context);
       return NextResponse.json({
         error: {
           code: 'AUTH_ERROR',
@@ -80,7 +76,7 @@ export async function withAuth<T>(
       });
     }
 
-    log.error('Authentication error', { error });
+    log('Internal server error', { error });
     return NextResponse.json({
       error: {
         code: 'INTERNAL_SERVER_ERROR',

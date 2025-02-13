@@ -18,10 +18,11 @@ describe('FairWork API Routes', () => {
   describe('GET /api/fairwork/[awardCode]/[classificationCode]/rates', () => {
     it('should return rates for valid params', async () => {
       const mockAward = {
-        code: 'MA000001',
+        code: 'TEST001',
         name: 'Test Award',
-        description: 'Test Description',
         industry: 'Test Industry',
+        effectiveFrom: '2024-01-01',
+        classifications: []
       };
 
       vi.mocked(FairWorkClient.prototype.getAward).mockResolvedValueOnce(mockAward);
@@ -45,9 +46,9 @@ describe('FairWork API Routes', () => {
   describe('POST /api/fairwork/[awardCode]/[classificationCode]/validate', () => {
     it('should validate rate successfully', async () => {
       const mockValidation = {
-        valid: true,
+        isValid: true,
         minimumRate: 25.5,
-        message: 'Valid rate',
+        difference: 4.5
       };
 
       vi.mocked(FairWorkClient.prototype.validatePayRate).mockResolvedValueOnce(mockValidation);

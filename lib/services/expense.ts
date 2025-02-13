@@ -1,6 +1,6 @@
 import { type SupabaseClient } from '@supabase/supabase-js';
 import { type Database } from '@/types/supabase';
-import { BaseService } from './base-service';
+import { BaseService, type ServiceOptions } from '@/lib/utils/service';
 
 interface Expense {
   id: string;
@@ -15,11 +15,11 @@ interface Expense {
 }
 
 export class ExpenseService extends BaseService {
-  constructor(private readonly supabase: SupabaseClient<Database>) {
-    super({
-      name: 'ExpenseService',
-      version: '1.0.0',
-    });
+  constructor(
+    private readonly supabase: SupabaseClient<Database>,
+    options: ServiceOptions = {}
+  ) {
+    super('ExpenseService', '1.0.0', options);
   }
 
   async createExpense(expense: Omit<Expense, 'id' | 'status'>): Promise<void> {

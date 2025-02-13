@@ -1,25 +1,19 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
-
-import type { Database } from '@/types/supabase';
-
-interface SupabaseConfig {
-  url: string;
-  key: string;
-}
+import { type Database } from '@/types/supabase';
 
 interface SupabaseContext {
   supabase: SupabaseClient<Database>;
   isInitialized: boolean;
 }
 
-const config: SupabaseConfig = {
+const config = {
   url: process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
   key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '',
 };
 
 export function useSupabase(): SupabaseContext {
-  const [context, setContext] = useState<SupabaseContext>((): { supabase: SupabaseClient<Database, SchemaName, Schema>; isInitialized: false; } => ({
+  const [context, setContext] = useState<SupabaseContext>(() => ({
     supabase: createClient<Database>(config.url, config.key),
     isInitialized: false,
   }));

@@ -7,6 +7,18 @@ To maintain consistency and leverage modern testing capabilities, we have standa
 - Be executed via the command: `pnpm vitest run --coverage`
 - Follow the practices outlined below to ensure our critical paths achieve 100% coverage
 
+### Migration from Jest
+- Remove all Jest dependencies
+- Replace jest.fn() with vi.fn()
+- Replace jest.mock() with vi.mock()
+- Replace jest.spyOn() with vi.spyOn()
+- Update test configuration to use vitest.config.ts
+- Use Vitest's superior TypeScript integration
+- Take advantage of Vitest's better performance
+- Leverage Vitest's improved watch mode
+- Use Vitest's better error messages
+- Utilize Vitest's test filtering
+
 ### Route Handler Testing
 - Route params must be wrapped in Promise.resolve() for Next.js 15.1.6+
 - Mock external clients and services using vi.mock()

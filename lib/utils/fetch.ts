@@ -1,13 +1,7 @@
 import { logger } from './logger';
+import { type RetryConfig } from '@/types/api';
 
 const log = logger.createLogger('fetch-utility');
-
-export interface RetryConfig {
-  maxRetries: number;
-  initialDelay: number;
-  maxDelay: number;
-  backoffFactor: number;
-}
 
 const DEFAULT_RETRY_CONFIG: RetryConfig = {
   maxRetries: 3,
@@ -18,10 +12,10 @@ const DEFAULT_RETRY_CONFIG: RetryConfig = {
 
 const NON_RETRYABLE_ERRORS = new Set(['AbortError', 'TypeError']);
 
-export async function fetch(
+export async function fetchWithRetry<T>(
   url: string | URL | Request,
   init?: RequestInit & { retry?: Partial<RetryConfig> }
-): Promise<void> {
+): Promise<T> {
   const retryConfig = { ...DEFAULT_RETRY_CONFIG, ...init?.retry };
   let lastError: Error | null = null;
   let attempt = 0;
@@ -32,11 +26,11 @@ export async function fetch(
       
       // Don't retry 4xx errors as they are client errors
       if (response.status >= 400 && response.status < 500) {
-        return response;
+        return response.json();
       }
       
       if (response.ok || attempt === retryConfig.maxRetries) {
-        return response;
+        return response.json();
       }
 
       lastError = new Error(`HTTP ${response.status}: ${response.statusText}`);

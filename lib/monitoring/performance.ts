@@ -1,4 +1,4 @@
-import { type SpanStatus } from '@/types/monitoring';
+import { SpanStatus } from '@/types/monitoring';
 
 interface ErrorMetadata {
   message: string;
@@ -60,10 +60,12 @@ function finishPerformanceSpan(
 }
 
 export function recordNavigationTiming(): void {
-  const navigationEntry = performance.getEntriesByType('navigation')[0];
-  if (!navigationEntry) return;
+  const navigationEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+  if (!navigationEntry) {
+    return;
+  }
 
-  const measurements = {
+  const metrics = {
     'navigation.dns': navigationEntry.domainLookupEnd - navigationEntry.domainLookupStart,
     'navigation.tcp': navigationEntry.connectEnd - navigationEntry.connectStart,
     'navigation.ttfb': navigationEntry.responseStart - navigationEntry.requestStart,
@@ -75,7 +77,7 @@ export function recordNavigationTiming(): void {
   const span = startPerformanceSpan('navigation', 'performance');
 
   try {
-    Object.entries(measurements).forEach(([key, value]) => {
+    Object.entries(metrics).forEach(([key, value]) => {
       span.tags.set(key, String(value));
     });
     finishPerformanceSpan(span, SpanStatus.Ok);

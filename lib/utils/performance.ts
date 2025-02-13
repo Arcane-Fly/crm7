@@ -89,17 +89,17 @@ export function useVisibilityOptimization(callback = (): void => {}): void {
 
 export async function measureApiCall<T>(
   apiCall: () => Promise<T>,
-  name: string,
-): Promise<void> {
-  const start = performance.now();
+  name: string
+): Promise<T> {
+  const startTime = performance.now();
   try {
     const result = await apiCall();
-    const end = performance.now();
-    console.log(`${name} took ${(end - start).toFixed(2)}ms`);
+    const duration = performance.now() - startTime;
+    console.debug(`API call ${name} took ${duration}ms`);
     return result;
   } catch (error) {
-    const end = performance.now();
-    console.error(`${name} failed after ${(end - start).toFixed(2)}ms`, error);
+    const duration = performance.now() - startTime;
+    console.error(`API call ${name} failed after ${duration}ms`, error);
     throw error;
   }
 }

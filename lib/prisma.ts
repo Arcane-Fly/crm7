@@ -1,9 +1,16 @@
 import { PrismaClient } from '@prisma/client';
-
 import { logger } from '@/lib/utils/logger';
 
 declare global {
   const prisma: PrismaClient | undefined;
+}
+
+interface PrismaLogEvent {
+  query?: string;
+  params?: unknown;
+  duration?: number;
+  target?: string;
+  message?: string;
 }
 
 class PrismaClientSingleton {
@@ -23,27 +30,30 @@ class PrismaClientSingleton {
       // Log queries in development
       if (process.env.NODE_ENV === 'development') {
         PrismaClientSingleton.instance.$on('query', (e: unknown): void => {
+          const event = e as PrismaLogEvent;
           logger.debug('Prisma Query', {
-            query: e.query,
-            params: e.params,
-            duration: `${e.duration}ms`,
+            query: event.query,
+            params: event.params,
+            duration: event.duration ? `${event.duration}ms` : undefined,
           });
         });
       }
 
       // Log all errors
       PrismaClientSingleton.instance.$on('error', (e: unknown): void => {
+        const event = e as PrismaLogEvent;
         logger.error('Prisma Error', {
-          target: e.target,
-          message: e.message,
+          target: event.target,
+          message: event.message,
         });
       });
 
       // Log all warnings
       PrismaClientSingleton.instance.$on('warn', (e: unknown): void => {
+        const event = e as PrismaLogEvent;
         logger.warn('Prisma Warning', {
-          target: e.target,
-          message: e.message,
+          target: event.target,
+          message: event.message,
         });
       });
     }

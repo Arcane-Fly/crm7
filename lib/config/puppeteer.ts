@@ -3,11 +3,11 @@ import { logger } from '@/lib/logger';
 
 let browser: Browser | null = null;
 
-export async function getBrowser(): Promise<void> {
+export async function getBrowser(): Promise<Browser> {
   if (!browser) {
     try {
       browser = await puppeteer.launch({
-        headless: 'new',
+        headless: true,
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
@@ -18,7 +18,7 @@ export async function getBrowser(): Promise<void> {
         ],
       });
     } catch (error) {
-      logger.error('Failed to launch browser:', error);
+      logger.error('Failed to launch browser:', { error });
       throw error;
     }
   }
@@ -26,12 +26,12 @@ export async function getBrowser(): Promise<void> {
 }
 
 export async function closeBrowser(): Promise<void> {
-  if (typeof browser !== "undefined" && browser !== null) {
+  if (browser) {
     try {
       await browser.close();
       browser = null;
     } catch (error) {
-      logger.error('Failed to close browser:', error);
+      logger.error('Failed to close browser:', { error });
       throw error;
     }
   }

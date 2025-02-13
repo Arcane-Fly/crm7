@@ -1,12 +1,14 @@
 import type { PostgrestError } from '@supabase/supabase-js';
 
-export class PostgrestErrorType implements PostgrestError {
+export class PostgrestErrorType extends Error implements PostgrestError {
   message: string;
   details: string;
   hint: string;
   code: string;
 
   constructor(message: string) {
+    super(message);
+    this.name = 'PostgrestError';
     this.message = message;
     this.details = '';
     this.hint = '';

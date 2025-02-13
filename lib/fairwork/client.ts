@@ -39,13 +39,17 @@ export class FairWorkClient {
     query?: { date?: string; employmentType?: string }
   ): Promise<any> {
     try {
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      if (this.apiKey) {
+        headers.Authorization = `Bearer ${this.apiKey}`;
+      }
+
       const response = await fetch(
         `${this.apiUrl}/awards/${awardCode}/classifications/${classificationCode}/leave-entitlements`,
         {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': this.apiKey ? `Bearer ${this.apiKey}` : undefined,
-          },
+          headers,
           ...query ? { params: query } : {},
         }
       );
@@ -69,13 +73,17 @@ export class FairWorkClient {
     query?: { date?: string; employmentType?: string }
   ): Promise<any> {
     try {
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      if (this.apiKey) {
+        headers.Authorization = `Bearer ${this.apiKey}`;
+      }
+
       const response = await fetch(
         `${this.apiUrl}/awards/${awardCode}/classifications/${classificationCode}/rates`,
         {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': this.apiKey ? `Bearer ${this.apiKey}` : undefined,
-          },
+          headers,
           ...query ? { params: query } : {},
         }
       );
@@ -98,13 +106,17 @@ export class FairWorkClient {
     query?: { date?: string }
   ): Promise<any> {
     try {
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      if (this.apiKey) {
+        headers.Authorization = `Bearer ${this.apiKey}`;
+      }
+
       const response = await fetch(
         `${this.apiUrl}/awards/${awardCode}/allowances`,
         {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': this.apiKey ? `Bearer ${this.apiKey}` : undefined,
-          },
+          headers,
           ...query ? { params: query } : {},
         }
       );
@@ -128,14 +140,18 @@ export class FairWorkClient {
     rate: number
   ): Promise<boolean> {
     try {
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      if (this.apiKey) {
+        headers.Authorization = `Bearer ${this.apiKey}`;
+      }
+
       const response = await fetch(
         `${this.apiUrl}/awards/${awardCode}/classifications/${classificationCode}/validate`,
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': this.apiKey ? `Bearer ${this.apiKey}` : undefined,
-          },
+          headers,
           body: JSON.stringify({ rate }),
         }
       );

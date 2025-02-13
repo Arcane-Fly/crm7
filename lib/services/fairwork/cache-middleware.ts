@@ -1,5 +1,7 @@
 import { CacheService } from '../cache/cache-service';
-import { type FairWorkApiClient } from './api-client';
+import { type FairWorkApiClient } from './types';
+import { logger } from '@/lib/logger';
+
 const TTL_CONFIG = {
   baseRate: 3600, // 1 hour
   classifications: 7200, // 2 hours
@@ -10,8 +12,8 @@ const TTL_CONFIG = {
 };
 
 const CACHE_CONFIG = {
-  keyPrefix: 'fairwork',
-  defaultTtl: TTL_CONFIG.baseRate,
+  prefix: 'fairwork',
+  ttl: TTL_CONFIG.baseRate,
 };
 
 export class FairWorkCacheError extends Error {
@@ -39,39 +41,62 @@ export class FairWorkCacheMiddleware {
     return `${endpoint}:${sortedParams}`;
   }
 
-  async getBaseRate(params: Record<string, unknown>, factory: () => Promise<unknown>): Promise<void> {
+  async getBaseRate<T>(params: Record<string, unknown>, factory: () => Promise<T>): Promise<T> {
     const key = this.getCacheKey('base-rate', params);
-    return this.cache.getOrSet(key, factory, TTL_CONFIG.baseRate);
+    return this.cache.getOrSet(key, factory);
   }
 
-  async getClassifications(
-    params: Record<string, unknown>,
-    factory: () => Promise<unknown>
-  ): Promise<void> {
+  async getClassifications<T>(params: Record<string, unknown>, factory: () => Promise<T>): Promise<T> {
     const key = this.getCacheKey('classifications', params);
-    return this.cache.getOrSet(key, factory, TTL_CONFIG.classifications);
+    return this.cache.getOrSet(key, factory);
   }
 
-  async getFutureRates(params: Record<string, unknown>, factory: () => Promise<unknown>): Promise<void> {
+  async getFutureRates<T>(params: Record<string, unknown>, factory: () => Promise<T>): Promise<T> {
     const key = this.getCacheKey('future-rates', params);
-    return this.cache.getOrSet(key, factory, TTL_CONFIG.futureRates);
+    return this.cache.getOrSet(key, factory);
   }
 
-  async getAllowances(params: Record<string, unknown>, factory: () => Promise<unknown>): Promise<void> {
+  async getAllowances<T>(params: Record<string, unknown>, factory: () => Promise<T>): Promise<T> {
     const key = this.getCacheKey('allowances', params);
-    return this.cache.getOrSet(key, factory, TTL_CONFIG.allowances);
+    return this.cache.getOrSet(key, factory);
   }
 
-  async getPenalties(params: Record<string, unknown>, factory: () => Promise<unknown>): Promise<void> {
+  async getPenalties<T>(params: Record<string, unknown>, factory: () => Promise<T>): Promise<T> {
     const key = this.getCacheKey('penalties', params);
-    return this.cache.getOrSet(key, factory, TTL_CONFIG.penalties);
+    return this.cache.getOrSet(key, factory);
   }
 
-  async getLeaveEntitlements(
-    params: Record<string, unknown>,
-    factory: () => Promise<unknown>
-  ): Promise<void> {
+  async getLeaveEntitlements<T>(params: Record<string, unknown>, factory: () => Promise<T>): Promise<T> {
     const key = this.getCacheKey('leave-entitlements', params);
-    return this.cache.getOrSet(key, factory, TTL_CONFIG.leaveEntitlements);
+    return this.cache.getOrSet(key, factory);
+  }
+
+  async calculateRate<T>(params: Record<string, unknown>, factory: () => Promise<T>): Promise<T> {
+    const key = this.getCacheKey('calculate-rate', params);
+    return this.cache.getOrSet(key, factory);
+  }
+
+  async validateRate<T>(params: Record<string, unknown>, factory: () => Promise<T>): Promise<T> {
+    const key = this.getCacheKey('validate-rate', params);
+    return this.cache.getOrSet(key, factory);
+  }
+
+  async invalidateBaseRate(params: Record<string, unknown>): Promise<void> {
+    const key = this.getCacheKey('base-rate', params);
+    await this.cache.delete(key);
+  }
+
+  async invalidateClassifications(params: Record<string, unknown>): Promise<void> {
+    const key = this.getCacheKey('classifications', params);
+    await this.cache.delete(key);
+  }
+
+  async invalidateAwardCache(awardCode: string): Promise<void> {
+    const pattern = `${CACHE_CONFIG.prefix}:${awardCode}:*`;
+    await this.cache.deletePattern(pattern);
+  }
+
+  async close(): Promise<void> {
+    await this.cache.close();
   }
 }

@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, type UseQueryResult, type UseMutationResult } from '@tanstack/react-query';
 import { type SupabaseClient } from '@supabase/supabase-js';
 import { type Database } from '@/types/supabase';
 
@@ -9,14 +9,14 @@ interface QueryOptions {
   select?: string;
 }
 
-export function useSupabaseQuery<T extends TableName>(
+export function useSupabaseQuery<T>(
   supabase: SupabaseClient<Database>,
-  table: T,
+  table: TableName,
   options?: QueryOptions
-): import("/home/braden/Desktop/Dev/crm7r/node_modules/.pnpm/@tanstack+react-query@5.66.0_react@18.2.0/node_modules/@tanstack/react-query/build/modern/types").UseQueryResult<any, Error> {
+): UseQueryResult<T[], Error> {
   return useQuery({
     queryKey: [table, options?.filter],
-    queryFn: async (): Promise<any> => {
+    queryFn: async () => {
       try {
         const query = supabase.from(table).select(options?.select || '*');
 
@@ -28,11 +28,11 @@ export function useSupabaseQuery<T extends TableName>(
 
         const { data, error } = await query;
 
-        if (typeof error !== "undefined" && error !== null) {
+        if (error) {
           throw error;
         }
 
-        return data;
+        return data as T[];
       } catch (error) {
         console.error('Supabase query error:', error);
         throw error;
@@ -41,10 +41,10 @@ export function useSupabaseQuery<T extends TableName>(
   });
 }
 
-export function useSupabaseMutation<T extends TableName>(
+export function useSupabaseMutation<T>(
   supabase: SupabaseClient<Database>,
-  table: T
-) {
+  table: TableName
+): UseMutationResult<T, Error, { data: Record<string, unknown>; match?: Record<string, unknown> }> {
   return useMutation({
     mutationFn: async ({
       data,
@@ -52,18 +52,18 @@ export function useSupabaseMutation<T extends TableName>(
     }: {
       data: Record<string, unknown>;
       match?: Record<string, unknown>;
-    }): Promise<any> => {
+    }) => {
       try {
         const query = supabase.from(table);
 
-        if (typeof match !== "undefined" && match !== null) {
+        if (match) {
           const { data: result, error } = await query.update(data).match(match);
-          if (typeof error !== "undefined" && error !== null) throw error;
-          return result;
+          if (error) throw error;
+          return result as T;
         } else {
           const { data: result, error } = await query.insert(data);
-          if (typeof error !== "undefined" && error !== null) throw error;
-          return result;
+          if (error) throw error;
+          return result as T;
         }
       } catch (error) {
         console.error('Supabase mutation error:', error);

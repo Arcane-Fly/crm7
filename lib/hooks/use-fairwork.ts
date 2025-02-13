@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, type UseQueryResult, type UseMutationResult } from '@tanstack/react-query';
 import axios from 'axios';
 import { z } from 'zod';
 
@@ -41,7 +41,7 @@ const fairworkApi = axios.create({
 });
 
 // Hooks
-export function useSearchAwards(params?: SearchParams): void {
+export function useSearchAwards(params?: SearchParams): UseQueryResult<any, Error> {
   return useQuery({
     queryKey: ['awards', params],
     queryFn: async (): Promise<any> => {
@@ -52,7 +52,7 @@ export function useSearchAwards(params?: SearchParams): void {
   });
 }
 
-export function useAward(awardCode: string): void {
+export function useAward(awardCode: string): UseQueryResult<any, Error> {
   return useQuery({
     queryKey: ['award', awardCode],
     queryFn: async (): Promise<any> => {
@@ -63,7 +63,10 @@ export function useAward(awardCode: string): void {
   });
 }
 
-export function useClassification(awardCode: string, classificationCode: string): void {
+export function useClassification(
+  awardCode: string,
+  classificationCode: string
+): UseQueryResult<any, Error> {
   return useQuery({
     queryKey: ['classification', awardCode, classificationCode],
     queryFn: async (): Promise<any> => {
@@ -79,7 +82,7 @@ export function usePayRates(
   classificationCode: string,
   date?: string,
   employmentType?: EmploymentType,
-): import("/home/braden/Desktop/Dev/crm7r/node_modules/.pnpm/@tanstack+react-query@5.66.0_react@18.2.0/node_modules/@tanstack/react-query/build/modern/types").UseQueryResult<any, Error> {
+): UseQueryResult<any, Error> {
   return useQuery({
     queryKey: ['rates', awardCode, classificationCode, date, employmentType],
     queryFn: async (): Promise<any> => {
@@ -97,7 +100,7 @@ export function useRateHistory(
   classificationCode: string,
   startDate: string,
   endDate: string,
-): import("/home/braden/Desktop/Dev/crm7r/node_modules/.pnpm/@tanstack+react-query@5.66.0_react@18.2.0/node_modules/@tanstack/react-query/build/modern/types").UseQueryResult<any, Error> {
+): UseQueryResult<any, Error> {
   return useQuery({
     queryKey: ['history', awardCode, classificationCode, startDate, endDate],
     queryFn: async (): Promise<any> => {
@@ -110,7 +113,11 @@ export function useRateHistory(
   });
 }
 
-export function useFutureRates(awardCode: string, classificationCode: string, fromDate: string): void {
+export function useFutureRates(
+  awardCode: string,
+  classificationCode: string,
+  fromDate: string
+): UseQueryResult<any, Error> {
   return useQuery({
     queryKey: ['future', awardCode, classificationCode, fromDate],
     queryFn: async (): Promise<any> => {
@@ -123,7 +130,11 @@ export function useFutureRates(awardCode: string, classificationCode: string, fr
   });
 }
 
-export function usePenalties(awardCode: string, date?: string, type?: string): void {
+export function usePenalties(
+  awardCode: string,
+  date?: string,
+  type?: string
+): UseQueryResult<any, Error> {
   return useQuery({
     queryKey: ['penalties', awardCode, date, type],
     queryFn: async (): Promise<any> => {
@@ -136,7 +147,11 @@ export function usePenalties(awardCode: string, date?: string, type?: string): v
   });
 }
 
-export function useAllowances(awardCode: string, date?: string, type?: string): void {
+export function useAllowances(
+  awardCode: string,
+  date?: string,
+  type?: string
+): UseQueryResult<any, Error> {
   return useQuery({
     queryKey: ['allowances', awardCode, date, type],
     queryFn: async (): Promise<any> => {
@@ -153,7 +168,7 @@ export function useLeaveEntitlements(
   awardCode: string,
   employmentType: EmploymentType,
   date?: string,
-): import("/home/braden/Desktop/Dev/crm7r/node_modules/.pnpm/@tanstack+react-query@5.66.0_react@18.2.0/node_modules/@tanstack/react-query/build/modern/types").UseQueryResult<any, Error> {
+): UseQueryResult<any, Error> {
   return useQuery({
     queryKey: ['leave', awardCode, employmentType, date],
     queryFn: async (): Promise<any> => {
@@ -166,7 +181,7 @@ export function useLeaveEntitlements(
   });
 }
 
-export function useCalculatePay(): void {
+export function useCalculatePay(): UseMutationResult<any, Error, CalculateParams> {
   return useMutation({
     mutationFn: async (params: CalculateParams): Promise<any> => {
       const { data } = await fairworkApi.post('/calculate', params);
@@ -175,7 +190,7 @@ export function useCalculatePay(): void {
   });
 }
 
-export function useValidateRate(): void {
+export function useValidateRate(): UseMutationResult<any, Error, ValidateParams> {
   return useMutation({
     mutationFn: async (params: ValidateParams): Promise<any> => {
       const { data } = await fairworkApi.post(

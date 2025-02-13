@@ -1,9 +1,9 @@
 import js from '@eslint/js';
-import tseslint from 'typescript-eslint';
 import nextPlugin from '@next/eslint-plugin-next';
+import a11yPlugin from 'eslint-plugin-jsx-a11y';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
-import a11yPlugin from 'eslint-plugin-jsx-a11y';
+import tseslint from 'typescript-eslint';
 
 export default [
   {

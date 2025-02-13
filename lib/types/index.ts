@@ -14,21 +14,12 @@ export interface Expense {
 }
 
 export * from './api';
-export * from './dashboard';
 export * from './database';
-export * from './documents';
-export * from './expenses';
-export * from './funding';
-export * from './hr';
-export * from './invoice';
-export * from './lms';
-export * from './logger';
+export * from './errors';
 export * from './monitoring';
 export * from './rates';
-export * from './supabase';
-export * from './time';
-export * from './validation';
 
-// Re-export database types
+// Re-export specific types from supabase to avoid conflicts
+export type { Database } from './supabase';
+
 export type { SupabaseClient } from '@supabase/supabase-js';
-export type { Database } from './database';

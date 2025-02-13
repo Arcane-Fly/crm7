@@ -1,16 +1,49 @@
-import {
-  type RateTemplate,
-  type BulkCalculation,
-  type RateTemplateHistory,
-  type RateCalculation,
-  type RateAnalytics,
-} from '@/lib/types/rates';
-
 export enum RateTemplateStatus {
   DRAFT = 'draft',
   ACTIVE = 'active',
   ARCHIVED = 'archived',
   DELETED = 'deleted',
+}
+
+export interface RateTemplate {
+  id: string;
+  name: string;
+  description?: string;
+  status: RateTemplateStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BulkCalculation {
+  id: string;
+  status: string;
+  results: Array<RateCalculation>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RateTemplateHistory {
+  id: string;
+  template_id: string;
+  changes: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface RateCalculation {
+  id: string;
+  template_id: string;
+  result: number;
+  created_at: string;
+}
+
+export interface RateAnalytics {
+  totalTemplates: number;
+  activeTemplates: number;
+  averageRate: number;
+  recentChanges: Array<{
+    action: string;
+    timestamp: string;
+  }>;
 }
 
 export interface RateManagementService {
@@ -26,15 +59,26 @@ export interface RateManagementService {
     orgId: string;
     templateIds: string[];
   }): Promise<{ data: BulkCalculation }>;
-  updateBulkCalculation(
-    orgId: string,
-    id: string,
-    calculation: Partial<BulkCalculation>,
-  ): Promise<BulkCalculation>;
-  deleteBulkCalculation(orgId: string, id: string): Promise<void>;
-  calculateRates(
-    orgId: string,
-    templateId: string,
-    calculation: RateCalculation,
-  ): Promise<RateCalculation>;
+}
+
+export interface BulkCalculationParams {
+  orgId: string;
+  templateIds: string[];
+  options?: Record<string, unknown>;
+}
+
+export interface RateEmployee {
+  id: string;
+  name: string;
+  email: string;
+  department?: string;
+  position?: string;
+  startDate: string;
+}
+
+export class RateError extends Error {
+  constructor(message: string, public readonly cause?: unknown) {
+    super(message);
+    this.name = 'RateError';
+  }
 }

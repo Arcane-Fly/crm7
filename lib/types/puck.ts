@@ -1,42 +1,41 @@
-import { type PuckData } from '@measured/puck';
-import { type Database } from './database';
+import { type Data } from '@measured/puck';
+import type { Database } from './supabase';
 
-export interface ComponentData {
-  type: string;
-  props: Record<string, unknown>;
-  _requiredFields?: string[];
+export interface ExtendedPuckData extends Data {
+  metadata?: Record<string, unknown>;
+  settings?: Record<string, unknown>;
 }
 
-export interface ZoneData {
-  [zoneName: string]: ComponentData[];
-}
-
-export interface ExtendedPuckData extends PuckData {
-  zones: ZoneData;
-  _lastHeadingLevel?: number;
-  analytics?: EditorAnalytics;
-  history?: EditorHistory[];
-}
-
-export type PageData = Database['public']['Tables']['pages']['Row'] & {
+export interface PageData {
+  id: string;
+  path: string;
   content: ExtendedPuckData;
-};
+  created_at: string;
+  updated_at: string;
+}
 
-export type PageVersion = Database['public']['Tables']['page_versions']['Row'] & {
-  content: ExtendedPuckData;
-};
-
-export type EditorAnalytics = Database['public']['Tables']['editor_analytics']['Row'] & {
-  metadata: {
-    componentCount: number;
-    timestamp: string;
-  };
-};
-
-export type EditorHistory = Database['public']['Tables']['editor_history']['Row'] & {
+export interface PageVersion {
   id: string;
   page_id: string;
-  user_email: string;
-  action: string;
+  content: Data;
   created_at: string;
-};
+  updated_at: string;
+}
+
+export interface EditorHistory {
+  id: string;
+  page_id: string;
+  user_id: string;
+  action: string;
+  changes: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface EditorAnalytics {
+  id: string;
+  page_id: string;
+  user_id: string;
+  action: string;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}

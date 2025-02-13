@@ -1,11 +1,20 @@
-import { createClient, type RedisClientType } from 'redis';
+import { Redis } from '@upstash/redis';
 
-const client: RedisClientType = createClient({
-  scripts: {},
+if (!process.env.KV_REST_API_URL) {
+  throw new Error('KV_REST_API_URL is not defined');
+}
+
+if (!process.env.KV_REST_API_TOKEN) {
+  throw new Error('KV_REST_API_TOKEN is not defined');
+}
+
+export const redis = new Redis({
+  url: process.env.KV_REST_API_URL,
+  token: process.env.KV_REST_API_TOKEN,
 });
 
-client.connect().catch((error): void => {
-  console.error('Failed to connect to Redis:', error);
+// Read-only client for public facing operations
+export const readOnlyRedis = new Redis({
+  url: process.env.KV_REST_API_URL,
+  token: process.env.KV_REST_API_READ_ONLY_TOKEN!,
 });
-
-export const redis: RedisClientType = client;

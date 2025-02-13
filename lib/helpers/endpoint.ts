@@ -1,5 +1,6 @@
 import { logger } from '@/lib/logger';
-import { type NextRequest, type NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 type Handler<T> = (req: NextRequest) => Promise<NextResponse<T>>;
 
@@ -39,7 +40,7 @@ export const withEndpoint = <T>(handler: Handler<T>): Handler<T> => {
       return await handler(req);
     } catch (error) {
       console.error('Endpoint error:', error);
-      return new NextResponse('Internal Server Error', { status: 500 });
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 }) as NextResponse<T>;
     }
   };
 };

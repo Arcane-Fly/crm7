@@ -25,7 +25,7 @@ export function MFAProvider({ children }: MFAProviderProps): React.ReactElement 
   const checkMFAStatus = async (): Promise<void> => {
     try {
       const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      if (typeof error !== "undefined" && error !== null) throw error;
+      if (error) throw error;
       setIsEnabled(data.currentLevel === 'aal2');
     } catch (error) {
       console.error('Error checking MFA status:', error);
@@ -38,7 +38,7 @@ export function MFAProvider({ children }: MFAProviderProps): React.ReactElement 
       const { data, error } = await supabase.auth.mfa.enroll({
         factorType: 'totp',
       });
-      if (typeof error !== "undefined" && error !== null) throw error;
+      if (error) throw error;
       return data;
     } catch (error) {
       console.error('Error starting MFA enrollment:', error);
@@ -49,11 +49,22 @@ export function MFAProvider({ children }: MFAProviderProps): React.ReactElement 
   const completeMFAEnrollment = async (code: string): Promise<void> => {
     try {
       const { error } = await supabase.auth.mfa.challenge({ factorId: code });
-      if (typeof error !== "undefined" && error !== null) throw error;
+      if (error) throw error;
       setIsEnabled(true);
       setIsEnrolling(false);
     } catch (error) {
       console.error('Error completing MFA enrollment:', error);
+      throw error;
+    }
+  };
+
+  const disableMFA = async (): Promise<void> => {
+    try {
+      const { error } = await supabase.auth.mfa.unenroll({ factorId: 'totp' });
+      if (error) throw error;
+      setIsEnabled(false);
+    } catch (error) {
+      console.error('Error disabling MFA:', error);
       throw error;
     }
   };
@@ -68,7 +79,7 @@ export function MFAProvider({ children }: MFAProviderProps): React.ReactElement 
         verify: async (token: string) => {
           try {
             const { error } = await supabase.auth.mfa.challenge({ factorId: token });
-            if (typeof error !== "undefined" && error !== null) throw error;
+            if (error) throw error;
             return true;
           } catch (error) {
             console.error('Error verifying MFA:', error);
@@ -83,16 +94,7 @@ export function MFAProvider({ children }: MFAProviderProps): React.ReactElement 
             throw error;
           }
         },
-        disable: async () => {
-          try {
-            const { error } = await supabase.auth.mfa.delete();
-            if (typeof error !== "undefined" && error !== null) throw error;
-            setIsEnabled(false);
-          } catch (error) {
-            console.error('Error disabling MFA:', error);
-            throw error;
-          }
-        },
+        disable: disableMFA,
       }}
     >
       {children}

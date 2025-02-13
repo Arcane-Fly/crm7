@@ -3,28 +3,28 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { type SupabaseClient } from '@supabase/supabase-js';
 import { createClient } from './config';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/utils/logger';
+import type { Database } from '@/types/supabase';
 
 interface SupabaseContext {
-  supabase: SupabaseClient;
+  supabase: SupabaseClient<Database>;
 }
 
 const Context = createContext<SupabaseContext | undefined>(undefined);
 
-export default function SupabaseProvider({ children }: { children: React.ReactNode }) {
-  const [supabase] = useState(() => createClient());
+export default function SupabaseProvider({ children }: { children: React.ReactNode }): JSX.Element {
+  const [client] = useState(() => createClient());
 
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event) => {
+    } = client.auth.onAuthStateChange(async (_event) => {
       try {
         if (_event === 'SIGNED_IN' || _event === 'TOKEN_REFRESHED') {
-          // Verify the user's authentication status
           const {
             data: { user },
             error,
-          } = await supabase.auth.getUser();
+          } = await client.auth.getUser();
 
           if (error) {
             logger.error('Failed to verify user after auth state change', { error, _event });
@@ -46,12 +46,12 @@ export default function SupabaseProvider({ children }: { children: React.ReactNo
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase]);
+  }, [client]);
 
-  return <Context.Provider value={{ supabase }}>{children}</Context.Provider>;
+  return <Context.Provider value={{ supabase: client }}>{children}</Context.Provider>;
 }
 
-export const useSupabase = () => {
+export const useSupabase = (): SupabaseContext => {
   const context = useContext(Context);
   if (context === undefined) {
     throw new Error('useSupabase must be used inside SupabaseProvider');

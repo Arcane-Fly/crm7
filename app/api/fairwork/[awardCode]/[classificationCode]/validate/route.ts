@@ -1,7 +1,7 @@
-import { type NextRequest } from 'next/server';
-import { z } from 'zod';
 import { createApiResponse } from '@/lib/api/response';
 import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
+import { type NextRequest } from 'next/server';
+import { z } from 'zod';
 
 const validateParamsSchema = z.object({
   awardCode: z.string(),
@@ -21,9 +21,9 @@ export async function POST(
   try {
     const params = await context.params;
     const validatedParams = validateParamsSchema.parse(params);
-    
+
     const body = await request.json();
-    
+
     const client = new FairWorkClient({
       apiKey: process.env.FAIRWORK_API_KEY!,
       apiUrl: process.env.FAIRWORK_API_URL!,
@@ -31,11 +31,11 @@ export async function POST(
       timeout: 5000,
     });
 
-    const validation = await client.validatePayRate(
-      validatedParams.awardCode,
-      validatedParams.classificationCode,
-      body.rate
-    );
+    const validation = await client.validatePayRate({
+      rate: body.rate,
+      awardCode: validatedParams.awardCode,
+      classificationCode: validatedParams.classificationCode,
+    });
 
     return createApiResponse(validation);
   } catch (error) {

@@ -1,10 +1,9 @@
 import { logger } from '@/lib/logger';
-
-import type { BaseService, ServiceOptions } from './base-service';
+import type { IBaseService } from '@/lib/utils/service';
 
 export class ServiceFactory {
   private static instance: ServiceFactory;
-  private services: Map<string, BaseService> = new Map();
+  private services: Map<string, IBaseService> = new Map();
 
   private constructor() {}
 
@@ -15,29 +14,24 @@ export class ServiceFactory {
     return ServiceFactory.instance;
   }
 
-  /**
-   * Register a service instance
-   */
-  public registerService<T extends BaseService>(
-    ServiceClass: new (options: ServiceOptions) => T,
-    options: ServiceOptions,
+  public registerService<T extends IBaseService>(
+    ServiceClass: new (...args: any[]) => T,
+    serviceName: string,
+    ...args: any[]
   ): T {
-    const existingService = this.services.get(options.name);
-    if (typeof existingService !== "undefined" && existingService !== null) {
-      logger.warn('Service already registered', { serviceName: options.name });
+    const existingService = this.services.get(serviceName);
+    if (existingService) {
+      logger.warn('Service already registered', { serviceName });
       return existingService as T;
     }
 
-    const service = new ServiceClass(options);
-    this.services.set(options.name, service);
-    logger.info('Service registered', { serviceName: options.name });
+    const service = new ServiceClass(...args);
+    this.services.set(serviceName, service);
+    logger.info('Service registered', { serviceName });
     return service;
   }
 
-  /**
-   * Get a registered service instance
-   */
-  public getService<T extends BaseService>(serviceName: string): T | undefined {
+  public getService<T extends IBaseService>(serviceName: string): T | undefined {
     const service = this.services.get(serviceName);
     if (!service) {
       logger.warn('Service not found', { serviceName });
@@ -46,16 +40,10 @@ export class ServiceFactory {
     return service as T;
   }
 
-  /**
-   * Get all registered services
-   */
-  public getAllServices(): Map<string, BaseService> {
+  public getAllServices(): Map<string, IBaseService> {
     return new Map(this.services);
   }
 
-  /**
-   * Reset all service metrics
-   */
   public resetAllMetrics(): void {
     for (const service of this.services.values()) {
       service.resetMetrics();
@@ -63,9 +51,6 @@ export class ServiceFactory {
     logger.info('All service metrics reset');
   }
 
-  /**
-   * Get metrics for all services
-   */
   public getAllMetrics(): Record<string, unknown> {
     const metrics: Record<string, unknown> = {};
     for (const [name, service] of this.services.entries()) {

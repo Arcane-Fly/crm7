@@ -1,6 +1,6 @@
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/utils/logger';
 import type { ServiceFactory } from './service-factory';
-import { ServiceFactory as DefaultServiceFactory } from './service-factory';  // import for creating an instance
+import type { IBaseService } from '@/lib/utils/service';
 
 interface ServiceRegistration {
   name: string;
@@ -8,19 +8,18 @@ interface ServiceRegistration {
 }
 
 export class ServiceRegistry {
-  private registrations: Map<string, ServiceRegistration> = new Map();
-  private factory: ServiceFactory;
-
-  // Add a static instance for singleton access.
   private static instance: ServiceRegistry;
+  private services = new Map<string, IBaseService>();
+  private registrations = new Map<string, ServiceRegistration>();
+  private factory: ServiceFactory;
 
   constructor(factory: ServiceFactory) {
     this.factory = factory;
   }
 
-  public static getInstance(): ServiceRegistry {
+  public static getInstance(factory: ServiceFactory): ServiceRegistry {
     if (!ServiceRegistry.instance) {
-      ServiceRegistry.instance = new ServiceRegistry(DefaultServiceFactory.getInstance());
+      ServiceRegistry.instance = new ServiceRegistry(factory);
     }
     return ServiceRegistry.instance;
   }
@@ -29,7 +28,7 @@ export class ServiceRegistry {
     this.registrations.set(name, { name, dependencies });
   }
 
-  initialize(): void {
+  async initialize(): Promise<void> {
     const initialized = new Set<string>();
     const initializing = new Set<string>();
 
@@ -52,7 +51,10 @@ export class ServiceRegistry {
       try {
         this.getService(name);
       } catch (error) {
-        logger.error(`Failed to initialize service: ${name}`, error as Error);
+        logger.error(`Failed to initialize service: ${name}`, {
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined
+        });
         throw error;
       }
       initializing.delete(name);
@@ -64,10 +66,10 @@ export class ServiceRegistry {
     }
   }
 
-  getService<T>(name: string): T {
+  getService<T extends IBaseService>(name: string): T {
     const service = this.factory.getService<T>(name);
     if (!service) {
-      throw new Error(`Service not found: ${name}`);
+      throw new Error(`Service ${name} not found`);
     }
     return service;
   }

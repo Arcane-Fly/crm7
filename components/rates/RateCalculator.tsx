@@ -8,7 +8,7 @@ import { useRateValidation } from '@/hooks/use-rate-validation';
 import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary';
 
 interface RateCalculatorProps {
-  orgId: string;
+  orgId?: string;
   onCalculate?: (totalAmount: number) => void;
 }
 
@@ -115,7 +115,7 @@ function RateCalculatorContent({ orgId, onCalculate }: RateCalculatorProps): Rea
   );
 }
 
-export function RateCalculator(props: RateCalculatorProps): React.ReactElement {
+export function RateCalculator(props: RateCalculatorProps): JSX.Element {
   return (
     <ErrorBoundary>
       <RateCalculatorContent {...props} />

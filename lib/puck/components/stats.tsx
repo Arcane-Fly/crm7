@@ -1,6 +1,6 @@
 'use client';
 
-import { type ComponentConfig } from '@measured/puck';
+import { type ComponentConfig, type DefaultComponentProps } from '@measured/puck';
 
 interface Stat {
   label: string;
@@ -8,13 +8,13 @@ interface Stat {
   description?: string;
 }
 
-interface StatsProps {
+interface StatsProps extends DefaultComponentProps {
   title?: string;
   subtitle?: string;
-  stats: Stat[];
+  stats?: Stat[];
 }
 
-export function Stats({ title, subtitle, stats }: StatsProps) {
+export function Stats({ title, subtitle, stats = [] }: StatsProps): JSX.Element {
   return (
     <div className="bg-white py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -50,16 +50,17 @@ export function Stats({ title, subtitle, stats }: StatsProps) {
   );
 }
 
-export const statsConfig: ComponentConfig = {
+export const statsConfig: ComponentConfig<StatsProps> = {
+  render: Stats,
   fields: {
     title: { type: 'text', label: 'Title' },
     subtitle: { type: 'textarea', label: 'Subtitle' },
     stats: {
       type: 'array',
       label: 'Stats',
-      itemFields: {
-        label: { type: 'text', label: 'Label', required: true },
-        value: { type: 'text', label: 'Value', required: true },
+      arrayFields: {
+        label: { type: 'text', label: 'Label' },
+        value: { type: 'text', label: 'Value' },
         description: { type: 'textarea', label: 'Description' },
       },
     },

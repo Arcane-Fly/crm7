@@ -1,29 +1,32 @@
 import { type NextApiRequest, type NextApiResponse } from 'next';
+import { type RateTemplate } from '@/lib/types/rates';
+import { ratesService } from '@/lib/services/rates';
 
-import { logger } from '@/lib/logger';
-import { chargeCalculationService } from '@/lib/services/charge-calculation/charge-calculation-service';
-import type { RateTemplate } from '@/lib/types/rates';
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+): Promise<void> {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
   }
 
   try {
-    const { template, hours } = req.body;
-
-    if (!template || !hours) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    const template = req.body;
+    const result = await ratesService.getTemplates({ org_id: template.org_id });
+    if (!result.data.length) {
+      res.status(404).json({ error: 'Rate template not found' });
+      return;
     }
 
-    const result = await chargeCalculationService.calculateChargeRate(
-      template as RateTemplate,
-      Number(hours)
-    );
+    const updatedTemplate = await ratesService.updateRateTemplate(template.id, {
+      ...template,
+      effectiveFrom: new Date().toISOString(),
+    });
 
-    return res.status(200).json(result);
-  } catch (error: unknown) {
-    logger.error('Error calculating charge rate', { error });
-    return res.status(500).json({ error: 'Internal server error' });
+    res.status(200).json(updatedTemplate);
+  } catch (error) {
+    console.error('Failed to update rate template:', error);
+    res.status(500).json({ error: 'Failed to update rate template' });
   }
 }
