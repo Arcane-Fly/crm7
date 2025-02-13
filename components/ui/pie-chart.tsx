@@ -1,4 +1,12 @@
-import { ArcElement, Tooltip, Legend } from 'chart.js';
+'use client';
+
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend
+} from 'chart.js';
+import { Pie } from 'react-chartjs-2';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -16,16 +24,13 @@ interface PieChartProps {
 
 export function PieChart({ data }: PieChartProps): JSX.Element {
   return (
-    <ChartJS
-      type="pie"
+    <Pie
       data={data}
-      options={{
-        responsive: true,
-        plugins: {
-          legend: {
-            position: 'top',
-          },
-        },
+      options={{ 
+        responsive: true, 
+        plugins: { 
+          legend: { position: 'top' } 
+        } 
       }}
     />
   );

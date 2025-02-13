@@ -59,15 +59,18 @@ export interface RateTemplateHistory {
   updatedAt: string;
 }
 
+export interface RateAnalyticsResponse {
+  data: RateAnalytics;
+}
+
 export interface RateAnalytics {
   totalTemplates: number;
   activeTemplates: number;
   averageRate: number;
-  recentChanges: {
-    templateId: string;
-    action: 'created' | 'updated' | 'deleted';
+  recentChanges: Array<{
+    action: 'created' | 'updated';
     timestamp: string;
-  }[];
+  }>;
 }
 
 export interface RatesService {

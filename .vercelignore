@@ -10,4 +10,8 @@ playwright-report
 test-results
 *.log
 *.md
-!README.md
+!README.m
+
+
+.clinerules
+.windsurfrules

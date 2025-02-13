@@ -16,9 +16,10 @@ import { useToast } from '@/components/ui/use-toast';
 import { useAdminAccess } from '@/lib/hooks/useAdminAccess';
 import { createClient } from '@/lib/supabase/client';
 import * as React from 'react';
+import { type Database } from '@/lib/types/database';
 
 interface FieldEditorProps {
-  table: string;
+  table: keyof Database['public']['Tables'];
   column: string;
   recordId: string;
   value: unknown;
@@ -49,7 +50,7 @@ export function FieldEditor({ table, column, recordId, value, onUpdate }: FieldE
         title: 'Field updated',
         description: 'The changes have been saved successfully.',
       });
-    } catch (_error) {
+    } catch (error) {
       toast({
         title: 'Error',
         description: 'Failed to update field. Please try again.',
@@ -72,7 +73,10 @@ export function FieldEditor({ table, column, recordId, value, onUpdate }: FieldE
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label>Value</Label>
-            <Input value={editValue as string} onChange={(e) => setEditValue(e.target.value)} />
+            <Input 
+              value={editValue as string} 
+              onChange={(e) => setEditValue(e.target.value)} 
+            />
           </div>
           <Button onClick={handleSave}>Save Changes</Button>
         </div>

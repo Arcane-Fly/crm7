@@ -87,3 +87,7 @@ local.*
 # Documentation archives
 docs/archive/
 .env*
+
+# Dev Rules
+.clinerules
+.windsurfrules

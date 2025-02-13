@@ -10,6 +10,13 @@ interface Notification {
   timeLeft?: string;
 }
 
+const icons = {
+  warning: Clock,
+  error: FileWarning,
+  info: AlertTriangle,
+  success: Award,
+} as const;
+
 const notifications: Notification[] = [
   {
     id: '1',
@@ -33,17 +40,10 @@ const notifications: Notification[] = [
   },
 ];
 
-const icons = {
-  warning: Clock,
-  error: FileWarning,
-  info: AlertTriangle,
-  success: Award,
-};
-
-export function NotificationList(): void {
+export function NotificationList(): JSX.Element {
   return (
     <div className='space-y-4'>
-      {notifications.map((notification: unknown) => {
+      {notifications.map((notification: Notification) => {
         const Icon = icons[notification.type];
 
         return (

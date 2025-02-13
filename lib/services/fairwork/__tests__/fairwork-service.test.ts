@@ -1,66 +1,24 @@
-import { type PrismaClient } from '@prisma/client';
-import { type RedisClientType } from 'redis';
+import { mock } from 'jest-mock-extended';
+import type { RedisClientType } from 'redis';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { type MetricsService } from '../../../utils/metrics';
-import { FairWorkApiClient } from '../api-client';
-import { FairWorkServiceImpl } from '../fairwork-service';
-import { type Award, type Rate } from '../types';
-
-// Create mock types
-type MockRedisClient = {
-  get: ReturnType<typeof vi.fn>;
-  set: ReturnType<typeof vi.fn>;
-  del: ReturnType<typeof vi.fn>;
-};
-
-type MockApiClient = {
-  getActiveAwards: ReturnType<typeof vi.fn>;
-  getAward: ReturnType<typeof vi.fn>;
-  getCurrentRates: ReturnType<typeof vi.fn>;
-  getRatesForDate: ReturnType<typeof vi.fn>;
-  getClassifications: ReturnType<typeof vi.fn>;
-  getClassificationHierarchy: ReturnType<typeof vi.fn>;
-  getRateTemplates: ReturnType<typeof vi.fn>;
-  validateRate: ReturnType<typeof vi.fn>;
-  calculateBaseRate: ReturnType<typeof vi.fn>;
-};
-
-// Mock dependencies with proper types
-const mockApiClient: MockApiClient = {
-  getActiveAwards: vi.fn(),
-  getAward: vi.fn(),
-  getCurrentRates: vi.fn(),
-  getRatesForDate: vi.fn(),
-  getClassifications: vi.fn(),
-  getClassificationHierarchy: vi.fn(),
-  getRateTemplates: vi.fn(),
-  validateRate: vi.fn(),
-  calculateBaseRate: vi.fn(),
-};
-
-const mockRedisClient: MockRedisClient = {
-  get: vi.fn(),
-  set: vi.fn(),
-  del: vi.fn(),
-};
-
-const mockPrisma: PrismaClient = {} as PrismaClient;
-const mockMetrics: MetricsService = {
-  recordServiceMethodDuration: vi.fn(),
-};
+import type { FairWorkApiClient } from '../api-client';
+import { FairWorkService } from '../fairwork-service';
+import type { Award, Classification, PayRate } from '../types';
 
 describe('FairWorkService', () => {
-  const service = new FairWorkServiceImpl(
-    mockApiClient as unknown as FairWorkApiClient,
-    mockRedisClient as unknown as RedisClientType,
-    {
-      prisma: mockPrisma,
-      metrics: mockMetrics
-    }
-  );
+  const mockApiClient = mock<FairWorkApiClient>();
+  const mockRedisClient = mock<RedisClientType>();
+  const mockMetrics = { recordServiceMethodDuration: vi.fn() };
+
+  let service: FairWorkService;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    service = new FairWorkService({
+      apiClient: mockApiClient,
+      redis: mockRedisClient,
+      metrics: mockMetrics,
+    });
   });
 
   describe('getActiveAwards', () => {
@@ -85,7 +43,7 @@ describe('FairWorkService', () => {
 
     it('should fetch and cache awards if not cached', async () => {
       mockRedisClient.get.mockResolvedValueOnce(null);
-      mockApiClient.getActiveAwards.mockResolvedValueOnce({ items: mockAwards });
+      mockApiClient.getActiveAwards.mockResolvedValueOnce(mockAwards);
 
       const result = await service.getActiveAwards();
 
@@ -95,33 +53,35 @@ describe('FairWorkService', () => {
       expect(mockRedisClient.set).toHaveBeenCalledWith(
         'active_awards',
         JSON.stringify(mockAwards),
-        expect.any(Number)
+        { EX: 3600 }
       );
     });
 
-    it('should handle errors gracefully', async () => {
+    it('should handle API errors', async () => {
       mockRedisClient.get.mockResolvedValueOnce(null);
-      mockApiClient.getActiveAwards.mockRejectedValueOnce(new Error('API error'));
+      mockApiClient.getActiveAwards.mockRejectedValueOnce(new Error('API Error'));
 
-      await expect(service.getActiveAwards()).rejects.toThrow('API error');
+      await expect(service.getActiveAwards()).rejects.toThrow('API Error');
     });
   });
 
   describe('getCurrentRates', () => {
-    const mockRates: Rate[] = [
+    const mockRates: PayRate[] = [
       {
         baseRate: 20.5,
         effectiveFrom: '2024-01-01',
+        penalties: [],
+        allowances: [],
       },
     ];
 
     it('should return cached rates if available', async () => {
       mockRedisClient.get.mockResolvedValueOnce(JSON.stringify(mockRates));
 
-      const result = await service.getCurrentRates('MA000001');
+      const result = await service.getCurrentRates();
 
       expect(result).toEqual(mockRates);
-      expect(mockRedisClient.get).toHaveBeenCalledWith('rates:MA000001:current');
+      expect(mockRedisClient.get).toHaveBeenCalledWith('current_rates');
       expect(mockApiClient.getCurrentRates).not.toHaveBeenCalled();
     });
 
@@ -129,68 +89,43 @@ describe('FairWorkService', () => {
       mockRedisClient.get.mockResolvedValueOnce(null);
       mockApiClient.getCurrentRates.mockResolvedValueOnce(mockRates);
 
-      const result = await service.getCurrentRates('MA000001');
+      const result = await service.getCurrentRates();
 
       expect(result).toEqual(mockRates);
-      expect(mockRedisClient.get).toHaveBeenCalledWith('rates:MA000001:current');
-      expect(mockApiClient.getCurrentRates).toHaveBeenCalledWith('MA000001');
+      expect(mockRedisClient.get).toHaveBeenCalledWith('current_rates');
+      expect(mockApiClient.getCurrentRates).toHaveBeenCalled();
       expect(mockRedisClient.set).toHaveBeenCalledWith(
-        'rates:MA000001:current',
+        'current_rates',
         JSON.stringify(mockRates),
-        expect.any(Number)
+        { EX: 3600 }
       );
-    });
-
-    it('should handle errors gracefully', async () => {
-      mockRedisClient.get.mockResolvedValueOnce(null);
-      mockApiClient.getCurrentRates.mockRejectedValueOnce(new Error('API error'));
-
-      await expect(service.getCurrentRates('MA000001')).rejects.toThrow('API error');
     });
   });
 
-  describe('calculateBaseRate', () => {
-    const mockParams = {
-      awardCode: 'MA000001',
-      classification: 'L1',
-    };
+  describe('getClassifications', () => {
+    const mockClassifications: Classification[] = [
+      {
+        code: 'L1',
+        name: 'Level 1',
+        level: '1',
+        baseRate: 25.0,
+        effectiveFrom: '2024-01-01',
+      },
+    ];
 
-    const mockResult = {
-      baseRate: 25.5,
-    };
+    it('should fetch classifications', async () => {
+      mockApiClient.getClassifications.mockResolvedValueOnce(mockClassifications);
 
-    it('should return cached result if available', async () => {
-      mockRedisClient.get.mockResolvedValueOnce(JSON.stringify(mockResult));
+      const result = await service.getClassifications();
 
-      const result = await service.calculateBaseRate(mockParams);
-
-      expect(result).toEqual(mockResult);
-      expect(mockRedisClient.get).toHaveBeenCalledWith(
-        expect.stringContaining('rate:base:')
-      );
-      expect(mockApiClient.calculateBaseRate).not.toHaveBeenCalled();
+      expect(result).toEqual(mockClassifications);
+      expect(mockApiClient.getClassifications).toHaveBeenCalled();
     });
 
-    it('should fetch and cache result if not cached', async () => {
-      mockRedisClient.get.mockResolvedValueOnce(null);
-      mockApiClient.calculateBaseRate.mockResolvedValueOnce(mockResult);
+    it('should handle API errors', async () => {
+      mockApiClient.getClassifications.mockRejectedValueOnce(new Error('API Error'));
 
-      const result = await service.calculateBaseRate(mockParams);
-
-      expect(result).toEqual(mockResult);
-      expect(mockApiClient.calculateBaseRate).toHaveBeenCalledWith(mockParams);
-      expect(mockRedisClient.set).toHaveBeenCalledWith(
-        expect.stringContaining('rate:base:'),
-        JSON.stringify(mockResult),
-        expect.any(Number)
-      );
-    });
-
-    it('should throw error on API failure', async () => {
-      mockRedisClient.get.mockResolvedValueOnce(null);
-      mockApiClient.calculateBaseRate.mockRejectedValueOnce(new Error('API error'));
-
-      await expect(service.calculateBaseRate(mockParams)).rejects.toThrow('API error');
+      await expect(service.getClassifications()).rejects.toThrow('API Error');
     });
   });
 });

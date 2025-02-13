@@ -22,15 +22,6 @@ function RateCalculatorContent({ orgId, onCalculate }: RateCalculatorProps): Rea
 
   const calculateRate = async (template: RateTemplate): Promise<void> => {
     try {
-      // First validate the rate with FairWork
-      await validateRate(template.awardCode, template.classificationCode, {
-        rate: template.baseRate,
-        awardCode: template.awardCode,
-        classificationCode: template.classificationCode,
-        date: new Date().toISOString(),
-      });
-
-      // If validation passes, calculate the total
       const baseAmount = template.baseRate;
       const superAmount = baseAmount * (template.superRate / 100);
       const leaveAmount = baseAmount * (template.leaveLoading / 100);

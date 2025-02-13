@@ -1,6 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-const placements = [
+interface Placement {
+  apprentice: string;
+  trade: string;
+  employer: string;
+  startDate: string;
+  status: 'New' | 'In Progress';
+}
+
+const placements: Placement[] = [
   {
     apprentice: 'John Smith',
     trade: 'Electrical',
@@ -32,11 +40,11 @@ const placements = [
 ];
 
 const statusStyles = {
-  New: 'bg-green-100 text-green-700',
+  'New': 'bg-green-100 text-green-700',
   'In Progress': 'bg-blue-100 text-blue-700',
-};
+} as const;
 
-export function RecentPlacements(): void {
+export function RecentPlacements(): JSX.Element {
   return (
     <Card>
       <CardHeader>
@@ -44,7 +52,7 @@ export function RecentPlacements(): void {
       </CardHeader>
       <CardContent>
         <div className='space-y-4'>
-          {placements.map((placement: unknown, index) => (
+          {placements.map((placement, index) => (
             <div
               key={index}
               className='space-y-2'
@@ -53,7 +61,7 @@ export function RecentPlacements(): void {
                 <div className='text-sm font-medium'>{placement.apprentice}</div>
                 <div
                   className={`rounded-full px-2 py-1 text-xs ${
-                    statusStyles[placement.status as keyof typeof statusStyles]
+                    statusStyles[placement.status]
                   }`}
                 >
                   {placement.status}

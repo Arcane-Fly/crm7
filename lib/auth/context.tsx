@@ -1,27 +1,32 @@
 'use client';
 
-import { useToast } from '@/hooks/use-toast';
-import { createClient } from '@/utils/supabase/client';
-import { type Session, type User } from '@supabase/supabase-js';
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import type { Session, User } from '@supabase/supabase-js';
 import { useRouter, usePathname } from 'next/navigation';
-import { type ReactNode, createContext, useContext, useEffect, useState } from 'react';
+import { createClient } from '@/utils/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 
-interface AuthProviderProps {
-  children: ReactNode;
-  initialUser?: User | null;
-}
-
-interface AuthContextType {
+export interface AuthContextType {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
   signOut: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+interface AuthProviderProps {
+  children: ReactNode;
+  initialUser?: User | null;
+}
 
-export function AuthProvider({ children, initialUser }: AuthProviderProps): React.ReactElement {
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  session: null,
+  isLoading: true,
+  signOut: async () => {},
+});
+
+export const AuthProvider = ({ children, initialUser }: AuthProviderProps): JSX.Element => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(initialUser ?? null);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,7 +36,6 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps): Reac
   const { toast } = useToast();
 
   useEffect(() => {
-    // Initial auth check using getUser()
     async function checkAuth() {
       try {
         const {
@@ -44,7 +48,6 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps): Reac
           setSession(null);
         } else {
           setUser(currentUser);
-          // Only get session after verifying user
           const {
             data: { session: currentSession },
           } = await supabase.auth.getSession();
@@ -59,14 +62,12 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps): Reac
       }
     }
 
-    checkAuth();
+    void checkAuth();
 
-    // Subscribe to auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, _session) => {
       try {
-        // Always verify user with getUser() on auth state changes
         const {
           data: { user: currentUser },
           error,
@@ -83,7 +84,6 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps): Reac
           setSession(_session);
         }
 
-        // Only redirect on sign out if not already on a public path
         if (event === 'SIGNED_OUT' && !pathname.startsWith('/auth/')) {
           router.push('/auth/login');
         }
@@ -119,12 +119,14 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps): Reac
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
+};
 
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 }
+
+export default AuthProvider;

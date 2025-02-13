@@ -20,11 +20,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import React from 'react';
 
 interface NavItem {
   title: string;
   href: string;
-  icon: React.ComponentType;
+  icon?: React.ComponentType<any>;
   shortcut?: string;
   description?: string;
 }
@@ -112,7 +113,12 @@ export function MainNavigation() {
                   : 'transparent'
               )}
             >
-              <item.icon className="mr-2 h-4 w-4" />
+              {item.icon && (
+                React.createElement(item.icon as React.ElementType<{ className?: string; "aria-hidden"?: string }>, { 
+                  className: cn("mr-2 h-4 w-4"), 
+                  "aria-hidden": "true" 
+                })
+              )}
               <span>{item.title}</span>
               {item.shortcut && (
                 <kbd className="ml-auto text-xs text-muted-foreground">

@@ -1,7 +1,6 @@
 'use client';
 
-import { Component } from 'react';
-import type { ErrorInfo, ReactNode } from 'react';
+import { Component, type ErrorInfo, type ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
@@ -26,7 +25,7 @@ export class ErrorBoundary extends Component<Props, State> {
     console.error('Uncaught error:', error, errorInfo);
   }
 
-  public render(): Promise<void> {
+  public render(): ReactNode {
     if (this.state.hasError) {
       return (
         this.props.fallback || (

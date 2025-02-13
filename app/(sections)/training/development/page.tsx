@@ -3,18 +3,20 @@
 import { PuckEditor } from '@/components/editor/puck-editor';
 import { Breadcrumb, BreadcrumbItem } from '@/components/ui/breadcrumb';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
+import type { Data as PuckData } from '@measured/puck';
 
-interface TrainingData {
-  content: Record<string, unknown>;
-  path: string;
-  title: string;
+interface EditorData extends PuckData {
+  id: string;
+  metadata: Record<string, unknown>;
+  version: number;
+  root: any;
 }
 
 export default function TrainingDevelopmentPage() {
   const { toast } = useToast();
 
-  const handlePublish = async (data: TrainingData) => {
+  const handlePublish = async (data: EditorData) => {
     try {
       const response = await fetch('/api/training/development', {
         method: 'POST',

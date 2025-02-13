@@ -14,7 +14,8 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
-import { fundingService } from '@/lib/services/funding';
+import { FundingService } from '@/lib/services/funding';
+import { createClient } from '@/lib/supabase/client';
 
 interface ClaimFormProps {
   programs: Array<{ id: string; name: string }>;
@@ -24,7 +25,7 @@ interface ClaimFormProps {
   user: { org_id: string };
 }
 
-export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user }: ClaimFormProps): void {
+export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user }: ClaimFormProps): React.ReactElement {
   const [programId, setProgramId] = useState('');
   const [employeeId, setEmployeeId] = useState('');
   const [hostEmployerId, setHostEmployerId] = useState('');
@@ -34,8 +35,10 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
   const [files, setFiles] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const supabase = createClient() as any; // casting to bypass the type conflict for now
+  const fundingService = new FundingService(supabase);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): React.ReactElement => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     if (!programId || !employeeId || !amountClaimed) {
       toast({
@@ -179,9 +182,14 @@ export function ClaimForm({ programs, employees, hostEmployers, onSuccess, user 
       <div className='space-y-2'>
         <Label>Supporting Documents</Label>
         <FileUploader
-          accept='.pdf,.doc,.docx,.jpg,.jpeg,.png'
-          maxSize={5 * 1024 * 1024}
           onFileSelect={(files: File[]): void => setFiles(files)}
+          accept={{
+            'application/pdf': ['.pdf'],
+            'application/msword': ['.doc'],
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+            'image/jpeg': ['.jpg', '.jpeg'],
+            'image/png': ['.png'],
+          }}
           multiple={true}
         />
       </div>

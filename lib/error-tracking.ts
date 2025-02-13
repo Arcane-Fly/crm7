@@ -1,5 +1,14 @@
 import { toast } from '@/components/ui/use-toast';
-import punycode from 'punycode2';
+import { init } from '@sentry/nextjs';
+import { logger } from '@/lib/utils/logger';
+
+// Define a NetworkError class
+class NetworkError extends Error {
+  constructor(message?: string) {
+    super(message);
+    this.name = 'NetworkError';
+  }
+}
 
 interface ErrorContext {
   componentName?: string;
@@ -61,8 +70,8 @@ class ErrorTracker {
       description: this.getUserFriendlyMessage(error),
     });
 
-    // TODO: Send to error reporting service (e.g., Sentry)
-    // this.sendToErrorService(error, context);
+    // Send to error reporting service (e.g., Sentry)
+    this.sendToErrorService(error, context);
   }
 
   private getUserFriendlyMessage(error: Error): string {
@@ -79,9 +88,19 @@ class ErrorTracker {
     return 'An unexpected error occurred. Please try again.';
   }
 
-  // private async sendToErrorService(error: Error, context?: ErrorContext) {
-  //   // Implementation for sending to error service
-  // }
+  private async sendToErrorService(error: Error, context?: ErrorContext) {
+    if (!process.env.NEXT_PUBLIC_SENTRY_DSN) {
+      logger.warn('Sentry DSN not configured');
+      return;
+    }
+
+    init({
+      dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+      environment: process.env.NODE_ENV,
+      tracesSampleRate: 1.0,
+      debug: process.env.NODE_ENV === 'development',
+    });
+  }
 }
 
 export const errorTracker = ErrorTracker.getInstance();

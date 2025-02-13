@@ -11,7 +11,7 @@ interface MainLayoutProps {
   children: React.ReactNode;
 }
 
-export function MainLayout({ children }: MainLayoutProps): void {
+export function MainLayout({ children }: MainLayoutProps): React.ReactElement {
   return (
     <div className='flex min-h-screen bg-background'>
       <Sidebar />

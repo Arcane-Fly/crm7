@@ -1,4 +1,4 @@
-import { type SidebarSection } from '@/lib/types';
+import { type SidebarSection } from '@/lib/types/sidebar';
 import { useState } from 'react';
 
 interface SidebarProps {

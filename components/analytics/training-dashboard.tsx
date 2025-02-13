@@ -1,29 +1,33 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { createClient } from '@/lib/supabase/client';
-import type { TrainingStats } from '@/lib/types';
+import { useEffect, useState } from 'react';
 
-interface TrainingDashboardProps {
-  data?: {
-    completed: number;
-    totalCourses: number;
-    inProgress: number;
-  };
+interface TrainingStats {
+  totalEnrollments: number;
+  completedEnrollments: number;
+  averageProgress: number;
+  averageCompletionTime: number;
+  completionRate: number;
 }
 
-export function TrainingDashboard({ data }: TrainingDashboardProps) {
+interface TrainingDashboardProps {
+  courseId: string;
+  onDataChange?: (stats: TrainingStats) => void;
+}
+
+export function TrainingDashboard({ courseId, onDataChange }: TrainingDashboardProps) {
+  const supabase = createClient();
   const [stats, setStats] = useState<TrainingStats>({
     totalEnrollments: 0,
     completedEnrollments: 0,
     averageProgress: 0,
     averageCompletionTime: 0,
+    completionRate: 0,
   });
   const [error, setError] = useState<Error | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const supabase = createClient();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,11 +41,14 @@ export function TrainingDashboard({ data }: TrainingDashboardProps) {
         const totalEnrollments = enrollmentData.length;
         const completedEnrollments = enrollmentData.filter(e => e.status === 'completed').length;
 
+        const completionRate = (completedEnrollments / totalEnrollments) * 100;
+
         setStats({
           totalEnrollments,
           completedEnrollments,
           averageProgress: 0,
-          averageCompletionTime: 0
+          averageCompletionTime: 0,
+          completionRate,
         });
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to fetch training data'));
@@ -51,41 +58,31 @@ export function TrainingDashboard({ data }: TrainingDashboardProps) {
     };
 
     fetchData();
-  }, [supabase]);
+  }, [supabase, courseId]);
+
+  useEffect(() => {
+    if (stats && onDataChange) {
+      onDataChange(stats);
+    }
+  }, [stats, onDataChange]);
 
   if (isLoading) {
-    return <div>Loading training data...</div>;
+    return <div>Loading training statistics...</div>;
   }
 
   if (error) {
     return <div>Error loading training data: {error.message}</div>;
   }
 
-  const progressPercentage = (stats.completedEnrollments / stats.totalEnrollments) * 100;
-
   return (
-    <Card className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Training Progress</h2>
-      <div className="space-y-4">
-        <div>
-          <div className="flex justify-between mb-2">
-            <span>Overall Progress</span>
-            <span>{Math.round(progressPercentage)}%</span>
-          </div>
-          <Progress value={progressPercentage} className="h-2" />
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <Card>
+        <div className="p-4">
+          <h3 className="text-sm font-medium">Completion Rate</h3>
+          <p className="text-2xl font-bold">{stats.completionRate}%</p>
         </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="p-4 bg-white rounded-lg shadow">
-            <h3 className="text-lg font-semibold">Completed</h3>
-            <p className="text-3xl font-bold text-green-500">{stats.completedEnrollments}</p>
-          </div>
-          <div className="p-4 bg-white rounded-lg shadow">
-            <h3 className="text-lg font-semibold">Total Courses</h3>
-            <p className="text-3xl font-bold">{stats.totalEnrollments}</p>
-          </div>
-        </div>
-      </div>
-    </Card>
+      </Card>
+      {/* Add more stats cards as needed */}
+    </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { KEYBOARD_SHORTCUTS } from '@/config/shortcuts';
 import { CORE_SECTIONS } from '@/config/navigation-config';
@@ -17,7 +17,6 @@ export function useKeyboardNavigation({ onToggleMenu, onFocusSearch }: UseKeyboa
     toast({
       title: 'Keyboard Shortcut',
       description: `${shortcut.toUpperCase()}: ${action}`,
-      duration: 1500,
     });
   }, [toast]);
 
@@ -33,7 +32,7 @@ export function useKeyboardNavigation({ onToggleMenu, onFocusSearch }: UseKeyboa
     // Handle modifier key combinations
     if (e.altKey && !e.ctrlKey && !e.metaKey) {
       const sectionKeys = Object.values(SECTIONS);
-      const sectionIndex = sectionKeys.indexOf(key);
+      const sectionIndex = sectionKeys.findIndex(k => k === key);
       
       if (sectionIndex !== -1) {
         e.preventDefault();
@@ -75,7 +74,6 @@ export function useKeyboardNavigation({ onToggleMenu, onFocusSearch }: UseKeyboa
       case NAVIGATION.QUICK_NAV:
         if (e.ctrlKey && !e.metaKey) {
           e.preventDefault();
-          // TODO: Implement quick navigation dialog
           showShortcutToast('Ctrl+G', 'Quick Navigation');
         }
         break;

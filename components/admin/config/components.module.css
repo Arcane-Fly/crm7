@@ -1,0 +1,4 @@
+.heroContainer {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}

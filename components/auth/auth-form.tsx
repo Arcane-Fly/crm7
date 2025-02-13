@@ -2,9 +2,9 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { createBrowserClient } from '@supabase/ssr';
 
 import { Button } from '@/components/ui/button';
@@ -37,8 +37,6 @@ const formSchema = z.object({
     .regex(/[0-9]/, 'Password must contain at least one number')
     .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
 });
-
-type FormData = z.infer<typeof formSchema>;
 
 interface AuthFormProps {
   mode: 'signin' | 'signup';

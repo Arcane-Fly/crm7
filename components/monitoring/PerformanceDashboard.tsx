@@ -1,5 +1,6 @@
-import { type PerformanceMetrics } from '@/lib/types';
+import { type PerformanceMetrics } from '@/lib/types/monitoring';
 import { useState } from 'react';
+import { type ChartData } from 'chart.js';
 
 interface PerformanceDashboardProps {
   metrics: PerformanceMetrics;
@@ -7,7 +8,7 @@ interface PerformanceDashboardProps {
 
 export function PerformanceDashboard(): React.ReactElement {
   const [_metrics, setMetrics] = useState<PerformanceMetrics[]>([]);
-  const [_chartData, setChartData] = useState<ChartData>({
+  const [_chartData, setChartData] = useState<ChartData<'line'>>({
     labels: [],
     datasets: []
   });

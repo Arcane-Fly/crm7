@@ -1,4 +1,5 @@
-import { type Enrollment } from '@/lib/types';
+import { type Enrollment } from '@/lib/types/lms';
+import { useLMS } from '@/lib/hooks/use-lms';
 
 interface EnrollmentListProps {
   enrollments: Enrollment[];
@@ -6,6 +7,8 @@ interface EnrollmentListProps {
 }
 
 export function EnrollmentList({ enrollments, onUpdate }: EnrollmentListProps): JSX.Element {
+  const { deleteEnrollment } = useLMS();
+
   const handleUnenroll = async (enrollmentId: string): Promise<void> => {
     try {
       await deleteEnrollment(enrollmentId);

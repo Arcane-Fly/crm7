@@ -6,14 +6,22 @@ interface FileUploaderProps {
   accept?: Record<string, string[]>;
   maxSize?: number;
   maxFiles?: number;
+  multiple?: boolean;
 }
 
 export function FileUploader({
   onFileSelect,
-  accept,
+  accept = {
+    'application/pdf': ['.pdf'],
+    'application/msword': ['.doc'],
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+    'image/jpeg': ['.jpg', '.jpeg'],
+    'image/png': ['.png'],
+  },
   maxSize = 5242880, // 5MB
   maxFiles = 1,
-}: FileUploaderProps): JSX.Element {
+  multiple = false,
+}: FileUploaderProps): React.ReactElement {
   const [error, setError] = useState<string | null>(null);
 
   const onDrop = (acceptedFiles: File[]): void => {
@@ -35,6 +43,7 @@ export function FileUploader({
     accept,
     maxSize,
     maxFiles,
+    multiple,
   });
 
   return (

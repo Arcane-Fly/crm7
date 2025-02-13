@@ -1,31 +1,27 @@
 import { useToast } from '@/components/ui/use-toast';
 import { useSupabaseQuery, useSupabaseMutation } from '@/lib/hooks/use-supabase-query';
-import type { Database } from '@/types/supabase-generated';
+import type { Course, CourseInsert, Enrollment, EnrollmentInsert } from '@/lib/types/lms';
+import { createClient } from '@/lib/supabase';
 
-type Tables = Database['public']['Tables'];
-export type Course = Tables['courses']['Row'];
-export type CourseInsert = Tables['courses']['Insert'];
-export type Enrollment = Tables['enrollments']['Row'];
-export type EnrollmentInsert = Tables['enrollments']['Insert'];
-
-export function useLMS(): void {
+export function useLMS() {
   const { toast } = useToast();
+  const supabase = createClient();
 
   // Queries
-  const courses = useSupabaseQuery({
+  const courses = useSupabaseQuery<Course[]>({
     queryKey: ['courses'],
     table: 'courses',
   });
 
-  const enrollments = useSupabaseQuery({
+  const enrollments = useSupabaseQuery<Enrollment[]>({
     queryKey: ['enrollments'],
     table: 'enrollments',
   });
 
   // Course Mutations
-  const { mutateAsync: createCourse, isPending: isCreatingCourse } = useSupabaseMutation({
+  const { mutateAsync: createCourse, isPending: isCreatingCourse } = useSupabaseMutation<Course>({
     table: 'courses',
-    onSuccess: (): void => {
+    onSuccess: () => {
       toast({
         title: 'Course created',
         description: 'The course has been created successfully.',
@@ -34,9 +30,9 @@ export function useLMS(): void {
     },
   });
 
-  const { mutateAsync: updateCourse, isPending: isUpdatingCourse } = useSupabaseMutation({
+  const { mutateAsync: updateCourse, isPending: isUpdatingCourse } = useSupabaseMutation<Course>({
     table: 'courses',
-    onSuccess: (): void => {
+    onSuccess: () => {
       toast({
         title: 'Course updated',
         description: 'The course has been updated successfully.',
@@ -46,9 +42,9 @@ export function useLMS(): void {
   });
 
   // Enrollment Mutations
-  const { mutateAsync: createEnrollment, isPending: isCreatingEnrollment } = useSupabaseMutation({
+  const { mutateAsync: createEnrollment, isPending: isCreatingEnrollment } = useSupabaseMutation<Enrollment>({
     table: 'enrollments',
-    onSuccess: (): void => {
+    onSuccess: () => {
       toast({
         title: 'Enrollment created',
         description: 'The enrollment has been created successfully.',
@@ -57,9 +53,9 @@ export function useLMS(): void {
     },
   });
 
-  const { mutateAsync: updateEnrollment, isPending: isUpdatingEnrollment } = useSupabaseMutation({
+  const { mutateAsync: updateEnrollment, isPending: isUpdatingEnrollment } = useSupabaseMutation<Enrollment>({
     table: 'enrollments',
-    onSuccess: (): void => {
+    onSuccess: () => {
       toast({
         title: 'Enrollment updated',
         description: 'The enrollment has been updated successfully.',
@@ -68,22 +64,45 @@ export function useLMS(): void {
     },
   });
 
+  const deleteEnrollment = async (id: string): Promise<void> => {
+    try {
+      const { error } = await supabase
+        .from('enrollments')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      toast({
+        title: 'Success',
+        description: 'Enrollment deleted successfully',
+      });
+    } catch (error) {
+      console.error('Failed to delete enrollment:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete enrollment',
+        variant: 'destructive',
+      });
+      throw error;
+    }
+  };
+
   return {
     // Queries
     courses,
     enrollments,
 
     // Course Mutations
-    createCourse: (data: CourseInsert) => createCourse({ data }),
-    updateCourse: (id: string, data: Partial<CourseInsert>) =>
-      updateCourse({ match: { id }, data }),
+    createCourse,
+    updateCourse,
     isCreatingCourse,
     isUpdatingCourse,
 
     // Enrollment Mutations
-    createEnrollment: (data: EnrollmentInsert) => createEnrollment({ data }),
-    updateEnrollment: (id: string, data: Partial<EnrollmentInsert>) =>
-      updateEnrollment({ match: { id }, data }),
+    createEnrollment,
+    updateEnrollment,
+    deleteEnrollment,
     isCreatingEnrollment,
     isUpdatingEnrollment,
   };

@@ -51,8 +51,8 @@ jobs:
       - name: Lint
         run: pnpm lint
 
-      - name: Run tests
-        run: pnpm test
+      - name: Run tests with Vitest
+        run: pnpm vitest run --coverage
 
       - name: Build
         run: pnpm build

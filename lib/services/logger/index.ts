@@ -28,20 +28,43 @@ class ConsoleLogger implements Logger {
     return `[${timestamp}] [${level.toUpperCase()}] [${this.namespace}] ${message}${contextStr}`;
   }
 
+  private logError(error: Error | string, context?: Record<string, unknown>) {
+    console.error('[ERROR]', error, context);
+    this.captureError(error, context);
+  }
+
+  private logWarning(message: string, context?: Record<string, unknown>) {
+    console.warn('[WARN]', message, context);
+    this.captureWarning(message, context);
+  }
+
+  private captureError(_error: Error | string, _context?: Record<string, unknown>) {
+    // Implement error capturing logic here
+  }
+
+  private captureWarning(_message: string, _context?: Record<string, unknown>) {
+    // Implement warning capturing logic here
+  }
+
   debug(message: string, context?: LogContext): void {
-    console.debug(this.formatMessage('debug', message, context));
+    this.logMessage('debug', message, context);
   }
 
   info(message: string, context?: LogContext): void {
-    console.info(this.formatMessage('info', message, context));
+    this.logMessage('info', message, context);
   }
 
   warn(message: string, context?: LogContext): void {
-    console.warn(this.formatMessage('warn', message, context));
+    this.logWarning(message, context);
   }
 
   error(message: string, context?: LogContext): void {
-    console.error(this.formatMessage('error', message, context));
+    this.logError(message, context);
+  }
+
+  private logMessage(level: LogLevel, message: string, context?: LogContext) {
+    const formattedMessage = this.formatMessage(level, message, context);
+    // Implement logging logic here
   }
 }
 
@@ -49,4 +72,4 @@ export const logger: LoggerService = {
   createLogger: (namespace: string): Logger => new ConsoleLogger(namespace),
 };
 
-export type { Logger, LogContext, LoggerService };
+export type { LogContext, Logger, LoggerService };
