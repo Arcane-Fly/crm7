@@ -49,12 +49,6 @@ const nextConfig = {
       asyncWebAssembly: true,
     };
 
-    // Ensure punycode module is not used directly
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      punycode: false,
-    };
-
     return config;
   },
   headers: async () => {
