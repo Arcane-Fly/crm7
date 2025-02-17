@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { useUser } from '@/lib/hooks/useUser';
-import { useSupabase } from '@/lib/supabase/supabase-provider';
+import { createClient } from '@/lib/supabase/client';
 import type { RateTemplate } from '@/lib/types/rates';
 
 interface RateApprovalProps {
@@ -15,7 +15,7 @@ export default function RateApproval({
   onApprove,
   onReject,
 }: RateApprovalProps): JSX.Element {
-  const { supabase } = useSupabase();
+  const supabase = createClient();
   const { user } = useUser();
   const { toast } = useToast();
   const [templates, setTemplates] = useState<RateTemplate[]>([]);

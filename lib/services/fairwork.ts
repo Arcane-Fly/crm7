@@ -1,6 +1,6 @@
 import { type SupabaseClient } from '@supabase/supabase-js';
 import { type Database } from '@/types/supabase';
-import { BaseService } from './base-service';
+import { BaseService, type ServiceOptions } from '@/lib/utils/service';
 
 interface FairWorkTemplate {
   id: string;
@@ -11,11 +11,8 @@ interface FairWorkTemplate {
 }
 
 export class FairWorkService extends BaseService {
-  constructor(private readonly supabase: SupabaseClient<Database>) {
-    super({
-      name: 'FairWorkService',
-      version: '1.0.0',
-    });
+  constructor(private readonly supabase: SupabaseClient<Database>, options: ServiceOptions = {}) {
+    super('FairWorkService', '1.0.0', options);
   }
 
   async getTemplates(): Promise<void> {

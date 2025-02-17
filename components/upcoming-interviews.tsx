@@ -1,6 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-const interviews = [
+interface Interview {
+  candidate: string;
+  position: string;
+  company: string;
+  date: string;
+}
+
+const interviews: Interview[] = [
   {
     candidate: 'Sarah Johnson',
     position: 'Electrical Apprentice',
@@ -27,7 +34,7 @@ const interviews = [
   },
 ];
 
-export function UpcomingInterviews(): void {
+export function UpcomingInterviews(): JSX.Element {
   return (
     <Card>
       <CardHeader>
@@ -35,7 +42,7 @@ export function UpcomingInterviews(): void {
       </CardHeader>
       <CardContent>
         <div className='space-y-4'>
-          {interviews.map((interview: unknown, index) => (
+          {interviews.map((interview: Interview, index) => (
             <div
               key={index}
               className='space-y-2'

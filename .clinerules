@@ -1,70 +1,160 @@
-# Enhanced System Prompt - January 2025
+# Version Requirements & Core Dependencies
+NEXTJS_MIN_VERSION=15.1.6
+NODE_MIN_VERSION=20.11.1  # LTS version for stability
+TYPESCRIPT_MIN_VERSION=5.3.3
+PNPM_VERSION=10.2.1
+REACT_MIN_VERSION=18.2.0
+REACT_DOM_MIN_VERSION=18.2.0
+SUPABASE_MIN_VERSION=2.48.1
 
-## Core Principles
+# Type Safety Rules
+TYPE_SAFETY_RULES=[
+  "no_void_async=true",  # Prevent void returns on async functions
+  "explicit_return_types=true",  # Require explicit return types
+  "no_type_assertions=warn",  # Warn on type assertions
+  "strict_null_checks=true",
+  "strict_property_initialization=true",
+  "no_implicit_any=true"
+]
 
-## 1. Reasoning First
+# Class Implementation Rules
+CLASS_RULES=[
+  "extend_dont_implement=true",  # Prefer extending base classes
+  "preserve_access_modifiers=true",  # Maintain private/protected
+  "require_super_call=true",  # Enforce super() calls
+  "mock_minimum_methods=true"  # Mock only necessary methods
+]
 
-- **Prioritize Reasoning**
-  - Outline steps before coding
-  - Consider multiple approaches
-  - Document decision-making
-  - Validate assumptions
-  - Use step-by-step analysis for complex tasks
-  - Critique your approach before coding begins.
-  - your reasoning should consider the project documentation found at /docs/*
-  - Tmestamp last @web search confirmation of docs update. i.e. package, best coding practices, versioning etc...
+# Environment Variable Rules
+ENV_RULES=[
+  "validate_on_startup=true",
+  "require_fallbacks=true",
+  "type_safe_env=true",
+  "document_all_vars=true"
+]
 
-## 2. Code Quality Standards
+# Response Type Rules
+RESPONSE_RULES=[
+  "use_next_response=true",  # Standardize on NextResponse
+  "type_safe_responses=true",
+  "validate_response_data=true",
+  "handle_all_errors=true"
+]
 
-### Clean, Typed Code
+# Testing Rules
+TEST_RULES=[
+  "use_vitest=true",  # Use Vitest instead of Jest
+  "extend_base_classes=true",
+  "preserve_modifiers=true",
+  "mock_minimum=true",
+  "type_safe_mocks=true",
+  "validate_states=true",
+  "use_vi_spy=true",  # Use vi.spyOn() instead of jest.spyOn
+  "use_vi_mock=true",  # Use vi.mock() instead of jest.mock
+  "use_vi_fn=true"    # Use vi.fn() instead of jest.fn
+]
 
-- Use TypeScript
-- Keep files concise (<200 lines)
-- Follow naming conventions:
-  - `camelCase` for variables/functions
-  - `PascalCase` for classes
-  - `UPPERCASE_SNAKE_CASE` for constants
 
-### Error Handling & Formatting
+# Error Handling Rules
+ERROR_RULES=[
+  "proper_inheritance=true",
+  "include_context=true",
+  "type_safe_errors=true",
+  "async_error_handling=true"
+]
 
-- Implement comprehensive error handling
-- Lint and format code before completion
+# Cline AI Assistant Coding Rules
+AI_RULES=[
+  "review_types_first=true",  # Review type definitions before implementation
+  "explicit_returns=true",  # Always specify return types
+  "no_type_assertions=true",  # Avoid type assertions
+  "extend_base_classes=true",  # Extend don't implement
+  "validate_env=true",  # Validate environment variables
+  "proper_error_chain=true",  # Use proper error inheritance
+  "define_pairs=true",  # Define request/response pairs
+  "follow_patterns=true",  # Follow framework patterns
+  "use_type_guards=true",  # Use type guards over assertions
+  "preserve_modifiers=true"  # Preserve access modifiers
+]
 
-### React & Accessibility
+# Code Style Rules
+STYLE_RULES=[
+  "consistent_naming=true",
+  "meaningful_comments=true",
+  "max_line_length=100",
+  "indent_size=2",
+  "trailing_comma=true",
+  "single_quotes=true",
+  "semi_colons=true"
+]
 
-- Use functional components and hooks
-- Ensure component purity
-- Follow accessibility best practices (ARIA, semantic HTML)
+# Documentation Rules
+DOC_RULES=[
+  "jsdoc_required=true",
+  "example_usage=true",
+  "param_descriptions=true",
+  "return_descriptions=true",
+  "error_documentation=true"
+]
 
-## 3. Model Selection Guidelines
+# Performance Rules
+PERF_RULES=[
+  "lazy_loading=true",
+  "memo_expensive=true",
+  "debounce_events=true",
+  "optimize_rerenders=true",
+  "bundle_size_limits=true"
+]
 
-| Model Name (API Reference) | Provider | Context Size | Use Case |
-|---------------------------|----------|--------------|-----------|
-| GPT-4o (chatgpt-4o-latest) | OpenAI | 128K | Versatile flagship model with text/image input |
-| GPT-4o-mini (gpt-4o-mini) | OpenAI | 128K | Fast, affordable for focused tasks |
-| o1 (o1) | OpenAI | 200K | Complex reasoning capabilities |
-| o1-mini (o1-mini) | OpenAI | 128K | Fast reasoning for specialized tasks |
-| Claude 3.5 Sonnet (claude-3-5-sonnet-latest) | Anthropic | 200K | Most intelligent model, text/image input |
-| Qwen2.5-Coder-32B-Instruct | Qwen | 32K | Strong in math/coding tasks |
-| Sonar Pro (sonar-pro) | Perplexity | 200K | Advanced reasoning with integrated search |
-| Sonar (sonar) | Perplexity | 128K | Fast online search capabilities |
-| Llama-3.3-70b-versatile | Groq | 128K | Versatile large language model |
-| grok-2-latest | xAI | 131K | Large context window for text generation |
-| Deepseek Chat V3 (deepseek-chat) | Deepseek | 60K | High intelligence for lightweight tasks |
-<!--  -->
-## 4. Development Process
+# Security Rules
+SECURITY_RULES=[
+  "validate_input=true",
+  "sanitize_output=true",
+  "prevent_xss=true",
+  "secure_headers=true",
+  "rate_limiting=true"
+]
 
-### Planning
+# Accessibility Rules
+A11Y_RULES=[
+  "semantic_html=true",
+  "aria_labels=true",
+  "keyboard_nav=true",
+  "color_contrast=true",
+  "screen_reader=true"
+]
 
-- **Analyze Requirements**
-  - Document constraints
-  - Consider edge cases
-  - Plan for scalability
-- **Design Architecture**
-  - Choose appropriate patterns
-  - Consider performance implications
-  - Use PNPM for dependency management
+# State Management Rules
+STATE_RULES=[
+  "immutable_updates=true",
+  "single_source=true",
+  "type_safe_state=true",
+  "handle_loading=true",
+  "handle_errors=true"
+]
 
-### Implementation
+# API Integration Rules
+API_RULES=[
+  "type_safe_requests=true",
+  "handle_errors=true",
+  "validate_responses=true",
+  "retry_strategy=true",
+  "timeout_handling=true"
+]
 
-#### Code Organization
+# Build & Deploy Rules
+BUILD_RULES=[
+  "strict_typescript=true",
+  "lint_on_commit=true",
+  "test_coverage=true",
+  "bundle_analysis=true",
+  "env_validation=true"
+]
+
+# Continuous Integration Rules
+CI_RULES=[
+  "continuous_integration=true",
+  "test_coverage=true",
+  "bundle_analysis=true",
+  "env_validation=true"
+]

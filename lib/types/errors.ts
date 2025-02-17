@@ -1,34 +1,41 @@
+export enum ErrorCode {
+  UNAUTHORIZED = 'UNAUTHORIZED',
+  FORBIDDEN = 'FORBIDDEN',
+  NOT_FOUND = 'NOT_FOUND',
+  INTERNAL_ERROR = 'INTERNAL_ERROR',
+  BAD_REQUEST = 'BAD_REQUEST',
+  VALIDATION_ERROR = 'VALIDATION_ERROR'
+}
+
+export interface ErrorContext {
+  code: ErrorCode;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export class AppError extends Error {
   public readonly code: ErrorCode;
-  public readonly status: number;
   public readonly details?: Record<string, unknown>;
-  public readonly cause?: Error;
 
   constructor(context: ErrorContext) {
     super(context.message);
-    this.name = this.constructor.name;
+    this.name = 'AppError';
     this.code = context.code;
-    this.status = context.status;
     this.details = context.details;
-    this.cause = context.cause;
-
-    // Ensure proper prototype chain for instanceof checks
-    Object.setPrototypeOf(this, new.target.prototype);
-
-    // Capture stack trace
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, this.constructor);
-    }
   }
 
   public toJSON(): ErrorContext {
     return {
       code: this.code,
       message: this.message,
-      status: this.status,
       details: this.details,
-      stack: this.stack,
-      cause: this.cause,
     };
+  }
+}
+
+export class SupabaseError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'SupabaseError';
   }
 }

@@ -1,55 +1,36 @@
-import { type RedisClientType, createClient } from 'redis';
-
-import { logger } from './logger';
-
-const REDIS_CONFIG = {
-  host: process.env['REDIS_HOST'] ?? 'localhost',
-  port: parseInt(process.env['REDIS_PORT'] ?? '6379', 10),
-  password: process.env['REDIS_PASSWORD'] ?? '',
-  db: parseInt(process.env['REDIS_DB'] ?? '0', 10),
-  keyPrefix: 'crm7r:fairwork:',
-} as const;
+import { type RedisClientType } from '@/types/redis';
+import { createClient } from 'redis';
 
 export class CacheService {
-  private readonly client: RedisClientType;
-  private readonly cacheLogger = logger.createLogger('CacheService');
+  private client: RedisClientType;
 
-  constructor(client: RedisClientType) {
-    this.client = client;
-
-    // Set up error handlers
-    void this.client.on('error', (error: Error): void => {
-      this.cacheLogger.error('Redis client error', { error: error.message });
-    });
-
-    void this.client.on('end', (): void => {
-      this.cacheLogger.warn('Redis connection ended');
-    });
+  constructor() {
+    this.client = createClient({
+      url: process.env.REDIS_URL,
+    }) as RedisClientType;
   }
 
-  async get<T>(key: string): Promise<void> {
+  async get<T>(key: string): Promise<T | null> {
     try {
       const value = await this.client.get(key);
       if (!value) return null;
       return JSON.parse(value) as T;
     } catch (error) {
-      this.cacheLogger.error('Failed to get value from cache', { error, key });
+      console.error('Cache get error:', error);
       return null;
     }
   }
 
-  async set(key: string, value: unknown, ttl?: number): Promise<void> {
+  async set<T>(key: string, value: T, ttl?: number): Promise<void> {
     try {
       const serializedValue = JSON.stringify(value);
-      if (ttl !== undefined) {
-        await this.client.set(key, serializedValue, {
-          EX: ttl,
-        });
+      if (ttl) {
+        await this.client.set(key, serializedValue, { ex: ttl });
       } else {
         await this.client.set(key, serializedValue);
       }
     } catch (error) {
-      this.cacheLogger.error('Failed to set value in cache', { error, key });
+      console.error('Cache set error:', error);
     }
   }
 
@@ -57,15 +38,18 @@ export class CacheService {
     try {
       await this.client.del(key);
     } catch (error) {
-      this.cacheLogger.error('Failed to delete value from cache', { error, key });
+      console.error('Cache delete error:', error);
     }
   }
 
   async flushdb(): Promise<void> {
     try {
-      await this.client.flushDb();
+      const keys = await this.client.keys('*');
+      if (keys.length > 0) {
+        await this.client.del(...keys);
+      }
     } catch (error) {
-      this.cacheLogger.error('Failed to flush cache', { error });
+      console.error('Cache flush error:', error);
     }
   }
 
@@ -73,16 +57,9 @@ export class CacheService {
     try {
       await this.client.quit();
     } catch (error) {
-      this.cacheLogger.error('Failed to quit Redis client', { error });
+      console.error('Cache quit error:', error);
     }
   }
 }
 
-// Create a singleton Redis client
-const redisClient = createClient({
-  url: `redis://${REDIS_CONFIG.host}:${REDIS_CONFIG.port}`,
-  password: REDIS_CONFIG.password || undefined,
-  database: REDIS_CONFIG.db,
-});
-
-export const cache = new CacheService(redisClient);
+export const cache = new CacheService();

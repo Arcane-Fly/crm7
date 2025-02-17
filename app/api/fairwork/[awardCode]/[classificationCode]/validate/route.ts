@@ -1,63 +1,47 @@
-import { NextResponse } from 'next/server';
-import { FairWorkClient, FairWorkApiError } from '@/lib/fairwork/client';
-import { ApiResponse, RouteParams } from '@/lib/types/route';
+import { createApiResponse } from '@/lib/api/response';
+import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
+import { type NextRequest } from 'next/server';
+import { z } from 'zod';
 
-const fairworkClient = new FairWorkClient();
+const validateParamsSchema = z.object({
+  awardCode: z.string(),
+  classificationCode: z.string(),
+});
 
-export async function POST(request: Request, { params }: RouteParams): Promise<NextResponse> {
+type RouteParams = z.infer<typeof validateParamsSchema>;
+
+type RouteContext = {
+  params: Promise<RouteParams>;
+};
+
+export async function POST(
+  request: NextRequest,
+  context: RouteContext
+): Promise<Response> {
   try {
-    const { rate } = await request.json();
+    const params = await context.params;
+    const validatedParams = validateParamsSchema.parse(params);
 
-    if (!rate || typeof rate !== 'number') {
-      return NextResponse.json(
-        {
-          error: {
-            message: 'Invalid rate provided',
-            code: 'INVALID_RATE',
-          },
-          status: 400,
-        } as ApiResponse<never>,
-        { status: 400 }
-      );
-    }
+    const body = await request.json();
 
-    const isValid = await fairworkClient.validatePayRate(
-      params.awardCode,
-      params.classificationCode,
-      rate
-    );
+    const client = new FairWorkClient({
+      apiKey: process.env.FAIRWORK_API_KEY!,
+      apiUrl: process.env.FAIRWORK_API_URL!,
+      environment: process.env.NODE_ENV === 'production' ? 'production' : 'sandbox',
+      timeout: 5000,
+    });
 
-    return NextResponse.json(
-      {
-        data: { valid: isValid },
-        status: 200,
-      } as ApiResponse<{ valid: boolean }>,
-      { status: 200 }
-    );
+    const validation = await client.validatePayRate({
+      rate: body.rate,
+      awardCode: validatedParams.awardCode,
+      classificationCode: validatedParams.classificationCode,
+    });
+
+    return createApiResponse(validation);
   } catch (error) {
-    if (error instanceof FairWorkApiError) {
-      return NextResponse.json(
-        {
-          error: {
-            message: error.message,
-            code: 'FAIRWORK_API_ERROR',
-            details: error.context,
-          },
-          status: error.statusCode,
-        } as ApiResponse<never>,
-        { status: error.statusCode }
-      );
-    }
-
-    return NextResponse.json(
-      {
-        error: {
-          message: 'Internal server error',
-          code: 'INTERNAL_SERVER_ERROR',
-        },
-        status: 500,
-      } as ApiResponse<never>,
-      { status: 500 }
-    );
+    return createApiResponse(undefined, {
+      code: 'INVALID_REQUEST',
+      message: error instanceof Error ? error.message : 'Invalid request',
+    });
   }
 }

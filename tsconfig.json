@@ -1,15 +1,19 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es2022",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
+    "noImplicitReturns": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
@@ -22,8 +26,17 @@
     "paths": {
       "@/*": ["./*"]
     },
-    "types": ["react", "react-dom", "node", "jest"]
+    "types": ["@types/react", "@types/react-dom", "@types/node", "vitest/globals"]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.d.ts",
+    ".next/types/**/*.ts",
+    "jest.setup.js",
+    "jest.setup.ts",
+    "vitest.setup.ts"
+  ],
   "exclude": ["node_modules"]
 }

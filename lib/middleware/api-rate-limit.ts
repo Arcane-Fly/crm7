@@ -73,9 +73,9 @@ export const config = {
   },
 };
 
-export async function withRateLimit(
+export function withRateLimit(
   handler: (req: NextApiRequest, res: NextApiResponse) => Promise<void>
-): Promise<void> {
+): (req: NextApiRequest, res: NextApiResponse) => Promise<void> {
   return async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
     try {
       await new Promise((resolve, reject): void => {

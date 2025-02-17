@@ -1,27 +1,40 @@
 import { CacheService } from '@/lib/services/cache/cache-service';
 import { FairWorkCacheMiddleware } from '@/lib/services/fairwork/cache-middleware';
-import type { RateCalculationRequest } from '@/lib/services/fairwork/types';
+import { FairWorkClient } from '@/lib/services/fairwork/fairwork-client';
+import type { RateValidationRequest } from '@/lib/services/fairwork/types';
 
 describe('Cache Performance Tests', () => {
   let cache: CacheService;
   let cacheMiddleware: FairWorkCacheMiddleware;
+  let client: FairWorkClient;
 
-  const mockRequest: RateCalculationRequest = {
+  const mockRequest: RateValidationRequest = {
     awardCode: 'TEST001',
     classificationCode: 'L1',
-    employmentType: 'permanent',
-    date: new Date('2025-01-29'),
-    hours: 38,
+    rate: 25.5,
   };
 
   beforeEach(async () => {
+    // Mock Redis URL and token for tests
+    process.env.UPSTASH_REDIS_REST_URL = 'https://test-url.upstash.io';
+    process.env.UPSTASH_REDIS_REST_TOKEN = 'test-token';
+    
     cache = new CacheService({ prefix: 'perf-test:', ttl: 3600 });
-    cacheMiddleware = new FairWorkCacheMiddleware();
+    client = new FairWorkClient({
+      apiKey: 'test-key',
+      apiUrl: 'https://test.api',
+      environment: 'sandbox',
+      timeout: 5000,
+    });
+    cacheMiddleware = new FairWorkCacheMiddleware(client);
     await cache.clear(); // Start with clean cache
   });
 
   afterEach(async () => {
     await cache.close();
+    // Reset environment variables
+    process.env.UPSTASH_REDIS_REST_URL = '';
+    process.env.UPSTASH_REDIS_REST_TOKEN = '';
   });
 
   describe('Cache Response Times', () => {

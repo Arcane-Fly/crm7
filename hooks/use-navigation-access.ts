@@ -1,13 +1,13 @@
 import { useCallback, useMemo } from 'react';
-import { useAuth } from '@/lib/auth';
+import { useAuth } from '@/lib/auth/context';
 import type { CoreSection, NavItem, UserRole } from '@/config/navigation-config';
 
 export function useNavigationAccess() {
-  const { user, isLoading } = useAuth();
+  const { user } = useAuth();
 
   const userRoles = useMemo<UserRole[]>(() => {
     if (!user) return [];
-    return user.roles || ['staff'];
+    return (user.app_metadata?.roles as UserRole[]) || ['staff'];
   }, [user]);
 
   const hasAccess = useCallback((roles?: UserRole[]) => {
@@ -31,7 +31,6 @@ export function useNavigationAccess() {
   }, [hasAccess, filterNavItems]);
 
   return {
-    isLoading,
     hasAccess,
     filterNavItems,
     filterCoreSections,

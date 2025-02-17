@@ -1,3 +1,5 @@
+'use client';
+
 import { useRef, useEffect } from 'react';
 import * as d3 from 'd3';
 
@@ -22,8 +24,8 @@ export function ScatterPlot({
 }: ScatterPlotProps): JSX.Element {
   const svgRef = useRef<SVGSVGElement | null>(null);
 
-  useEffect((): void => {
-    if (!svgRef.current) return;
+  useEffect(() => {
+    if (!svgRef.current) return undefined;
 
     // Clear existing chart
     d3.select(svgRef.current).selectAll('*').remove();
@@ -41,14 +43,13 @@ export function ScatterPlot({
     const svg = d3.select(svgRef.current);
 
     // Add axes
-    const xAxis = (g: d3.Selection<SVGGElement, unknown, null, undefined>): void => 
-      g.attr('transform', `translate(0,${height - margin.bottom})`).call(d3.axisBottom(x));
+    svg.append('g')
+      .attr('transform', `translate(0,${height - margin.bottom})`)
+      .call(d3.axisBottom(x));
 
-    const yAxis = (g: d3.Selection<SVGGElement, unknown, null, undefined>): void => 
-      g.attr('transform', `translate(${margin.left},0)`).call(d3.axisLeft(y));
-
-    svg.append('g').call(xAxis);
-    svg.append('g').call(yAxis);
+    svg.append('g')
+      .attr('transform', `translate(${margin.left},0)`)
+      .call(d3.axisLeft(y));
 
     // Add points
     const tooltip = d3.select('body')
@@ -87,6 +88,11 @@ export function ScatterPlot({
         d3.select(this).transition().duration(200).attr('r', 3);
         tooltip.style('visibility', 'hidden');
       });
+
+    // Return cleanup function
+    return (): void => {
+      tooltip.remove();
+    };
   }, [data, width, height, margin]);
 
   return (

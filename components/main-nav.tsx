@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { type NavigationItem } from '@/lib/types/navigation';
+import { type Url } from 'next/dist/shared/lib/router/router';
 
 import { cn } from '@/lib/utils';
 
@@ -44,16 +46,16 @@ const navItems = [
   },
 ];
 
-export function MainNav(): void {
+export function MainNav(): React.ReactElement {
   const pathname = usePathname();
 
   return (
     <nav className='border-b bg-background'>
       <div className='flex h-14 items-center gap-6 overflow-x-auto px-4'>
-        {navItems.map((item: unknown) => (
+        {navItems.map((item: NavigationItem) => (
           <Link
-            key={item.href}
-            href={item.href}
+            key={item.href || ''}
+            href={item.href as Url || ''}
             className={cn(
               'text-sm font-medium transition-colors hover:text-primary',
               pathname === item.href ? 'text-primary' : 'text-muted-foreground',

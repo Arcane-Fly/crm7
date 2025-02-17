@@ -1,15 +1,13 @@
 'use client';
 
+import * as React from 'react';
+import { Dialog as DialogPrimitive, DialogContent } from '@radix-ui/react-dialog';
 import { Command as CommandPrimitive } from 'cmdk';
 import { Search } from 'lucide-react';
-import * as React from 'react';
-import type { ReactElement, ReactNode } from 'react';
-
-import { Dialog as DialogPrimitive, DialogContent } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
 interface CommandProps {
-  children?: ReactNode;
+  children?: React.ReactNode;
   className?: string;
 }
 
@@ -18,28 +16,23 @@ function Command({ children, className }: CommandProps): JSX.Element {
     return <div className={cn('hidden', className)} />;
   }
   return (
-    <CommandPrimitive
-      className={cn(
-        'flex h-full w-full flex-col overflow-hidden rounded-md bg-popover text-popover-foreground',
-        className,
-      )}
-    >
+    <CommandPrimitive className={cn('flex h-full w-full flex-col overflow-hidden rounded-md bg-popover text-popover-foreground', className)}>
       {children}
     </CommandPrimitive>
   );
 }
 
 interface CommandDialogProps {
-  children?: ReactNode;
+  children?: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
 
-function CommandDialog({ children, ...props }: CommandDialogProps): JSX.Element {
+function CommandDialog({ children, open, onOpenChange }: CommandDialogProps): JSX.Element {
   return (
-    <DialogPrimitive {...props}>
-      <DialogContent className='overflow-hidden p-0 shadow-lg'>
-        <Command className='[&_[data-cmdk-group-heading]]:px-2 [&_[data-cmdk-group-heading]]:font-medium [&_[data-cmdk-group-heading]]:text-muted-foreground [&_[data-cmdk-group]:not([hidden])_~[data-cmdk-group]]:pt-0 [&_[data-cmdk-group]]:px-2 [&_[data-cmdk-input-wrapper]_svg]:h-5 [&_[data-cmdk-input-wrapper]_svg]:w-5 [&_[data-cmdk-input]]:h-12 [&_[data-cmdk-item]]:px-2 [&_[data-cmdk-item]]:py-3 [&_[data-cmdk-item]_svg]:h-5 [&_[data-cmdk-item]_svg]:w-5'>
+    <DialogPrimitive open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="overflow-hidden p-0 shadow-lg">
+        <Command className="[&_[data-cmdk-group-heading]]:px-2 [&_[data-cmdk-group-heading]]:font-medium [&_[data-cmdk-group-heading]]:text-muted-foreground [&_[data-cmdk-group]:not([hidden])_~[data-cmdk-group]]:pt-0 [&_[data-cmdk-group]]:px-2 [&_[data-cmdk-input-wrapper]_svg]:h-5 [&_[data-cmdk-input-wrapper]_svg]:w-5 [&_[data-cmdk-input]]:h-12 [&_[data-cmdk-item]]:px-2 [&_[data-cmdk-item]]:py-3 [&_[data-cmdk-item]_svg]:h-5 [&_[data-cmdk-item]_svg]:w-5">
           {children}
         </Command>
       </DialogContent>
@@ -48,7 +41,7 @@ function CommandDialog({ children, ...props }: CommandDialogProps): JSX.Element 
 }
 
 interface CommandInputProps {
-  children?: ReactNode;
+  children?: React.ReactNode;
   className?: string;
 }
 
@@ -56,26 +49,15 @@ const CommandInput = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Input>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input> & CommandInputProps
 >(({ className, ...props }, ref): React.ReactElement => (
-  <div
-    className='flex items-center border-b px-3'
-    data-cmdk-input-wrapper
-  >
-    <Search className='mr-2 h-4 w-4 shrink-0 opacity-50' />
-    <CommandPrimitive.Input
-      ref={ref}
-      className={cn(
-        'flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50',
-        className,
-      )}
-      {...props}
-    />
+  <div className="flex items-center border-b px-3" data-cmdk-input-wrapper>
+    <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+    <CommandPrimitive.Input ref={ref} className={cn('flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50', className)} {...props} />
   </div>
 ));
-
-CommandInput.displayName = CommandPrimitive.Input.displayName;
+CommandInput.displayName = 'CommandInput';
 
 interface CommandListProps {
-  children?: ReactNode;
+  children?: React.ReactNode;
 }
 
 function CommandList({ children }: CommandListProps): JSX.Element {
@@ -87,7 +69,7 @@ function CommandList({ children }: CommandListProps): JSX.Element {
 }
 
 interface CommandEmptyProps {
-  children?: ReactNode;
+  children?: React.ReactNode;
 }
 
 const CommandEmpty = React.forwardRef<
@@ -106,7 +88,7 @@ const CommandEmpty = React.forwardRef<
 CommandEmpty.displayName = CommandPrimitive.Empty.displayName;
 
 interface CommandGroupProps {
-  children?: ReactNode;
+  children?: React.ReactNode;
   className?: string;
 }
 
@@ -143,7 +125,7 @@ const CommandSeparator = React.forwardRef<
 CommandSeparator.displayName = CommandPrimitive.Separator.displayName;
 
 interface CommandItemProps {
-  children?: ReactNode;
+  children?: React.ReactNode;
   className?: string;
 }
 
@@ -164,7 +146,7 @@ const CommandItem = React.forwardRef<
 CommandItem.displayName = CommandPrimitive.Item.displayName;
 
 interface CommandShortcutProps {
-  children?: ReactNode;
+  children?: React.ReactNode;
   className?: string;
 }
 

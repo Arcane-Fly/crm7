@@ -1,9 +1,10 @@
+import * as React from 'react';
 import {
   type ColumnDef,
   flexRender,
   getCoreRowModel,
-  useReactTable,
   getPaginationRowModel,
+  useReactTable,
 } from '@tanstack/react-table';
 
 interface DataGridProps<TData> {
@@ -26,7 +27,7 @@ export function DataGrid<TData>({
     getPaginationRowModel: getPaginationRowModel(),
   });
 
-  React.useEffect((): void => {
+  React.useEffect(() => {
     if (typeof pageSize !== "undefined" && pageSize !== null) {
       table.setPageSize(pageSize);
     }

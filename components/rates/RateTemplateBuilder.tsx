@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
+import { type RateTemplate } from '@/lib/types/rates';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { type RateTemplate } from '@/lib/types';
 
 const rateTemplateSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -37,7 +37,23 @@ export function RateTemplateBuilder({
 }: RateTemplateBuilderProps): JSX.Element {
   const form = useForm<RateTemplateFormData>({
     resolver: zodResolver(rateTemplateSchema),
-    defaultValues: {
+    defaultValues: template ? {
+      name: template.name,
+      templateType: template.templateType,
+      description: template.description ?? '',
+      baseRate: template.baseRate,
+      baseMargin: template.baseMargin,
+      superRate: template.superRate,
+      leaveLoading: template.leaveLoading,
+      workersCompRate: template.workersCompRate,
+      payrollTaxRate: template.payrollTaxRate,
+      trainingCostRate: template.trainingCostRate,
+      otherCostsRate: template.otherCostsRate,
+      fundingOffset: template.fundingOffset,
+      casualLoading: template.casualLoading,
+      effectiveFrom: template.effectiveFrom,
+      effectiveTo: template.effectiveTo ?? undefined,
+    } : {
       name: '',
       templateType: 'hourly',
       description: '',
@@ -56,8 +72,8 @@ export function RateTemplateBuilder({
   });
 
   useEffect(() => {
-    if (typeof template !== "undefined" && template !== null) {
-      const formData: RateTemplateFormData = {
+    if (template) {
+      form.reset({
         name: template.name,
         templateType: template.templateType,
         description: template.description ?? '',
@@ -73,10 +89,9 @@ export function RateTemplateBuilder({
         casualLoading: template.casualLoading,
         effectiveFrom: template.effectiveFrom,
         effectiveTo: template.effectiveTo ?? undefined,
-      };
-      form.reset(formData);
+      });
     }
-  }, [template, form.reset]);
+  }, [template, form]);
 
   const handleSubmit = async (data: RateTemplateFormData): Promise<void> => {
     try {

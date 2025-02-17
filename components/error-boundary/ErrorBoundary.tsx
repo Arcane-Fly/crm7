@@ -8,6 +8,7 @@ interface ErrorBoundaryProps {
   children: React.ReactNode;
   onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
   fallback?: React.ReactNode;
+  onReset?: () => void;
 }
 
 interface ErrorBoundaryState {
@@ -35,8 +36,20 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }
-    errorTracker.trackError(error, { additionalData: errorInfo });
+    
+    // Convert ErrorInfo to a plain object for tracking
+    const errorInfoObj = {
+      componentStack: errorInfo.componentStack,
+      ...errorInfo,
+    };
+    
+    errorTracker.trackError(error, { additionalData: errorInfoObj });
   }
+
+  handleReset = (): void => {
+    this.setState({ hasError: false, error: null });
+    this.props.onReset?.();
+  };
 
   render(): React.ReactNode {
     if (this.state.hasError) {
@@ -44,7 +57,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
         this.props.fallback || (
           <ErrorFallback
             error={this.state.error}
-            resetErrorBoundary={(): void => this.setState({ hasError: false, error: null })}
+            resetErrorBoundary={this.handleReset}
           />
         )
       );

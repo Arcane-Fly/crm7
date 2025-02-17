@@ -5,13 +5,21 @@ export interface User {
   // Add other user properties as needed
 }
 
-export * from './bank';
-export * from './billing';
-export * from './hr';
-export * from './monitoring'; // Re-export monitoring types
-export * from './rates';
-export * from './validation';
+export interface Expense {
+  id: string;
+  description: string;
+  amount: number;
+  category: string;
+  date: string;
+}
 
-// Re-export database types
+export * from './api';
+export * from './database';
+export * from './errors';
+export * from './monitoring';
+export * from './rates';
+
+// Re-export specific types from supabase to avoid conflicts
+export type { Database } from './supabase';
+
 export type { SupabaseClient } from '@supabase/supabase-js';
-export type { Database } from './database';

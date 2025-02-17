@@ -1,6 +1,6 @@
 import { type SupabaseClient } from '@supabase/supabase-js';
 import { type Database } from '@/types/supabase';
-import { BaseService } from './base-service';
+import { BaseService, type ServiceOptions } from '@/lib/utils/service';
 
 interface EnrichmentData {
   id: string;
@@ -11,11 +11,11 @@ interface EnrichmentData {
 }
 
 export class EnrichmentService extends BaseService {
-  constructor(private readonly supabase: SupabaseClient<Database>) {
-    super({
-      name: 'EnrichmentService',
-      version: '1.0.0',
-    });
+  constructor(
+    private readonly supabase: SupabaseClient<Database>,
+    options: ServiceOptions = {}
+  ) {
+    super('EnrichmentService', '1.0.0', options);
   }
 
   private async fetchExternalData(url: string): Promise<void> {

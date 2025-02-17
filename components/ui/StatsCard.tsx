@@ -1,7 +1,6 @@
 'use client';
 
 import type { ReactNode } from 'react';
-
 import { cn } from '@/lib/utils';
 
 interface StatsCardProps {
@@ -12,7 +11,7 @@ interface StatsCardProps {
   className?: string;
 }
 
-export function StatsCard({ title, value, change, icon, className }: StatsCardProps): void {
+export function StatsCard({ title, value, change, icon, className }: StatsCardProps): JSX.Element {
   return (
     <div className={cn('rounded-xl bg-white p-6 shadow-sm', className)}>
       <div className='flex items-center justify-between'>

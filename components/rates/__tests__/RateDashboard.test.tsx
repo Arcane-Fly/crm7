@@ -90,77 +90,84 @@ const createMockQueryResult = (
     failureReason: null,
     errorUpdateCount: 0,
     fetchStatus: 'idle' as const,
-    refetch: vi.fn(),
-    promise: Promise.resolve([mockRateTemplate]),
-  };
-
-  const successDefaults: SuccessResult = {
-    data: [mockRateTemplate],
-    error: null,
-    isError: false,
-    isPending: false,
-    isLoading: false,
-    isSuccess: true,
-    status: 'success',
     isLoadingError: false,
     isRefetchError: false,
+    status: 'success' as const,
+    refetch: vi.fn(),
+    data: [mockRateTemplate],
+    error: null,
   };
 
   return {
     ...baseResult,
-    ...successDefaults,
     ...overrides,
   } as UseQueryResult<RateTemplate[], Error>;
 };
 
+const loadingOverrides = {
+  data: undefined,
+  error: null,
+  isError: false,
+  isPending: true,
+  isLoading: true,
+  isSuccess: false,
+  status: 'pending' as const,
+  isLoadingError: false,
+  isRefetchError: false,
+  isPlaceholderData: false,
+  dataUpdatedAt: 0,
+  errorUpdatedAt: 0,
+  failureCount: 0,
+  failureReason: null,
+  errorUpdateCount: 0,
+  fetchStatus: 'fetching' as const,
+  isFetched: false,
+  isFetchedAfterMount: false,
+  isFetching: true,
+  isInitialLoading: true,
+  isPaused: false,
+  isRefetching: false,
+  isStale: false,
+  refetch: vi.fn()
+} satisfies Partial<UseQueryResult<RateTemplate[], Error>>;
+
 describe('RateDashboard', () => {
   it('renders without crashing', async () => {
-    (vi.mocked(useRates) as jest.Mock).mockReturnValueOnce(createMockQueryResult());
+    const mockResult: UseQueryResult<RateTemplate[], Error> = {
+      data: [mockRateTemplate],
+      isLoading: false,
+      error: null,
+      isSuccess: true,
+      // ... other required UseQueryResult properties
+    } as UseQueryResult<RateTemplate[], Error>;
+
+    vi.mocked(useRates).mockReturnValue(mockResult);
 
     render(<RateDashboard orgId='test-org' />);
-
-    const rateManagementElement = screen.getByText('Rate Management');
-    expect(rateManagementElement).toBeInTheDocument();
+    expect(screen.getByText('Rate Management')).toBeInTheDocument();
   });
 
   it('displays rates data', async () => {
-    (vi.mocked(useRates) as jest.Mock).mockReturnValueOnce(createMockQueryResult());
+    const mockResult: UseQueryResult<RateTemplate[], Error> = {
+      data: [mockRateTemplate],
+      isLoading: false,
+      error: null,
+      isSuccess: true,
+      // ... other required UseQueryResult properties
+    } as UseQueryResult<RateTemplate[], Error>;
+
+    vi.mocked(useRates).mockReturnValue(mockResult);
 
     render(<RateDashboard orgId='test-org' />);
-
-    const rateElement = screen.getByText('$25.00');
-    expect(rateElement).toBeInTheDocument();
+    expect(screen.getByText('$25.00')).toBeInTheDocument();
   });
 
   it('shows loading state', async () => {
-    const loadingOverrides: LoadingResult = {
-      data: undefined,
-      error: null,
-      isError: false,
-      isPending: true,
-      isLoading: true,
-      isSuccess: false,
-      status: 'pending',
-      isLoadingError: false,
-      isRefetchError: false,
-    };
-
-    (vi.mocked(useRates) as jest.Mock).mockReturnValueOnce(
-      createMockQueryResult({
-        ...loadingOverrides,
-        fetchStatus: 'fetching',
-        isFetched: false,
-        isFetchedAfterMount: false,
-        isFetching: true,
-        isInitialLoading: true,
-        promise: Promise.resolve([]),
-      }),
-    );
+    const mockResult = createMockQueryResult(loadingOverrides);
+    vi.mocked(useRates).mockReturnValue(mockResult);
 
     render(<RateDashboard orgId='test-org' />);
-
-    const loadingElement = screen.queryByText('Loading...');
-    expect(loadingElement).not.toBeInTheDocument();
+    expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
   });
 
   it('shows error state', async () => {
@@ -177,24 +184,30 @@ describe('RateDashboard', () => {
       isRefetchError: false,
     };
 
-    (vi.mocked(useRates) as jest.Mock).mockReturnValueOnce(
-      createMockQueryResult({
-        ...errorOverrides,
-        errorUpdatedAt: Date.now(),
-        failureCount: 1,
-        errorUpdateCount: 1,
-        promise: Promise.reject(error),
-      }),
-    );
+    const mockResult: UseQueryResult<RateTemplate[], Error> = {
+      ...errorOverrides,
+      errorUpdatedAt: Date.now(),
+      failureCount: 1,
+      errorUpdateCount: 1,
+      promise: Promise.reject(error),
+    } as UseQueryResult<RateTemplate[], Error>;
+
+    vi.mocked(useRates).mockReturnValue(mockResult);
 
     render(<RateDashboard orgId='test-org' />);
-
-    const errorElement = screen.queryByText('Error: Failed to load rates');
-    expect(errorElement).toBeInTheDocument();
+    expect(screen.queryByText('Error: Failed to load rates')).toBeInTheDocument();
   });
 
   it('filters rates by date range', async () => {
-    (vi.mocked(useRates) as jest.Mock).mockReturnValueOnce(createMockQueryResult());
+    const mockResult: UseQueryResult<RateTemplate[], Error> = {
+      data: [mockRateTemplate],
+      isLoading: false,
+      error: null,
+      isSuccess: true,
+      // ... other required UseQueryResult properties
+    } as UseQueryResult<RateTemplate[], Error>;
+
+    vi.mocked(useRates).mockReturnValue(mockResult);
 
     render(<RateDashboard orgId='test-org' />);
     const dateRangeButton = screen.getByRole('button', { name: /Select Date Range/i });

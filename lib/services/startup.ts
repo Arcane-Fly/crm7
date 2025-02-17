@@ -19,8 +19,11 @@ export async function initializeServices(): Promise<void> {
     isInitialized = true;
     logger.info('Application services initialized successfully');
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to initialize application services:', new Error(errorMessage));
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error('Failed to initialize application services:', {
+      error: errorMessage,
+      stack: error instanceof Error ? error.stack : undefined
+    });
     throw error;
   }
 }
@@ -41,8 +44,11 @@ export async function cleanupServices(): Promise<void> {
     isInitialized = false;
     logger.info('Application services cleaned up successfully');
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to cleanup application services:', new Error(errorMessage));
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error('Failed to cleanup application services:', {
+      error: errorMessage,
+      stack: error instanceof Error ? error.stack : undefined
+    });
     throw error;
   }
 }

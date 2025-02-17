@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/supabase/client';
-import { calculateStats } from '@/lib/utils/stats';
 import { AlertCircle, RefreshCcw } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 
@@ -21,6 +20,21 @@ export function ComplianceDashboard(): React.ReactElement {
   const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
   const { toast } = useToast();
+
+  const calculateStats = (data: any[]): ComplianceStats => {
+    const totalRecords = data.length;
+    const compliantCount = data.filter(record => record.status === 'compliant').length;
+    const nonCompliantCount = totalRecords - compliantCount;
+    const complianceRate = totalRecords > 0 ? (compliantCount / totalRecords) * 100 : 0;
+
+    return {
+      totalRecords,
+      compliantCount,
+      nonCompliantCount,
+      complianceRate,
+      lastUpdated: new Date().toISOString()
+    };
+  };
 
   const fetchData = useCallback(async (): Promise<void> => {
     try {

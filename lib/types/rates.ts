@@ -59,21 +59,39 @@ export interface RateTemplateHistory {
   updatedAt: string;
 }
 
+export interface RateAnalyticsResponse {
+  data: RateAnalytics;
+}
+
 export interface RateAnalytics {
   totalTemplates: number;
   activeTemplates: number;
   averageRate: number;
-  recentChanges: {
-    templateId: string;
-    action: 'created' | 'updated' | 'deleted';
+  recentChanges: Array<{
+    action: 'created' | 'updated';
     timestamp: string;
-  }[];
+  }>;
+}
+
+export interface AnalyticsData {
+  metrics: Record<string, number>;
+  trends: Array<{ date: string; value: number }>;
+  averageRate: number;
+  activeTemplates: number;
+  totalTemplates: number;
+  recentChanges: Array<{
+    id: string;
+    date: string;
+    description: string;
+    action: string;
+    timestamp: string;
+  }>;
 }
 
 export interface RatesService {
   // Template Management
-  getTemplates: (params: { orgId: string }) => Promise<{ data: RateTemplate[] }>;
-  getRateTemplateById: (id: string) => Promise<RateTemplate>;
+  getTemplates: (params: { org_id: string }) => Promise<{ data: RateTemplate[] }>;
+  getRateTemplate: (id: string) => Promise<RateTemplate>;
   createRateTemplate: (template: Partial<RateTemplate>) => Promise<RateTemplate>;
   updateRateTemplate: (id: string, template: Partial<RateTemplate>) => Promise<RateTemplate>;
   updateRateTemplateStatus: (
@@ -88,14 +106,13 @@ export interface RatesService {
   // Rate Calculations
   validateRateTemplate: (template: RateTemplate) => Promise<boolean>;
   calculateRate: (template: RateTemplate) => Promise<number>;
-  generateQuote: () => Promise<{ data: Record<string, unknown> }>;
 
   // Bulk Operations
   getBulkCalculations: (orgId: string) => Promise<{ data: BulkCalculation[] }>;
   createBulkCalculation: (params: BulkCalculationParams) => Promise<{ data: BulkCalculation }>;
 
   // Analytics and Employee Management
-  getAnalytics: (params: { orgId: string }) => Promise<{ data: RateAnalytics }>;
+  getAnalytics: (params: { orgId: string }) => Promise<RateAnalytics>;
   getEmployees: () => Promise<{ data: RateEmployee[] }>;
 }
 

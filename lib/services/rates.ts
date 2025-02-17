@@ -51,6 +51,8 @@ export interface AnalyticsData {
     id: string;
     date: string;
     description: string;
+    action: string;
+    timestamp: string;
   }>;
 }
 
@@ -62,22 +64,28 @@ export class RatesServiceImpl implements RatesService {
     throw new Error('Not implemented');
   }
 
-  async getBulkCalculations(params: { org_id: string }): Promise<void> {
+  async getBulkCalculations(params: { org_id: string }): Promise<BulkCalculationResponse> {
     logger.info('Getting bulk calculations', params);
-    throw new Error('Not implemented');
+    const { data, error } = await this.supabase
+      .from('bulk_calculations')
+      .select('*')
+      .eq('org_id', params.org_id);
+
+    if (error) throw error;
+    return { data: data as BulkCalculation[] };
   }
 
-  async createBulkCalculation(params: unknown): Promise<void> {
+  async createBulkCalculation(params: unknown): Promise<BulkCalculationResponse> {
     logger.info('Creating bulk calculation', { params });
     throw new Error('Not implemented');
   }
 
-  async getAnalytics(params: { orgId: string }): Promise<void> {
+  async getAnalytics(params: { orgId: string }): Promise<{ data: AnalyticsData }> {
     logger.info('Getting analytics', params);
     throw new Error('Not implemented');
   }
 
-  async getTemplates(params: { org_id: string }): Promise<void> {
+  async getTemplates(params: { org_id: string }): Promise<{ data: RateTemplate[] }> {
     const { data, error } = await this.supabase
       .from('rate_templates')
       .select('*')

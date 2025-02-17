@@ -36,7 +36,7 @@ const nextConfig = {
     instrumentationHook: true,
     serverComponentsExternalPackages: ['sharp'],
   },
-  webpack: (config, { isServer }) => {
+  webpack: (config, { }) => {
     // Optimize bundle size
     config.optimization = {
       ...config.optimization,
@@ -47,12 +47,6 @@ const nextConfig = {
     config.experiments = {
       ...config.experiments,
       asyncWebAssembly: true,
-    };
-
-    // Ensure punycode module is not used directly
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      punycode: false,
     };
 
     return config;

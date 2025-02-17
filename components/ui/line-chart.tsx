@@ -1,12 +1,16 @@
+'use client';
+
 import {
+  Chart as ChartJS,
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
   Title,
   Tooltip,
-  Legend,
+  Legend
 } from 'chart.js';
+import { Line } from 'react-chartjs-2';
 
 ChartJS.register(
   CategoryScale,
@@ -32,19 +36,13 @@ interface LineChartProps {
 
 export function LineChart({ data }: LineChartProps): JSX.Element {
   return (
-    <ChartJS
-      type="line"
+    <Line
       data={data}
       options={{
         responsive: true,
         plugins: {
-          legend: {
-            position: 'top',
-          },
-          title: {
-            display: true,
-            text: 'Chart.js Line Chart',
-          },
+          legend: { position: 'top' },
+          title: { display: true, text: 'Chart.js Line Chart' },
         },
       }}
     />

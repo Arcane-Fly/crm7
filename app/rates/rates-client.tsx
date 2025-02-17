@@ -28,8 +28,19 @@ export function RatesClient(): React.ReactElement {
           <RateTemplateBuilder
             onSubmit={async (data) => {
               try {
-                const { error } = await supabase.from('rate_templates').insert([data]);
-
+                const transformedData = {
+                  award_code: "default",
+                  classification: data.templateType,
+                  effective_from: data.effectiveFrom,
+                  effective_to: data.effectiveTo || null,
+                  name: data.name,
+                  description: data.description || null,
+                  org_id: user.org_id,
+                  is_active: true,
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                };
+                const { error } = await supabase.from('rate_templates').insert([transformedData]);
                 if (error) throw error;
               } catch (error) {
                 console.error('Error creating rate template:', error);

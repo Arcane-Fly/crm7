@@ -1,6 +1,6 @@
 import { toast } from '@/hooks/use-toast';
-import { type ComponentConfig } from '@measured/puck';
-import { createClient } from '@supabase/ssr';
+import { type ComponentConfig, type Fields, type Field, type DefaultComponentProps } from '@measured/puck';
+import { createClient } from '@supabase/supabase-js';
 import { useCallback, useEffect, useState } from 'react';
 import { type SchemaComponentConfig } from '../types/schema-component';
 
@@ -10,11 +10,18 @@ interface CreateSchemaComponentOptions {
   render: (props: any) => JSX.Element;
 }
 
+interface SchemaField {
+  type: string;
+  label: string;
+  dbField?: string;
+  validation?: Record<string, unknown>;
+}
+
 export function createSchemaComponent({
   name,
   schema,
   render,
-}: CreateSchemaComponentOptions): ComponentConfig {
+}: CreateSchemaComponentOptions): ComponentConfig<DefaultComponentProps> {
   const Component = (props: any) => {
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
@@ -25,20 +32,17 @@ export function createSchemaComponent({
 
       try {
         setLoading(true);
-        const supabase = createClient();
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
 
-        // Build query based on schema
         let query = supabase
           .from(schema.dbTable)
-          .select(Object.entries(schema.fields)
-            .filter(([_, field]) => field.dbField)
-            .map(([_, field]) => field.dbField!)
-            .join(',')
-          );
+          .select('*');
 
-        // Apply filters from props
         Object.entries(props).forEach(([key, value]) => {
-          const field = schema.fields[key];
+          const field = schema.fields[key] as SchemaField;
           if (field?.dbField) {
             query = query.eq(field.dbField, value);
           }
@@ -61,75 +65,23 @@ export function createSchemaComponent({
     }, [props]);
 
     useEffect(() => {
-      fetchData();
+      void fetchData();
     }, [fetchData]);
 
-    // Validate props against schema
-    useEffect(() => {
-      if (!schema.validation?.rules) return;
-
-      Object.entries(props).forEach(([key, value]) => {
-        const field = schema.fields[key];
-        if (field?.validation) {
-          Object.entries(field.validation).forEach(([rule, config]) => {
-            if (typeof config === 'function') {
-              const isValid = config(value);
-              if (!isValid) {
-                const message = schema.validation?.messages?.[`${key}.${rule}`]
-                  || `Invalid value for ${key}`;
-                toast({
-                  variant: 'destructive',
-                  title: 'Validation Error',
-                  description: message,
-                });
-              }
-            }
-          });
-        }
-      });
-    }, [props]);
-
-    if (error) {
-      return (
-        <div className="p-4 bg-destructive/10 text-destructive rounded-md">
-          <h3 className="font-semibold">Error Loading Component</h3>
-          <p className="text-sm">{error.message}</p>
-          <button
-            onClick={fetchData}
-            className="mt-2 text-sm underline hover:no-underline"
-          >
-            Retry
-          </button>
-        </div>
-      );
-    }
-
-    if (loading) {
-      return (
-        <div className="animate-pulse">
-          <div className="h-32 bg-muted rounded-md" />
-        </div>
-      );
-    }
-
-    return render({ ...props, data });
+    return render({ ...props, data, loading, error });
   };
 
+  const fields: Fields<DefaultComponentProps> = {};
+  Object.entries(schema.fields).forEach(([key, field]) => {
+    fields[key] = {
+      type: field.type,
+      label: field.label,
+      defaultValue: field.defaultValue,
+    } as Field<any>;
+  });
+
   return {
-    component: Component,
-    props: Object.fromEntries(
-      Object.entries(schema.fields).map(([key, field]) => [
-        key,
-        {
-          type: field.type,
-          label: field.label,
-          defaultValue: field.defaultValue,
-        },
-      ])
-    ),
-    preview: schema.preview && {
-      fields: schema.preview.fields,
-      template: schema.preview.template,
-    },
+    render: Component,
+    fields,
   };
 }

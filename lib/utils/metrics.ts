@@ -6,7 +6,7 @@ export interface MetricsService {
   ): void;
 }
 
-class NoopMetricsService implements MetricsService {
+export class NoopMetricsService implements MetricsService {
   recordServiceMethodDuration(): void {
     // No-op implementation
   }

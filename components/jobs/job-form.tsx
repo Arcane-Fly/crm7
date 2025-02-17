@@ -10,7 +10,6 @@ import { Calendar } from '@/components/ui/calendar';
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -295,9 +294,6 @@ export function JobForm({
                   {...field}
                 />
               </FormControl>
-              <FormDescription>
-                List the benefits and perks offered with this position
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}

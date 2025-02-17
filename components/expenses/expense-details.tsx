@@ -1,4 +1,4 @@
-import { type Expense } from '@/lib/types';
+import { type Expense } from '@/types/expenses';
 
 interface ExpenseDetailsProps {
   expense: Expense;

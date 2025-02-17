@@ -1,17 +1,26 @@
-import { render, screen } from '@testing-library/react';
+import type { CacheMetrics } from '@/lib/services/cache/monitoring';
 import { cacheMonitoring } from '@/lib/services/cache/monitoring';
+import '@testing-library/jest-dom';
+import { render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import MonitoringPage from '../page';
 
-jest.mock('@/lib/services/cache/monitoring');
+vi.mock('@/lib/services/cache/monitoring');
 
 describe('MonitoringPage', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders monitoring metrics', () => {
-    const mockMetrics = {
-      hitRate: '75.00%',
+    const mockMetrics: CacheMetrics = {
+      hits: 75,
+      misses: 25,
+      errors: 0,
+      evictions: 0,
+      hitRate: 0.75,
+      avgLatencyMs: 20,
+      memoryUsageBytes: 1024,
       totalRequests: 100,
       latency: {
         avg: '20.00ms',
@@ -20,7 +29,7 @@ describe('MonitoringPage', () => {
       }
     };
 
-    jest.spyOn(cacheMonitoring, 'getMetrics').mockReturnValue(mockMetrics);
+    vi.mocked(cacheMonitoring.getMetrics).mockReturnValue(mockMetrics);
     render(<MonitoringPage />);
     expect(screen.getByText('Cache Hit Rate: 75.00%')).toBeInTheDocument();
     expect(screen.getByText('Total Requests: 100')).toBeInTheDocument();

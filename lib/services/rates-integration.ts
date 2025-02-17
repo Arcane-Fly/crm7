@@ -27,14 +27,14 @@ export class RatesIntegrationService {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '',
   );
 
-  async getIntegrations(org_id: string): Promise<void> {
+  async getIntegrations(org_id: string): Promise<IntegrationConfig[]> {
     const { data, error } = await this.supabase
       .from('integration_configs')
       .select('*')
       .eq('org_id', org_id)
       .eq('is_active', true);
 
-    if (typeof error !== "undefined" && error !== null) throw error;
+    if (error) throw error;
     return data;
   }
 
@@ -98,7 +98,7 @@ export class RatesIntegrationService {
     end_date?: Date;
     status?: string;
     is_active?: boolean;
-  }): Promise<void> {
+  }): Promise<any[]> {
     const { org_id, integration_id, start_date, end_date, status, is_active } = params;
     const query = this.supabase.from('integration_sync_history').select('*').eq('org_id', org_id);
 
@@ -124,7 +124,7 @@ export class RatesIntegrationService {
 
     const { data, error } = await query.order('started_at', { ascending: false });
 
-    if (typeof error !== "undefined" && error !== null) throw error;
+    if (error) throw error;
     return data;
   }
 

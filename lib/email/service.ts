@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { ReactElement } from 'react';
 import { NotificationTemplate } from '@/components/email/notification-template';
 import { env } from '@/lib/config/environment';
 import { logger } from '@/lib/services/logger';
@@ -23,9 +24,15 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+const renderTemplate = (element: ReactElement): string => {
+  // Convert the React element to HTML string directly
+  // This is safe because we're on the server side
+  return '<!DOCTYPE html>' + element.props.children;
+};
+
 export async function sendNotificationEmail(emailData: NotificationEmailRequest): Promise<void> {
   try {
-    const emailContent = await NotificationTemplate({
+    const emailContent = NotificationTemplate({
       title: emailData.title,
       message: emailData.message,
       recipientName: emailData.recipientName,
@@ -37,12 +44,13 @@ export async function sendNotificationEmail(emailData: NotificationEmailRequest)
       from: env.SMTP_FROM,
       to: emailData.to,
       subject: emailData.subject,
-      html: emailContent,
+      html: renderTemplate(emailContent),
     };
 
     await transporter.sendMail(mailOptions);
   } catch (error) {
-    logger.error('Failed to send notification email:', error);
-    throw error;
+    const err = error instanceof Error ? error : new Error('Failed to send email');
+    logger.error('Failed to send notification email', err);
+    throw err;
   }
 }

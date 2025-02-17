@@ -11,24 +11,35 @@ const schema: SchemaComponentConfig = {
   dbTable: 'profiles',
   fields: {
     userId: {
-      type: 'string',
+      name: 'userId',
+      type: 'text',
       label: 'User ID',
-      dbField: 'id',
       validation: {
         required: true,
+        custom: (value: unknown): boolean => {
+          if (typeof value !== 'string') return false;
+          const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+          return uuidRegex.test(value);
+        }
       },
     },
     showEmail: {
-      type: 'boolean',
+      name: 'showEmail',
+      type: 'radio',
       label: 'Show Email',
-      defaultValue: false,
-      preview: true,
+      options: [
+        { label: 'Yes', value: true },
+        { label: 'No', value: false },
+      ],
     },
     layout: {
-      type: 'string',
+      name: 'layout',
+      type: 'select',
       label: 'Layout',
-      defaultValue: 'card',
-      preview: true,
+      options: [
+        { label: 'Card', value: 'card' },
+        { label: 'List', value: 'list' },
+      ],
     },
   },
   preview: {
@@ -37,7 +48,10 @@ const schema: SchemaComponentConfig = {
   },
   validation: {
     rules: {
-      userId: (value: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(value),
+      userId: (value: unknown): boolean => {
+        if (typeof value !== 'string') return false;
+        return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(value);
+      }
     },
     messages: {
       'userId.required': 'User ID is required',
@@ -51,8 +65,10 @@ function UserProfileComponent({
   showEmail = false,
   layout = 'card',
   data,
-}: UserProfileProps & { data: any }) {
-  if (!data) return null;
+}: UserProfileProps & { data: any }): JSX.Element {
+  if (!data) {
+    return <div>No profile data available</div>;
+  }
 
   const profile = Array.isArray(data) ? data[0] : data;
 
@@ -102,5 +118,5 @@ function UserProfileComponent({
 export const UserProfile = createSchemaComponent({
   name: 'UserProfile',
   schema,
-  render: UserProfileComponent,
+  render: UserProfileComponent as (props: any) => JSX.Element,
 });

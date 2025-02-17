@@ -1,59 +1,30 @@
 import { useState } from 'react';
-import { Document, Page } from 'react-pdf';
+import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Document } from '@/types/documents';
 
 interface DocumentPreviewProps {
-  url: string;
+  document: Document;
+  onLoad?: () => void;
 }
 
-export function DocumentPreview({ url }: DocumentPreviewProps): React.ReactElement {
-  const [numPages, setNumPages] = useState<number>(0);
-  const [pageNumber, setPageNumber] = useState<number>(1);
-  const [error, setError] = useState<string | null>(null);
-  const [_loading, setLoading] = useState<boolean>(true);
+export function DocumentPreview({ document, onLoad }: DocumentPreviewProps) {
+  const [isLoading, setIsLoading] = useState(true);
 
-  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }): void => {
-    setNumPages(numPages);
-    setLoading(false);
-  };
-
-  const changePage = (offset: number): void => {
-    setPageNumber((prevPageNumber): number => prevPageNumber + offset);
-  };
-
-  const previousPage = (): void => {
-    changePage(-1);
-  };
-
-  const nextPage = (): void => {
-    changePage(1);
+  const handleLoad = () => {
+    setIsLoading(false);
+    onLoad?.();
   };
 
   return (
-    <div className="document-preview">
-      <Document
-        file={url}
-        onLoadSuccess={onDocumentLoadSuccess}
-        loading={<div>Loading document...</div>}
-      >
-        <Page pageNumber={pageNumber} />
-      </Document>
-      <div className="controls">
-        <button
-          disabled={pageNumber <= 1}
-          onClick={previousPage}
-        >
-          Previous
-        </button>
-        <button
-          disabled={pageNumber >= numPages}
-          onClick={nextPage}
-        >
-          Next
-        </button>
-      </div>
-      <p>
-        Page {pageNumber} of {numPages}
-      </p>
-    </div>
+    <Card className="overflow-hidden">
+      {isLoading && <Skeleton className="w-full h-[400px]" />}
+      <iframe
+        src={document.url}
+        className="w-full h-[400px] border-0"
+        onLoad={handleLoad}
+        title={document.name}
+      />
+    </Card>
   );
 }

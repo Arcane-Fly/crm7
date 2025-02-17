@@ -18,17 +18,25 @@ export interface LogEntry {
   timestamp: string;
 }
 
-class Logger {
-  private static instance: Logger;
+export interface Logger {
+  debug(message: string, context?: Record<string, unknown>): void;
+  info(message: string, context?: Record<string, unknown>): void;
+  warn(message: string, context?: Record<string, unknown>): void;
+  error(message: string, context?: Record<string, unknown>): void;
+  createLogger(name: string): Logger;
+}
+
+class LoggerImpl implements Logger {
+  private static instance: LoggerImpl;
   private logLevel: LogLevel = 'info';
 
   private constructor() {}
 
-  static getInstance(): Logger {
-    if (!Logger.instance) {
-      Logger.instance = new Logger();
+  static getInstance(): LoggerImpl {
+    if (!LoggerImpl.instance) {
+      LoggerImpl.instance = new LoggerImpl();
     }
-    return Logger.instance;
+    return LoggerImpl.instance;
   }
 
   setLogLevel(level: LogLevel): void {
@@ -52,7 +60,7 @@ class Logger {
     return `[${timestamp}] ${entry.level.toUpperCase()}: ${entry.message}${context}${error}`;
   }
 
-  debug(message: string, context?: LogContext): void {
+  debug(message: string, context?: Record<string, unknown>): void {
     if (this.shouldLog('debug')) {
       const entry: LogEntry = {
         level: 'debug',
@@ -64,7 +72,7 @@ class Logger {
     }
   }
 
-  info(message: string, context?: LogContext): void {
+  info(message: string, context?: Record<string, unknown>): void {
     if (this.shouldLog('info')) {
       const entry: LogEntry = {
         level: 'info',
@@ -76,31 +84,33 @@ class Logger {
     }
   }
 
-  warn(message: string, context?: LogContext, error?: Error | DatabaseError): void {
+  warn(message: string, context?: Record<string, unknown>): void {
     if (this.shouldLog('warn')) {
       const entry: LogEntry = {
         level: 'warn',
         message,
         context,
-        error,
         timestamp: new Date().toISOString()
       };
       console.warn(this.formatMessage(entry));
     }
   }
 
-  error(message: string, context?: LogContext, error?: Error | DatabaseError): void {
+  error(message: string, context?: Record<string, unknown>): void {
     if (this.shouldLog('error')) {
       const entry: LogEntry = {
         level: 'error',
         message,
         context,
-        error,
         timestamp: new Date().toISOString()
       };
       console.error(this.formatMessage(entry));
     }
   }
+
+  createLogger(name: string): Logger {
+    return new LoggerImpl();
+  }
 }
 
-export const logger = Logger.getInstance();
+export const logger: Logger = LoggerImpl.getInstance();

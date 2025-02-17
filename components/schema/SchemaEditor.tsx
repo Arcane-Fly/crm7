@@ -24,7 +24,7 @@ const schemaConfig: Config = {
             </span>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-8">
             <div>
               <h4 className="text-sm font-medium text-gray-700 mb-2">Fields</h4>
               <div className="space-y-2">
@@ -36,7 +36,7 @@ const schemaConfig: Config = {
                     <span className="font-mono text-blue-600">{field.name}</span>
                     <span className="text-gray-500">{field.type}</span>
                     {field.nullable && <span className="text-xs text-gray-400">nullable</span>}
-                    {field.defaultValue && (
+                    {field.defaultValue != null && (
                       <span className="text-xs text-gray-400">
                         default: {String(field.defaultValue)}
                       </span>
@@ -84,7 +84,7 @@ const schemaConfig: Config = {
                 { label: 'Array', value: 'array' },
               ],
             } as Field,
-            nullable: { type: 'boolean', label: 'Nullable' } as Field,
+            nullable: { type: 'boolean', label: 'Nullable' } as unknown as Field,
             defaultValue: { type: 'text', label: 'Default Value' } as Field,
           },
         } as Field,
@@ -105,7 +105,7 @@ interface SchemaEditorProps {
   onChange: (schema: TableSchema[]) => void;
 }
 
-export function SchemaEditor({ schema, onChange }: SchemaEditorProps) {
+export function SchemaEditor({ schema, onChange }: SchemaEditorProps): JSX.Element {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!

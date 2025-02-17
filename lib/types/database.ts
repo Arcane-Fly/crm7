@@ -2999,6 +2999,37 @@ export type Database = {
             referencedColumns: ['id'];
           },
         ];
+      },
+      editor_analytics: {
+        Row: {
+          id: string;
+          created_at: string;
+          action: string;
+          page_id: string;
+          user_email: string;
+          metadata: {
+            componentCount: number;
+            timestamp: string;
+          };
+        };
+        Insert: {
+          action: string;
+          page_id: string;
+          user_email: string;
+          metadata: {
+            componentCount: number;
+            timestamp: string;
+          };
+        };
+        Update: {
+          action?: string;
+          page_id?: string;
+          user_email?: string;
+          metadata?: {
+            componentCount?: number;
+            timestamp?: string;
+          };
+        };
       };
     };
     Views: {

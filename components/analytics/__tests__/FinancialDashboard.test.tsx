@@ -5,7 +5,7 @@ import { vi, type Mock } from 'vitest';
 import { useBankIntegration } from '@/lib/hooks/use-bank-integration';
 import type { Database } from '@/types/supabase';
 
-import { FinancialDashboard } from '../financial-dashboard';
+import { FinancialDashboard } from '@/components/analytics/financial-dashboard';
 
 const mockTransactions: Database['public']['Tables']['bank_transactions']['Row'][] = [
   {

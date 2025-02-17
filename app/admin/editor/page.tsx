@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
+import * as React from "react";
 import { useAuth } from "@/lib/auth/context";
-import Editor from "@/components/admin/Editor";
-import AdminManager from "@/components/admin/AdminManager";
+import { Editor } from "@/components/admin/Editor";
+import { AdminManager } from "@/components/admin/AdminManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function AdminEditorPage() {

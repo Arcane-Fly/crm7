@@ -1,11 +1,9 @@
-import axios from 'axios';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-
 import { logger } from '@/lib/logger';
-
+import axios, { type AxiosInstance, type AxiosResponse } from 'axios';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { FairWorkClient, type FairWorkConfig } from '../fairwork-client';
+import type { RateValidationRequest } from '../types';
 
-// Mock dependencies
 vi.mock('axios');
 vi.mock('@/lib/logger');
 
@@ -14,18 +12,15 @@ const mockConfig: FairWorkConfig = {
   apiUrl: 'https://api.test.com',
   environment: 'sandbox',
   timeout: 5000,
-  retryAttempts: 3,
 };
 
 describe('FairWorkClient', () => {
   let client: FairWorkClient;
-  let mockAxios: ReturnType<typeof vi.fn>;
+  let mockAxios: jest.Mocked<AxiosInstance>;
 
   beforeEach(() => {
-    // Reset mocks
     vi.clearAllMocks();
 
-    // Setup mock axios instance
     mockAxios = {
       get: vi.fn(),
       post: vi.fn(),
@@ -34,10 +29,20 @@ describe('FairWorkClient', () => {
           use: vi.fn(),
         },
       },
-    };
-    (axios.create as jest.Mock).mockReturnValue(mockAxios);
+      defaults: {},
+      getUri: vi.fn(),
+      request: vi.fn(),
+      delete: vi.fn(),
+      head: vi.fn(),
+      options: vi.fn(),
+      put: vi.fn(),
+      patch: vi.fn(),
+      postForm: vi.fn(),
+      putForm: vi.fn(),
+      patchForm: vi.fn(),
+    } as unknown as jest.Mocked<AxiosInstance>;
 
-    // Create client instance
+    vi.mocked(axios.create).mockReturnValue(mockAxios);
     client = new FairWorkClient(mockConfig);
   });
 
@@ -55,24 +60,29 @@ describe('FairWorkClient', () => {
     });
 
     it('should throw error for invalid config', () => {
-      expect(
-        () =>
-          new FairWorkClient({
-            ...mockConfig,
-            apiUrl: 'invalid-url',
-          }),
-      ).toThrow();
+      expect(() =>
+        new FairWorkClient({
+          ...mockConfig,
+          apiUrl: 'invalid-url',
+        }),
+      ).toThrow('Invalid config');
     });
   });
 
   describe('getAward', () => {
     it('should fetch award details', async () => {
       const awardCode = 'MA000001';
-      const mockResponse = {
+      const mockResponse: AxiosResponse = {
         data: {
           code: awardCode,
           name: 'Test Award',
+          description: 'Test Description',
+          industry: 'Test Industry',
         },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {} as any,
       };
 
       mockAxios.get.mockResolvedValue(mockResponse);
@@ -83,17 +93,48 @@ describe('FairWorkClient', () => {
     });
 
     it('should handle API error', async () => {
-      const error = {
-        response: {
-          status: 404,
-          data: { message: 'Award not found' },
-        },
-      };
+      const mockError = Object.assign(
+        new Error('Award not found'),
+        {
+          isAxiosError: true,
+          response: {
+            status: 404,
+            data: { message: 'Award not found' }
+          }
+        }
+      );
 
-      mockAxios.get.mockRejectedValue(error);
+      mockAxios.get.mockRejectedValue(mockError);
 
       await expect(client.getAward('invalid')).rejects.toThrow('Award not found');
       expect(logger.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('validatePayRate', () => {
+    it('should validate pay rate', async () => {
+      const params = {
+        rate: 30,
+        awardCode: 'MA000001',
+        classificationCode: 'L1'
+      };
+
+      const mockResponse = {
+        data: {
+          isValid: true,
+          minimumRate: 25.5,
+          difference: 4.5,
+        },
+      };
+
+      mockAxios.post.mockResolvedValue(mockResponse);
+
+      const result = await client.validatePayRate(params);
+      expect(result).toEqual(mockResponse.data);
+      expect(mockAxios.post).toHaveBeenCalledWith(
+        `/awards/${params.awardCode}/classifications/${params.classificationCode}/validate`,
+        { rate: params.rate }
+      );
     });
   });
 
@@ -147,14 +188,14 @@ describe('FairWorkClient', () => {
 
   describe('calculatePay', () => {
     it('should calculate pay with all components', async () => {
-      const awardCode = 'MA000001';
-      const classificationCode = 'L1';
       const params = {
+        awardCode: 'MA000001',
+        classificationCode: 'L1',
         date: '2025-01-01',
-        employmentType: 'casual' as const,
+        employmentType: 'casual',
         hours: 38,
         penalties: ['SAT'],
-        allowances: ['TOOL'],
+        allowances: ['TOOL']
       };
 
       const mockResponse = {
@@ -167,40 +208,17 @@ describe('FairWorkClient', () => {
 
       mockAxios.post.mockResolvedValue(mockResponse);
 
-      const result = await client.calculatePay(awardCode, classificationCode, params);
+      const result = await client.calculatePay(params);
       expect(result).toEqual(mockResponse.data);
       expect(mockAxios.post).toHaveBeenCalledWith(
-        `/awards/${awardCode}/classifications/${classificationCode}/calculate`,
-        params,
-      );
-    });
-  });
-
-  describe('validatePayRate', () => {
-    it('should validate pay rate', async () => {
-      const awardCode = 'MA000001';
-      const classificationCode = 'L1';
-      const params = {
-        rate: 30,
-        date: '2025-01-01',
-        employmentType: 'permanent' as const,
-      };
-
-      const mockResponse = {
-        data: {
-          isValid: true,
-          minimumRate: 25.5,
-          difference: 4.5,
-        },
-      };
-
-      mockAxios.post.mockResolvedValue(mockResponse);
-
-      const result = await client.validatePayRate(awardCode, classificationCode, params);
-      expect(result).toEqual(mockResponse.data);
-      expect(mockAxios.post).toHaveBeenCalledWith(
-        `/awards/${awardCode}/classifications/${classificationCode}/validate`,
-        params,
+        `/awards/${params.awardCode}/classifications/${params.classificationCode}/calculate`,
+        {
+          date: params.date,
+          employmentType: params.employmentType,
+          hours: params.hours,
+          penalties: params.penalties,
+          allowances: params.allowances
+        }
       );
     });
   });

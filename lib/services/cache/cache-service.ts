@@ -35,11 +35,11 @@ export class CacheService {
     });
   }
 
-  private getKey(key: string): string {
+  protected getKey(key: string): string {
     return `${this.prefix}${key}`;
   }
 
-  async get<T>(key: string): Promise<T | null> {
+  public async get<T>(key: string): Promise<T | null> {
     const startTime = Date.now();
     try {
       const value = await this.redis.get<T>(this.getKey(key));
@@ -58,7 +58,7 @@ export class CacheService {
     }
   }
 
-  async set<T>(key: string, value: T): Promise<void> {
+  public async set<T>(key: string, value: T): Promise<void> {
     const startTime = Date.now();
     try {
       await this.redis.set(this.getKey(key), value, { ex: this.ttl });
@@ -70,7 +70,7 @@ export class CacheService {
     }
   }
 
-  async delete(key: string): Promise<void> {
+  public async delete(key: string): Promise<void> {
     try {
       await this.redis.del(this.getKey(key));
     } catch (error) {
@@ -79,7 +79,7 @@ export class CacheService {
     }
   }
 
-  async deletePattern(pattern: string): Promise<number> {
+  public async deletePattern(pattern: string): Promise<number> {
     try {
       const keys = await this.redis.keys(`${this.getKey(pattern)}*`);
       if (keys.length > 0) {
@@ -93,7 +93,7 @@ export class CacheService {
     }
   }
 
-  async getOrSet<T>(
+  public async getOrSet<T>(
     key: string,
     getter: () => Promise<T>
   ): Promise<T> {
@@ -112,7 +112,7 @@ export class CacheService {
     }
   }
 
-  async waitForLock(key: string, maxWaitMs = 5000): Promise<void> {
+  public async waitForLock(key: string, maxWaitMs = 5000): Promise<void> {
     const startTime = Date.now();
     while (await this.get(key)) {
       if (Date.now() - startTime > maxWaitMs) {
@@ -122,7 +122,7 @@ export class CacheService {
     }
   }
 
-  async clear(): Promise<void> {
+  public async clear(): Promise<void> {
     try {
       const keys = await this.redis.keys(`${this.prefix}*`);
       if (keys.length > 0) {
@@ -134,7 +134,7 @@ export class CacheService {
     }
   }
 
-  async close(): Promise<void> {
+  public async close(): Promise<void> {
     // No need to explicitly close Redis connection as it's REST-based
   }
 }

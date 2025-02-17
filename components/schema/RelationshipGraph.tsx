@@ -7,11 +7,11 @@ import {
 } from '@/components/ui/select';
 import { type TableSchema } from '@/lib/types/schema-component';
 import * as d3 from 'd3';
-import { D3DragEvent, SimulationNodeDatum } from 'd3';
+import { D3DragEvent } from 'd3';
 import { useEffect, useRef, useState } from 'react';
 import styles from './RelationshipGraph.module.css';
 
-interface Node extends SimulationNodeDatum {
+interface Node extends d3.SimulationNodeDatum {
   id: string;
   label: string;
   fields: string[];
@@ -27,8 +27,17 @@ interface Link extends d3.SimulationLinkDatum<Node> {
   type: 'one-to-one' | 'one-to-many' | 'many-to-many';
 }
 
+interface TableRelationship {
+  targetTable: string;
+  type: 'one-to-one' | 'one-to-many' | 'many-to-many';
+}
+
+interface ExtendedTableSchema extends TableSchema {
+  relationships?: TableRelationship[];
+}
+
 interface RelationshipGraphProps {
-  schema: TableSchema[];
+  schema: ExtendedTableSchema[];
   width?: number;
   height?: number;
   onTableSelect?: (tableId: string) => void;
@@ -39,7 +48,7 @@ const RelationshipGraph = ({
   width = 800,
   height = 600,
   onTableSelect,
-}: RelationshipGraphProps) => {
+}: RelationshipGraphProps): JSX.Element => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [layout, setLayout] = useState<'force' | 'circular' | 'hierarchical'>('force');
 
@@ -47,37 +56,31 @@ const RelationshipGraph = ({
     if (!svgRef.current) return;
 
     const svg = d3.select(svgRef.current);
-
-    // Clear existing content
     svg.selectAll('*').remove();
-
     const g = svg.append('g');
 
-    // Add zoom behavior
-    const zoomBehavior = d3
-      .zoom<SVGSVGElement, unknown>()
+    const zoomBehavior = d3.zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.1, 4])
-      .on('zoom', (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
+      .on('zoom', (event) => {
         g.attr('transform', event.transform.toString());
       });
-
     svg.call(zoomBehavior);
 
-    // Create nodes from tables
-    const nodes: Node[] = schema.map((table) => ({
+    // Create nodes from tables using table.fields (instead of columns)
+    const nodes: Node[] = schema.map((table: ExtendedTableSchema) => ({
       id: table.name,
       label: table.name,
-      fields: table.columns.map((col) => col.name),
+      fields: (table.fields as {name: string}[]).map((col) => col.name),
       type: 'table',
     }));
 
-    // Create links from relationships
-    const links: Link[] = schema.flatMap((table) =>
-      table.relationships.map((rel) => ({
+    // Create links from relationships (if provided)
+    const links: Link[] = schema.flatMap((table: ExtendedTableSchema) =>
+      (table.relationships || []).map((rel) => ({
         source: table.name,
         target: rel.targetTable,
         label: rel.type,
-        type: rel.type as 'one-to-one' | 'one-to-many' | 'many-to-many',
+        type: rel.type,
       }))
     );
 

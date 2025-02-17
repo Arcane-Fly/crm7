@@ -1,6 +1,6 @@
-import { type FairWorkService } from '../fairwork';
 import { CacheService } from '../cache/cache-service';
 import { logger } from '@/lib/logger';
+import type { FairWorkService } from './fairwork-service';
 
 interface CacheWarmingConfig {
   interval: number;
@@ -8,100 +8,52 @@ interface CacheWarmingConfig {
   retryDelay: number;
 }
 
+const CACHE_CONFIG = {
+  prefix: 'fairwork',
+  ttl: 3600,
+};
+
 export class FairWorkCacheWarming {
   private readonly cache: CacheService;
   private readonly fairWorkService: FairWorkService;
   private isWarming = false;
-  private lastWarmTime = 0;
 
-  constructor(
-    fairWorkService: FairWorkService,
-    private readonly config: CacheWarmingConfig
-  ) {
+  constructor(fairWorkService: FairWorkService, config: CacheWarmingConfig) {
     this.fairWorkService = fairWorkService;
-    this.cache = new CacheService({
-      keyPrefix: 'fairwork',
-      defaultTtl: 3600,
-    });
+    this.cache = new CacheService(CACHE_CONFIG);
   }
 
-  async warmCache(): Promise<void> {
-    if (this.isWarming) {
-      logger.warn('Cache warming already in progress');
-      return;
-    }
-
+  async warmClassifications(params: Record<string, unknown>): Promise<void> {
     try {
-      this.isWarming = true;
-
-      const params = this.getDateRange();
-      await Promise.all([
-        this.warmClassifications(params),
-        this.warmRates(params),
-        this.warmFutureRates(params),
-      ]);
-
-      this.lastWarmTime = Date.now();
-    } catch (error) {
-      logger.error('Failed to warm cache:', error);
-    } finally {
-      this.isWarming = false;
-    }
-  }
-
-  private async warmClassifications(params: Record<string, unknown>): Promise<void> {
-    try {
-      await this.cache.set(
-        'classifications',
-        await this.fairWorkService.getClassifications(params),
-        3600
+      const key = `classifications:${JSON.stringify(params)}`;
+      await this.cache.getOrSet(key, () => 
+        this.fairWorkService.getClassifications(params.awardCode as string)
       );
     } catch (error) {
-      logger.error('Failed to warm classifications cache:', error);
+      logger.error('Failed to warm classifications cache:', { error });
     }
   }
 
-  private async warmRates(params: Record<string, unknown>): Promise<void> {
+  async warmRates(params: Record<string, unknown>): Promise<void> {
     try {
-      await this.cache.set(
-        'rates',
-        await this.fairWorkService.getRates(params),
-        3600
+      const key = `rates:${JSON.stringify(params)}`;
+      await this.cache.getOrSet(key, () => 
+        this.fairWorkService.getCurrentRates()
       );
     } catch (error) {
-      logger.error('Failed to warm rates cache:', error);
+      logger.error('Failed to warm rates cache:', { error });
     }
   }
 
-  private async warmFutureRates(params: Record<string, unknown>): Promise<void> {
+  async warmFutureRates(params: Record<string, unknown>): Promise<void> {
     try {
-      await this.cache.set(
-        'future-rates',
-        await this.fairWorkService.getFutureRates(params),
-        3600
+      const key = `future-rates:${JSON.stringify(params)}`;
+      const date = params.date as string;
+      await this.cache.getOrSet(key, () => 
+        this.fairWorkService.getRatesForDate(new Date(date))
       );
     } catch (error) {
-      logger.error('Failed to warm future rates cache:', error);
+      logger.error('Failed to warm future rates cache:', { error });
     }
-  }
-
-  private getDateRange(): Record<string, string> {
-    const today = new Date();
-    const date = new Date();
-    date.setMonth(date.getMonth() + 3);
-
-    return {
-      startDate: today.toISOString(),
-      endDate: date.toISOString(),
-    };
-  }
-
-  start(): void {
-    void this.warmCache();
-    setInterval((): undefined => void this.warmCache(), this.config.interval);
-  }
-
-  stop(): void {
-    this.isWarming = false;
   }
 }

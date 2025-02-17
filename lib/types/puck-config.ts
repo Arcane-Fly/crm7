@@ -1,6 +1,5 @@
 import { type Config } from '@measured/puck';
-import { type Tables } from './database';
-import { type ExtendedPuckData } from './puck';
+import { type Database } from './supabase';
 
 // Define your component props types
 interface HeadingProps {
@@ -12,17 +11,11 @@ interface TextProps {
   content: string;
 }
 
-// Add more component prop types as needed
-
 // Define your Puck configuration type
 export type PuckConfig = Config<{
-  components: {
-    Heading: HeadingProps;
-    Text: TextProps;
-    // Add more components here
-  };
-  data: ExtendedPuckData & {
-    id: Tables<'pages'>['Row']['id'];
+  components: Record<string, unknown>;
+  data: {
+    id: string;
     title: string;
     slug: string;
   };
@@ -31,3 +24,21 @@ export type PuckConfig = Config<{
 // Export helper types
 export type PuckComponent = PuckConfig['components'];
 export type ComponentProps<T extends keyof PuckComponent> = PuckComponent[T];
+
+export interface PuckConfigData {
+  id: string;
+  name: string;
+  description?: string;
+  settings: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PuckPlugin {
+  id: string;
+  name: string;
+  enabled: boolean;
+  settings: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}

@@ -1,6 +1,7 @@
 'use client';
 
-import { useAuth } from '@/lib/auth/context';
+import * as React from 'react';
+import { useAuth } from '@/lib/hooks/use-auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,15 +11,16 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-export function UserNav() {
+export function UserNav(): React.ReactElement {
   const { user, signOut } = useAuth();
 
   if (!user) {
-    return null;
+    return (
+      <div className="h-8 w-8" /> // Return empty placeholder instead of null
+    );
   }
 
   return (
@@ -42,20 +44,11 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
-            Profile
-            <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            Settings
-            <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-          </DropdownMenuItem>
+          <DropdownMenuItem>Profile</DropdownMenuItem>
+          <DropdownMenuItem>Settings</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => signOut()}>
-          Log out
-          <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
-        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => signOut()}>Log out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

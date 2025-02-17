@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { createContext, JSX, useContext, useState, type ReactElement, type ReactNode } from 'react';
+import type { LucideIcon } from 'lucide-react';
 
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MAIN_NAV_ITEMS } from '@/config/navigation';
@@ -39,6 +40,12 @@ export function useSidebar(): SidebarContextType {
   return context;
 }
 
+function renderIcon(icon: LucideIcon | undefined): React.ReactNode {
+  if (!icon) return null;
+  const Icon = icon;
+  return <Icon className="h-4 w-4" />;
+}
+
 export const Sidebar = (): ReactElement => {
   const { isCollapsed, isMobileOpen, setIsMobileOpen } = useSidebar();
   const pathname = usePathname();
@@ -61,7 +68,7 @@ export const Sidebar = (): ReactElement => {
       >
         <ScrollArea className='flex-1'>
           <nav className='space-y-1 px-2 py-4'>
-            {MAIN_NAV_ITEMS.map((item: NavItem) => {
+            {MAIN_NAV_ITEMS.map((item) => {
               const isActive = item.href ? pathname?.startsWith(item.href) : false;
               return (
                 <div key={item.slug || item.href} className='space-y-1'>
@@ -75,7 +82,7 @@ export const Sidebar = (): ReactElement => {
                     )}
                     onClick={handleLinkClick}
                   >
-                    {item.icon}
+                    {renderIcon(item.icon)}
                     {!isCollapsed && <span>{item.label ?? item.title}</span>}
                   </Link>
                   {!isCollapsed && item.children && isActive && (
@@ -113,7 +120,7 @@ export const Sidebar = (): ReactElement => {
       >
         <ScrollArea className='flex-1'>
           <nav className='space-y-1 px-2 py-4'>
-            {MAIN_NAV_ITEMS.map((item: NavItem) => {
+            {MAIN_NAV_ITEMS.map((item) => {
               const isActive = item.href ? pathname?.startsWith(item.href) : false;
               return (
                 <div key={item.slug || item.href} className='space-y-1'>
@@ -127,7 +134,7 @@ export const Sidebar = (): ReactElement => {
                     )}
                     onClick={handleLinkClick}
                   >
-                    {item.icon}
+                    {renderIcon(item.icon)}
                     <span>{item.label ?? item.title}</span>
                   </Link>
                   {item.children && isActive && (

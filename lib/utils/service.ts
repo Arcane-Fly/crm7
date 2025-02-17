@@ -3,65 +3,90 @@ import { logger, type Logger } from './logger';
 import { type MetricsService } from './metrics';
 
 export interface ServiceOptions {
-  prisma: PrismaClient;
-  metrics: MetricsService;
+  prisma?: PrismaClient;
+  metrics?: MetricsService;
+  enableMetrics?: boolean;
 }
 
-export abstract class BaseService {
-  protected readonly prisma: PrismaClient;
-  protected readonly metrics: MetricsService;
-  protected readonly options: ServiceOptions;
+export interface IBaseService {
+  getMetrics(): Record<string, unknown> | null;
+  resetMetrics(): void;
+}
+
+export abstract class BaseService implements IBaseService {
+  protected readonly name: string;
+  protected readonly version: string;
+  protected readonly enableMetrics: boolean;
+  protected readonly prisma?: PrismaClient;
+  protected readonly metrics?: MetricsService;
   protected readonly logger: Logger;
 
-  constructor(options: ServiceOptions) {
+  constructor(name: string, version: string, options: ServiceOptions = {}) {
+    this.name = name;
+    this.version = version;
+    this.enableMetrics = options.enableMetrics ?? true;
     this.prisma = options.prisma;
     this.metrics = options.metrics;
-    this.options = options;
-    this.logger = logger.createLogger(this.constructor.name);
+    this.logger = logger.createLogger(name);
   }
 
   protected async executeServiceMethod<T>(
     methodName: string,
-    fn: () => Promise<T>,
-    context?: Record<string, unknown>
-  ): Promise<void> {
-    const startTime = Date.now();
-    const logContext = { methodName, ...context };
-
-    this.logger.debug(`Executing service method`, logContext);
-
+    method: () => Promise<T>
+  ): Promise<T> {
     try {
-      const result = await fn();
-      const duration = Date.now() - startTime;
-
-      this.metrics.recordServiceMethodDuration(methodName, duration, {
-        success: true,
-        ...context,
-      });
-
-      this.logger.debug(`Service method completed successfully`, {
-        ...logContext,
-        duration,
-      });
-
-      return result;
+      return await method();
     } catch (error) {
-      const duration = Date.now() - startTime;
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-
-      this.metrics.recordServiceMethodDuration(methodName, duration, {
-        success: false,
-        error: errorMessage,
-        ...context,
+      this.logger.error(`${this.name}.${methodName} error:`, {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
       });
-
-      this.logger.error(`Service method failed`, {
-        ...logContext,
-        duration,
-        error: errorMessage,
-      });
-
       throw error;
     }
+  }
+
+  public getMetrics(): Record<string, unknown> | null {
+    if (!this.enableMetrics) return null;
+    return {
+      serviceName: this.name,
+      version: this.version,
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  public resetMetrics(): void {
+    // Default implementation is no-op
+  }
+}
+
+export async function executeServiceMethod<T>(
+  methodName: string,
+  fn: () => Promise<T>,
+  context?: Record<string, unknown>
+): Promise<T> {
+  const startTime = Date.now();
+  const logContext = { methodName, ...context };
+
+  try {
+    const result = await fn();
+    const duration = Date.now() - startTime;
+
+    console.debug(`Service method completed successfully`, {
+      ...logContext,
+      duration,
+    });
+
+    return result;
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+    console.error(`Service method failed`, {
+      ...logContext,
+      duration,
+      error: errorMessage,
+    });
+
+    throw error;
   }
 }

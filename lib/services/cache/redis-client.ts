@@ -1,4 +1,4 @@
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 import { logger } from '@/lib/logger';
 
 export class RedisError extends Error {
@@ -22,7 +22,7 @@ export class RedisClientImpl implements RedisClient {
   private readonly maxRetries = 3;
   private retryCount = 0;
 
-  constructor(private readonly config: Redis.RedisOptions) {}
+  constructor(private readonly config: Record<string, unknown>) {}
 
   private async connect(): Promise<void> {
     if (this.client) return;
@@ -40,7 +40,7 @@ export class RedisClientImpl implements RedisClient {
       const redis = new Redis(this.config);
 
       redis.on('error', (error): void => {
-        logger.error('Redis connection error:', error);
+        logger.error('Redis connection error:', { error: error instanceof Error ? error.message : String(error) });
       });
 
       this.client = redis;
@@ -48,7 +48,7 @@ export class RedisClientImpl implements RedisClient {
       this.retryCount = 0;
     } catch (error) {
       this.connecting = false;
-      logger.error('Redis connection failed:', error);
+      logger.error('Redis connection failed:', { error: error instanceof Error ? error.message : String(error) });
 
       if (this.retryCount < this.maxRetries) {
         await this.connect();
@@ -60,65 +60,31 @@ export class RedisClientImpl implements RedisClient {
 
   async get(key: string): Promise<string | null> {
     await this.connect();
-    return (this.client ?? undefined).get(key);
+    if (!this.client) throw new RedisError('Redis client not initialized');
+    return this.client.get(key);
   }
 
   async set(key: string, value: string): Promise<void> {
     await this.connect();
-    await (this.client ?? undefined).set(key, value);
+    if (!this.client) throw new RedisError('Redis client not initialized');
+    await this.client.set(key, value);
   }
 
   async setex(key: string, seconds: number, value: string): Promise<void> {
     await this.connect();
-    await (this.client ?? undefined).setex(key, seconds, value);
+    if (!this.client) throw new RedisError('Redis client not initialized');
+    await this.client.setex(key, seconds, value);
   }
 
   async del(...keys: string[]): Promise<void> {
     await this.connect();
-    await (this.client ?? undefined).del(...keys);
+    if (!this.client) throw new RedisError('Redis client not initialized');
+    await this.client.del(...keys);
   }
 
   async keys(pattern: string): Promise<string[]> {
     await this.connect();
-    return (this.client ?? undefined).keys(pattern);
-  }
-}
-
-export async function warmCache(): Promise<void> {
-  try {
-    const client = await getRedisClient();
-    await Promise.all([
-      client.get('key1'),
-      client.get('key2'),
-      client.get('key3')
-    ]);
-  } catch (error) {
-    logger.error('Failed to warm cache:', error);
-  }
-}
-
-export async function invalidateCache(): Promise<void> {
-  try {
-    const client = await getRedisClient();
-    await Promise.all([
-      client.del('key1'),
-      client.del('key2'),
-      client.del('key3')
-    ]);
-  } catch (error) {
-    logger.error('Failed to invalidate cache:', error);
-  }
-}
-
-export async function refreshCache(): Promise<void> {
-  try {
-    const client = await getRedisClient();
-    await Promise.all([
-      client.set('key1', 'value1'),
-      client.set('key2', 'value2'),
-      client.set('key3', 'value3')
-    ]);
-  } catch (error) {
-    logger.error('Failed to refresh cache:', error);
+    if (!this.client) throw new RedisError('Redis client not initialized');
+    return this.client.keys(pattern);
   }
 }

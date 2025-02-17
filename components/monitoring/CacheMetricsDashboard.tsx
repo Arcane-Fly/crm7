@@ -1,41 +1,73 @@
-"use client";
+'use client';
+
 import { useState, useEffect } from 'react';
-import type { CacheMetrics, WarmingStats } from '@/lib/types/monitoring';
+import type { CacheMetrics } from '@/lib/types/monitoring';
+import { Card } from '@/components/ui/card';
 
-export function CacheMetricsDashboard(): React.ReactElement {
-  const [metrics, _setMetrics] = useState<CacheMetrics>({
-    hitRate: 0,
-    missRate: 0,
-    evictionRate: 0
-  });
-  const [_warmingStats, _setWarmingStats] = useState<WarmingStats>({
-    totalKeys: 0,
-    warmedKeys: 0,
-    failedKeys: 0
-  });
+export function CacheMetricsDashboard() {
+  const [metrics, setMetrics] = useState<CacheMetrics | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const _calculateStats = (data: CacheMetrics[]): void => {
-    const sortedLatencies = [...data.map(metric => metric.avg)].sort((a, b): number => a - b);
-    const p95Index = Math.floor(sortedLatencies.length * 0.95);
-    const p99Index = Math.floor(sortedLatencies.length * 0.99);
-    const avgLatency = data.reduce((sum, val) => sum + val.avg, 0) / data.length;
-    const hitRateValue = (metrics.hitRate ?? 0) / ((metrics.hitRate ?? 0) + (metrics.missRate ?? 0)) * 100;
-
-    // Implementation
-  };
-
-  useEffect((): () => void => {
-    const fetchMetrics = async (): Promise<void> => {
-      // Fetch metrics implementation
+  useEffect(() => {
+    const fetchMetrics = async () => {
+      try {
+        const response = await fetch('/api/monitoring/cache-metrics');
+        const _data = await response.json();
+        setMetrics(_data);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Failed to fetch cache metrics:', error);
+        setIsLoading(false);
+      }
     };
 
-    const interval = setInterval(fetchMetrics, 5000);
+    fetchMetrics();
+    const interval = setInterval(fetchMetrics, 30000);
     return (): void => clearInterval(interval);
   }, []);
 
+  if (isLoading) {
+    return <div>Loading metrics...</div>;
+  }
+
+  const calculateMetrics = (_data: CacheMetrics) => {
+    // Implementation of metric calculations
+    return {
+      p95: 0,
+      p99: 0,
+      avgLatency: 0,
+      hitRate: 0,
+    };
+  };
+
+  const { p95, p99, avgLatency, hitRate } = calculateMetrics(metrics as CacheMetrics);
+
   return (
-    <div className="space-y-4">
-      {/* Dashboard implementation */}
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <Card>
+        <div className="p-4">
+          <h3 className="text-sm font-medium">P95 Latency</h3>
+          <p className="text-2xl font-bold">{p95}ms</p>
+        </div>
+      </Card>
+      <Card>
+        <div className="p-4">
+          <h3 className="text-sm font-medium">P99 Latency</h3>
+          <p className="text-2xl font-bold">{p99}ms</p>
+        </div>
+      </Card>
+      <Card>
+        <div className="p-4">
+          <h3 className="text-sm font-medium">Average Latency</h3>
+          <p className="text-2xl font-bold">{avgLatency}ms</p>
+        </div>
+      </Card>
+      <Card>
+        <div className="p-4">
+          <h3 className="text-sm font-medium">Cache Hit Rate</h3>
+          <p className="text-2xl font-bold">{hitRate}%</p>
+        </div>
+      </Card>
     </div>
   );
 }

@@ -1,8 +1,8 @@
 import { ErrorBoundary } from '@/components/error-boundary/ErrorBoundary';
 import { cn } from '@/lib/utils';
-
 import { Header } from './Header';
 import { Sidebar, SidebarProvider } from './improved-sidebar';
+import { MAIN_NAV_ITEMS } from '@/config/navigation';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -22,7 +22,7 @@ export function MainLayout({ children, className }: MainLayoutProps): JSX.Elemen
               className,
             )}
           >
-            <Header />
+            <Header items={MAIN_NAV_ITEMS} />
             <main className='container mx-auto p-6 pt-[calc(theme(spacing.header-height)+1.5rem)]'>
               <ErrorBoundary>{children}</ErrorBoundary>
             </main>

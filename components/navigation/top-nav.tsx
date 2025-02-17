@@ -4,7 +4,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { UserButton } from '@/components/auth/user-button';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
-import { Tooltip } from '@/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface NavItem {
   label: string;
@@ -12,7 +17,7 @@ interface NavItem {
   icon: React.ReactNode;
 }
 
-export function TopNav(): React.ReactElement {
+export function TopNav(): JSX.Element {
   const pathname = usePathname();
 
   const navItems: NavItem[] = [
@@ -120,19 +125,26 @@ export function TopNav(): React.ReactElement {
           </Link>
           <div className="flex items-center space-x-6 text-sm font-medium">
             {navItems.map((item) => (
-              <Tooltip key={item.href} content={item.label}>
-                <Link
-                  href={item.href}
-                  className={`flex items-center space-x-2 transition-colors hover:text-foreground/80 ${
-                    pathname?.startsWith(item.href)
-                      ? 'text-foreground'
-                      : 'text-foreground/60'
-                  }`}
-                >
-                  {item.icon}
-                  <span>{item.label}</span>
-                </Link>
-              </Tooltip>
+              <TooltipProvider key={item.href}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href={item.href}
+                      className={`flex items-center space-x-2 transition-colors hover:text-foreground/80 ${
+                        pathname?.startsWith(item.href)
+                          ? 'text-foreground'
+                          : 'text-foreground/60'
+                      }`}
+                    >
+                      {item.icon}
+                      <span>{item.label}</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {item.label}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             ))}
           </div>
         </div>

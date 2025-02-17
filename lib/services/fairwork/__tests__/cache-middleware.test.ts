@@ -1,10 +1,9 @@
 import { mock } from 'jest-mock-extended';
-
 import type { CacheService } from '@/lib/services/cache/cache-service';
 import { logger } from '@/lib/services/logger';
-
 import { FairWorkCacheMiddleware } from '../cache-middleware';
-import type { RateCalculationRequest } from '../types';
+import type { RateValidationRequest, RateCalculationRequest } from '../types';
+import type { FairWorkApiClient } from '../types';
 
 jest.mock('@/lib/services/logger');
 jest.mock('@/lib/services/cache/cache-service');
@@ -12,10 +11,12 @@ jest.mock('@/lib/services/cache/cache-service');
 describe('FairWorkCacheMiddleware', () => {
   let cacheMiddleware: FairWorkCacheMiddleware;
   let mockCacheService: jest.Mocked<CacheService>;
+  let mockClient: jest.Mocked<FairWorkApiClient>;
 
   beforeEach(() => {
     mockCacheService = mock<CacheService>();
-    cacheMiddleware = new FairWorkCacheMiddleware();
+    mockClient = mock<FairWorkApiClient>();
+    cacheMiddleware = new FairWorkCacheMiddleware(mockClient);
     // @ts-expect-error - Accessing private cache property for testing
     cacheMiddleware.cache = mockCacheService;
   });
@@ -101,13 +102,13 @@ describe('FairWorkCacheMiddleware', () => {
   });
 
   describe('Rate Calculation Operations', () => {
-    const mockParams: RateCalculationRequest = {
+    const mockParams = {
       awardCode: 'TEST001',
       classificationCode: 'L1',
       date: new Date('2025-01-29').toISOString(),
       employmentType: 'permanent',
-      hours: 38,
-    };
+      hours: 38
+    } as Record<string, unknown>;
 
     it('should cache rate calculations', async () => {
       const mockResult = {

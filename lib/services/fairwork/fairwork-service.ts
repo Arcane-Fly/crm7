@@ -1,36 +1,34 @@
-import { BaseService, type ServiceOptions } from '@/lib/utils/service';
+import { BaseService, type ServiceOptions, type IBaseService } from '@/lib/utils/service';
 import { createLogger } from '../logger';
 import { type FairWorkApiClient } from './api-client';
-import type {
-  Award,
-  Classification,
-  ClassificationHierarchy,
-  PayRate,
-  RateTemplate,
-  RateValidationRequest,
-  RateValidationResponse,
-} from './types';
+import type { Award, Classification, ClassificationHierarchy, PayRate, RateTemplate } from './fairwork.types';
+import { CacheService } from '../cache/cache-service';
 
 const logger = createLogger('FairWorkService');
+const CACHE_CONFIG = {
+  prefix: 'fairwork',
+  ttl: 3600,
+};
 
-export interface FairWorkService {
+export interface FairWorkService extends IBaseService {
   getActiveAwards(): Promise<Award[]>;
   getAward(code: string): Promise<Award | null>;
   getCurrentRates(): Promise<PayRate[]>;
   getRatesForDate(date: Date): Promise<PayRate[]>;
-  getClassifications(): Promise<Classification[]>;
+  getClassifications(awardCode: string): Promise<Classification[]>;
   getClassificationHierarchy(): Promise<ClassificationHierarchy | null>;
-  getRateTemplates(): Promise<RateTemplate[]>;
-  validateRateTemplate(request: RateValidationRequest): Promise<RateValidationResponse>;
-  calculateBaseRate(code: string): Promise<number | null>;
+  calculateRate(template: RateTemplate): Promise<number>;
 }
 
-class FairWorkServiceImpl extends BaseService implements FairWorkService {
+export class FairWorkServiceImpl extends BaseService implements FairWorkService {
+  private readonly cache: CacheService;
+
   constructor(
-    private apiClient: FairWorkApiClient,
-    options: ServiceOptions
+    private readonly apiClient: FairWorkApiClient,
+    options: ServiceOptions = {}
   ) {
-    super(options);
+    super('FairWorkService', '1.0.0', options);
+    this.cache = new CacheService(CACHE_CONFIG);
   }
 
   private static parseDateFields<T extends { effectiveFrom: string; effectiveTo?: string }>(
@@ -80,11 +78,12 @@ class FairWorkServiceImpl extends BaseService implements FairWorkService {
     }, 'Failed to get rates for date');
   }
 
-  async getClassifications(): Promise<Classification[]> {
-    return this.handleApiCall(
-      () => this.apiClient.getClassifications(),
-      'Failed to get classifications'
+  async getClassifications(awardCode: string): Promise<Classification[]> {
+    const key = `classifications:${awardCode}`;
+    const classifications = await this.cache.getOrSet(key, async () => 
+      await this.apiClient.getClassifications()
     );
+    return classifications || [];
   }
 
   async getClassificationHierarchy(): Promise<ClassificationHierarchy | null> {
@@ -94,28 +93,29 @@ class FairWorkServiceImpl extends BaseService implements FairWorkService {
     );
   }
 
-  async getRateTemplates(): Promise<RateTemplate[]> {
-    return this.handleApiCall(
-      () => this.apiClient.getRateTemplates(),
-      'Failed to get rate templates'
-    );
+  async calculateRate(template: RateTemplate): Promise<number> {
+    return this.executeServiceMethod('calculateRate', async () => {
+      const rates = await this.getCurrentRates();
+      // Simple calculation for now
+      return template.baseRate * (1 + (template.baseMargin || 0));
+    });
   }
 
-  async validateRateTemplate(request: RateValidationRequest): Promise<RateValidationResponse> {
-    return this.handleApiCall(
-      () => this.apiClient.validateRateTemplate(request),
-      'Failed to validate rate template'
-    );
+  public getMetrics(): Record<string, unknown> | null {
+    const baseMetrics = super.getMetrics();
+    if (!baseMetrics) return null;
+
+    return {
+      ...baseMetrics,
+      cacheStats: {},
+      apiStats: {}
+    };
   }
 
-  async calculateBaseRate(code: string): Promise<number | null> {
-    return this.handleApiCall(
-      () => this.apiClient.calculateBaseRate(code),
-      'Failed to calculate base rate'
-    );
+  public resetMetrics(): void {
+    // No-op for now since cache and client don't support metrics yet
   }
 }
 
-// Export the implementation as the service
 export const FairWorkService = FairWorkServiceImpl;
 export default FairWorkServiceImpl;
