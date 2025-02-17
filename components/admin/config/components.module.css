@@ -3,7 +3,7 @@
   color: var(--hero-text-color, #000000);
 }
 
-:root {
+.root {
   --hero-background-color: #ffffff;
   --hero-text-color: #000000;
 }
