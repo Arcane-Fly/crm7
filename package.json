@@ -5,7 +5,7 @@
   "type": "module",
   "packageManager": "pnpm@10.2.1",
   "engines": {
-    "node": ">=20.11.1",
+    "node": "23.8.0",
     "pnpm": "10.2.1"
   },
   "scripts": {
@@ -67,20 +67,20 @@
     "auth0": "4.18.0",
     "axios": "1.7.9",
     "canvas": "3.1.0",
-    "chart.js": "^4.4.7",
+    "chart.js": "4.4.7",
     "class-variance-authority": "0.7.1",
     "classnames": "2.5.1",
     "clsx": "2.1.1",
     "cmdk": "1.0.4",
     "cssnano": "7.0.6",
     "date-fns": "3.3.1",
-    "d3": "^7.8.5",
-    "eslint-plugin-jsx-a11y": "^6.8.0",
-    "eslint-plugin-security": "^2.1.0",
-    "eslint-plugin-sonarjs": "^0.24.0",
+    "d3": "7.9.0",
+    "eslint-plugin-jsx-a11y": "6.10.2",
+    "eslint-plugin-security": "2.1.1",
+    "eslint-plugin-sonarjs": "0.24.0",
     "exceljs": "4.4.0",
-    "framer-motion": "^11.0.0",
-    "globals": "^13.24.0",
+    "framer-motion": "11.18.2",
+    "globals": "13.24.0",
     "ioredis": "5.5.0",
     "lucide-react": "0.474.0",
     "next": "15.1.6",
@@ -118,7 +118,7 @@
     "@typescript-eslint/eslint-plugin": "7.0.1",
     "@typescript-eslint/parser": "7.0.1",
     "@vitejs/plugin-react": "^4.3.4",
-    "@vitest/coverage-v8": "^1.2.2",
+    "@vitest/coverage-v8": "1.6.1",
     "autoprefixer": "10.4.17",
     "eslint": "8.56.0",
     "eslint-config-next": "15.1.6",
@@ -137,7 +137,7 @@
     "typescript": "5.3.3",
     "typescript-eslint": "8.24.0",
     "vite-tsconfig-paths": "5.1.4",
-    "vitest": "^1.2.2"
+    "vitest": "1.6.1"
   },
   "pnpm": {
     "peerDependencyRules": {
