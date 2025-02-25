@@ -42,7 +42,7 @@ export const AuthProvider = ({ children, initialUser }: AuthProviderProps): JSX.
           data: { user: currentUser },
           error,
         } = await supabase.auth.getUser();
-        if (error) {
+        if (error || !currentUser) {
           logger.error('Error checking auth state', { error });
           setUser(null);
           setSession(null);
