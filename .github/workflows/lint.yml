@@ -13,7 +13,7 @@ permissions:
   statuses: write
 
 env:
-  PNPM_VERSION: 10.2.0
+  PNPM_VERSION: 10.6.3
   NODE_VERSION: '20'
 
 jobs:
