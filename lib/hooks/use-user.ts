@@ -36,7 +36,10 @@ export function useUser(): UseUserReturn {
           if (typeof userError !== "undefined" && userError !== null) throw userError;
 
           setUser(userData);
+        } else {
+          setUser(null);
         }
+        setError(null);
       } catch (err) {
         const error = err instanceof Error ? err : new Error('Failed to fetch user');
         setError(error);
@@ -51,7 +54,7 @@ export function useUser(): UseUserReturn {
 
   const refreshUser = async (): Promise<void> => {
     try {
-      setUser(null);
+      setError(null);
       await supabase.auth.refreshSession();
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Failed to refresh user');
