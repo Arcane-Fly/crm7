@@ -68,7 +68,7 @@ jobs:
           echo "auto-install-peers=true" >> .npmrc
           echo "strict-peer-dependencies=false" >> .npmrc
           # Install dependencies with approved builds
-          pnpm install --frozen-lockfile
+          pnpm install
         env:
           NPM_CONFIG_AUDIT: false
           NPM_CONFIG_FUND: false

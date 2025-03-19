@@ -218,3 +218,19 @@ Update relevant documentation:
 - [ ] Mobile responsiveness
 - [ ] Navigation structure
 - [ ] Route handling
+
+## Dependency Management Practices
+
+To ensure smooth dependency management and updates, follow these practices:
+
+1. **Automate Dependency Updates**: Use tools like Dependabot, as configured in `.github/dependabot.yml`, to automatically check for and update dependencies. This helps keep the project up-to-date and secure. 🔄
+
+2. **Regularly Review and Update Dependencies**: Schedule regular intervals to review and update dependencies in `package.json` and ensure `pnpm-lock.yaml` is up to date. This helps avoid compatibility issues and security vulnerabilities. 📅
+
+3. **Use `pnpm install` without `--frozen-lockfile`**: When updating dependencies in `package.json`, run `pnpm install` without the `--frozen-lockfile` flag to update the `pnpm-lock.yaml` file accordingly. This ensures the lockfile reflects the latest changes. 📦
+
+4. **Enforce Version Consistency**: Ensure that the versions of Node.js and PNPM used in the project are consistent across all environments. This can be managed using `.nvmrc` and `.npmrc` files. 🔧
+
+5. **Monitor for Security Vulnerabilities**: Use tools like Snyk or npm audit to monitor for security vulnerabilities in dependencies. Regularly review and address any reported issues. 🛡️
+
+6. **Document Dependency Management Practices**: Clearly document the dependency management practices in the repository's `README.md` or a dedicated `CONTRIBUTING.md` file. This helps contributors understand the process and follow best practices. 📚
