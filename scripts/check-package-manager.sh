@@ -8,7 +8,7 @@ if [ -f "package-lock.json" ] || [ -f "yarn.lock" ]; then
 fi
 
 # Check pnpm version
-REQUIRED_VERSION="10.2.1"
+REQUIRED_VERSION="10.6.3"
 CURRENT_VERSION=$(pnpm --version)
 
 if [ "$CURRENT_VERSION" != "$REQUIRED_VERSION" ]; then
