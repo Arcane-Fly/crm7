@@ -1,9 +1,0 @@
-.heroContainer {
-  background-color: var(--hero-background-color, #ffffff);
-  color: var(--hero-text-color, #000000);
-}
-
-.root {
-  --hero-background-color: #ffffff;
-  --hero-text-color: #000000;
-}
