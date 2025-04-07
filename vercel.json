@@ -1,81 +1,12 @@
 {
-  "buildCommand": "corepack enable && COREPACK_DISABLE_SIGNATURES=1 pnpm install && pnpm run build",
-  "installCommand": "corepack enable && COREPACK_DISABLE_SIGNATURES=1 pnpm install",
+  "version": 2,
+  "buildCommand": "pnpm build",
+  "installCommand": "pnpm install",
   "framework": "nextjs",
   "outputDirectory": ".next",
-  "regions": ["syd1", "sin1"],
-  "builds": [
-    {
-      "src": "next.config.js",
-      "use": "@vercel/next"
-    }
-  ],
-  "build": {
-    "env": {
-      "NEXT_TELEMETRY_DISABLED": "1",
-      "PNPM_VERSION": "10.2.0",
-      "NODE_VERSION": "20.x",
-      "ENABLE_COREPACK": "1",
-      "ENABLE_EXPERIMENTAL_COREPACK": "1",
-      "PUPPETEER_SKIP_DOWNLOAD": "true",
-      "CANVAS_SKIP_DOWNLOAD": "true"
-    }
-  },
-  "git": {
-    "deploymentEnabled": {
-      "main": false,
-      "master": true,
-      "preview": true
-    }
-  },
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        },
-        {
-          "key": "Strict-Transport-Security",
-          "value": "max-age=31536000; includeSubDomains"
-        },
-        {
-          "key": "Permissions-Policy",
-          "value": "camera=(), microphone=(), geolocation=()"
-        }
-      ]
-    },
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0"
-        }
-      ]
-    },
-    {
-      "source": "/_next/static/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    }
-  ],
-  "ignoreCommand": "git diff HEAD^ HEAD --quiet ./"
+  "env": {
+    "NEXT_PUBLIC_SUPABASE_URL": "https://iykrauzuutvmnxpqppzk.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml5a3JhdXp1dXR2bW54cHFwcHprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU4NzE1NjcsImV4cCI6MjA1MTQ0NzU2N30.kvAGD6FrOhmdpYzRHMyXam3p337w8Ijd5_raruHPd6U",
+    "NEXT_PUBLIC_APP_URL": "https://crm7.vercel.app"
+  }
 }
