@@ -1,12 +1,10 @@
 'use client';
 
-import { PuckEditor } from '@/components/editor/puck-editor';
 import { Breadcrumb, BreadcrumbItem } from '@/components/ui/breadcrumb';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import type { Data as PuckData } from '@measured/puck';
 
-interface EditorData extends PuckData {
+interface EditorData {
   id: string;
   metadata: Record<string, unknown>;
   version: number;
@@ -72,7 +70,20 @@ export default function TrainingDevelopmentPage() {
         </TabsList>
 
         <TabsContent value="editor" className="space-y-4">
-          <PuckEditor onPublish={handlePublish} />
+          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+            <h2 className="text-xl font-semibold mb-4">Training & Development Editor</h2>
+            <p className="mb-4">This is a simplified CRUD editor for training and development content.</p>
+            <textarea 
+              className="w-full h-64 p-4 border rounded-md" 
+              placeholder="Enter training content here..."
+            />
+            <button 
+              className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
+              onClick={() => handlePublish({ id: '1', metadata: {}, version: 1, root: {} })}
+            >
+              Save Changes
+            </button>
+          </div>
         </TabsContent>
 
         <TabsContent value="preview" className="space-y-4">
